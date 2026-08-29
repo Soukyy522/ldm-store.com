@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 6 Auth Authority Test</title>
+<style>
+:root{
+    --bg:#f4f7fb;
+    --card:#fff;
+    --text:#172033;
+    --muted:#667085;
+    --line:#e4e7ec;
+    --good:#15803d;
+    --bad:#b42318;
+    --warn:#b54708;
+    --primary:#0d2240;
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+.wrap{
+    width:min(900px,calc(100% - 24px));
+    margin:24px auto;
+}
+.card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:12px;
+    box-shadow:0 8px 28px rgba(16,24,40,.05);
+}
+h1{font-size:1.35rem;margin:0 0 6px}
+h2{font-size:.96rem;margin:0 0 10px}
+p{
+    color:var(--muted);
+    font-size:.8rem;
+    line-height:1.55;
+}
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+button,a{
+    min-height:43px;
+    border:0;
+    border-radius:9px;
+    padding:9px 13px;
+    background:var(--primary);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.secondary{
+    background:#fff;
+    color:var(--text);
+    border:1px solid var(--line);
+}
+pre{
+    margin:0;
+    padding:12px;
+    border-radius:10px;
+    background:#101828;
+    color:#f2f4f7;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    font-size:.73rem;
+    line-height:1.55;
+}
+.notice{
+    padding:10px 12px;
+    border-left:4px solid #f59e0b;
+    background:#fffbeb;
+    color:#7c2d12;
+    border-radius:8px;
+    font-size:.75rem;
+    line-height:1.55;
+}
+@media(max-width:600px){
+    .wrap{margin:12px auto}
+    .card{padding:13px}
+    .actions{display:grid}
+    button,a{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>🛡️ Tahap 6 - Auth Authority Test</h1>
+        <p>
+            Menguji bahwa session Supabase masih aktif dan role cache lokal
+            mengikuti role server dari public.profiles.
+        </p>
+        <div class="actions">
+            <button onclick="runTest()">Jalankan Test</button>
+            <button class="secondary" onclick="testRoleRepair()">Uji Perbaikan Role Cache</button>
+            <a class="secondary" href="dashboard.html">Buka Dashboard</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Hasil</h2>
+        <pre id="result">Belum diuji.</pre>
+    </div>
+
+    <div class="card">
+        <div class="notice">
+            Uji Perbaikan Role Cache hanya mengubah userRole lokal sementara,
+            lalu mengambil profile dari Supabase untuk mengembalikannya ke role server.
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+
+<script>
+function out(text){
+    document
+        .getElementById("result")
+        .textContent =
+            text;
+}
+
+async function runTest(){
+    try{
+        out(
+            "Memeriksa session cloud..."
+        );
+
+        const context =
+            await LDMCloudSession
+                .ensureAuthenticated();
+
+        const cached =
+            LDMCloudSession
+                .getCachedIdentity();
+
+        const profile =
+            context.profile;
+
+        const roleMatch =
+            String(cached.role) ===
+            String(profile.role);
+
+        const usernameMatch =
+            String(cached.username) ===
+            String(profile.username);
+
+        const sourceOK =
+            cached.source ===
+            "supabase";
+
+        const lines = [
+            "✅ SESSION SUPABASE VALID",
+            "",
+            `Username Server : ${profile.username || "-"}`,
+            `Role Server     : ${profile.role || "-"}`,
+            `Store Code      : ${profile.store_code || "-"}`,
+            `Store ID        : ${profile.store_id || "-"}`,
+            "",
+            `Cache Source     : ${cached.source || "-"}`,
+            `Cache Username   : ${cached.username || "-"}`,
+            `Cache Role       : ${cached.role || "-"}`,
+            "",
+            `Role Match       : ${roleMatch ? "YA" : "TIDAK"}`,
+            `Username Match   : ${usernameMatch ? "YA" : "TIDAK"}`,
+            `Cloud Authority  : ${sourceOK && roleMatch && usernameMatch ? "OK" : "PERIKSA"}`,
+            "",
+            sourceOK && roleMatch && usernameMatch
+                ? "Tahap 6 Auth Authority bekerja."
+                : "Ada cache yang belum sesuai dengan profile cloud."
+        ];
+
+        out(
+            lines.join("\n")
+        );
+
+    }catch(error){
+        out(
+            "❌ TEST GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }
+}
+
+async function testRoleRepair(){
+    try{
+        const context =
+            await LDMCloudSession
+                .ensureAuthenticated({
+                    registerDevice:
+                        false
+                });
+
+        const serverRole =
+            String(
+                context.profile.role
+            );
+
+        const fakeRole =
+            serverRole === "kasir"
+                ? "admin"
+                : "kasir";
+
+        localStorage.setItem(
+            "userRole",
+            fakeRole
+        );
+
+        const before =
+            localStorage.getItem(
+                "userRole"
+            );
+
+        await LDMCloudSession
+            .ensureAuthenticated({
+                registerDevice:
+                    false
+            });
+
+        const after =
+            localStorage.getItem(
+                "userRole"
+            );
+
+        out(
+            [
+                "🧪 UJI ROLE CACHE",
+                "",
+                `Role Server       : ${serverRole}`,
+                `Cache Dipalsukan  : ${before}`,
+                `Cache Setelah Sync: ${after}`,
+                "",
+                after === serverRole
+                    ? "✅ Cache role dikembalikan ke role server."
+                    : "❌ Cache role tidak pulih."
+            ].join("\n")
+        );
+
+    }catch(error){
+        out(
+            "❌ UJI GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    runTest
+);
+</script>
+</body>
+</html>

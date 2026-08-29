@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="id" class="secure-page-pending">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>LocDailyMar - Test Tahap 16</title>
+    <style>
+        :root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#eef4f2}
+        *{box-sizing:border-box}body{margin:0;padding:20px}.wrap{max-width:900px;margin:auto}.card{background:#fff;border:1px solid #dce6e2;border-radius:15px;padding:18px;margin-bottom:14px;box-shadow:0 8px 26px #17352a10}h1,h2{margin-top:0}.row{display:flex;gap:9px;flex-wrap:wrap}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e5e7eb;font-size:12px;font-weight:700}.pass{background:#dcfce7;color:#166534}.fail{background:#fee2e2;color:#991b1b}.warn{background:#fef3c7;color:#92400e}button,a{border:0;border-radius:9px;padding:10px 13px;font-weight:700;text-decoration:none;cursor:pointer;background:#0f9d58;color:#fff}button.secondary,a.secondary{background:#2c3e50}pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#d8f3e7;border-radius:10px;padding:13px;max-height:340px;overflow:auto}.item{border-top:1px solid #e5e7eb;padding:10px 0;font-size:13px}.muted{color:#64748b}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/offline-queue.js?v=16.0"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=16.0"></script>
+    <script src="js/cloud-session-guard.js?v=16.0"></script>
+</head>
+<body>
+<main class="wrap">
+    <div class="card">
+        <h1>Test Tahap 16</h1>
+        <p class="muted">Pemeriksaan ini tidak membuat transaksi. Untuk uji transaksi offline sebenarnya, ikuti TAHAP-16-PANDUAN.txt.</p>
+        <div class="row">
+            <button onclick="runChecks()">Jalankan Pemeriksaan</button>
+            <button class="secondary" onclick="syncQueue()">Sinkronkan Queue</button>
+            <a class="secondary" href="kasir.html">Buka Kasir</a>
+        </div>
+    </div>
+    <div class="card"><h2>Ringkasan</h2><div id="summary"><span class="badge warn">Belum diperiksa</span></div></div>
+    <div class="card"><h2>Antrean Perangkat Ini</h2><div id="queue">Belum dibaca.</div></div>
+    <div class="card"><h2>Log</h2><pre id="log">Siap.</pre></div>
+</main>
+<script>
+const logEl=document.getElementById("log");
+function log(message,data){logEl.textContent+=`\n[${new Date().toLocaleTimeString("id-ID")}] ${message}${data!==undefined?"\n"+JSON.stringify(data,null,2):""}`;logEl.scrollTop=logEl.scrollHeight}
+function badge(label,status){return `<span class="badge ${status}">${label}</span>`}
+async function renderQueue(){
+    const rows=await LDMOfflineQueue.list();
+    document.getElementById("queue").innerHTML=rows.length?rows.map(row=>`<div class="item"><strong>${row.display_snapshot?.transaction_code||row.client_transaction_id}</strong><br>Status: ${row.status} · Percobaan: ${row.attempt_count||0}${row.last_error?`<br><span style="color:#b91c1c">${String(row.last_error).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"})[c])}</span>`:""}</div>`).join(""):'<span class="muted">Queue kosong.</span>';
+}
+async function runChecks(){
+    logEl.textContent="Mulai pemeriksaan…";
+    const results=[];
+    try{
+        results.push(["Offline Queue termuat",Boolean(window.LDMOfflineQueue)]);
+        results.push(["IndexedDB tersedia",Boolean(window.indexedDB)]);
+        results.push(["Service Worker tersedia",Boolean(navigator.serviceWorker)]);
+        results.push(["Lease perangkat aktif",Boolean(LDMOfflineQueue.validLease())]);
+        const stats=await LDMOfflineQueue.stats();
+        results.push(["Queue dapat dibaca",Boolean(stats)]);
+        const supabase=LDMSupabase.createClient();
+        const {data,error}=await supabase.from("ldm_system_meta").select("key,value").in("key",["live_sync_stage","schema_status","checkout_offline_mode"]);
+        if(error)throw error;
+        const meta=Object.fromEntries((data||[]).map(row=>[row.key,row.value]));
+        results.push(["Database stage = 16",meta.live_sync_stage==="16"]);
+        results.push(["Schema offline siap",meta.schema_status==="offline_queue_reconnect_ready"]);
+        results.push(["Mode IndexedDB aktif",meta.checkout_offline_mode==="indexeddb_queue_idempotent_reconnect"]);
+        log("Metadata database",meta);
+        await renderQueue();
+    }catch(error){
+        log("ERROR",{message:error.message||String(error),details:error.details,hint:error.hint});
+        results.push(["Pemeriksaan selesai tanpa error",false]);
+    }
+    document.getElementById("summary").innerHTML=results.map(([label,ok])=>badge(`${ok?"PASS":"FAIL"} · ${label}`,ok?"pass":"fail")).join(" ");
+}
+async function syncQueue(){
+    try{log("Memulai sinkronisasi manual…");const result=await LDMOfflineQueue.syncNow({force:true});log("Hasil sinkronisasi",result);await renderQueue()}catch(error){log("Sinkronisasi gagal",{message:error.message||String(error),details:error.details})}
+}
+window.addEventListener("ldm-cloud-auth-ready",()=>runChecks(),{once:true});
+</script>
+</body>
+</html>

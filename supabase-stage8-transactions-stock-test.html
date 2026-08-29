@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 8 Transaction & Stock Test</title>
+<style>
+:root{
+    --bg:#f4f7fb;
+    --card:#fff;
+    --text:#172033;
+    --muted:#667085;
+    --line:#e4e7ec;
+    --primary:#0d2240;
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+.wrap{
+    width:min(1050px,calc(100% - 24px));
+    margin:24px auto;
+}
+.card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:12px;
+    box-shadow:0 8px 28px rgba(16,24,40,.05);
+}
+h1{font-size:1.35rem;margin:0 0 6px}
+h2{font-size:.95rem;margin:0 0 10px}
+p{font-size:.8rem;color:var(--muted);line-height:1.55}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+}
+.stat{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px;
+}
+.stat span{
+    display:block;
+    color:var(--muted);
+    font-size:.68rem;
+    margin-bottom:4px;
+}
+.stat strong{
+    font-size:.82rem;
+    overflow-wrap:anywhere;
+}
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+button,a{
+    min-height:43px;
+    border:0;
+    border-radius:9px;
+    padding:9px 13px;
+    background:var(--primary);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.secondary{
+    background:#fff;
+    color:var(--text);
+    border:1px solid var(--line);
+}
+pre{
+    margin:0;
+    background:#101828;
+    color:#f2f4f7;
+    border-radius:10px;
+    padding:12px;
+    font-size:.72rem;
+    line-height:1.55;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+}
+.notice{
+    border-left:4px solid #f59e0b;
+    padding:10px 12px;
+    background:#fffbeb;
+    color:#7c2d12;
+    border-radius:8px;
+    font-size:.75rem;
+    line-height:1.55;
+}
+@media(max-width:760px){
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+    .wrap{margin:12px auto}
+    .card{padding:13px}
+    .grid{grid-template-columns:1fr}
+    .actions{display:grid}
+    button,a{width:100%}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/products-service.js?v=7.0"></script>
+<script src="js/transactions-service.js?v=8.0"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>🧾 Tahap 8 - Cloud Transaction & Atomic Stock</h1>
+        <p>
+            Halaman ini hanya membaca transaksi dan ledger. Untuk membuat test sale,
+            gunakan kasir.html supaya jalur checkout yang sebenarnya ikut diuji.
+        </p>
+        <div class="grid">
+            <div class="stat">
+                <span>Role</span>
+                <strong id="role">-</strong>
+            </div>
+            <div class="stat">
+                <span>Store</span>
+                <strong id="store">-</strong>
+            </div>
+            <div class="stat">
+                <span>Recent Transactions</span>
+                <strong id="txCount">0</strong>
+            </div>
+            <div class="stat">
+                <span>Recent Movements</span>
+                <strong id="movementCount">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="actions">
+            <button onclick="refreshAll()">Refresh</button>
+            <button class="secondary" onclick="startRealtime()">Start Realtime</button>
+            <a class="secondary" href="kasir.html">Buka Kasir</a>
+            <a class="secondary" href="barang.html">Buka Barang</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="notice">
+            Jangan menguji Goods Receipt, Stock Opname, atau Retur sebagai multi-device final
+            pada Tahap 8. Atomic stock saat ini sudah berlaku untuk SALE kasir. Modul inventory
+            lainnya dimigrasikan pada tahap lanjutan.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Recent Transactions</h2>
+        <pre id="transactions">Belum dibaca.</pre>
+    </div>
+
+    <div class="card">
+        <h2>Recent Stock Movements</h2>
+        <pre id="movements">Belum dibaca.</pre>
+    </div>
+
+    <div class="card">
+        <h2>Realtime Events</h2>
+        <pre id="events">Belum aktif.</pre>
+    </div>
+</div>
+
+<script>
+let realtimeEvents = [];
+
+function text(id, value){
+    document
+        .getElementById(id)
+        .textContent = value;
+}
+
+function money(value){
+    return Number(value || 0)
+        .toLocaleString("id-ID");
+}
+
+async function refreshAll(){
+    try{
+        const context =
+            await LDMCloudSession
+                .ensureAuthenticated({
+                    registerDevice:false
+                });
+
+        const [txs, movements] =
+            await Promise.all([
+                LDMTransactions.recentTransactions(30),
+                LDMTransactions.recentMovements(50)
+            ]);
+
+        text("role", context.profile.role || "-");
+        text("store", context.profile.store_code || "-");
+        text("txCount", String(txs.length));
+        text("movementCount", String(movements.length));
+
+        text(
+            "transactions",
+            txs.length
+                ? txs.map(tx => [
+                    tx.transaction_code,
+                    `${tx.business_date} | ${tx.cashier_username}`,
+                    `${tx.payment_method} | Rp ${money(tx.grand_total)} | ${tx.status}`,
+                    `Cloud ID: ${tx.id}`
+                ].join("\n")).join("\n\n")
+                : "Belum ada transaksi cloud."
+        );
+
+        text(
+            "movements",
+            movements.length
+                ? movements.map(m => [
+                    `${m.occurred_at} | ${m.movement_type}`,
+                    `Product: ${m.product_id}`,
+                    `Qty change: ${m.quantity_change}`,
+                    `Stock: ${m.stock_before} -> ${m.stock_after}`,
+                    `Ref: ${m.reference_code || "-"}`
+                ].join("\n")).join("\n\n")
+                : "Belum ada stock movement."
+        );
+
+    }catch(error){
+        text(
+            "transactions",
+            "❌ GAGAL\n\n" +
+            (error.message || String(error))
+        );
+    }
+}
+
+async function startRealtime(){
+    try{
+        await LDMTransactions.startRealtime(
+            async function(table, payload){
+                realtimeEvents.unshift(
+                    `${new Date().toLocaleTimeString("id-ID")} | ${table} | ${payload.eventType || "event"}`
+                );
+
+                realtimeEvents = realtimeEvents.slice(0,30);
+
+                text(
+                    "events",
+                    realtimeEvents.join("\n")
+                );
+
+                await refreshAll();
+            }
+        );
+
+        text(
+            "events",
+            "✅ Realtime aktif. Lakukan transaksi dari perangkat lain."
+        );
+    }catch(error){
+        text(
+            "events",
+            "❌ REALTIME GAGAL\n\n" +
+            (error.message || String(error))
+        );
+    }
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function(){
+        await refreshAll();
+        await startRealtime();
+    }
+);
+</script>
+</body>
+</html>

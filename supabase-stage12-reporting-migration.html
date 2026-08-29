@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 12 Migrasi Reporting</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--primary:#0d2240;--warn:#b54708}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{width:min(1000px,calc(100% - 24px));margin:24px auto}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 8px 28px rgba(16,24,40,.05)}h1{font-size:1.35rem;margin:0 0 6px}h2{font-size:.95rem;margin:0 0 10px}p{font-size:.8rem;color:var(--muted);line-height:1.55}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.stat{border:1px solid var(--line);border-radius:10px;padding:11px}.stat span{display:block;font-size:.67rem;color:var(--muted);margin-bottom:4px}.stat strong{font-size:.86rem}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a{min-height:43px;border:0;border-radius:9px;padding:9px 13px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}pre{margin:0;background:#101828;color:#f2f4f7;border-radius:10px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.73rem;line-height:1.55}.notice{border-left:4px solid #f59e0b;background:#fffbeb;color:#7c2d12;padding:10px 12px;border-radius:8px;font-size:.75rem;line-height:1.55}@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.wrap{margin:12px auto}.card{padding:13px}.grid{grid-template-columns:1fr}.actions{display:grid}button,a{width:100%}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/reporting-service.js?v=12.0"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>📊 Tahap 12 - Migrasi Reporting</h1>
+        <p>Migrasikan histori lokal sebelum menjadikan cloud sebagai authority penuh untuk Laporan, Closing, EOD, Pengeluaran, dan Mutasi Kas.</p>
+        <div class="grid">
+            <div class="stat"><span>Transaksi Legacy</span><strong id="txCount">0</strong></div>
+            <div class="stat"><span>Closing Legacy</span><strong id="closingCount">0</strong></div>
+            <div class="stat"><span>EOD Legacy</span><strong id="eodCount">0</strong></div>
+            <div class="stat"><span>Pengeluaran Legacy</span><strong id="expenseCount">0</strong></div>
+            <div class="stat"><span>Mutasi Kas Legacy</span><strong id="cashCount">0</strong></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="notice">
+            Gunakan perangkat dengan histori localStorage paling lengkap dan login sebagai Owner. Migrasi transaksi/Closing/EOD lama adalah HISTORY ONLY. Stok tidak diterapkan ulang.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="actions">
+            <button onclick="inspectData()">Periksa Data</button>
+            <button id="btnMigrate" onclick="migrateAll()">Migrasikan Tahap 12</button>
+            <a class="secondary" href="dashboard.html">Dashboard</a>
+            <a class="secondary" href="laporan.html">Laporan</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Hasil</h2>
+        <pre id="result">Belum diperiksa.</pre>
+    </div>
+</div>
+<script>
+function readArray(key){
+    try{
+        const value=JSON.parse(localStorage.getItem(key)||"[]");
+        return Array.isArray(value)?value:[];
+    }catch(error){return []}
+}
+
+function legacyTx(){
+    return readArray("laporan").filter(row=>row&&!row._cloudStage12&&!row.cloudId&&!row.cloudLegacyId);
+}
+function legacyClosings(){
+    return readArray("shiftClosingLog").filter(row=>row&&!row._cloudStage12&&!row.cloudId);
+}
+function legacyEod(){
+    return readArray("endOfDayLog").filter(row=>row&&!row._cloudStage12&&!row.cloudId);
+}
+function legacyExpenses(){
+    return readArray("operasional").filter(row=>row&&!row._cloudStage12&&!row.cloudId);
+}
+function legacyCash(){
+    return readArray("mutasiKasShift").filter(row=>
+        row&&!row._cloudStage12&&!row.cloudId&&!row._cloudStage10Return&&row.sumber!=="retur"
+    );
+}
+function out(text){document.getElementById("result").textContent=text}
+
+async function inspectData(){
+    try{
+        const context=await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+        const sets={
+            tx:legacyTx(),
+            closings:legacyClosings(),
+            eod:legacyEod(),
+            expenses:legacyExpenses(),
+            cash:legacyCash()
+        };
+
+        txCount.textContent=sets.tx.length;
+        closingCount.textContent=sets.closings.length;
+        eodCount.textContent=sets.eod.length;
+        expenseCount.textContent=sets.expenses.length;
+        cashCount.textContent=sets.cash.length;
+
+        const invalidTx=sets.tx.filter(row=>!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(row.tanggal||"")));
+        const invalidClosing=sets.closings.filter(row=>!row.tanggal||!row.kasir);
+
+        out([
+            "✅ DATA DIPERIKSA",
+            "",
+            `Role             : ${context.profile.role}`,
+            `Username         : ${context.profile.username}`,
+            `Store            : ${context.profile.store_code}`,
+            `Transaksi Legacy : ${sets.tx.length}`,
+            `Closing Legacy   : ${sets.closings.length}`,
+            `EOD Legacy       : ${sets.eod.length}`,
+            `Pengeluaran      : ${sets.expenses.length}`,
+            `Mutasi Kas       : ${sets.cash.length}`,
+            "",
+            invalidTx.length?`⚠️ ${invalidTx.length} transaksi legacy tidak mempunyai tanggal YYYY-MM-DD.`:"Tanggal transaksi legacy terlihat valid.",
+            invalidClosing.length?`⚠️ ${invalidClosing.length} Closing legacy tidak lengkap.`:"Closing legacy terlihat valid.",
+            "",
+            String(context.profile.role).toLowerCase()==="owner"
+                ? "Owner siap menjalankan migrasi."
+                : "❌ Migrasi hanya dapat dijalankan oleh Owner.",
+            "",
+            "Catatan: transaksi yang sudah mempunyai cloudId adalah transaksi Tahap 8+ dan TIDAK dimigrasikan ulang."
+        ].join("\n"));
+    }catch(error){
+        out("❌ PEMERIKSAAN GAGAL\n\n"+(error?.message||String(error)));
+    }
+}
+
+async function migrateAll(){
+    const button=document.getElementById("btnMigrate");
+    button.disabled=true;
+    button.textContent="Migrasi ke Cloud...";
+
+    try{
+        const context=await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+        if(String(context.profile.role).toLowerCase()!=="owner"){
+            throw new Error("Hanya Owner yang dapat migrasi Tahap 12.");
+        }
+
+        const result=await LDMReporting.migrateLegacy({
+            transactions:readArray("laporan"),
+            closings:readArray("shiftClosingLog"),
+            eod:readArray("endOfDayLog"),
+            expenses:readArray("operasional"),
+            cashMovements:readArray("mutasiKasShift")
+        });
+
+        out([
+            "✅ MIGRASI TAHAP 12 BERHASIL",
+            "",
+            `Transaksi history : ${result.transactions}`,
+            `Closing history   : ${result.closings}`,
+            `EOD history       : ${result.eod}`,
+            `Pengeluaran      : ${result.expenses}`,
+            `Mutasi Kas       : ${result.cashMovements}`,
+            "",
+            "Cache compatibility sudah disegarkan dari cloud.",
+            "Stok legacy tidak diterapkan ulang."
+        ].join("\n"));
+    }catch(error){
+        out("❌ MIGRASI GAGAL\n\n"+(error?.message||String(error)));
+    }finally{
+        button.disabled=false;
+        button.textContent="Migrasikan Tahap 12";
+    }
+}
+
+document.addEventListener("DOMContentLoaded",inspectData);
+</script>
+</body>
+</html>

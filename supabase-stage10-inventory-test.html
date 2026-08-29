@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LocDailyMar - Tahap 10 Realtime Test</title>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.wrap{width:min(980px,calc(100% - 24px));margin:24px auto}.card{background:#fff;border:1px solid #e4e7ec;border-radius:16px;padding:18px;margin-bottom:12px}h1{font-size:1.3rem;margin:0 0 8px}p{font-size:.8rem;color:#667085;line-height:1.5}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a{min-height:42px;border:0;border-radius:9px;padding:9px 13px;background:#0d2240;color:#fff;font-weight:700;text-decoration:none;cursor:pointer}.secondary{background:#fff;color:#172033;border:1px solid #e4e7ec}pre{background:#101828;color:#f2f4f7;border-radius:10px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.73rem;line-height:1.55}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/products-service.js?v=7.0"></script>
+<script src="js/returns-service.js?v=10.0"></script>
+<script src="js/stock-opname-service.js?v=10.0"></script>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<h1>⚡ Tahap 10 - Realtime Inventory Test</h1>
+<p>Buka di Device A. Device B membuat/approve Retur atau Stock Opname. Device A harus menerima perubahan cache.</p>
+<div class="actions">
+<button onclick="start()">Start / Refresh</button>
+<a class="secondary" href="retur.html">Retur</a>
+<a class="secondary" href="stock-opname.html">Stock Opname</a>
+<a class="secondary" href="kartu-stok.html">Kartu Stok</a>
+</div>
+</div>
+<div class="card"><pre id="result">Belum dimulai.</pre></div>
+</div>
+<script>
+let returnEvents=0;
+let opnameEvents=0;
+
+function safeArray(key){
+    try{
+        const data=JSON.parse(localStorage.getItem(key)||"[]");
+        return Array.isArray(data)?data:[];
+    }catch{return[]}
+}
+
+function render(label){
+    const returns=safeArray("dataRetur");
+    const opnames=safeArray("dataStockOpname");
+    const products=safeArray("dataBarang");
+
+    document.getElementById("result").textContent=[
+        label,
+        "",
+        `Return Events : ${returnEvents}`,
+        `Opname Events : ${opnameEvents}`,
+        `Cloud Returns : ${returns.length}`,
+        `Cloud Opname  : ${opnames.length}`,
+        `Products      : ${products.length}`,
+        "",
+        "RETUR TERBARU:",
+        ...returns.slice(0,5).map(r=>`${r.returId} | ${r.status} | ${r.transaksiId} | ${r.totalRetur}`),
+        "",
+        "OPNAME TERBARU:",
+        ...opnames.slice(0,5).map(o=>`${o.tanggal} | ${o.namaBarang} | ${o.status} | delta ${o.selisih}`)
+    ].join("\n");
+}
+
+async function start(){
+    try{
+        await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+        await LDMProducts.refreshCache();
+        await LDMReturns.refreshTransactions();
+        await LDMReturns.refreshCache();
+        await LDMStockOpname.refreshCache();
+        await LDMReturns.startRealtime();
+        await LDMStockOpname.startRealtime();
+        render("✅ TAHAP 10 REALTIME AKTIF");
+    }catch(error){
+        document.getElementById("result").textContent=
+            "❌ GAGAL\n\n"+(error.message||String(error));
+    }
+}
+
+window.addEventListener("ldm-returns-cache-updated",()=>{
+    returnEvents++;
+    render("⚡ RETUR DIPERBARUI");
+});
+
+window.addEventListener("ldm-stock-opname-cache-updated",()=>{
+    opnameEvents++;
+    render("⚡ STOCK OPNAME DIPERBARUI");
+});
+
+document.addEventListener("DOMContentLoaded",start);
+</script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 7 Realtime Test</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f7fb;
+    color:#172033;
+}
+.wrap{
+    width:min(880px,calc(100% - 24px));
+    margin:24px auto;
+}
+.card{
+    background:#fff;
+    border:1px solid #e4e7ec;
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:12px;
+}
+h1{font-size:1.35rem;margin:0 0 6px}
+p{font-size:.8rem;color:#667085;line-height:1.55}
+button,a{
+    border:0;
+    min-height:42px;
+    border-radius:9px;
+    padding:9px 13px;
+    background:#0d2240;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.secondary{background:#fff;color:#172033;border:1px solid #e4e7ec}
+pre{
+    background:#101828;
+    color:#f2f4f7;
+    padding:12px;
+    border-radius:10px;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    font-size:.73rem;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/products-service.js?v=7.0"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>⚡ Tahap 7 - Realtime Barang Test</h1>
+        <p>
+            Biarkan halaman ini terbuka, lalu ubah Master Barang dari perangkat lain.
+            Event Realtime akan menarik ulang cache produk.
+        </p>
+        <div class="actions">
+            <button onclick="start()">Start / Refresh</button>
+            <a class="secondary" href="barang.html">Buka Barang</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <pre id="result">Belum dimulai.</pre>
+    </div>
+</div>
+
+<script>
+let eventCount = 0;
+
+function out(text){
+    document
+        .getElementById(
+            "result"
+        )
+        .textContent =
+            text;
+}
+
+async function render(label){
+    const cache =
+        LDMProducts.readCache();
+
+    out(
+        [
+            label,
+            "",
+            `Realtime event diterima : ${eventCount}`,
+            `Cache dataBarang        : ${cache.length}`,
+            `Cloud enabled           : ${LDMProducts.isEnabled() ? "YA" : "BELUM"}`,
+            `Waktu                   : ${new Date().toLocaleString("id-ID")}`,
+            "",
+            "Contoh produk:",
+            ...cache
+                .slice(0,5)
+                .map(
+                    item =>
+                        `${item.id || "-"} | ${item.nama || "-"} | ${item.barcode || "-"}`
+                )
+        ].join("\n")
+    );
+}
+
+async function start(){
+    try{
+        await LDMCloudSession
+            .ensureAuthenticated({
+                registerDevice:
+                    false
+            });
+
+        await LDMProducts
+            .refreshCache();
+
+        await LDMProducts
+            .startRealtime();
+
+        await render(
+            "✅ REALTIME SUBSCRIPTION AKTIF"
+        );
+
+    }catch(error){
+        out(
+            "❌ GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }
+}
+
+window.addEventListener(
+    "ldm-products-cache-updated",
+    async function(){
+        eventCount += 1;
+
+        await render(
+            "⚡ CACHE BARANG DIPERBARUI"
+        );
+    }
+);
+
+document.addEventListener(
+    "DOMContentLoaded",
+    start
+);
+</script>
+</body>
+</html>

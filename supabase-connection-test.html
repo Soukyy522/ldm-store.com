@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Supabase Connection Test</title>
+<style>
+:root{
+    --bg:#f5f7fb;
+    --card:#fff;
+    --text:#182230;
+    --muted:#667085;
+    --border:#e4e7ec;
+    --ok:#15803d;
+    --bad:#b42318;
+    --warn:#b54708;
+    --primary:#0d2240;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+.wrap{width:min(860px,calc(100% - 24px));margin:24px auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 8px 28px rgba(16,24,40,.05)}
+h1{font-size:1.35rem;margin:0 0 6px}h2{font-size:.95rem;margin:0 0 10px}
+p{font-size:.8rem;line-height:1.55;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.item{border:1px solid var(--border);border-radius:11px;padding:11px;min-width:0}.item span{display:block;font-size:.68rem;color:var(--muted);margin-bottom:4px}.item strong{display:block;font-size:.78rem;overflow-wrap:anywhere}.ok{color:var(--ok)!important}.bad{color:var(--bad)!important}.warn{color:var(--warn)!important}
+button,a.btn{min-height:42px;border:0;border-radius:9px;padding:9px 12px;background:var(--primary);color:#fff;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:.76rem}.actions{display:flex;gap:8px;flex-wrap:wrap}.secondary{background:#fff!important;color:var(--text)!important;border:1px solid var(--border)!important}
+pre{margin:0;background:#101828;color:#f9fafb;padding:12px;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.72rem;line-height:1.5}.notice{border-left:4px solid #f59e0b;background:#fffbeb;color:#7c2d12;border-radius:8px;padding:10px 12px;font-size:.74rem;line-height:1.55}
+@media(max-width:600px){.wrap{margin:12px auto}.card{padding:13px}.grid{grid-template-columns:1fr}.actions{display:grid}.actions>*{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>☁️ Supabase Connection Test</h1>
+        <p>
+            Tahap 3 hanya memeriksa apakah GitHub Pages dapat berbicara dengan
+            project Supabase. Belum ada Barang, transaksi, stok, Absensi, atau
+            laporan yang dipindahkan ke cloud.
+        </p>
+        <div class="grid" id="configGrid"></div>
+    </div>
+
+    <div class="card">
+        <h2>Uji koneksi database</h2>
+        <p>
+            Sebelum menguji, jalankan file
+            <code>supabase/sql/00-stage3-system-meta.sql</code> di SQL Editor Supabase.
+        </p>
+        <div class="actions">
+            <button id="testBtn" type="button">Tes Koneksi Supabase</button>
+            <a class="btn secondary" href="pages-health-check.html">GitHub Pages Health Check</a>
+            <a class="btn secondary" href="index.html">Kembali ke Login</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Hasil</h2>
+        <pre id="output">Belum diuji.</pre>
+    </div>
+
+    <div class="card">
+        <div class="notice">
+            <strong>Jangan menempelkan secret key di halaman ini.</strong>
+            File frontend hanya memakai Project URL dan Publishable Key.
+            Secret/admin key tetap harus berada di backend yang aman.
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script>
+(function(){
+    const output = document.getElementById("output");
+    const btn = document.getElementById("testBtn");
+    const grid = document.getElementById("configGrid");
+
+    function maskKey(value){
+        const text = String(value || "");
+        if(!text || text.includes("PASTE_")) return "BELUM DIISI";
+        if(text.length <= 18) return text.slice(0,6) + "...";
+        return text.slice(0,14) + "..." + text.slice(-4);
+    }
+
+    function item(label,value,state){
+        return `
+            <div class="item">
+                <span>${label}</span>
+                <strong class="${state || ""}">${value}</strong>
+            </div>
+        `;
+    }
+
+    function renderConfig(){
+        const cfg = window.LDMSupabase.getConfig();
+        const configured = window.LDMSupabase.isConfigured();
+
+        grid.innerHTML = [
+            item("Status konfigurasi", configured ? "SIAP" : "BELUM DIISI", configured ? "ok" : "warn"),
+            item("Project URL", cfg.url || "BELUM DIISI", configured ? "ok" : "warn"),
+            item("Publishable Key", maskKey(cfg.publishableKey), configured ? "ok" : "warn"),
+            item("Secure Context", window.isSecureContext ? "YA" : "TIDAK", window.isSecureContext ? "ok" : "bad")
+        ].join("");
+    }
+
+    async function testConnection(){
+        btn.disabled = true;
+        output.textContent = "Menghubungkan ke Supabase...";
+
+        try{
+            const client = window.LDMSupabase.createClient();
+
+            const { data, error } = await client
+                .from("ldm_system_meta")
+                .select("key,value,updated_at")
+                .order("key");
+
+            if(error){
+                throw error;
+            }
+
+            const values = Object.fromEntries(
+                (data || []).map(row => [row.key, row.value])
+            );
+
+            const healthy =
+                values.app_name === "LocDailyMar"
+                && values.live_sync_stage === "3";
+
+            if(!healthy){
+                throw new Error(
+                    "Koneksi berhasil, tetapi metadata Tahap 3 tidak sesuai. Jalankan ulang SQL Tahap 3."
+                );
+            }
+
+            output.textContent = [
+                "✅ KONEKSI SUPABASE BERHASIL",
+                "",
+                `App           : ${values.app_name || "-"}`,
+                `Live Sync     : Tahap ${values.live_sync_stage || "-"}`,
+                `Schema Status : ${values.schema_status || "-"}`,
+                `Rows received : ${(data || []).length}`,
+                "",
+                "Tahap 3 siap. Data bisnis masih tetap di localStorage."
+            ].join("\n");
+        }catch(error){
+            output.textContent = [
+                "❌ KONEKSI BELUM BERHASIL",
+                "",
+                String(error && error.message ? error.message : error),
+                "",
+                "Periksa:",
+                "1. Project URL di js/supabase-config.js",
+                "2. Publishable Key di js/supabase-config.js",
+                "3. SQL Tahap 3 sudah dijalankan",
+                "4. Repository sudah di-upload ulang ke GitHub Pages"
+            ].join("\n");
+        }finally{
+            btn.disabled = false;
+        }
+    }
+
+    btn.addEventListener("click", testConnection);
+    renderConfig();
+})();
+</script>
+</body>
+</html>

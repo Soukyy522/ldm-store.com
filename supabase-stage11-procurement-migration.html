@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LocDailyMar - Tahap 11 Migrasi Procurement</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--primary:#0d2240}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{width:min(980px,calc(100% - 24px));margin:24px auto}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 8px 28px rgba(16,24,40,.05)}h1{font-size:1.35rem;margin:0 0 6px}h2{font-size:.95rem;margin:0 0 10px}p{font-size:.8rem;color:var(--muted);line-height:1.6}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.stat{border:1px solid var(--line);border-radius:10px;padding:11px}.stat span{display:block;font-size:.68rem;color:var(--muted);margin-bottom:4px}.stat strong{font-size:.85rem}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a{min-height:43px;border:0;border-radius:9px;padding:9px 13px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}pre{margin:0;background:#101828;color:#f2f4f7;border-radius:10px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.73rem;line-height:1.55}.notice{border-left:4px solid #f59e0b;background:#fffbeb;color:#7c2d12;padding:10px 12px;border-radius:8px;font-size:.75rem;line-height:1.6}@media(max-width:650px){.grid{grid-template-columns:1fr}.actions{display:grid}button,a{width:100%}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/procurement-service.js?v=11.0"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>🏢 Tahap 11 - Migrasi Supplier, PO & Goods Receipt</h1>
+        <p>Jalankan dari perangkat yang mempunyai dataSupplier, dataPurchaseOrder, dan dataGoodsReceipt lokal paling lengkap. Login sebagai Owner.</p>
+        <div class="grid">
+            <div class="stat"><span>Supplier Legacy</span><strong id="suppliers">0</strong></div>
+            <div class="stat"><span>Purchase Order Legacy</span><strong id="po">0</strong></div>
+            <div class="stat"><span>Goods Receipt Legacy</span><strong id="gr">0</strong></div>
+        </div>
+    </div>
+    <div class="card notice">
+        Migrasi PO dan Goods Receipt lama bersifat <strong>history-only</strong>. Stok lama tidak diterapkan ulang ke cloud, supaya penerimaan yang pernah terjadi tidak menambah stok dua kali. Setelah migrasi, Goods Receipt baru memakai atomic stock RPC.
+    </div>
+    <div class="card">
+        <div class="actions">
+            <button onclick="inspectData()">Periksa Data</button>
+            <button id="migrateBtn" onclick="migrate()">Migrasikan Tahap 11</button>
+            <a class="secondary" href="supplier.html">Supplier</a>
+            <a class="secondary" href="Purchase-Order.html">Purchase Order</a>
+            <a class="secondary" href="goods.receipt.html">Goods Receipt</a>
+        </div>
+    </div>
+    <div class="card"><h2>Hasil</h2><pre id="result">Belum diperiksa.</pre></div>
+</div>
+<script>
+function localRows(key){
+    try{
+        const value=JSON.parse(localStorage.getItem(key)||"[]");
+        return Array.isArray(value)?value.filter(row=>row&&!row._cloud):[];
+    }catch(error){return[]}
+}
+function out(value){document.getElementById("result").textContent=value}
+async function inspectData(){
+    try{
+        const context=await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+        const suppliers=localRows("dataSupplier");
+        const po=localRows("dataPurchaseOrder");
+        const gr=localRows("dataGoodsReceipt");
+        document.getElementById("suppliers").textContent=String(suppliers.length);
+        document.getElementById("po").textContent=String(po.length);
+        document.getElementById("gr").textContent=String(gr.length);
+        out([
+            "✅ DATA DIPERIKSA",
+            "",
+            `Role Cloud        : ${context.profile.role}`,
+            `Store             : ${context.profile.store_code}`,
+            `Supplier Legacy   : ${suppliers.length}`,
+            `PO Legacy         : ${po.length}`,
+            `GR Legacy         : ${gr.length}`,
+            "",
+            String(context.profile.role||"").toLowerCase()==="owner"
+                ? "Owner siap menjalankan migrasi."
+                : "❌ Migrasi hanya dapat dijalankan oleh Owner.",
+            "",
+            "Goods Receipt legacy = HISTORY ONLY, tidak menambah stok ulang."
+        ].join("\n"));
+    }catch(error){out("❌ PEMERIKSAAN GAGAL\n\n"+(error.message||String(error)))}
+}
+async function migrate(){
+    const btn=document.getElementById("migrateBtn");
+    btn.disabled=true;btn.textContent="Migrasi...";
+    try{
+        const result=await LDMProcurement.migrateLegacy();
+        out([
+            "✅ MIGRASI TAHAP 11 BERHASIL",
+            "",
+            `Supplier      : ${result.suppliers}`,
+            `Purchase Order: ${result.purchaseOrders}`,
+            `Goods Receipt : ${result.goodsReceipts}`,
+            "",
+            "dataSupplier, dataPurchaseOrder, dan dataGoodsReceipt sekarang menjadi cache cloud.",
+            "GR lama tidak diberi stock effect ulang."
+        ].join("\n"));
+        await inspectData();
+    }catch(error){out("❌ MIGRASI GAGAL\n\n"+(error.message||String(error)))}
+    finally{btn.disabled=false;btn.textContent="Migrasikan Tahap 11"}
+}
+document.addEventListener("DOMContentLoaded",inspectData);
+</script>
+</body>
+</html>

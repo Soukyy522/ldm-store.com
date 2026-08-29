@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 4 Foundation Test</title>
+<style>
+:root{
+    --bg:#f4f7fb;
+    --card:#fff;
+    --text:#172033;
+    --muted:#667085;
+    --line:#e4e7ec;
+    --good:#15803d;
+    --bad:#b42318;
+    --warn:#b54708;
+    --primary:#0d2240;
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+.wrap{
+    width:min(900px,calc(100% - 24px));
+    margin:24px auto;
+}
+.card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:12px;
+    box-shadow:0 8px 28px rgba(16,24,40,.05);
+}
+h1{font-size:1.35rem;margin:0 0 5px}
+h2{font-size:.95rem;margin:0 0 10px}
+p{
+    color:var(--muted);
+    line-height:1.55;
+    font-size:.79rem;
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+}
+.item{
+    padding:11px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow-wrap:anywhere;
+}
+.item span{
+    display:block;
+    color:var(--muted);
+    font-size:.68rem;
+    margin-bottom:4px;
+}
+.item strong{font-size:.78rem}
+.good strong{color:var(--good)}
+.bad strong{color:var(--bad)}
+.warn strong{color:var(--warn)}
+button,a.btn{
+    min-height:43px;
+    border:0;
+    border-radius:9px;
+    padding:9px 13px;
+    background:var(--primary);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.secondary{
+    background:#fff!important;
+    color:var(--text)!important;
+    border:1px solid var(--line)!important;
+}
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+pre{
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    margin:0;
+    padding:12px;
+    background:#101828;
+    color:#f2f4f7;
+    border-radius:10px;
+    font-size:.73rem;
+    line-height:1.55;
+}
+.notice{
+    padding:10px 12px;
+    border-left:4px solid #f59e0b;
+    background:#fffbeb;
+    color:#7c2d12;
+    border-radius:8px;
+    font-size:.75rem;
+    line-height:1.55;
+}
+@media(max-width:600px){
+    .wrap{margin:12px auto}
+    .card{padding:13px}
+    .grid{grid-template-columns:1fr}
+    .actions{display:grid}
+    button,a.btn{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>🧱 Tahap 4 - Cloud Foundation Test</h1>
+        <p>
+            Menguji metadata Tahap 4 dan memastikan tabel foundation tidak terbuka
+            untuk pengguna anonim.
+        </p>
+        <div class="grid" id="basicGrid"></div>
+    </div>
+
+    <div class="card">
+        <h2>Pengujian</h2>
+        <div class="actions">
+            <button onclick="runTests()">Jalankan Test Tahap 4</button>
+            <a href="supabase-connection-test.html" class="btn secondary">Test Tahap 3</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Hasil</h2>
+        <pre id="result">Belum dijalankan.</pre>
+    </div>
+
+    <div class="card">
+        <div class="notice">
+            Pada Tahap 4 kamu belum login dengan Supabase Auth. Karena itu akses anonim
+            ke stores, profiles, dan devices memang seharusnya ditolak. Login cloud baru
+            mulai di Tahap 5.
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script>
+function addBasic(label,value,state=""){
+    return `
+        <div class="item ${state}">
+            <span>${label}</span>
+            <strong>${value}</strong>
+        </div>
+    `;
+}
+
+function renderBasic(){
+    const configured =
+        window.LDMSupabase &&
+        LDMSupabase.isConfigured();
+
+    document.getElementById("basicGrid").innerHTML = [
+        addBasic(
+            "Supabase Config",
+            configured ? "SIAP" : "BELUM DIISI",
+            configured ? "good" : "bad"
+        ),
+        addBasic(
+            "HTTPS / Secure Context",
+            window.isSecureContext ? "YA" : "TIDAK",
+            window.isSecureContext ? "good" : "warn"
+        ),
+        addBasic(
+            "Tahap",
+            "4 - Cloud Foundation",
+            "good"
+        ),
+        addBasic(
+            "Auth Cloud",
+            "BELUM AKTIF (Tahap 5)",
+            "warn"
+        )
+    ].join("");
+}
+
+async function testProtectedTable(client, table){
+    const { data, error } =
+        await client
+            .from(table)
+            .select("*")
+            .limit(1);
+
+    if(error){
+        return {
+            table,
+            protected: true,
+            detail:
+                `AKSES ANON DITOLAK (${error.code || "error"})`
+        };
+    }
+
+    if(Array.isArray(data) && data.length === 0){
+        return {
+            table,
+            protected: true,
+            detail:
+                "TIDAK ADA ROW TERLIHAT UNTUK ANON"
+        };
+    }
+
+    return {
+        table,
+        protected: false,
+        detail:
+            "PERINGATAN: anon dapat melihat data"
+    };
+}
+
+async function runTests(){
+    const out =
+        document.getElementById("result");
+
+    out.textContent =
+        "Menjalankan pengujian...";
+
+    try{
+        if(
+            !window.LDMSupabase ||
+            !LDMSupabase.isConfigured()
+        ){
+            throw new Error(
+                "Isi js/supabase-config.js terlebih dahulu."
+            );
+        }
+
+        const client =
+            LDMSupabase.createClient();
+
+        const {
+            data: meta,
+            error: metaError
+        } =
+            await client
+                .from("ldm_system_meta")
+                .select("key,value")
+                .in(
+                    "key",
+                    [
+                        "live_sync_stage",
+                        "schema_status",
+                        "schema_version",
+                        "default_store_code"
+                    ]
+                );
+
+        if(metaError){
+            throw metaError;
+        }
+
+        const metaMap =
+            Object.fromEntries(
+                (meta || []).map(
+                    row => [
+                        row.key,
+                        row.value
+                    ]
+                )
+            );
+
+        const stageOK =
+            metaMap.live_sync_stage === "4"
+            &&
+            metaMap.schema_status === "cloud_foundation_ready"
+            &&
+            metaMap.schema_version === "4";
+
+        const protectedResults = [];
+
+        for(
+            const table
+            of [
+                "stores",
+                "profiles",
+                "devices"
+            ]
+        ){
+            protectedResults.push(
+                await testProtectedTable(
+                    client,
+                    table
+                )
+            );
+        }
+
+        const protectionOK =
+            protectedResults.every(
+                row => row.protected
+            );
+
+        const lines = [
+            stageOK
+                ? "✅ METADATA TAHAP 4 BENAR"
+                : "❌ METADATA TAHAP 4 BELUM BENAR",
+            "",
+            `live_sync_stage   : ${metaMap.live_sync_stage || "-"}`,
+            `schema_status     : ${metaMap.schema_status || "-"}`,
+            `schema_version    : ${metaMap.schema_version || "-"}`,
+            `default_store_code: ${metaMap.default_store_code || "-"}`,
+            "",
+            protectionOK
+                ? "✅ RLS / TABLE PRIVILEGE DASAR TERLINDUNGI"
+                : "❌ ADA FOUNDATION TABLE YANG TERBUKA",
+            ""
+        ];
+
+        protectedResults.forEach(
+            row => {
+                lines.push(
+                    `${row.table.padEnd(10," ")} : ${row.detail}`
+                );
+            }
+        );
+
+        lines.push(
+            "",
+            stageOK && protectionOK
+                ? "Tahap 4 siap dilanjutkan ke Tahap 5 Supabase Auth."
+                : "Periksa SQL/policy sebelum lanjut."
+        );
+
+        out.textContent =
+            lines.join("\n");
+
+    }catch(error){
+        out.textContent =
+            "❌ TEST GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            );
+    }
+}
+
+renderBasic();
+</script>
+</body>
+</html>

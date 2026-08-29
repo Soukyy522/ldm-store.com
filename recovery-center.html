@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id" class="secure-page-pending">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#0d2240">
+    <title>Sync Conflict & Recovery Center - LocDailyMar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/icons/icon-192.png">
+    <style>
+        *{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#172033;font:14px/1.5 Inter,system-ui,sans-serif}.wrap{width:min(1220px,calc(100% - 28px));margin:22px auto 50px}.top,.card{background:#fff;border:1px solid #dfe6ef;border-radius:17px;box-shadow:0 9px 28px #0f234512}.top{padding:22px;display:flex;align-items:center;justify-content:space-between;gap:16px}.top h1{font-size:clamp(1.3rem,3vw,1.9rem);margin:0 0 4px}.muted{color:#64748b}.actions{display:flex;gap:8px;flex-wrap:wrap}button,.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer;text-decoration:none;background:#0d2240;color:#fff}.green{background:#0f9d58}.light{background:#e8eef7;color:#0d2240}.danger{background:#fee2e2;color:#991b1b}.warn{background:#fef3c7;color:#92400e}button:disabled{opacity:.5;cursor:not-allowed}.notice{margin:14px 0;padding:13px 15px;border:1px solid #f2c66d;background:#fff9e8;border-radius:12px}.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}.metric{padding:14px;background:#fff;border:1px solid #dfe6ef;border-radius:13px}.metric b{display:block;font-size:1.45rem}.card{padding:18px;margin-top:14px}.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.card h2{font-size:1.05rem;margin:0}.table-wrap{overflow:auto;border:1px solid #e6ebf2;border-radius:11px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:10px;border-bottom:1px solid #edf1f5;vertical-align:top}th{background:#f7f9fc;font-size:.74rem;color:#475569;position:sticky;top:0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.7rem;font-weight:900;text-transform:uppercase}.pending,.retry_requested{background:#dbeafe;color:#1d4ed8}.syncing{background:#e0f2fe;color:#0369a1}.synced,.resolved{background:#dcfce7;color:#166534}.conflict,.open{background:#fef3c7;color:#92400e}.failed,.blocked{background:#fee2e2;color:#991b1b}.discarded{background:#e5e7eb;color:#475569}.error{max-width:340px;color:#991b1b;white-space:normal}.small{font-size:.76rem}.empty{text-align:center;padding:26px;color:#64748b}.message{display:none;margin-top:13px;padding:12px;border-radius:10px;white-space:pre-wrap}.message.show{display:block}.message.ok{background:#dcfce7;color:#166534}.message.bad{background:#fee2e2;color:#991b1b}@media(max-width:800px){.top{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr 1fr}.card-head{align-items:flex-start;flex-direction:column}}@media(max-width:430px){.summary{grid-template-columns:1fr}}
+    </style>
+    <script src="js/security-hardening.js?v=19.0"></script>
+    <script defer src="js/qa-runtime.js?v=19.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=16.0"></script>
+    <script src="js/cloud-session-guard.js?v=16.0"></script>
+    <script src="js/offline-queue.js?v=17.0"></script>
+    <script src="js/recovery-service.js?v=17.0"></script>
+    <script src="js/pwa-manager.js?v=19.1"></script>
+</head>
+<body>
+<main class="wrap">
+    <section class="top"><div><h1>🛟 Sync Conflict & Recovery Center</h1><div class="muted" id="identity">Memuat sesi cloud…</div></div><div class="actions"><button class="green" id="refreshBtn">↻ Refresh</button><button id="syncBtn">Sinkronkan Queue</button><button class="light" id="exportBtn">Export Recovery JSON</button><a class="btn light" href="dashboard.html">← Dashboard</a></div></section>
+    <div class="notice"><strong>Aturan aman:</strong> Retry tidak membuat transaksi ganda karena tetap memakai <code>client_transaction_id</code>. Discard hanya dapat dilakukan Owner, wajib online, wajib memiliki alasan, tercatat di cloud, dan diblokir kembali oleh server.</div>
+    <section class="summary"><div class="metric"><span>Queue lokal</span><b id="localTotal">0</b></div><div class="metric"><span>Belum sinkron</span><b id="unsynced">0</b></div><div class="metric"><span>Conflict cloud</span><b id="cloudOpen">0</b></div><div class="metric"><span>Resolved</span><b id="resolved">0</b></div><div class="metric"><span>Discarded</span><b id="discarded">0</b></div></section>
+    <div class="message" id="message"></div>
+
+    <section class="card"><div class="card-head"><div><h2>Antrean pada akun + perangkat ini</h2><span class="muted small">Retry tersedia untuk pemilik queue. Discard lokal hanya Owner.</span></div></div><div class="table-wrap"><table><thead><tr><th>Transaksi</th><th>Status</th><th>Waktu</th><th>Total</th><th>Percobaan</th><th>Error terakhir</th><th>Aksi</th></tr></thead><tbody id="localBody"></tbody></table></div></section>
+
+    <section class="card"><div class="card-head"><div><h2>Conflict cloud dalam store</h2><span class="muted small" id="cloudScope">Owner/Admin melihat store; Kasir hanya conflict miliknya.</span></div><select id="statusFilter"><option value="all">Semua status</option><option value="open">Open</option><option value="retry_requested">Retry requested</option><option value="resolved">Resolved</option><option value="discarded">Discarded</option></select></div><div class="table-wrap"><table><thead><tr><th>Transaksi</th><th>Tipe/Status</th><th>User/Device</th><th>Ringkasan</th><th>Error</th><th>Terakhir</th><th>Recovery</th></tr></thead><tbody id="cloudBody"></tbody></table></div></section>
+</main>
+<script>
+(function(){
+    "use strict";
+    let currentContext=null,localRows=[],cloudRows=[];
+    const $=id=>document.getElementById(id);
+    const money=value=>`Rp ${Number(value||0).toLocaleString("id-ID")}`;
+    const date=value=>{try{return new Date(value).toLocaleString("id-ID",{timeZone:"Asia/Makassar"})+" WITA";}catch{return "-";}};
+    const short=value=>String(value||"-").slice(0,12);
+    function status(value){const span=document.createElement("span");span.className=`badge ${String(value||"").toLowerCase()}`;span.textContent=value||"unknown";return span;}
+    function show(message,bad=false){const box=$("message");box.className=`message show ${bad?"bad":"ok"}`;box.textContent=message;}
+    function button(label,klass,handler){const target=document.createElement("button");target.textContent=label;target.className=klass||"";target.onclick=async()=>{target.disabled=true;try{await handler();}catch(error){show(error.message||String(error),true);}finally{target.disabled=false;}};return target;}
+    function emptyRow(columns,text){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=columns;td.className="empty";td.textContent=text;tr.appendChild(td);return tr;}
+
+    function renderLocal(){
+        const body=$("localBody");body.textContent="";const role=String(currentContext?.profile?.role||"").toLowerCase();
+        if(!localRows.length){body.appendChild(emptyRow(7,"Tidak ada queue lokal untuk akun dan perangkat ini."));return;}
+        localRows.forEach(row=>{const tr=document.createElement("tr"),snapshot=row.display_snapshot||{},cells=[];const title=document.createElement("td");title.innerHTML=`<strong></strong><div class="muted small"></div>`;title.querySelector("strong").textContent=snapshot.transaction_code||short(row.client_transaction_id);title.querySelector("div").textContent=short(row.client_transaction_id);cells.push(title);const state=document.createElement("td");state.appendChild(status(row.status));cells.push(state);for(const text of [date(row.queued_at),money(snapshot.grand_total||row.rpc_payload?.p_expected_grand_total),String(row.attempt_count||0)]){const td=document.createElement("td");td.textContent=text;cells.push(td);}const error=document.createElement("td");error.className="error small";error.textContent=row.last_error||row.discard_reason||"-";cells.push(error);const actions=document.createElement("td"),box=document.createElement("div");box.className="actions";if(!["synced","discarded","syncing"].includes(row.status))box.appendChild(button("Retry","green",async()=>{await LDMOfflineQueue.retryItem(row.queue_id,{sync:true});show("Retry dijalankan.");await refresh();}));if(role==="owner"&&!["synced","discarded","syncing"].includes(row.status))box.appendChild(button("Discard","danger",async()=>{const reason=prompt("Alasan membatalkan antrean (minimal 5 karakter):","");if(reason===null)return;await LDMOfflineQueue.discardItem(row.queue_id,reason);show("Queue dibatalkan dan dicatat di cloud.");await refresh();}));if(!box.children.length)box.textContent="—";actions.appendChild(box);cells.push(actions);cells.forEach(cell=>tr.appendChild(cell));body.appendChild(tr);});
+    }
+
+    function renderCloud(){
+        const body=$("cloudBody");body.textContent="";const role=String(currentContext?.profile?.role||"").toLowerCase();
+        if(!cloudRows.length){body.appendChild(emptyRow(7,"Belum ada conflict cloud untuk filter ini."));return;}
+        cloudRows.forEach(row=>{const tr=document.createElement("tr"),snapshot=row.display_snapshot||{};const tx=document.createElement("td");tx.innerHTML="<strong></strong><div class='muted small'></div>";tx.querySelector("strong").textContent=snapshot.transaction_code||short(row.client_transaction_id);tx.querySelector("div").textContent=short(row.client_transaction_id);const type=document.createElement("td");type.textContent=row.conflict_type+" ";type.appendChild(status(row.status));const who=document.createElement("td");who.textContent=`${short(row.user_id)} / ${short(row.client_device_id)}`;const summary=document.createElement("td");summary.textContent=`${money(snapshot.grand_total)} · ${Number(snapshot.item_count||0)} item · ${row.attempt_count||0} laporan`;const error=document.createElement("td");error.className="error small";error.textContent=row.error_message||"-";const last=document.createElement("td");last.textContent=date(row.last_seen_at);const actions=document.createElement("td"),box=document.createElement("div");box.className="actions";if(["open","retry_requested"].includes(row.status)&&(role==="owner"||role==="admin"||row.user_id===currentContext.user.id))box.appendChild(button("Minta Retry","green",async()=>{await LDMRecovery.action(row.id,"retry","Retry diminta dari Recovery Center.");show("Permintaan retry dikirim ke perangkat sumber.");await refresh();}));if(role==="owner"&&!["resolved","discarded"].includes(row.status))box.appendChild(button("Discard","danger",async()=>{const reason=prompt("Alasan discard conflict cloud (minimal 5 karakter):","");if(reason===null)return;await LDMRecovery.action(row.id,"discard",reason);show("Conflict dibatalkan. Server akan menolak retry lama.");await refresh();}));if(role==="owner"&&row.status==="discarded")box.appendChild(button("Buka kembali","warn",async()=>{await LDMRecovery.action(row.id,"reopen","Dibuka kembali oleh Owner.");show("Conflict dibuka kembali.");await refresh();}));if(!box.children.length)box.textContent="—";actions.appendChild(box);[tx,type,who,summary,error,last,actions].forEach(cell=>tr.appendChild(cell));body.appendChild(tr);});
+    }
+
+    async function refresh(){
+        try{
+            currentContext=await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+            $("identity").textContent=`${currentContext.profile.username} · ${currentContext.profile.role} · Store ${currentContext.profile.store_code||currentContext.profile.store_id}`;
+            localRows=await LDMOfflineQueue.list();
+            const stats=await LDMOfflineQueue.stats();
+            const cloud=await LDMRecovery.listCloud({status:$("statusFilter").value});cloudRows=cloud.rows;
+            $("localTotal").textContent=stats.total;$("unsynced").textContent=stats.unsynced;$("cloudOpen").textContent=cloudRows.filter(row=>["open","retry_requested"].includes(row.status)).length;$("resolved").textContent=cloudRows.filter(row=>row.status==="resolved").length;$("discarded").textContent=cloudRows.filter(row=>row.status==="discarded").length;
+            renderLocal();renderCloud();
+        }catch(error){show(`Recovery Center belum siap: ${error.message||error}\nPastikan SQL TAHAP 17 sudah dijalankan.`,true);}
+    }
+
+    $("refreshBtn").onclick=refresh;
+    $("statusFilter").onchange=refresh;
+    $("syncBtn").onclick=async event=>{event.currentTarget.disabled=true;try{const result=await LDMOfflineQueue.syncNow({force:false});show(`Sinkronisasi selesai. Berhasil ${result.synced||0}, tersisa ${result.remaining||0}.`);await refresh();}catch(error){show(error.message||String(error),true);}finally{event.currentTarget.disabled=false;}};
+    $("exportBtn").onclick=()=>{const report={stage:17,version:"19.1.0",exported_at:new Date().toISOString(),identity:{username:currentContext?.profile?.username,role:currentContext?.profile?.role,store_id:currentContext?.profile?.store_id},local_queue:localRows,cloud_conflicts:cloudRows};const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-recovery-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);};
+    window.addEventListener("ldm-recovery-updated",()=>setTimeout(refresh,250));
+    window.addEventListener("ldm-offline-queue-updated",()=>setTimeout(refresh,250));
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",refresh,{once:true});else refresh();
+})();
+</script>
+<script src="js/global-system-navigation.js?v=23.0"></script>
+</body>
+</html>

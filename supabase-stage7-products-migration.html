@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 7 Migrasi Barang</title>
+<style>
+:root{
+    --bg:#f4f7fb;
+    --card:#fff;
+    --text:#172033;
+    --muted:#667085;
+    --line:#e4e7ec;
+    --primary:#0d2240;
+    --good:#15803d;
+    --warn:#b54708;
+    --bad:#b42318;
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+.wrap{
+    width:min(980px,calc(100% - 24px));
+    margin:24px auto;
+}
+.card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:12px;
+    box-shadow:0 8px 28px rgba(16,24,40,.05);
+}
+h1{font-size:1.4rem;margin:0 0 6px}
+h2{font-size:1rem;margin:0 0 10px}
+p{
+    font-size:.8rem;
+    color:var(--muted);
+    line-height:1.55;
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+}
+.stat{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px;
+}
+.stat span{
+    display:block;
+    font-size:.68rem;
+    color:var(--muted);
+    margin-bottom:4px;
+}
+.stat strong{
+    font-size:.9rem;
+    overflow-wrap:anywhere;
+}
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+button,a.btn{
+    min-height:43px;
+    border:0;
+    border-radius:9px;
+    padding:9px 13px;
+    background:var(--primary);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.secondary{
+    background:white!important;
+    color:var(--text)!important;
+    border:1px solid var(--line)!important;
+}
+button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+pre{
+    margin:0;
+    background:#101828;
+    color:#f2f4f7;
+    border-radius:10px;
+    padding:12px;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    font-size:.73rem;
+    line-height:1.55;
+}
+.notice{
+    border-left:4px solid #f59e0b;
+    background:#fffbeb;
+    color:#7c2d12;
+    padding:10px 12px;
+    border-radius:8px;
+    font-size:.75rem;
+    line-height:1.55;
+}
+@media(max-width:720px){
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+    .wrap{margin:12px auto}
+    .card{padding:13px}
+    .grid{grid-template-columns:1fr}
+    .actions{display:grid}
+    button,a.btn{width:100%}
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/products-service.js?v=7.0"></script>
+</head>
+
+<body>
+<div class="wrap">
+
+    <div class="card">
+        <h1>📦 Tahap 7 - Migrasi Master Barang</h1>
+        <p>
+            Memindahkan dataBarang lokal ke public.products.
+            Jalankan menggunakan akun Owner.
+        </p>
+
+        <div class="grid">
+            <div class="stat">
+                <span>Role Cloud</span>
+                <strong id="role">-</strong>
+            </div>
+            <div class="stat">
+                <span>Store</span>
+                <strong id="store">-</strong>
+            </div>
+            <div class="stat">
+                <span>Barang Lokal</span>
+                <strong id="localCount">0</strong>
+            </div>
+            <div class="stat">
+                <span>Barang Cloud</span>
+                <strong id="cloudCount">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Proses</h2>
+
+        <div class="actions">
+            <button onclick="inspectData()">
+                Periksa Data
+            </button>
+
+            <button
+                id="btnMigrate"
+                onclick="migrateProducts()"
+            >
+                Migrasikan ke Supabase
+            </button>
+
+            <button
+                class="secondary"
+                onclick="refreshFromCloud()"
+            >
+                Ambil Ulang dari Cloud
+            </button>
+
+            <a
+                class="btn secondary"
+                href="barang.html"
+            >
+                Buka Data Barang
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="notice">
+            Tahap 7 memindahkan Master Barang dan menyimpan stok sebagai
+            legacy_stock_snapshot. Stok transaksi belum memakai ledger atomic.
+            Jangan menganggap snapshot ini sebagai final stock authority sampai
+            tahap stock_movements selesai.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Hasil</h2>
+        <pre id="result">Belum diperiksa.</pre>
+    </div>
+
+</div>
+
+<script>
+function output(text){
+    document
+        .getElementById(
+            "result"
+        )
+        .textContent =
+            text;
+}
+
+function readLocal(){
+    try{
+        const parsed =
+            JSON.parse(
+                localStorage.getItem(
+                    "dataBarang"
+                ) || "[]"
+            );
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+    }catch(error){
+        return [];
+    }
+}
+
+async function inspectData(){
+    try{
+        output(
+            "Memeriksa session dan data..."
+        );
+
+        const context =
+            await LDMCloudSession
+                .ensureAuthenticated({
+                    registerDevice:
+                        false
+                });
+
+        const local =
+            readLocal();
+
+        const cloud =
+            await LDMProducts
+                .fetchAll();
+
+        document
+            .getElementById(
+                "role"
+            )
+            .textContent =
+                context.profile.role;
+
+        document
+            .getElementById(
+                "store"
+            )
+            .textContent =
+                context.profile.store_code;
+
+        document
+            .getElementById(
+                "localCount"
+            )
+            .textContent =
+                local.length;
+
+        document
+            .getElementById(
+                "cloudCount"
+            )
+            .textContent =
+                cloud.length;
+
+        const duplicateBarcode =
+            local
+                .map(
+                    item =>
+                        String(
+                            item.barcode || ""
+                        ).trim()
+                )
+                .filter(Boolean)
+                .filter(
+                    (value,index,array) =>
+                        array.indexOf(value) !==
+                        index
+                );
+
+        output(
+            [
+                "✅ DATA DIPERIKSA",
+                "",
+                `Role           : ${context.profile.role}`,
+                `Store          : ${context.profile.store_code}`,
+                `Barang Lokal   : ${local.length}`,
+                `Barang Cloud   : ${cloud.length}`,
+                `Cloud Enabled  : ${LDMProducts.isEnabled() ? "YA" : "BELUM"}`,
+                "",
+                duplicateBarcode.length
+                    ? `⚠️ Barcode lokal duplikat: ${[...new Set(duplicateBarcode)].join(", ")}`
+                    : "Barcode lokal duplikat: tidak ditemukan",
+                "",
+                String(context.profile.role).toLowerCase() === "owner"
+                    ? "Owner siap menjalankan migrasi."
+                    : "Migrasi hanya dapat dijalankan oleh Owner."
+            ].join("\n")
+        );
+
+    }catch(error){
+        output(
+            "❌ PEMERIKSAAN GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }
+}
+
+async function migrateProducts(){
+    const button =
+        document.getElementById(
+            "btnMigrate"
+        );
+
+    button.disabled =
+        true;
+
+    try{
+        output(
+            "Migrasi Master Barang ke Supabase..."
+        );
+
+        const local =
+            readLocal();
+
+        if(local.length === 0){
+            throw new Error(
+                "dataBarang lokal kosong. Buka aplikasi/perangkat yang memiliki data barang terlebih dahulu."
+            );
+        }
+
+        const result =
+            await LDMProducts
+                .migrateLocal(
+                    local
+                );
+
+        output(
+            [
+                "✅ MIGRASI MASTER BARANG BERHASIL",
+                "",
+                `Diproses      : ${result.processed}`,
+                `Cache Cloud   : ${result.cache.length}`,
+                "",
+                "Setiap produk sekarang memiliki UUID stabil.",
+                "dataBarang lokal sudah diperbarui dari public.products.",
+                "Realtime Master Barang siap digunakan."
+            ].join("\n")
+        );
+
+        await inspectData();
+
+    }catch(error){
+        output(
+            "❌ MIGRASI GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }finally{
+        button.disabled =
+            false;
+    }
+}
+
+async function refreshFromCloud(){
+    try{
+        const cache =
+            await LDMProducts
+                .refreshCache();
+
+        output(
+            [
+                "✅ CACHE DIPERBARUI DARI CLOUD",
+                "",
+                `Jumlah barang: ${cache.length}`,
+                "",
+                "dataBarang localStorage sekarang mengikuti public.products."
+            ].join("\n")
+        );
+
+        await inspectData();
+
+    }catch(error){
+        output(
+            "❌ REFRESH GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    inspectData
+);
+</script>
+</body>
+</html>

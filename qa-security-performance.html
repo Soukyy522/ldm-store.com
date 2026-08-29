@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#0d2240">
+    <title>Full QA, Security & Performance - LocDailyMar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.png">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <style>
+        *{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#14213d;font:15px/1.5 Inter,Arial,sans-serif}.wrap{width:min(1180px,calc(100% - 28px));margin:24px auto 60px}.top,.card{background:#fff;border:1px solid #dfe5ef;border-radius:18px;box-shadow:0 10px 30px rgba(15,35,70,.07)}.top{padding:24px;display:flex;gap:18px;justify-content:space-between;align-items:center}.top h1{margin:0 0 5px;font-size:clamp(1.35rem,3vw,2rem)}.top p,.muted{margin:0;color:#64748b}.actions{display:flex;gap:8px;flex-wrap:wrap}button,.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer;text-decoration:none;background:#0d2240;color:#fff}.secondary{background:#e8eef7;color:#0d2240}.danger{background:#fee2e2;color:#991b1b}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.metric,.card{padding:18px}.metric{background:#fff;border:1px solid #dfe5ef;border-radius:15px}.metric b{font-size:1.65rem;display:block}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card h2{font-size:1.05rem;margin:0 0 12px}.test{display:grid;grid-template-columns:82px 1fr;gap:10px;padding:10px 0;border-top:1px solid #edf1f6}.test:first-of-type{border-top:0}.badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:4px 8px;font-size:.75rem;font-weight:900;height:26px}.PASS{background:#dcfce7;color:#166534}.WARN{background:#fef3c7;color:#92400e}.FAIL{background:#fee2e2;color:#991b1b}.INFO{background:#e0f2fe;color:#075985}.detail{color:#64748b;font-size:.86rem;margin-top:2px;overflow-wrap:anywhere}.blocked{display:none;background:#fff7ed;border:1px solid #fdba74;color:#9a3412;padding:16px;border-radius:14px;margin-top:14px}.foot{margin-top:16px;color:#64748b;font-size:.85rem}@media(max-width:800px){.top{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}@media(max-width:430px){.summary{grid-template-columns:1fr}.test{grid-template-columns:70px 1fr}}
+    </style>
+    <script src="js/security-hardening.js?v=19.0"></script>
+    <script defer src="js/qa-runtime.js?v=19.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=16.0"></script>
+    <script src="js/device-service.js?v=15.0"></script>
+    <script src="js/offline-queue.js?v=16.0"></script>
+    <script src="js/pwa-manager.js?v=19.1"></script>
+</head>
+<body>
+<main class="wrap">
+    <section class="top">
+        <div><h1>🧪 Full QA, Security & Performance</h1><p>Panel diagnosis baca-saja. Hanya Owner yang dapat menjalankan pemeriksaan cloud.</p></div>
+        <div class="actions"><button id="runButton">Jalankan Full QA</button><button id="updateButton" class="secondary">Cek Update Cache</button><button id="exportButton" class="secondary">Export JSON</button><a class="btn secondary" href="dashboard.html">← Dashboard</a></div>
+    </section>
+    <div id="blocked" class="blocked"></div>
+    <section class="summary">
+        <div class="metric"><span>Skor kesiapan</span><b id="score">—</b><small>PASS / seluruh pemeriksaan</small></div>
+        <div class="metric"><span>PASS</span><b id="passCount">0</b><small>Siap digunakan</small></div>
+        <div class="metric"><span>WARN</span><b id="warnCount">0</b><small>Perlu ditinjau</small></div>
+        <div class="metric"><span>FAIL</span><b id="failCount">0</b><small>Wajib diperbaiki</small></div>
+    </section>
+    <section class="grid">
+        <article class="card"><h2>🔐 Security & Account</h2><div id="securityResults"><p class="muted">Belum dijalankan.</p></div></article>
+        <article class="card"><h2>☁️ Cloud & Data Authority</h2><div id="cloudResults"><p class="muted">Belum dijalankan.</p></div></article>
+        <article class="card"><h2>📲 PWA & Offline</h2><div id="pwaResults"><p class="muted">Belum dijalankan.</p></div></article>
+        <article class="card"><h2>⚡ Runtime Performance</h2><div id="performanceResults"><p class="muted">Belum dijalankan.</p></div></article>
+    </section>
+    <div class="actions" style="margin-top:14px"><button id="clearButton" class="danger">Bersihkan Riwayat QA</button></div>
+    <p class="foot">Panel ini tidak menampilkan access token, refresh token, password, atau nilai kunci Supabase. Pemeriksaan RLS lengkap tetap dilakukan lewat SQL audit dan Supabase Advisors.</p>
+</main>
+<script>
+(function(){
+    "use strict";
+    const groups={security:[],cloud:[],pwa:[],performance:[]};
+    let lastReport=null;
+    const $=id=>document.getElementById(id);
+    function result(group,name,status,detail){groups[group].push({name,status,detail:String(detail||"")});}
+    function safeError(error){return String(error&&error.message||error||"Tidak diketahui").replace(/(?:sb_secret_|service_role)[A-Za-z0-9._-]*/gi,"[REDACTED]").slice(0,220);}
+    async function fetchOk(path){try{const response=await fetch(path,{cache:"no-store"});return {ok:response.ok,status:response.status,response};}catch(error){return {ok:false,status:0,error};}}
+    function render(){
+        for(const [group,rows] of Object.entries(groups)){
+            const root=$(group+"Results");root.textContent="";
+            rows.forEach(row=>{const line=document.createElement("div");line.className="test";const badge=document.createElement("span");badge.className="badge "+row.status;badge.textContent=row.status;const body=document.createElement("div");const title=document.createElement("strong");title.textContent=row.name;const detail=document.createElement("div");detail.className="detail";detail.textContent=row.detail;body.append(title,detail);line.append(badge,body);root.appendChild(line);});
+        }
+        const all=Object.values(groups).flat();const count=s=>all.filter(row=>row.status===s).length;
+        $("passCount").textContent=count("PASS");$("warnCount").textContent=count("WARN");$("failCount").textContent=count("FAIL");
+        $("score").textContent=all.length?Math.round(count("PASS")/all.length*100)+"%":"—";
+    }
+    async function run(){
+        Object.keys(groups).forEach(key=>groups[key].length=0);$("runButton").disabled=true;$("runButton").textContent="Memeriksa…";$("blocked").style.display="none";
+        const security=window.LDMSecurity?window.LDMSecurity.diagnostics():null;
+        result("security","Koneksi HTTPS",security&&security.https?"PASS":"FAIL",security&&security.https?"HTTPS/localhost aktif.":"Produksi wajib dibuka melalui HTTPS.");
+        result("security","Mixed content",security&&security.mixedContentCount===0?"PASS":"FAIL",`${security?security.mixedContentCount:"?"} resource HTTP ditemukan.`);
+        result("security","Tautan eksternal aman",security&&security.externalBlankWithoutNoopener===0?"PASS":"WARN",`${security?security.externalBlankWithoutNoopener:"?"} tautan target=_blank belum memiliki noopener.`);
+        result("security","Password legacy plaintext",security&&security.plaintextLegacyPasswords===0?"PASS":"FAIL",`${security?security.plaintextLegacyPasswords:"?"} akun lokal masih menyimpan field password plaintext.`);
+        result("security","Kunci browser Supabase",security&&security.publishableKeyLooksSafe?"PASS":"FAIL",security&&security.publishableKeyLooksSafe?"Hanya format publishable/anon key terdeteksi; nilainya sengaja disembunyikan.":"Konfigurasi hilang atau tampak seperti secret/service-role key.");
+
+        let context=null;
+        try{context=await LDMCloudSession.ensureAuthenticated({registerDevice:false});const profile=context.profile||{};const role=String(profile.role||"").toLowerCase();result("security","Sesi Supabase Auth","PASS","Sesi pengguna aktif.");result("security","Akses halaman Owner",role==="owner"?"PASS":"FAIL",role==="owner"?"Role authority: profiles.role = owner.":`Role saat ini: ${role||"tidak diketahui"}.`);result("cloud","Identitas store",profile.store_id?"PASS":"FAIL",profile.store_id?"Profile memiliki store_id.":"Profile belum memiliki store_id.");if(role!=="owner"){const blocked=$("blocked");blocked.textContent="Pemeriksaan cloud dibatasi untuk Owner. Silakan login menggunakan akun Owner.";blocked.style.display="block";}}
+        catch(error){result("security","Sesi Supabase Auth","FAIL",safeError(error));result("security","Akses halaman Owner","FAIL","Login Owner diperlukan.");result("cloud","Identitas store","FAIL","Tidak dapat membaca profile tanpa sesi.");}
+
+        result("cloud","Konfigurasi Supabase",window.LDMSupabase&&window.LDMSupabase.isConfigured()?"PASS":"FAIL",window.LDMSupabase&&window.LDMSupabase.isConfigured()?"URL dan publishable key tersedia.":"Isi js/supabase-config.js.");
+        if(context&&String(context.profile&&context.profile.role||"").toLowerCase()==="owner"){
+            try{const {error}=await LDMSupabase.createClient().from("products").select("id").limit(1);if(error)throw error;result("cloud","Akses products melalui RLS","PASS","Query terbatas berhasil sebagai Owner. Ini menguji konektivitas dan akses, bukan seluruh policy.");}catch(error){result("cloud","Akses products melalui RLS","FAIL",safeError(error));}
+            try{const {error}=await LDMSupabase.createClient().from("sync_conflicts").select("id",{count:"exact",head:true});if(error)throw error;result("cloud","Recovery schema TAHAP 17","PASS","Tabel sync_conflicts dapat dibaca sesuai RLS Owner.");}catch(error){result("cloud","Recovery schema TAHAP 17","FAIL",safeError(error));}
+            try{const access=await LDMCloudAuth.getCurrentDeviceAccess();const status=String(access&&access.status||"").toLowerCase();result("cloud","Status perangkat",status==="active"?"PASS":"WARN",`Status device: ${status||"belum tersedia"}.`);}catch(error){result("cloud","Status perangkat","WARN",safeError(error));}
+        }else{result("cloud","Akses products melalui RLS","WARN","Dilewati sampai login Owner.");result("cloud","Recovery schema TAHAP 17","WARN","Dilewati sampai login Owner.");result("cloud","Status perangkat","WARN","Dilewati sampai login Owner.");}
+
+        const manifest=await fetchOk("manifest.json");
+        if(manifest.ok){try{const data=await manifest.response.json();const required=["name","short_name","start_url","display","icons"];const missing=required.filter(key=>!data[key]);result("pwa","Manifest PWA",missing.length?"FAIL":"PASS",missing.length?`Field hilang: ${missing.join(", ")}.`:"Manifest valid dan field utama lengkap.");}catch(error){result("pwa","Manifest PWA","FAIL","JSON manifest tidak valid.");}}else result("pwa","Manifest PWA","FAIL",`HTTP ${manifest.status||"gagal"}.`);
+        for(const path of ["service-worker.js","recovery-center.html","js/recovery-service.js","assets/icons/icon-192.png","assets/icons/icon-512.png"]){const checked=await fetchOk(path);result("pwa",`Asset ${path}`,checked.ok?"PASS":"FAIL",checked.ok?`HTTP ${checked.status}.`:`Tidak dapat dimuat (HTTP ${checked.status||"gagal"}).`);}
+        if("serviceWorker" in navigator){const registration=await navigator.serviceWorker.getRegistration();result("pwa","Service Worker",registration?"PASS":"WARN",registration?`Scope aktif: ${registration.scope}.`:"Belum mengontrol halaman; reload setelah deploy.");}else result("pwa","Service Worker","FAIL","Browser tidak mendukung Service Worker.");
+        try{const stats=window.LDMOfflineQueue&&await LDMOfflineQueue.stats();const unsynced=Number(stats&&stats.unsynced||localStorage.getItem("ldmOfflineUnsyncedCountV16")||0);result("pwa","Antrean offline",unsynced===0?"PASS":"WARN",`${unsynced} transaksi menunggu sinkronisasi.`);}catch(error){result("pwa","Antrean offline","WARN",safeError(error));}
+        try{const estimate=navigator.storage&&await navigator.storage.estimate();const used=Number(estimate&&estimate.usage||0),quota=Number(estimate&&estimate.quota||0),pct=quota?used/quota*100:0;result("pwa","Kapasitas penyimpanan",pct<80?"PASS":"WARN",quota?`${pct.toFixed(1)}% digunakan (${(used/1048576).toFixed(1)} MB).`:"Estimasi storage tidak tersedia.");}catch(error){result("pwa","Kapasitas penyimpanan","WARN",safeError(error));}
+
+        const metric=window.LDMQuality?LDMQuality.snapshot():{};
+        result("performance","LCP",metric.lcp===0?"WARN":metric.lcp<=2500?"PASS":"WARN",metric.lcp?`${metric.lcp} ms; target baik ≤ 2500 ms.`:"Belum terekam; biarkan halaman selesai tampil lalu jalankan lagi.");
+        result("performance","INP",metric.inp===0?"WARN":metric.inp<=200?"PASS":"WARN",metric.inp?`${metric.inp} ms; target baik ≤ 200 ms.`:"Belum ada interaksi yang dapat diukur.");
+        result("performance","CLS",Number(metric.cls||0)<=0.1?"PASS":"WARN",`${Number(metric.cls||0).toFixed(4)}; target baik ≤ 0.1.`);
+        result("performance","TTFB",metric.ttfb>0&&metric.ttfb<=800?"PASS":"WARN",metric.ttfb?`${metric.ttfb} ms; target lab ≤ 800 ms.`:"Belum terekam.");
+        result("performance","Error runtime",Number(metric.errors||0)+Number(metric.rejections||0)===0?"PASS":"FAIL",`${metric.errors||0} error dan ${metric.rejections||0} unhandled rejection pada halaman ini.`);
+        result("performance","Long task",Number(metric.longestTask||0)<=200?"PASS":"WARN",`${metric.longTasks||0} long task; terlama ${metric.longestTask||0} ms.`);
+        render();lastReport={stage:19,version:"19.1.0",generatedAt:new Date().toISOString(),page:location.href.split(/[?#]/)[0],summary:{score:$("score").textContent,pass:$("passCount").textContent,warn:$("warnCount").textContent,fail:$("failCount").textContent},runtime:metric,groups};
+        $("runButton").disabled=false;$("runButton").textContent="Jalankan Full QA";
+    }
+    $("runButton").addEventListener("click",run);
+    $("updateButton").addEventListener("click",async()=>{const out=window.LDMPWA&&await LDMPWA.checkForUpdate();alert(out&&out.message||"Pemeriksaan update selesai.");});
+    $("exportButton").addEventListener("click",()=>{if(!lastReport){alert("Jalankan Full QA terlebih dahulu.");return;}const blob=new Blob([JSON.stringify(lastReport,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-stage19-qa-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);});
+    $("clearButton").addEventListener("click",()=>{if(confirm("Hapus riwayat metric QA lokal pada perangkat ini?")){LDMQuality&&LDMQuality.clear();alert("Riwayat QA lokal dibersihkan.");}});
+    window.addEventListener("load",()=>setTimeout(run,500));
+})();
+</script>
+<script src="js/global-system-navigation.js?v=23.0"></script>
+</body>
+</html>

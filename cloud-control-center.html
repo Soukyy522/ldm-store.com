@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id" class="secure-page-pending">
+<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cloud Control Center - LocDailyMar</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--primary:#0d2240;--ok:#15803d;--warn:#b45309;--bad:#b91c1c}.secure-page-pending body{visibility:hidden!important}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}.wrap{width:min(1180px,calc(100% - 24px));margin:22px auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:12px;box-shadow:0 8px 24px rgba(16,24,40,.05)}h1{font-size:1.35rem;margin:0 0 5px}h2{font-size:.95rem;margin:0 0 10px}p{font-size:.76rem;color:var(--muted);line-height:1.55;margin:6px 0}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a.btn{border:0;border-radius:9px;min-height:40px;padding:9px 13px;font-weight:750;cursor:pointer;background:var(--primary);color:white;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.secondary{background:white!important;color:var(--text)!important;border:1px solid var(--line)!important}.export{background:#166534!important}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.stat{border:1px solid var(--line);border-radius:11px;padding:11px}.stat span{display:block;font-size:.66rem;color:var(--muted);margin-bottom:4px}.stat strong{font-size:.9rem;overflow-wrap:anywhere}.status{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:.7rem;font-weight:800}.healthy{background:#dcfce7;color:#166534}.warning{background:#fef3c7;color:#92400e}.critical{background:#fee2e2;color:#991b1b}.check-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.check{padding:10px;border:1px solid var(--line);border-radius:10px;font-size:.7rem}.check strong{display:block;font-size:.9rem;margin-top:4px}.table-wrap{overflow:auto;max-height:520px}table{width:100%;border-collapse:collapse;font-size:.7rem}th,td{border-bottom:1px solid var(--line);padding:9px 7px;text-align:left;vertical-align:top}th{position:sticky;top:0;background:#f8fafc;z-index:1}.muted{color:var(--muted)}.notice{border-left:4px solid #d97706;background:#fffbeb;padding:10px 12px;border-radius:8px;font-size:.72rem;line-height:1.5;color:#78350f}.error{white-space:pre-wrap;color:#991b1b;font-size:.74rem}.spin{opacity:.55;pointer-events:none}@media(max-width:850px){.grid,.check-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.grid,.check-grid{grid-template-columns:1fr}.actions{display:grid}.actions>*{width:100%}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/cloud-session-guard.js?v=15.0"></script><script src="js/license-service.js?v=23.0"></script><script src="js/license-guard.js?v=23.0"></script>
+<script src="js/production-service.js?v=13.1"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="card top">
+    <div><h1>🛡️ Cloud Control Center</h1><p>Tahap 13 • Health Check, Audit Trail, dan Cloud Snapshot.</p></div>
+    <div class="actions">
+      <button onclick="refreshAll()">↻ Refresh</button>
+      <button id="btnExport" class="export" onclick="exportSnapshot()">⬇ Cloud Snapshot</button>
+      <a class="btn secondary" href="backup%20%26%20restore.html">💾 Backup Cache Lokal</a>
+      <a class="btn secondary" href="dashboard.html">← Dashboard</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="top"><div><h2>Status Produksi</h2><p id="identity">Memuat identitas...</p></div><span id="healthBadge" class="status warning">CHECKING</span></div>
+    <div class="grid" id="summaryGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>Consistency & Security Checks</h2>
+    <div class="check-grid" id="checkGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>Pending Workflow</h2>
+    <div class="check-grid" id="pendingGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="notice"><strong>Cloud Snapshot bukan tombol time-machine.</strong> File JSON berisi data database dan manifest Storage, tetapi tidak berisi password, token, service_role, atau binary foto/nota. Restore cloud otomatis sengaja tidak disediakan karena bisa merusak relasi transaksi dan ledger stok.</div>
+  </div>
+
+  <div class="card">
+    <div class="top"><div><h2>Audit Trail Terbaru</h2><p>Perubahan high-level business entity dicatat append-only.</p></div><span id="auditRealtime" class="muted">Realtime: menyambung...</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Entity</th><th>Referensi</th><th>Detail</th></tr></thead><tbody id="auditBody"><tr><td colspan="6">Memuat...</td></tr></tbody></table></div>
+  </div>
+  <div id="errorBox" class="card error" style="display:none"></div>
+</div>
+<script>
+let currentContext=null;
+function revealPage(){
+  document.documentElement.classList.remove("secure-page-pending");
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
+function fmtTime(v){if(!v)return "-";try{return new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Makassar",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date(v))+" WITA"}catch{return String(v)}}
+function showError(e){const box=document.getElementById("errorBox");box.style.display="block";box.textContent="❌ "+(e&&e.message?e.message:String(e))}
+function clearError(){const box=document.getElementById("errorBox");box.style.display="none";box.textContent=""}
+function stat(label,value){return `<div class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`}
+function check(label,value){const n=Number(value)||0;return `<div class="check"><span>${esc(label)}</span><strong>${n===0?"✅ 0":"⚠️ "+esc(n)}</strong></div>`}
+function pending(label,value){return `<div class="check"><span>${esc(label)}</span><strong>${esc(Number(value)||0)}</strong></div>`}
+function renderHealth(h){const badge=document.getElementById("healthBadge");const status=String(h.status||"warning").toLowerCase();badge.className="status "+status;badge.textContent=status.toUpperCase();const s=h.store||{};document.getElementById("identity").textContent=`${s.name||"LocDailyMar"} • ${s.code||"-"} • ${currentContext.profile.username} (${currentContext.profile.role}) • ${fmtTime(h.generated_at)}`;const c=h.counts||{};document.getElementById("summaryGrid").innerHTML=[stat("Profile Aktif",c.profiles_active),stat("Barang Aktif",c.products_active),stat("Transaksi",c.transactions),stat("Stock Movement",c.stock_movements),stat("Absensi",c.attendance),stat("Retur",c.returns),stat("Stock Opname",c.stock_opname),stat("Supplier",c.suppliers),stat("Purchase Order",c.purchase_orders),stat("Goods Receipt",c.goods_receipts),stat("Closing",c.shift_closings),stat("End of Day",c.end_of_day),stat("Pengeluaran",c.operating_expenses),stat("Audit Events",c.audit_events)].join("");const x=h.checks||{};document.getElementById("checkGrid").innerHTML=[check("Stock vs Ledger",x.stock_ledger_mismatch),check("Orphan Transaction Items",x.orphan_transaction_items),check("Orphan Return Items",x.orphan_return_items),check("Orphan GR Items",x.orphan_goods_receipt_items),check("Duplicate Final Closing",x.duplicate_final_closing),check("Duplicate Final EOD",x.duplicate_final_eod),check("RLS Disabled",x.rls_disabled_tables),check("Realtime Missing",x.realtime_missing_tables)].join("");const p=h.pending||{};document.getElementById("pendingGrid").innerHTML=[pending("Retur Pending",p.returns),pending("Stock Opname Pending",p.stock_opname),pending("PO Draft/Pending",p.purchase_orders),pending("GR Draft/Pending",p.goods_receipts)].join("")}
+function renderAudit(rows){const body=document.getElementById("auditBody");if(!rows.length){body.innerHTML='<tr><td colspan="6" class="muted">Belum ada audit event. Event baru mulai tercatat setelah SQL Tahap 13 aktif.</td></tr>';return}body.innerHTML=rows.map(r=>`<tr><td>${esc(fmtTime(r.created_at))}</td><td><strong>${esc(r.actor_username||"system")}</strong><br><span class="muted">${esc(String(r.actor_role||"").toUpperCase())}</span></td><td>${esc(r.action)}</td><td>${esc(r.entity_type)}</td><td>${esc(r.entity_id||"-")}</td><td><code>${esc(JSON.stringify(r.details||{}))}</code></td></tr>`).join("")}
+async function refreshAll(){
+  clearError();
+  document.body.classList.add("spin");
+  try{
+    if(!window.LDMCloudSession || typeof window.LDMCloudSession.ensureAuthenticated !== "function"){
+      throw new Error("cloud-session.js belum termuat atau gagal dimuat.");
+    }
+    if(!window.LDMProduction || typeof window.LDMProduction.health !== "function"){
+      throw new Error("production-service.js belum termuat atau gagal dimuat.");
+    }
+
+    currentContext = await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+
+    if(!currentContext || !currentContext.profile){
+      throw new Error("Profile cloud tidak tersedia. Login ulang melalui index.html.");
+    }
+
+    const role = String(currentContext.profile.role || "").toLowerCase();
+    if(!["owner","admin"].includes(role)){
+      location.replace("dashboard.html");
+      return;
+    }
+
+    // Jangan lagi bergantung penuh pada cloud-session-guard.js untuk membuka UI.
+    revealPage();
+
+    document.getElementById("btnExport").style.display =
+      role === "owner" ? "inline-flex" : "none";
+
+    const [h,a] = await Promise.all([
+      LDMProduction.health(),
+      LDMProduction.recentAudit(150)
+    ]);
+
+    renderHealth(h);
+    renderAudit(a);
+  }catch(e){
+    // Error harus terlihat, bukan berubah menjadi layar putih abadi.
+    revealPage();
+    showError(e);
+  }finally{
+    document.body.classList.remove("spin");
+  }
+}
+async function exportSnapshot(){clearError();const btn=document.getElementById("btnExport");const old=btn.textContent;btn.disabled=true;btn.textContent="Membuat Snapshot...";try{const r=await LDMProduction.exportSnapshot();alert(`Cloud Snapshot berhasil dibuat.\n\nFile: ${r.filename}\nUkuran JSON: ${(r.bytes/1024/1024).toFixed(2)} MB`);await refreshAll()}catch(e){showError(e)}finally{btn.disabled=false;btn.textContent=old}}
+async function boot(){
+  await refreshAll();
+
+  if(!currentContext){
+    return;
+  }
+
+  try{
+    await LDMProduction.startRealtime(async()=>{
+      document.getElementById("auditRealtime").textContent = "Realtime: aktif";
+      const rows = await LDMProduction.recentAudit(150);
+      renderAudit(rows);
+    });
+    document.getElementById("auditRealtime").textContent = "Realtime: aktif";
+  }catch(e){
+    document.getElementById("auditRealtime").textContent = "Realtime: gagal";
+    console.warn(e);
+  }
+}
+document.addEventListener("DOMContentLoaded",boot);
+</script>
+<script src="js/global-system-navigation.js?v=23.0"></script>
+</body>
+</html>

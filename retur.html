@@ -1,0 +1,3434 @@
+<!DOCTYPE html>
+<html lang="id" class="secure-page-pending"><head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Retur Penjualan - LocDailyMar POS</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0d2240"><link rel="stylesheet" href="style.css"><link rel="icon" type="image/png" href="icon.png"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>
+        :root{
+            --app-font:'Poppins',sans-serif;--brand-font:'Poppins',sans-serif;
+            --bg-primary:#f4f6f9;--bg-secondary:#fff;--text-color:#334155;
+            --heading-color:#0d2240;--label-color:#64748b;--border-color:#e2e8f0;
+            --card-shadow:rgba(0,0,0,.03);--nav-desktop-bg:#0d2240;
+            --accent-color:#ffc107;--input-bg:#fff;--success:#16a34a;
+            --danger:#dc2626;--info:#0284c7;--warning:#d97706;
+        }
+        body.dark-mode{
+            --bg-primary:#0f172a;--bg-secondary:#1e293b;--text-color:#e2e8f0;
+            --heading-color:#f8fafc;--label-color:#94a3b8;--border-color:#334155;
+            --card-shadow:rgba(0,0,0,.25);--nav-desktop-bg:#1e293b;--input-bg:#0f172a;
+        }
+        .secure-page-pending body{visibility:hidden!important}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:var(--app-font)}
+        body{background:var(--bg-primary);color:var(--text-color);min-height:100vh;transition:.25s ease}
+        button,input,select,textarea{font:inherit}
+        .app-layout{min-height:100vh;display:flex;flex-direction:column}
+        .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);z-index:998}
+        .nav-overlay.active{display:block}
+        .nav-bar{position:fixed;top:0;left:-265px;width:255px;height:100vh;padding:20px 15px;background:var(--nav-desktop-bg);z-index:999;display:flex;flex-direction:column;gap:8px;box-shadow:2px 0 12px rgba(0,0,0,.22);transition:left .25s ease,background .2s ease;overflow-y:auto}
+        .nav-bar.active{left:0}
+        .nav-header-mobile{display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:800;font-size:1rem;padding-bottom:12px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.12)}
+        .btn-close-menu{border:0;background:transparent;color:#fff;font-size:1.25rem;cursor:pointer}
+        .nav-item{width:100%;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;text-decoration:none;color:#94a3b8;font-size:.84rem;font-weight:650;transition:.18s ease}
+        .nav-item:hover{background:rgba(255,255,255,.08);color:#fff}.nav-item.active{background:var(--accent-color);color:#0d2240;font-weight:800}.nav-item span{font-size:1.05rem}
+        .main-content{flex:1;padding:12px;padding-bottom:80px}
+        .header-app{background:#0d2240;color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+        .header-brand-container{display:flex;align-items:center;gap:10px;min-width:0}.header-logo-img{max-height:42px;max-width:120px;object-fit:contain;border-radius:8px;display:none}
+        .header-app h1{font-family:var(--brand-font);font-size:1.3rem;color:#fff;text-shadow:1px 1px 0 #d99b00;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.header-app p{font-family:var(--brand-font);font-size:.7rem;color:#ffc107;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+        .btn-toggle-menu{display:none;background:rgba(255,255,255,.2);border:0;color:#fff;font-size:1.45rem;padding:4px 10px;border-radius:8px;cursor:pointer}.btn-toggle-menu:hover,.btn-header-action:hover{background:rgba(255,255,255,.35)}
+        .btn-header-action{background:rgba(255,255,255,.2);border:0;color:#fff;padding:6px 12px;border-radius:8px;font-size:.72rem;font-weight:650;cursor:pointer}.btn-header-logout{background:#ef4444}
+        .user-strip{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;padding:9px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:.72rem;color:var(--label-color);font-weight:650}
+        .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+        .summary-card{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:13px;padding:12px 14px;box-shadow:0 2px 8px var(--card-shadow)}
+        .summary-card span{display:block;font-size:.65rem;color:var(--label-color);font-weight:700;text-transform:uppercase;letter-spacing:.3px}.summary-card strong{display:block;margin-top:3px;color:var(--heading-color);font-size:1rem}
+        .page-grid{display:grid;grid-template-columns:minmax(320px,.82fr) minmax(460px,1.5fr);gap:12px;align-items:start}
+        .box{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:14px;box-shadow:0 2px 8px var(--card-shadow)}
+        .box-title{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid var(--border-color);font-weight:800;color:var(--heading-color);font-size:.85rem}.box-title small{font-size:.62rem;color:var(--label-color);font-weight:650}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.form-group{margin-bottom:10px}.form-group.full{grid-column:1/-1}.form-group label{display:block;margin-bottom:4px;color:var(--heading-color);font-size:.67rem;font-weight:750}
+        .form-control{width:100%;padding:9px 10px;border:1px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-color);outline:none;font-size:.72rem}.form-control:focus{border-color:#0284c7;box-shadow:0 0 0 2px rgba(2,132,199,.08)}textarea.form-control{resize:vertical;min-height:72px}
+        .hint{padding:9px 10px;border-radius:9px;background:rgba(2,132,199,.07);border:1px solid rgba(2,132,199,.15);color:var(--label-color);font-size:.62rem;line-height:1.55;margin-bottom:10px}
+        .btn-row{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:8px;padding:8px 11px;font-size:.68rem;font-weight:800;cursor:pointer;transition:.18s ease}.btn.primary{background:#0d2240;color:#ffc107;border:1px solid #ffc107}.btn.primary:hover{background:#ffc107;color:#0d2240}.btn.secondary{background:#e2e8f0;color:#334155}.btn.danger{background:#fee2e2;color:#dc2626}.btn.success{background:#dcfce7;color:#15803d}.btn.info{background:#e0f2fe;color:#0369a1}.btn.warning{background:#fef3c7;color:#b45309}
+        body.dark-mode .btn.secondary{background:#334155;color:#e2e8f0}
+        .toolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:10px}.toolbar .form-group{margin:0;min-width:150px;flex:1}.toolbar .btn{min-height:36px}
+        .table-wrap{width:100%;overflow:auto;border:1px solid var(--border-color);border-radius:10px}.data-table{width:100%;border-collapse:collapse;min-width:760px}.data-table th,.data-table td{padding:9px 10px;border-bottom:1px solid var(--border-color);text-align:left;font-size:.67rem;vertical-align:top}.data-table th{background:rgba(148,163,184,.08);color:var(--heading-color);font-size:.62rem;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}.data-table tr:last-child td{border-bottom:0}.data-table strong{color:var(--heading-color)}
+        .badge{display:inline-block;padding:4px 7px;border-radius:7px;font-size:.6rem;font-weight:850;white-space:nowrap}.badge.success{background:rgba(22,163,74,.11);color:#16a34a}.badge.warning{background:rgba(217,119,6,.11);color:#d97706}.badge.danger{background:rgba(220,38,38,.1);color:#dc2626}.badge.info{background:rgba(2,132,199,.11);color:#0284c7}.badge.muted{background:rgba(100,116,139,.1);color:#64748b}
+        .action-row{display:flex;gap:5px;flex-wrap:wrap}.action-row .btn{padding:5px 7px;font-size:.6rem}
+        .search-wrap{position:relative}.search-dropdown{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:100;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:9px;box-shadow:0 10px 28px rgba(15,23,42,.14);max-height:260px;overflow:auto}.search-dropdown.show{display:block}.search-option{padding:9px 10px;border-bottom:1px solid var(--border-color);cursor:pointer;font-size:.68rem}.search-option:last-child{border-bottom:0}.search-option:hover{background:rgba(2,132,199,.06)}.search-option strong{display:block;color:var(--heading-color)}.search-option small{color:var(--label-color)}
+        .toggle-line{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border-color);border-radius:9px;background:rgba(148,163,184,.04)}.switch{position:relative;display:inline-block;width:42px;height:24px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;background:#cbd5e1;border-radius:99px;cursor:pointer;transition:.2s}.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.switch input:checked+.slider{background:#16a34a}.switch input:checked+.slider:before{transform:translateX(18px)}
+        .modal{display:none;position:fixed;inset:0;z-index:2200;background:rgba(15,23,42,.72);padding:18px;align-items:center;justify-content:center;backdrop-filter:blur(4px)}.modal-card{width:min(560px,100%);max-height:90vh;overflow:auto;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.35)}.modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border-color)}.modal-head strong{color:var(--heading-color)}
+        @media(min-width:900px){.app-layout{flex-direction:row}.nav-bar{position:sticky;left:0;top:0;width:230px;min-width:230px;height:100vh}.nav-header-mobile{display:none}.main-content{padding:18px 22px 30px;min-width:0}.nav-overlay{display:none!important}}
+        @media(max-width:899px){.btn-toggle-menu{display:inline-flex}.page-grid{grid-template-columns:1fr}}
+        @media(max-width:600px){.form-grid{grid-template-columns:1fr}.form-group.full{grid-column:auto}.summary-grid{grid-template-columns:1fr 1fr}.header-app{padding:12px}.header-app h1{font-size:1.08rem}.data-table{min-width:680px}}
+
+.supplier-code{font-family:'Fira Code',monospace;font-weight:800;color:#0284c7}.supplier-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.supplier-detail-box{padding:9px;border:1px solid var(--border-color);border-radius:9px;background:rgba(148,163,184,.04)}.supplier-detail-box span{display:block;font-size:.58rem;color:var(--label-color);font-weight:700;text-transform:uppercase}.supplier-detail-box strong{font-size:.72rem;color:var(--heading-color)}.top-items{margin-top:8px;padding:8px 10px;border-radius:9px;background:rgba(2,132,199,.06);font-size:.65rem;color:var(--text-color)}@media(max-width:600px){.supplier-detail-grid{grid-template-columns:1fr}}
+</style>
+<script id="ldmCompactNavRoleEarly">
+(function(){
+    try{
+        const role=String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+        document.documentElement.setAttribute("data-ldm-role",role);
+    }catch(e){}
+})();
+</script>
+<style id="ldmCompactNavigationStyle">
+    .nav-bar{
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        scrollbar-width:thin;
+        scrollbar-color:rgba(148,163,184,.38) transparent;
+    }
+    .nav-bar::-webkit-scrollbar{width:5px}
+    .nav-bar::-webkit-scrollbar-track{background:transparent}
+    .nav-bar::-webkit-scrollbar-thumb{
+        background:rgba(148,163,184,.34);
+        border-radius:20px;
+    }
+    .nav-header-mobile{
+        font-size:.78rem !important;
+        padding:4px 2px 8px !important;
+        margin-bottom:4px !important;
+        min-height:30px;
+    }
+    .nav-item{
+        min-height:34px !important;
+        padding:7px 9px !important;
+        margin:0 0 2px 0 !important;
+        gap:8px !important;
+        border-radius:8px !important;
+        font-size:.73rem !important;
+        line-height:1.15 !important;
+        flex-shrink:0;
+    }
+    .nav-item > span:first-child{
+        display:inline-flex;
+        width:20px;
+        min-width:20px;
+        height:20px;
+        align-items:center;
+        justify-content:center;
+        font-size:.93rem !important;
+        line-height:1 !important;
+    }
+    .nav-item .nav-badge{
+        transform:scale(.82);
+        transform-origin:center;
+    }
+
+    /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
+    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="shift-closing.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="eod.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="pengeluaran.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="backup%20%26%20restore.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="backup & restore.html"]{
+        display:none !important;
+    }
+
+    @media (min-width:768px){
+        .nav-bar{
+            width:205px !important;
+            min-width:205px !important;
+            padding:14px 10px !important;
+            gap:2px !important;
+        }
+        .nav-item{
+            padding:7px 9px !important;
+            font-size:.73rem !important;
+        }
+    }
+
+    @media (max-width:767px){
+        .nav-bar{
+            width:min(82vw,238px) !important;
+            padding:10px 9px !important;
+            gap:2px !important;
+        }
+        .nav-item{
+            min-height:33px !important;
+            padding:7px 9px !important;
+            font-size:.72rem !important;
+        }
+        .nav-header-mobile{font-size:.76rem !important}
+    }
+</style>
+
+
+<!-- =========================================================
+     LOCDailyMar RESPONSIVE MEGA MENU
+     Desktop  : Mega Menu
+     HP/Tablet: Hamburger Drawer
+     ========================================================= -->
+<style id="ldmMegaMenuResponsiveStyle">
+    .ldm-mega-nav-shell{
+        display:none;
+    }
+
+    /* =====================================================
+       DESKTOP MEGA MENU
+       ===================================================== */
+    @media (min-width:900px){
+        /*
+         * Sidebar lama hanya dipakai sebagai sumber struktur/menu
+         * dan sebagai menu mobile. Desktop memakai Mega Menu.
+         */
+        .nav-bar,
+        .nav-overlay,
+        .btn-toggle-menu,
+        .nav-header-mobile{
+            display:none !important;
+        }
+
+        .app-layout{
+            display:flex !important;
+            flex-direction:column !important;
+            min-height:100vh !important;
+            width:100% !important;
+        }
+
+        .main-content{
+            width:100% !important;
+            max-width:none !important;
+            padding:24px 28px 30px !important;
+            margin:0 !important;
+        }
+
+        .ldm-mega-nav-shell{
+            display:block;
+            position:sticky;
+            top:0;
+            z-index:1200;
+            width:100%;
+            background:var(--nav-desktop-bg);
+            border-bottom:1px solid var(--border-color);
+            box-shadow:0 7px 24px rgba(15,23,42,.08);
+        }
+
+        .ldm-mega-nav{
+            position:relative;
+            width:100%;
+            min-height:58px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:9px 22px;
+        }
+
+        .ldm-mega-trigger{
+            height:38px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            border:1px solid rgba(255,193,7,.45);
+            border-radius:10px;
+            padding:0 14px;
+            cursor:pointer;
+            background:var(--accent-color);
+            color:#0d2240;
+            font-size:.78rem;
+            font-weight:900;
+            white-space:nowrap;
+            transition:.18s ease;
+        }
+
+        .ldm-mega-trigger:hover,
+        .ldm-mega-nav-shell.open .ldm-mega-trigger{
+            transform:translateY(-1px);
+            box-shadow:0 7px 18px rgba(0,0,0,.14);
+        }
+
+        .ldm-mega-trigger-arrow{
+            font-size:.62rem;
+            transition:transform .18s ease;
+        }
+
+        .ldm-mega-nav-shell.open .ldm-mega-trigger-arrow{
+            transform:rotate(180deg);
+        }
+
+        .ldm-mega-quick{
+            display:flex;
+            align-items:center;
+            gap:4px;
+            min-width:0;
+        }
+
+        .ldm-mega-quick a{
+            position:relative;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            height:36px;
+            padding:0 10px;
+            border-radius:9px;
+            color:#94a3b8;
+            text-decoration:none;
+            font-size:.72rem;
+            font-weight:750;
+            white-space:nowrap;
+            transition:.18s ease;
+        }
+
+        .ldm-mega-quick a:hover{
+            color:#f8fafc;
+            background:rgba(148,163,184,.12);
+        }
+
+        .ldm-mega-quick a.active{
+            color:#0d2240;
+            background:var(--accent-color);
+        }
+
+        .ldm-mega-session{
+            margin-left:auto;
+            min-width:0;
+            display:flex;
+            align-items:center;
+            gap:7px;
+            color:#94a3b8;
+            font-size:.67rem;
+            font-weight:700;
+        }
+
+        .ldm-mega-role{
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            padding:5px 9px;
+            border-radius:999px;
+            background:rgba(148,163,184,.10);
+            border:1px solid rgba(148,163,184,.15);
+            color:#cbd5e1;
+            text-transform:capitalize;
+            white-space:nowrap;
+        }
+
+        .ldm-mega-panel{
+            position:absolute;
+            left:22px;
+            top:calc(100% - 3px);
+            width:min(980px, calc(100vw - 44px));
+            visibility:hidden;
+            opacity:0;
+            pointer-events:none;
+            transform:translateY(-5px);
+            transition:
+                opacity .16s ease,
+                transform .16s ease,
+                visibility .16s ease;
+            background:var(--bg-secondary);
+            color:var(--text-color);
+            border:1px solid var(--border-color);
+            border-radius:0 0 16px 16px;
+            box-shadow:0 24px 55px rgba(15,23,42,.24);
+            padding:16px;
+        }
+
+        .ldm-mega-nav-shell.open .ldm-mega-panel{
+            visibility:visible;
+            opacity:1;
+            pointer-events:auto;
+            transform:translateY(0);
+        }
+
+        .ldm-mega-panel-top{
+            display:flex;
+            justify-content:space-between;
+            gap:18px;
+            align-items:flex-start;
+            padding:1px 3px 13px;
+            border-bottom:1px solid var(--border-color);
+            margin-bottom:13px;
+        }
+
+        .ldm-mega-panel-top strong{
+            display:block;
+            color:var(--heading-color);
+            font-size:.84rem;
+        }
+
+        .ldm-mega-panel-top p{
+            margin-top:3px;
+            color:#64748b;
+            font-size:.63rem;
+            line-height:1.45;
+        }
+
+        .ldm-mega-panel-close{
+            border:0;
+            background:transparent;
+            color:#64748b;
+            cursor:pointer;
+            font-size:.72rem;
+            font-weight:800;
+            padding:5px 7px;
+            border-radius:7px;
+        }
+
+        .ldm-mega-panel-close:hover{
+            background:rgba(148,163,184,.10);
+            color:var(--heading-color);
+        }
+
+        .ldm-mega-grid{
+            display:grid;
+            grid-template-columns:repeat(5,minmax(0,1fr));
+            gap:10px;
+        }
+
+        .ldm-mega-group{
+            min-width:0;
+            padding:10px;
+            border-radius:11px;
+            background:rgba(148,163,184,.045);
+            border:1px solid transparent;
+        }
+
+        .ldm-mega-group:hover{
+            border-color:var(--border-color);
+        }
+
+        .ldm-mega-group-title{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-bottom:7px;
+            color:#64748b;
+            font-size:.61rem;
+            font-weight:900;
+            letter-spacing:.055em;
+            text-transform:uppercase;
+        }
+
+        .ldm-mega-links{
+            display:flex;
+            flex-direction:column;
+            gap:3px;
+        }
+
+        .ldm-mega-link{
+            position:relative;
+            min-height:34px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:7px 8px;
+            border-radius:8px;
+            text-decoration:none;
+            color:var(--text-color);
+            font-size:.7rem;
+            font-weight:700;
+            line-height:1.2;
+            transition:.15s ease;
+        }
+
+        .ldm-mega-link:hover{
+            background:rgba(2,132,199,.08);
+            color:#0284c7;
+        }
+
+        .ldm-mega-link.active{
+            background:var(--accent-color);
+            color:#0d2240;
+        }
+
+        .ldm-mega-icon{
+            width:22px;
+            height:22px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            flex:0 0 22px;
+            border-radius:7px;
+            background:rgba(148,163,184,.08);
+            font-size:.88rem;
+        }
+
+        .ldm-mega-link.active .ldm-mega-icon{
+            background:rgba(255,255,255,.35);
+        }
+
+        .ldm-mega-badge{
+            display:none;
+            margin-left:auto;
+            min-width:18px;
+            height:18px;
+            padding:0 5px;
+            align-items:center;
+            justify-content:center;
+            border-radius:999px;
+            background:#ef4444;
+            color:#fff;
+            font-size:.55rem;
+            font-weight:900;
+        }
+
+        @media (max-width:1120px){
+            .ldm-mega-grid{
+                grid-template-columns:repeat(3,minmax(0,1fr));
+            }
+
+            .ldm-mega-quick a:nth-child(n+4){
+                display:none;
+            }
+        }
+    }
+
+    /* =====================================================
+       HP / TABLET: HAMBURGER MENU
+       ===================================================== */
+    @media (max-width:899px){
+        .ldm-mega-nav-shell{
+            display:none !important;
+        }
+
+        .app-layout{
+            display:flex !important;
+            flex-direction:column !important;
+            min-height:100vh !important;
+        }
+
+        .btn-toggle-menu{
+            display:inline-flex !important;
+        }
+
+        .nav-bar{
+            position:fixed !important;
+            top:0 !important;
+            left:-270px !important;
+            width:min(82vw,250px) !important;
+            min-width:0 !important;
+            height:100dvh !important;
+            padding:11px 10px !important;
+            flex-direction:column !important;
+            justify-content:flex-start !important;
+            gap:3px !important;
+            z-index:999 !important;
+            border-right:1px solid var(--border-color) !important;
+            box-shadow:3px 0 18px rgba(15,23,42,.28) !important;
+            overflow-y:auto !important;
+            transition:left .25s ease !important;
+        }
+
+        .nav-bar.active{
+            left:0 !important;
+        }
+
+        .nav-header-mobile{
+            display:flex !important;
+            padding:5px 3px 9px !important;
+            margin-bottom:3px !important;
+            font-size:.76rem !important;
+        }
+
+        .nav-item{
+            min-height:35px !important;
+            padding:7px 9px !important;
+            margin:0 !important;
+            gap:8px !important;
+            border-radius:8px !important;
+            font-size:.72rem !important;
+        }
+
+        .nav-item > span:first-child{
+            width:20px !important;
+            min-width:20px !important;
+            font-size:.92rem !important;
+        }
+
+        .main-content{
+            width:100% !important;
+            margin:0 !important;
+            padding:12px !important;
+            padding-bottom:28px !important;
+        }
+    }
+</style>
+
+
+<script id="ldmEodMenuAvailabilityEarly">
+(function(){
+    function readArray(key){
+        try{
+            const value=JSON.parse(localStorage.getItem(key)||"[]");
+            return Array.isArray(value)?value:[];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function witaDate(value){
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
+    }
+
+    function recordDate(item){
+        if(!item)return "";
+        const raw=
+            item.waktu_teks
+            || item.tanggal
+            || item.tgl
+            || item.date
+            || item.waktu
+            || item.created_at
+            || item.timestamp
+            || "";
+
+        if(typeof raw==="string" && /^\d{4}-\d{2}-\d{2}/.test(raw)){
+            return raw.slice(0,10);
+        }
+
+        const d=new Date(raw);
+        return isNaN(d)?"":witaDate(d);
+    }
+
+    function cashierName(item){
+        return String(
+            item?.kasir
+            || item?.user
+            || item?.username
+            || item?.admin
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function shiftName(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function isReady(){
+        const today=witaDate(new Date());
+        const laporan=readArray("laporan");
+        const transaksi=(laporan.length?laporan:readArray("dataLaporan"))
+            .filter(item=>recordDate(item)===today);
+
+        const activeAccounts=new Set(
+            transaksi
+                .map(cashierName)
+                .filter(Boolean)
+        );
+
+        if(activeAccounts.size===0){
+            return false;
+        }
+
+        const closingToday=readArray("shiftClosingLog")
+            .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
+
+        const closedAccounts=new Set(
+            closingToday
+                .map(item=>String(item?.kasir||"").trim().toLowerCase())
+                .filter(Boolean)
+        );
+
+        const allClosed=
+            [...activeAccounts]
+                .every(account=>closedAccounts.has(account));
+
+        const hasShift1=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 1"
+        );
+
+        const hasShift2=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 2"
+        );
+        return allClosed && hasShift1 && hasShift2;
+    }
+
+    try{
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            isReady()?"true":"false"
+        );
+    }catch(e){
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            "false"
+        );
+    }
+})();
+</script>
+
+
+<style id="ldmMobileTouchAndEodStyle">
+    /*
+     * End of Day disembunyikan sampai seluruh akun yang transaksi
+     * sudah Closing Shift dan Shift 1 + Shift 2 tersedia.
+     * Berlaku untuk Mega Menu desktop dan Hamburger Menu HP.
+     */
+    html:not([data-ldm-eod-ready="true"]) a[href="eod.html"]{
+        display:none !important;
+    }
+
+    /*
+     * Mobile / tablet hanya Hamburger Menu.
+     * Target sentuh dibuat lebih lega agar nyaman ditekan dengan jari.
+     */
+    @media (max-width:899px){
+        .ldm-mega-nav-shell{
+            display:none !important;
+        }
+
+        .nav-bar{
+            width:min(86vw,270px) !important;
+            padding:14px 11px 20px !important;
+            gap:6px !important;
+        }
+
+        .nav-header-mobile{
+            min-height:42px !important;
+            padding:7px 5px 12px !important;
+            margin-bottom:5px !important;
+            font-size:.8rem !important;
+        }
+
+        .nav-item{
+            min-height:46px !important;
+            padding:11px 12px !important;
+            margin:0 !important;
+            gap:11px !important;
+            border-radius:10px !important;
+            font-size:.78rem !important;
+            line-height:1.22 !important;
+            touch-action:manipulation;
+            -webkit-tap-highlight-color:rgba(255,193,7,.18);
+        }
+
+        .nav-item + .nav-item{
+            margin-top:2px !important;
+        }
+
+        .nav-item > span:first-child{
+            width:24px !important;
+            min-width:24px !important;
+            height:24px !important;
+            font-size:1rem !important;
+        }
+
+        .btn-toggle-menu{
+            min-width:42px !important;
+            min-height:42px !important;
+            width:42px !important;
+            height:42px !important;
+            align-items:center !important;
+            justify-content:center !important;
+            border-radius:10px !important;
+            touch-action:manipulation;
+        }
+
+        .nav-overlay.active{
+            display:block !important;
+        }
+    }
+
+    @media (max-width:420px){
+        .nav-bar{
+            width:min(88vw,268px) !important;
+        }
+
+        .nav-item{
+            min-height:48px !important;
+            padding:12px !important;
+            font-size:.79rem !important;
+        }
+    }
+</style>
+
+
+<style id="ldmShiftReturnCommonStyle">
+    .status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;font-size:.6rem;font-weight:900;white-space:nowrap}
+    .status-pill.active{background:rgba(22,163,74,.11);color:#16a34a}.status-pill.closing{background:rgba(217,119,6,.11);color:#d97706}.status-pill.closed{background:rgba(2,132,199,.10);color:#0284c7}.status-pill.cancelled,.status-pill.rejected{background:rgba(100,116,139,.12);color:#64748b}.status-pill.pending{background:rgba(217,119,6,.11);color:#d97706}.status-pill.approved{background:rgba(22,163,74,.11);color:#16a34a}
+    .code-pill{display:inline-flex;padding:4px 7px;border-radius:7px;background:rgba(2,132,199,.08);color:#0284c7;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.61rem;font-weight:850;white-space:nowrap}
+    .mini-note{font-size:.6rem;color:var(--label-color);line-height:1.55}.metric-line{display:grid;grid-template-columns:1fr auto;gap:10px;padding:6px 0;border-bottom:1px dashed var(--border-color);font-size:.66rem}.metric-line:last-child{border-bottom:0}.metric-line strong{color:var(--heading-color)}
+    .detail-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.detail-box{border:1px solid var(--border-color);background:rgba(148,163,184,.04);border-radius:10px;padding:9px}.detail-box span{display:block;color:var(--label-color);font-size:.56rem;text-transform:uppercase;font-weight:800}.detail-box strong{display:block;margin-top:3px;color:var(--heading-color);font-size:.76rem;overflow-wrap:anywhere}
+    .action-row{display:flex;gap:5px;flex-wrap:wrap}.action-row .btn{padding:5px 7px;font-size:.59rem}.empty-state{text-align:center;color:var(--label-color);padding:22px 12px!important}.subtle-card{border:1px solid var(--border-color);border-radius:11px;padding:10px;background:rgba(148,163,184,.035)}
+    @media(max-width:780px){.detail-grid-4{grid-template-columns:1fr 1fr}.page-grid{grid-template-columns:1fr!important}.data-table thead{display:none}.data-table,.data-table tbody,.data-table tr,.data-table td{display:block;width:100%}.data-table tbody{display:grid;gap:10px}.data-table tr{border:1px solid var(--border-color);border-radius:11px;padding:9px 10px;background:var(--bg-secondary);box-shadow:0 3px 10px rgba(15,23,42,.04)}.data-table td{display:flex!important;justify-content:space-between;align-items:flex-start;gap:12px;padding:7px 0!important;border-bottom:1px dashed var(--border-color)!important;font-size:.72rem}.data-table td:last-child{border-bottom:0!important}.data-table td::before{content:attr(data-label);flex:0 0 34%;color:#94a3b8;font-size:.57rem;font-weight:800;text-transform:uppercase}.data-table td[data-label="Aksi"]{display:block!important}.data-table td[data-label="Aksi"]::before{display:block;margin-bottom:6px}.action-row .btn{min-height:38px;padding:7px 9px;font-size:.67rem}.form-control{min-height:43px}}
+    @media(max-width:460px){.detail-grid-4{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr 1fr!important}.summary-card strong{font-size:.9rem!important}}
+</style>
+
+
+<style id="returPageStyle">
+.retur-search{position:relative}.tx-selected{display:none;margin-top:9px;border:1px solid var(--border-color);border-radius:11px;padding:10px;background:rgba(2,132,199,.04)}.tx-selected.show{display:block}.retur-item{border:1px solid var(--border-color);border-radius:10px;padding:10px;margin-bottom:8px;background:rgba(148,163,184,.035)}.retur-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.retur-item-name{font-size:.73rem;font-weight:850;color:var(--heading-color)}.retur-item-meta{font-size:.59rem;color:var(--label-color);line-height:1.55;margin-top:3px}.retur-item-controls{display:grid;grid-template-columns:100px 1fr 145px;gap:7px;margin-top:9px}.return-total-box{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;border:1px solid rgba(2,132,199,.18);background:rgba(2,132,199,.06);border-radius:10px;padding:10px;margin-top:10px}.return-total-box strong{font-size:1rem;color:#0284c7}.retur-history-actions{display:flex;gap:5px;flex-wrap:wrap}
+@media(max-width:700px){.retur-item-controls{grid-template-columns:1fr}.retur-item-head{display:block}.return-total-box strong{font-size:.88rem}}
+@media print{body *{visibility:hidden!important}#returPrintArea,#returPrintArea *{visibility:visible!important}#returPrintArea{display:block!important;position:absolute;left:0;top:0;width:100%;padding:8mm;background:white;color:black;font-family:Arial,sans-serif}#returPrintArea table{width:100%;border-collapse:collapse;font-size:9px}#returPrintArea th,#returPrintArea td{border:1px solid #bbb;padding:5px}#returPrintArea th{background:#eee!important}}
+</style>
+
+
+<style id="ldmReturSimpleResponsiveStyle">
+    .page-grid{
+        grid-template-columns:minmax(330px,420px) minmax(0,1fr) !important;
+        gap:12px !important;
+    }
+
+    .summary-grid{
+        grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+        gap:8px !important;
+    }
+
+    .summary-card{
+        padding:10px 12px !important;
+        border-radius:11px !important;
+    }
+
+    .summary-card strong{
+        font-size:.95rem !important;
+    }
+
+    .box{
+        padding:13px !important;
+        border-radius:12px !important;
+    }
+
+    .box-title{
+        font-size:.82rem !important;
+        margin-bottom:10px !important;
+        padding-bottom:8px !important;
+    }
+
+    .hint{
+        font-size:.63rem !important;
+        line-height:1.6 !important;
+        border-radius:9px !important;
+    }
+
+    .form-control{
+        min-height:41px;
+        border-radius:9px !important;
+    }
+
+    textarea.form-control{
+        min-height:75px;
+    }
+
+    .return-total-box{
+        border-radius:10px !important;
+        padding:10px 12px !important;
+    }
+
+    .retur-item{
+        border-radius:10px !important;
+        padding:10px !important;
+        margin-bottom:7px !important;
+    }
+
+    .toolbar{
+        display:grid !important;
+        grid-template-columns:minmax(190px,1fr) 140px 145px !important;
+        gap:8px !important;
+        align-items:end !important;
+    }
+
+    .retur-history-actions{
+        display:flex !important;
+        flex-wrap:wrap !important;
+        gap:5px !important;
+    }
+
+    .retur-history-actions .btn{
+        padding:6px 8px !important;
+        font-size:.6rem !important;
+        border-radius:7px !important;
+        white-space:nowrap;
+    }
+
+    @media(max-width:1100px){
+        .summary-grid{
+            grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+        }
+
+        .page-grid{
+            grid-template-columns:1fr !important;
+        }
+    }
+
+    @media(max-width:700px){
+        .main-content{
+            padding:10px !important;
+            padding-bottom:28px !important;
+        }
+
+        .header-app{
+            padding:12px !important;
+            border-radius:12px !important;
+            gap:9px;
+        }
+
+        .header-brand-container h1{
+            font-size:1rem !important;
+        }
+
+        .header-brand-container p{
+            font-size:.63rem !important;
+        }
+
+        #txtUserLoggedIn{
+            display:none;
+        }
+
+        .summary-grid{
+            grid-template-columns:1fr 1fr !important;
+            gap:7px !important;
+        }
+
+        .summary-card{
+            padding:9px 10px !important;
+        }
+
+        .summary-card:last-child{
+            grid-column:1 / -1;
+        }
+
+        .box{
+            padding:11px !important;
+        }
+
+        .form-control{
+            min-height:46px !important;
+            font-size:.8rem !important;
+            touch-action:manipulation;
+        }
+
+        textarea.form-control{
+            min-height:82px !important;
+        }
+
+        .btn-row{
+            display:grid !important;
+            grid-template-columns:1fr 1fr !important;
+            gap:7px !important;
+        }
+
+        .btn-row .btn{
+            width:100% !important;
+            min-height:44px !important;
+            touch-action:manipulation;
+        }
+
+        #btnCreateApprove{
+            grid-column:1 / -1;
+        }
+
+        .toolbar{
+            grid-template-columns:1fr 1fr !important;
+            gap:7px !important;
+        }
+
+        .toolbar .form-group:first-child{
+            grid-column:1 / -1;
+        }
+
+        .tx-selected{
+            border-radius:10px !important;
+            padding:10px !important;
+        }
+
+        .retur-item{
+            padding:10px !important;
+        }
+
+        /*
+         * Riwayat retur menjadi card ringkas.
+         * Tidak membutuhkan scroll horizontal di HP.
+         */
+        .table-wrap{
+            overflow:visible !important;
+        }
+
+        .data-table,
+        .data-table tbody{
+            display:block !important;
+            width:100% !important;
+            min-width:0 !important;
+        }
+
+        .data-table thead{
+            display:none !important;
+        }
+
+        #returBody{
+            display:grid !important;
+            grid-template-columns:1fr !important;
+            gap:9px !important;
+        }
+
+        #returBody tr{
+            display:grid !important;
+            grid-template-columns:1fr 1fr !important;
+            gap:0 10px !important;
+            width:100% !important;
+            padding:10px !important;
+            border:1px solid var(--border-color) !important;
+            border-radius:11px !important;
+            background:var(--bg-secondary) !important;
+            box-shadow:0 3px 10px rgba(15,23,42,.04);
+        }
+
+        #returBody td{
+            display:flex !important;
+            flex-direction:column !important;
+            justify-content:center;
+            align-items:flex-start;
+            min-width:0 !important;
+            padding:7px 0 !important;
+            border-bottom:1px dashed var(--border-color) !important;
+            font-size:.75rem !important;
+            line-height:1.35 !important;
+        }
+
+        #returBody td::before{
+            content:attr(data-label);
+            display:block;
+            margin-bottom:3px;
+            color:#94a3b8;
+            font-size:.56rem;
+            font-weight:850;
+            text-transform:uppercase;
+            letter-spacing:.03em;
+        }
+
+        #returBody td[data-label="Retur ID"]{
+            grid-column:1 / -1;
+            padding-top:1px !important;
+        }
+
+        #returBody td[data-label="Retur ID"] .code-pill{
+            width:100%;
+            justify-content:center;
+            padding:7px 8px;
+            font-size:.65rem;
+        }
+
+        #returBody td[data-label="Transaksi"]{
+            grid-column:1 / -1;
+        }
+
+        #returBody td[data-label="Status"]{
+            border-bottom:0 !important;
+        }
+
+        #returBody td[data-label="Aksi"]{
+            grid-column:1 / -1;
+            border-bottom:0 !important;
+            padding-bottom:0 !important;
+        }
+
+        #returBody td[data-label="Aksi"]::before{
+            display:none;
+        }
+
+        #returBody .retur-history-actions{
+            width:100%;
+            display:grid !important;
+            grid-template-columns:1fr 1fr !important;
+            gap:6px !important;
+        }
+
+        #returBody .retur-history-actions .btn{
+            width:100%;
+            min-height:40px !important;
+            padding:7px !important;
+            font-size:.66rem !important;
+        }
+
+        .modal{
+            padding:8px !important;
+            align-items:flex-end !important;
+        }
+
+        .modal-card{
+            width:100% !important;
+            max-width:none !important;
+            max-height:91dvh !important;
+            border-radius:16px 16px 0 0 !important;
+            padding:14px !important;
+        }
+
+        .detail-grid-4{
+            grid-template-columns:1fr 1fr !important;
+        }
+    }
+
+    @media(max-width:380px){
+        .toolbar{
+            grid-template-columns:1fr !important;
+        }
+
+        .toolbar .form-group:first-child{
+            grid-column:auto;
+        }
+
+        #returBody tr{
+            gap:0 7px !important;
+            padding:9px !important;
+        }
+
+        #returBody .retur-history-actions{
+            grid-template-columns:1fr !important;
+        }
+
+        .detail-grid-4{
+            grid-template-columns:1fr !important;
+        }
+    }
+</style>
+
+
+<style id="ldmThemedDialogStyle">
+    .ldm-dialog-overlay{
+        position:fixed;
+        inset:0;
+        z-index:999999;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+        background:rgba(15,23,42,.58);
+        backdrop-filter:blur(3px);
+    }
+
+    .ldm-dialog-overlay.show{
+        display:flex;
+    }
+
+    .ldm-dialog-card{
+        width:min(430px,100%);
+        max-height:min(88dvh,620px);
+        overflow:auto;
+        background:var(--bg-secondary,#fff);
+        color:var(--text-color,#334155);
+        border:1px solid var(--border-color,#e2e8f0);
+        border-radius:16px;
+        box-shadow:0 24px 60px rgba(15,23,42,.28);
+        padding:17px;
+        animation:ldmDialogIn .15s ease-out;
+    }
+
+    @keyframes ldmDialogIn{
+        from{opacity:0;transform:translateY(8px) scale(.985)}
+        to{opacity:1;transform:translateY(0) scale(1)}
+    }
+
+    .ldm-dialog-top{
+        display:flex;
+        gap:11px;
+        align-items:flex-start;
+    }
+
+    .ldm-dialog-icon{
+        width:38px;
+        height:38px;
+        flex:0 0 38px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:11px;
+        background:rgba(2,132,199,.10);
+        font-size:1.15rem;
+    }
+
+    .ldm-dialog-title{
+        margin:1px 0 4px;
+        color:var(--heading-color,#0f172a);
+        font-size:.92rem;
+        font-weight:850;
+        line-height:1.35;
+    }
+
+    .ldm-dialog-message{
+        color:var(--label-color,#64748b);
+        font-size:.72rem;
+        line-height:1.65;
+        white-space:pre-wrap;
+    }
+
+    .ldm-dialog-input{
+        width:100%;
+        min-height:44px;
+        margin-top:13px;
+        padding:10px 11px;
+        border:1px solid var(--border-color,#cbd5e1);
+        border-radius:9px;
+        background:var(--bg-primary,#f8fafc);
+        color:var(--text-color,#334155);
+        font:inherit;
+        font-size:.78rem;
+        outline:none;
+    }
+
+    .ldm-dialog-input:focus{
+        border-color:#0284c7;
+        box-shadow:0 0 0 3px rgba(2,132,199,.10);
+    }
+
+    .ldm-dialog-actions{
+        display:flex;
+        justify-content:flex-end;
+        gap:8px;
+        margin-top:15px;
+    }
+
+    .ldm-dialog-btn{
+        min-height:40px;
+        border:0;
+        border-radius:9px;
+        padding:8px 14px;
+        cursor:pointer;
+        font:inherit;
+        font-size:.72rem;
+        font-weight:850;
+        transition:.15s ease;
+    }
+
+    .ldm-dialog-btn:hover{
+        transform:translateY(-1px);
+    }
+
+    .ldm-dialog-btn.cancel{
+        background:var(--bg-primary,#f1f5f9);
+        color:var(--text-color,#475569);
+        border:1px solid var(--border-color,#e2e8f0);
+    }
+
+    .ldm-dialog-btn.ok{
+        background:#0d2240;
+        color:#fff;
+    }
+
+    .ldm-dialog-btn.danger{
+        background:#dc2626;
+        color:#fff;
+    }
+
+    @media(max-width:600px){
+        .ldm-dialog-overlay{
+            align-items:flex-end;
+            padding:8px;
+        }
+
+        .ldm-dialog-card{
+            width:100%;
+            border-radius:17px 17px 0 0;
+            padding:15px;
+        }
+
+        .ldm-dialog-actions{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+        }
+
+        .ldm-dialog-actions.single{
+            grid-template-columns:1fr;
+        }
+
+        .ldm-dialog-btn{
+            min-height:46px;
+            width:100%;
+            touch-action:manipulation;
+        }
+    }
+</style>
+
+
+<script id="ldmThemedDialogScript">
+(function(){
+    if(window.ldmDialog)return;
+
+    let activeResolve=null;
+
+    function ensure(){
+        let overlay=document.getElementById("ldmDialogOverlay");
+        if(overlay)return overlay;
+
+        overlay=document.createElement("div");
+        overlay.id="ldmDialogOverlay";
+        overlay.className="ldm-dialog-overlay";
+        overlay.innerHTML=`
+            <div class="ldm-dialog-card" role="dialog" aria-modal="true">
+                <div class="ldm-dialog-top">
+                    <div class="ldm-dialog-icon" id="ldmDialogIcon">ℹ️</div>
+                    <div style="min-width:0;flex:1">
+                        <div class="ldm-dialog-title" id="ldmDialogTitle">Informasi</div>
+                        <div class="ldm-dialog-message" id="ldmDialogMessage"></div>
+                    </div>
+                </div>
+
+                <input
+                    id="ldmDialogInput"
+                    class="ldm-dialog-input"
+                    style="display:none"
+                    autocomplete="off"
+                >
+
+                <div class="ldm-dialog-actions" id="ldmDialogActions">
+                    <button type="button" class="ldm-dialog-btn cancel" id="ldmDialogCancel">Batal</button>
+                    <button type="button" class="ldm-dialog-btn ok" id="ldmDialogOk">OK</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener("keydown",event=>{
+            if(event.key==="Escape"){
+                document.getElementById("ldmDialogCancel")?.click();
+            }
+        });
+
+        return overlay;
+    }
+
+    function iconFor(type){
+        return {
+            success:"✅",
+            danger:"🗑️",
+            warning:"⚠️",
+            question:"❓",
+            info:"ℹ️"
+        }[type] || "ℹ️";
+    }
+
+    function open(options={}){
+        return new Promise(resolve=>{
+            const overlay=ensure();
+            const title=overlay.querySelector("#ldmDialogTitle");
+            const message=overlay.querySelector("#ldmDialogMessage");
+            const icon=overlay.querySelector("#ldmDialogIcon");
+            const input=overlay.querySelector("#ldmDialogInput");
+            const actions=overlay.querySelector("#ldmDialogActions");
+            const cancel=overlay.querySelector("#ldmDialogCancel");
+            const ok=overlay.querySelector("#ldmDialogOk");
+
+            title.textContent=String(options.title||"Informasi");
+            message.textContent=String(options.message||"");
+            icon.textContent=iconFor(options.type||"info");
+
+            const mode=options.mode||"alert";
+            const needsInput=mode==="prompt";
+
+            input.style.display=needsInput?"block":"none";
+            input.value=needsInput?String(options.defaultValue||""):"";
+            input.placeholder=String(options.placeholder||"");
+
+            cancel.style.display=mode==="alert"?"none":"inline-flex";
+            actions.classList.toggle("single",mode==="alert");
+
+            ok.textContent=String(
+                options.okText
+                || (mode==="confirm"?"Lanjutkan":"OK")
+            );
+
+            cancel.textContent=String(options.cancelText||"Batal");
+
+            ok.classList.toggle(
+                "danger",
+                options.type==="danger"
+            );
+
+            function cleanup(result){
+                overlay.classList.remove("show");
+                ok.onclick=null;
+                cancel.onclick=null;
+                activeResolve=null;
+                resolve(result);
+            }
+
+            activeResolve=cleanup;
+
+            ok.onclick=()=>{
+                if(mode==="prompt"){
+                    cleanup(input.value);
+                }else{
+                    cleanup(true);
+                }
+            };
+
+            cancel.onclick=()=>{
+                cleanup(
+                    mode==="prompt"
+                        ? null
+                        : false
+                );
+            };
+
+            overlay.classList.add("show");
+
+            setTimeout(()=>{
+                if(needsInput){
+                    input.focus();
+                    input.select();
+                }else{
+                    ok.focus();
+                }
+            },20);
+        });
+    }
+
+    window.ldmDialog={
+        alert(title,message,type="info"){
+            return open({
+                mode:"alert",
+                title,
+                message,
+                type,
+                okText:"OK"
+            });
+        },
+
+        confirm(title,message,type="question",options={}){
+            return open({
+                mode:"confirm",
+                title,
+                message,
+                type,
+                okText:options.okText||"Lanjutkan",
+                cancelText:options.cancelText||"Batal"
+            });
+        },
+
+        prompt(title,message,defaultValue="",options={}){
+            return open({
+                mode:"prompt",
+                title,
+                message,
+                type:options.type||"question",
+                defaultValue,
+                placeholder:options.placeholder||"",
+                okText:options.okText||"Simpan",
+                cancelText:options.cancelText||"Batal"
+            });
+        }
+    };
+})();
+</script>
+
+    <!-- Live Sync Tahap 6: Supabase Auth authoritative guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=6.0"></script>
+    <script src="js/cloud-session-guard.js?v=15.0"></script><script src="js/license-service.js?v=23.0"></script><script src="js/license-guard.js?v=23.0"></script>
+    <!-- Live Sync Tahap 9: Cloud Absensi -->
+    <script src="js/attendance-service.js?v=9.1"></script>
+    <script src="js/attendance-bootstrap.js?v=9.0"></script>
+    <!-- Live Sync Tahap 7: Cloud Master Barang -->
+    <script src="js/products-service.js?v=21.0"></script>
+    <script src="js/products-bootstrap.js?v=7.0"></script>
+    <!-- Live Sync Tahap 10: Cloud Retur -->
+    <script src="js/returns-service.js?v=10.0"></script>
+    <script src="js/returns-bootstrap.js?v=10.0"></script>
+
+</head><body><div class="app-layout"><div class="nav-overlay" id="navOverlay" onclick="tutupMenu()"></div><nav class="nav-bar" id="navSidebar"><div class="nav-header-mobile"><span>☰ Menu</span><button class="btn-close-menu" onclick="tutupMenu()">✕</button></div><a href="dashboard.html" class="nav-item"><span>📊</span> Dashboard</a><a href="absensi.html" class="nav-item"><span>📝</span> Absensi</a><a href="kasir.html" class="nav-item"><span>💵</span> Kasir</a><a href="retur.html" class="nav-item active"><span>↩️</span> Retur</a><a href="barang.html" class="nav-item"><span>📦</span> Barang</a><a href="supplier.html" class="nav-item" data-role-access="owner,admin"><span>🏢</span> Supplier</a><a href="Purchase-Order.html" class="nav-item" data-role-access="owner,admin"><span>🛒</span> Purchase Order</a><a href="goods.receipt.html" class="nav-item" data-role-access="owner,admin"><span>📥</span> Goods Receipt</a><a href="kartu-stok.html" class="nav-item"><span>📒</span> Kartu Stok</a><a href="stock-opname.html" class="nav-item"><span>📋</span> Stock Opname</a><a href="laporan.html" class="nav-item"><span>📋</span> Laporan</a><a href="shift-closing.html" class="nav-item" data-role-access="owner,admin"><span>🔒</span> Closing Shift</a><a href="eod.html" class="nav-item" data-role-access="owner,admin"><span>🌙</span> End of Day</a><a href="pengeluaran.html" class="nav-item" data-role-access="owner,admin"><span>💸</span> Pengeluaran</a><a href="backup%20%26%20restore.html" class="nav-item" data-role-access="owner,admin"><span>💾</span> Backup & Restore</a></nav><main class="main-content">
+<header class="header-app" id="headerApp"><div class="header-brand-container"><button class="btn-toggle-menu" onclick="bukaMenu()">☰</button><img id="imgLogoToko" class="header-logo-img" alt="Logo"><div><h1 id="txtJudulToko">LocDailyMar</h1><p id="txtSubJudulToko">Retur Penjualan</p></div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span id="txtUserLoggedIn" style="font-size:.72rem;font-weight:650;background:rgba(255,255,255,.15);padding:5px 9px;border-radius:20px">👤 -</span><button class="btn-header-action btn-header-logout" onclick="logout()">🚪 Logout</button></div></header>
+<div class="user-strip"><span>↩️ Retur tidak menghapus transaksi asli. Refund, stok, Kartu Stok, dan kas shift dicatat sebagai histori terpisah.</span><span id="returUpdateInfo">Retur Cloud • Tahap 10</span></div>
+<div class="summary-grid"><div class="summary-card"><span>Retur Hari Ini</span><strong id="sumReturToday">0</strong></div><div class="summary-card"><span>Pending Approval</span><strong id="sumReturPending">0</strong></div><div class="summary-card"><span>Approved Hari Ini</span><strong id="sumReturApproved">0</strong></div><div class="summary-card"><span>Nilai Retur Hari Ini</span><strong id="sumReturValue">Rp 0</strong></div><div class="summary-card"><span>Barang Kembali Stok</span><strong id="sumReturStock">0</strong></div></div>
+<div class="page-grid" style="grid-template-columns:minmax(330px,.9fr) minmax(560px,1.55fr)">
+<section class="box"><div class="box-title"><span>🔎 Cari Transaksi</span><small>ID / Kasir / Barang</small></div><div class="hint">Cari transaksi asli menggunakan ID <strong>LDM-...</strong>. Qty yang sudah diretur atau sedang Pending otomatis mengurangi batas retur agar tidak melebihi qty pembelian.</div><div class="form-group"><label>Transaksi</label><div class="retur-search"><input id="returTxSearch" class="form-control" autocomplete="off" placeholder="Contoh: LDM-260823-101500-A7P2" oninput="searchTransaction(this.value)" onfocus="searchTransaction(this.value)"><div id="returTxDropdown" class="search-dropdown"></div></div></div><div id="returSelectedTx" class="tx-selected"><div style="display:flex;justify-content:space-between;gap:10px"><div><span class="code-pill" id="returTxCode">-</span><div style="margin-top:5px;font-size:.7rem;font-weight:800" id="returTxCashier">-</div></div><div style="text-align:right"><strong id="returTxTotal">Rp 0</strong><br><small id="returTxDate">-</small></div></div></div>
+<div class="box-title" style="margin-top:14px"><span>📦 Item Retur</span><small id="returItemCount">0 Item</small></div><div id="returItems"><div class="empty-state">Pilih transaksi terlebih dahulu.</div></div>
+<div class="form-group"><label>Metode Refund</label><select id="returRefundMethod" class="form-control" onchange="updateReturnTotal()"><option value="Tunai">Tunai</option><option value="Non Tunai">Non Tunai / QRIS / Transfer</option></select></div><div class="form-group"><label>Kasir / Shift dari Absensi yang Memproses Refund</label><select id="returRefundShift" class="form-control" required></select><small class="mini-note">Approval hanya dapat dilakukan oleh <strong>Owner</strong>. Pilihan diambil dari akun yang sudah <strong>Absen Masuk</strong> dan belum Absen Keluar. Refund tunai otomatis dicatat sebagai Kas Keluar pada shift tersebut.</small></div><div class="form-group"><label>Catatan Retur</label><textarea id="returNote" class="form-control" maxlength="200" placeholder="Keterangan tambahan"></textarea></div><div class="return-total-box"><span>Total Refund</span><strong id="returTotalPreview">Rp 0</strong></div><div class="btn-row" style="margin-top:10px"><button class="btn primary" type="button" onclick="createReturn(false)">📨 Ajukan Retur</button><button id="btnCreateApprove" class="btn success" type="button" onclick="createReturn(true)" style="display:none">✅ Simpan & Approve</button><button class="btn secondary" type="button" onclick="resetReturnForm()">Reset</button></div></section>
+<section class="box"><div class="box-title"><span>📋 Riwayat Retur</span><small id="returCount">0 Retur</small></div><div class="toolbar"><div class="form-group"><label>Pencarian</label><input id="returSearchHistory" class="form-control" placeholder="Retur ID / Transaksi / Kasir" oninput="renderReturns()"></div><div class="form-group"><label>Status</label><select id="returStatusFilter" class="form-control" onchange="renderReturns()"><option value="">Semua</option><option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option><option value="CANCELLED">Cancelled</option></select></div><div class="form-group"><label>Tanggal</label><input type="date" id="returDateFilter" class="form-control" onchange="renderReturns()"></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Retur ID</th><th>Transaksi</th><th>Nilai</th><th>Refund / Shift</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="returBody"></tbody></table></div></section></div>
+</main></div>
+<div class="modal" id="returInfoModal" onclick="if(event.target===this)closeReturInfo()"><div class="modal-card"><div class="modal-head"><strong id="returInfoTitle">Informasi</strong><button class="btn secondary" onclick="closeReturInfo()">✕</button></div><div id="returInfoBody" style="font-size:.7rem;line-height:1.65"></div><div class="btn-row" style="margin-top:12px"><button class="btn primary" onclick="closeReturInfo()">OK</button></div></div></div>
+<div class="modal" id="returDetailModal" onclick="if(event.target===this)closeReturDetail()"><div class="modal-card"><div class="modal-head"><strong id="returDetailTitle">Detail Retur</strong><button class="btn secondary" onclick="closeReturDetail()">✕</button></div><div id="returDetailBody"></div></div></div>
+<div class="modal" id="approveReturModal" onclick="if(event.target===this)closeApproveRetur()"><div class="modal-card"><div class="modal-head"><strong>✅ Approve Retur</strong><button class="btn secondary" onclick="closeApproveRetur()">✕</button></div><input type="hidden" id="approveReturId"><div class="form-group"><label>Kasir / Shift dari Absensi yang Memproses Refund</label><select id="approveRefundShift" class="form-control"></select></div><div class="mini-note">Kasir yang dipilih harus sudah Absen Masuk dan belum Absen Keluar. Untuk refund Tunai, sistem membuat Kas Keluar otomatis agar Closing Shift tidak dianggap selisih.</div><div class="btn-row" style="margin-top:12px"><button class="btn success" onclick="confirmApproveReturn()">✅ Approve</button><button class="btn secondary" onclick="closeApproveRetur()">Batal</button></div></div></div>
+<div id="returPrintArea" style="display:none"></div>
+<script id="returPageScript">
+const DEFAULT_HEADER={judul:'LocDailyMar',subJudul:'POS & Management',warnaJudul:'#ffffff',warnaOutline:'#d99b00',warnaSubJudul:'#ffc107',warnaBgHeader:'#0d2240',fontFamily:"'Poppins', sans-serif",brandFontFamily:"'Poppins', sans-serif",bgPrimary:'#f4f6f9',bgSecondary:'#ffffff',darkMode:false,logoData:null};const RETUR_KEY='dataRetur',MUTASI_KEY='mutasiKasShift';let currentUser='',currentRole='',selectedTransactionCode='';
+function safeArray(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}function saveArray(k,v){localStorage.setItem(k,JSON.stringify(Array.isArray(v)?v:[]))}function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}function getUser(){return localStorage.getItem('activeUsername')||localStorage.getItem('loggedInUser')||localStorage.getItem('currentUser')||localStorage.getItem('username')||'-'}function getRole(){return String(localStorage.getItem('userRole')||localStorage.getItem('role')||'').trim().toLowerCase()}function dateWITA(){const d=new Date(Date.now()+8*3600000);return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`}function timeWITA(){const d=new Date(Date.now()+8*3600000);return `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}`}
+function requireAccess(){if(localStorage.getItem('isLoggedIn')!=='true'){location.replace('index.html');return false}currentUser=getUser();currentRole=getRole();if(!['owner','admin','kasir'].includes(currentRole)){location.replace('dashboard.html');return false}document.documentElement.classList.remove('secure-page-pending');return true}function bukaMenu(){document.getElementById('navSidebar')?.classList.add('active');document.getElementById('navOverlay')?.classList.add('active')}function tutupMenu(){document.getElementById('navSidebar')?.classList.remove('active');document.getElementById('navOverlay')?.classList.remove('active')}async function logout(){
+    const ok=await ldmDialog.confirm(
+        'Keluar dari Aplikasi',
+        'Keluar dari sesi LocDailyMar saat ini?',
+        'question',
+        {
+            okText:'Keluar',
+            cancelText:'Tetap Masuk'
+        }
+    );
+
+    if(!ok)return;
+
+    [
+        'isLoggedIn',
+        'activeUsername',
+        'loggedInUser',
+        'currentUser',
+        'username',
+        'userRole',
+        'role'
+    ].forEach(
+        k=>localStorage.removeItem(k)
+    );
+
+    location.href='index.html';
+}
+function theme(){let c=DEFAULT_HEADER;try{c={...DEFAULT_HEADER,...(JSON.parse(localStorage.getItem('headerConfig')||'null')||{})}}catch{}document.body.classList.toggle('dark-mode',!!c.darkMode);document.documentElement.style.setProperty('--app-font',c.fontFamily||DEFAULT_HEADER.fontFamily);document.documentElement.style.setProperty('--brand-font',c.brandFontFamily||c.fontFamily||DEFAULT_HEADER.brandFontFamily);document.documentElement.style.setProperty('--bg-primary',c.bgPrimary||DEFAULT_HEADER.bgPrimary);document.documentElement.style.setProperty('--bg-secondary',c.bgSecondary||DEFAULT_HEADER.bgSecondary);document.getElementById('headerApp').style.background=c.warnaBgHeader||DEFAULT_HEADER.warnaBgHeader;const t=document.getElementById('txtJudulToko');t.textContent=c.judul||'LocDailyMar';t.style.color=c.warnaJudul||'#fff';t.style.textShadow=`1px 1px 0 ${c.warnaOutline||'#d99b00'}`;document.getElementById('txtSubJudulToko').style.color=c.warnaSubJudul||'#ffc107';const logo=document.getElementById('imgLogoToko');if(c.logoData){logo.src=c.logoData;logo.style.display='block'}else logo.style.display='none'}
+function showInfo(t,m){document.getElementById('returInfoTitle').textContent=t;document.getElementById('returInfoBody').innerHTML=m;document.getElementById('returInfoModal').style.display='flex'}function closeReturInfo(){document.getElementById('returInfoModal').style.display='none'}function closeReturDetail(){document.getElementById('returDetailModal').style.display='none'}function closeApproveRetur(){document.getElementById('approveReturModal').style.display='none'}
+function txKey(t){return String(t.kodeTransaksi||t.id||t.timestamp||'')}function transactions(){
+    const cloud=safeArray('ldmReturnTransactions');
+
+    if(cloud.length){
+        return cloud;
+    }
+
+    const out=[];
+    const seen=new Set();
+
+    let deletedRefs=[];
+    try{
+        const value=JSON.parse(
+            localStorage.getItem("deletedTransactionRefs") || "[]"
+        );
+        deletedRefs=Array.isArray(value) ? value : [];
+    }catch(e){
+        deletedRefs=[];
+    }
+
+    function isDeleted(tx){
+        return deletedRefs.some(ref=>{
+            const code=String(tx?.kodeTransaksi||"").trim();
+            const id=String(tx?.id||"").trim();
+            const ts=String(tx?.timestamp||"").trim();
+
+            return (
+                ref?.kodeTransaksi &&
+                code &&
+                String(ref.kodeTransaksi)===code
+            ) || (
+                ref?.id &&
+                id &&
+                String(ref.id)===id
+            ) || (
+                ref?.timestamp &&
+                ts &&
+                String(ref.timestamp)===ts
+            );
+        });
+    }
+
+    const activeRows=[
+        ...safeArray("laporan"),
+        ...safeArray("dataLaporan"),
+        ...safeArray("riwayatTransaksi")
+    ];
+
+    const activeKeys=new Set(
+        activeRows.map(tx=>txKey(tx)).filter(Boolean)
+    );
+
+    const today=dateWITA();
+
+    [
+        ...safeArray("laporanHistory"),
+        ...activeRows
+    ].forEach(tx=>{
+        const key=txKey(tx);
+
+        if(!key || seen.has(key) || isDeleted(tx)){
+            return;
+        }
+
+        const txDate=String(
+            tx.tanggal || tx.waktu_teks || ""
+        ).slice(0,10);
+
+        if(
+            txDate===today &&
+            !activeKeys.has(key)
+        ){
+            return;
+        }
+
+        seen.add(key);
+        out.push(tx);
+    });
+
+    return out.sort(
+        (a,b)=>
+            Number(b.timestamp||b.id||0)
+            -
+            Number(a.timestamp||a.id||0)
+    );
+}
+function findTx(code){return transactions().find(t=>String(t.kodeTransaksi||t.id||t.timestamp)===String(code))||null}
+function activeShifts(){
+    const today=dateWITA();
+    const logs=safeArray('dataAbsensi');
+
+    const users=[...new Set(
+        logs
+            .filter(a=>String(a.tanggal||'')===today)
+            .map(a=>String(a.username||'').trim())
+            .filter(Boolean)
+    )];
+
+    return users.map(username=>{
+        const rows=logs
+            .filter(a=>
+                String(a.tanggal||'')===today
+                &&
+                String(a.username||'').trim().toLowerCase()
+                === username.toLowerCase()
+            )
+            .sort((a,b)=>Number(a.id||0)-Number(b.id||0));
+
+        const masuk=[...rows].reverse()
+            .find(a=>a.jenis==='Masuk'||a.jenis==='Hadir');
+
+        if(!masuk)return null;
+
+        const sudahKeluar=rows.some(a=>
+            a.jenis==='Keluar'
+            &&
+            Number(a.id||0)>Number(masuk.id||0)
+        );
+
+        if(sudahKeluar)return null;
+
+        return {
+            id:`ABS|${username}|${masuk.shift||'Shift 1'}`,
+            kasir:username,
+            shift:masuk.shift||'Shift 1',
+            absensiId:masuk.id||null
+        };
+    }).filter(Boolean);
+}
+function availableRefundShifts(){
+    const all=activeShifts();
+    return currentRole==='kasir'
+        ? all.filter(s=>
+            String(s.kasir||'').toLowerCase()
+            === String(currentUser).toLowerCase()
+          )
+        : all;
+}
+function fillRefundShift(selectId,selected=''){
+    const el=document.getElementById(selectId);
+    if(!el)return;
+
+    const list=availableRefundShifts();
+
+    el.innerHTML=list.length
+        ? list.map(s=>
+            `<option value="${esc(s.id)}">${esc(s.kasir)} • ${esc(s.shift)}</option>`
+          ).join('')
+        : '<option value="">Tidak ada akun yang sedang Absen Masuk</option>';
+
+    if(
+        selected
+        &&
+        list.some(s=>String(s.id)===String(selected))
+    ){
+        el.value=selected;
+    }
+}
+function itemKey(x){return String(x.barcode||'').trim().toLowerCase()||String(x.nama||x.namaBarang||'').trim().toLowerCase()}function itemQty(x){return Number(x.qty||x.jumlah||0)}function itemPrice(x){const q=itemQty(x)||1;return Number(x.harga||x.hargaJual||x.price||0)||Number(x.subtotal||0)/q}
+function usedReturnQty(txCode,item,excludeId=''){const key=itemKey(item);return safeArray(RETUR_KEY).filter(r=>String(r.transaksiId)===String(txCode)&&!['REJECTED','CANCELLED'].includes(String(r.status||'').toUpperCase())&&String(r.returId)!==String(excludeId)).reduce((sum,r)=>sum+(Array.isArray(r.items)?r.items:[]).filter(i=>itemKey(i)===key).reduce((a,i)=>a+Number(i.qtyRetur||0),0),0)}
+function searchTransaction(q=''){const el=document.getElementById('returTxDropdown'),query=String(q||'').trim().toLowerCase();const rows=transactions().filter(t=>{if(!query)return true;return [t.kodeTransaksi,t.kasir,t.barang,...(Array.isArray(t.keranjang)?t.keranjang.map(i=>i.nama):[])].some(v=>String(v||'').toLowerCase().includes(query))}).slice(0,25);el.innerHTML=rows.length?rows.map(t=>`<div class="search-option" onclick="selectTransaction('${esc(txKey(t))}')"><strong>${esc(t.kodeTransaksi||txKey(t))}</strong><small>${esc(t.waktu_teks||t.tanggal||'-')} • ${esc(t.kasir||'-')} • ${rp(t.total||0)}</small></div>`).join(''):'<div class="search-option"><strong>Tidak ditemukan</strong><small>Coba ID transaksi, nama kasir, atau barang.</small></div>';el.classList.add('show')}
+function selectTransaction(code){const tx=findTx(code);if(!tx)return;selectedTransactionCode=txKey(tx);document.getElementById('returTxSearch').value=tx.kodeTransaksi||selectedTransactionCode;document.getElementById('returTxDropdown').classList.remove('show');document.getElementById('returTxCode').textContent=tx.kodeTransaksi||selectedTransactionCode;document.getElementById('returTxCashier').textContent=`Kasir: ${tx.kasir||'-'}`;document.getElementById('returTxTotal').textContent=rp(tx.total||0);document.getElementById('returTxDate').textContent=tx.waktu_teks||tx.tanggal||'-';document.getElementById('returSelectedTx').classList.add('show');renderReturnItems(tx);updateReturnTotal()}
+function renderReturnItems(tx){const box=document.getElementById('returItems'),items=Array.isArray(tx.keranjang)?tx.keranjang:[];document.getElementById('returItemCount').textContent=`${items.length} Item`;if(!items.length){box.innerHTML='<div class="empty-state">Transaksi lama tidak memiliki detail keranjang sehingga retur per-item tidak dapat diproses otomatis.</div>';return}box.innerHTML=items.map((it,idx)=>{const bought=itemQty(it),used=usedReturnQty(txKey(tx),it),max=Math.max(0,bought-used),price=itemPrice(it);return `<div class="retur-item" data-retur-index="${idx}"><div class="retur-item-head"><div><div class="retur-item-name">${esc(it.nama||'Barang')}</div><div class="retur-item-meta">Dibeli ${bought} ${esc(it.satuan||'Pcs')} • Sudah/Pending Retur ${used} • Maksimal ${max}<br>Harga transaksi ${rp(price)} / ${esc(it.satuan||'Pcs')}</div></div><span class="code-pill">${esc(it.barcode||'-')}</span></div><div class="retur-item-controls"><div><label>Qty Retur</label><input type="number" class="form-control retur-qty" min="0" max="${max}" value="0" step="1" data-index="${idx}" oninput="updateReturnTotal()"></div><div><label>Alasan</label><select class="form-control retur-reason" data-index="${idx}"><option>Salah Barang</option><option>Barang Rusak</option><option>Expired</option><option>Kemasan Rusak</option><option>Tidak Sesuai</option><option>Kesalahan Kasir</option><option>Lainnya</option></select></div><div><label>Kondisi Stok</label><select class="form-control retur-restock" data-index="${idx}"><option value="true">Kembali ke Stok</option><option value="false">Tidak Layak Jual</option></select></div></div></div>`}).join('')}
+function selectedReturnItems(){
+    const tx=findTx(selectedTransactionCode);
+
+    if(!tx || !Array.isArray(tx.keranjang)){
+        return [];
+    }
+
+    return [
+        ...document.querySelectorAll('.retur-qty')
+    ].map(el=>{
+        const idx=Number(el.dataset.index);
+        const src=tx.keranjang[idx];
+        const q=Number(el.value||0);
+        const reason=
+            document.querySelector(
+                `.retur-reason[data-index="${idx}"]`
+            )?.value||'';
+        const restock=
+            document.querySelector(
+                `.retur-restock[data-index="${idx}"]`
+            )?.value==='true';
+
+        return {
+            index:idx,
+            transactionItemId:
+                src.transactionItemId || null,
+            productId:
+                src.productId || src.id || null,
+            barcode:src.barcode||'',
+            nama:src.nama||'',
+            satuan:src.satuan||'Pcs',
+            qtyBeli:itemQty(src),
+            qtyRetur:q,
+            harga:itemPrice(src),
+            nilaiRetur:itemPrice(src)*q,
+            alasan:reason,
+            kembaliKeStok:restock
+        };
+    }).filter(i=>i.qtyRetur>0);
+}
+function updateReturnTotal(){const total=selectedReturnItems().reduce((a,i)=>a+Number(i.nilaiRetur||0),0);document.getElementById('returTotalPreview').textContent=rp(total)}
+function hashCode(t){let h=2166136261;String(t).split('').forEach(c=>{h^=c.charCodeAt(0);h=Math.imul(h,16777619)});return(h>>>0).toString(36).toUpperCase().padStart(4,'0').slice(-4)}function makeReturnId(){const d=new Date(Date.now()+8*3600000),pad=n=>String(n).padStart(2,'0'),ymd=String(d.getUTCFullYear()).slice(-2)+pad(d.getUTCMonth()+1)+pad(d.getUTCDate()),hms=pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds());return `RTR-${ymd}-${hms}-${hashCode(Date.now()+'|'+currentUser+'|'+Math.random())}`}
+async function createReturn(directApprove){
+    const tx=findTx(selectedTransactionCode);
+
+    if(!tx){
+        showInfo(
+            'Pilih Transaksi',
+            'Pilih transaksi asli terlebih dahulu.'
+        );
+        return;
+    }
+
+    const items=selectedReturnItems();
+
+    if(!items.length){
+        showInfo(
+            'Qty Retur Kosong',
+            'Isi minimal satu Qty Retur lebih dari 0.'
+        );
+        return;
+    }
+
+    if(
+        items.some(
+            item=>!item.transactionItemId
+        )
+    ){
+        showInfo(
+            'Transaksi Belum Cloud',
+            'Item transaksi tidak memiliki transaction_item_id cloud. Tahap 10 hanya memproses transaksi yang tersimpan di Supabase Tahap 8+.'
+        );
+        return;
+    }
+
+    const shiftId=
+        document.getElementById(
+            'returRefundShift'
+        ).value;
+
+    const session=
+        activeShifts().find(
+            s=>String(s.id)===String(shiftId)
+        );
+
+    if(!session){
+        showInfo(
+            'Kasir Refund Tidak Aktif',
+            'Pilih akun yang sudah Absen Masuk cloud dan belum Absen Keluar.'
+        );
+        fillRefundShift('returRefundShift');
+        return;
+    }
+
+    if(
+        !window.LDMReturns ||
+        typeof window.LDMReturns.submit!=='function'
+    ){
+        showInfo(
+            'Cloud Retur Belum Siap',
+            'returns-service.js belum termuat.'
+        );
+        return;
+    }
+
+    try{
+        const result=
+            await window.LDMReturns.submit({
+                transaction:tx,
+                items,
+                refundMethod:
+                    document.getElementById(
+                        'returRefundMethod'
+                    ).value,
+                refundUsername:
+                    session.kasir,
+                note:
+                    document.getElementById(
+                        'returNote'
+                    ).value.trim()
+            });
+
+        if(
+            directApprove &&
+            currentRole==='owner'
+        ){
+            await window.LDMReturns.approve(
+                result.id,
+                session.kasir
+            );
+        }
+
+        syncTransactionReturnMeta(
+            tx.kodeTransaksi || txKey(tx)
+        );
+
+        resetReturnForm();
+        renderReturns();
+
+        showInfo(
+            directApprove && currentRole==='owner'
+                ? 'Retur Disetujui'
+                : 'Retur Diajukan',
+            directApprove && currentRole==='owner'
+                ? `Retur <span class="code-pill">${esc(result.return_code||'')}</span> sudah disimpan dan <strong>APPROVED di Supabase</strong>. Stok cloud diperbarui secara atomik.`
+                : `Retur <span class="code-pill">${esc(result.return_code||'')}</span> disimpan sebagai <strong>PENDING di Supabase</strong>. Qty Pending langsung mereservasi jatah retur agar device lain tidak over-return.`
+        );
+
+    }catch(error){
+        console.error(
+            'Cloud Retur submit gagal:',
+            error
+        );
+
+        showInfo(
+            'Retur Gagal',
+            esc(error.message||String(error))
+        );
+    }
+}
+async function applyApproval(id,shiftId){
+    if(currentRole!=='owner'){
+        showInfo(
+            'Akses Ditolak',
+            'Approval retur hanya dapat dilakukan oleh role Owner.'
+        );
+        return false;
+    }
+
+    const r=safeArray(RETUR_KEY).find(
+        x=>
+            String(x.returId)===String(id)
+            ||
+            String(x.cloudId)===String(id)
+    );
+
+    if(
+        !r ||
+        String(r.status).toUpperCase()!=='PENDING'
+    ){
+        return false;
+    }
+
+    const session=
+        activeShifts().find(
+            s=>String(s.id)===String(shiftId)
+        );
+
+    if(!session){
+        showInfo(
+            'Kasir Refund Tidak Aktif',
+            'Pilih akun yang sudah Absen Masuk cloud dan belum Absen Keluar.'
+        );
+        return false;
+    }
+
+    if(
+        !window.LDMReturns ||
+        typeof window.LDMReturns.approve!=='function'
+    ){
+        showInfo(
+            'Cloud Retur Belum Siap',
+            'returns-service.js belum termuat.'
+        );
+        return false;
+    }
+
+    try{
+        await window.LDMReturns.approve(
+            r.cloudId || r._cloud?.id,
+            session.kasir
+        );
+
+        syncTransactionReturnMeta(
+            r.transaksiId
+        );
+
+        resetReturnForm();
+        renderReturns();
+
+        showInfo(
+            'Retur Disetujui',
+            `Retur <span class="code-pill">${esc(r.returId)}</span> sudah <strong>APPROVED oleh Owner</strong>. Perubahan stok dan refund cloud dilakukan atomik.`
+        );
+
+        return true;
+
+    }catch(error){
+        showInfo(
+            'Approval Gagal',
+            esc(error.message||String(error))
+        );
+
+        return false;
+    }
+}
+function openApproveReturn(id){
+    if(currentRole!=='owner'){
+        showInfo(
+            'Akses Ditolak',
+            'Hanya Owner yang dapat melakukan approval retur.'
+        );
+        return;
+    }
+
+    const r=safeArray(RETUR_KEY).find(
+        x=>
+            String(x.returId)
+            ===
+            String(id)
+    );
+
+    if(
+        !r
+        ||
+        r.status!=='PENDING'
+    )return;
+
+    document.getElementById(
+        'approveReturId'
+    ).value=id;
+
+    fillRefundShift(
+        'approveRefundShift',
+        (r.refundContextKey||r.refundShiftId)
+    );
+
+    document.getElementById(
+        'approveReturModal'
+    ).style.display='flex';
+}
+async function confirmApproveReturn(){
+    if(currentRole!=='owner'){
+        showInfo(
+            'Akses Ditolak',
+            'Hanya Owner yang dapat melakukan approval retur.'
+        );
+        closeApproveRetur();
+        return;
+    }
+
+    const id=
+        document.getElementById(
+            'approveReturId'
+        ).value;
+
+    const shift=
+        document.getElementById(
+            'approveRefundShift'
+        ).value;
+
+    if(!shift){
+        showInfo(
+            'Shift Belum Dipilih',
+            'Pilih kasir/shift dari Absensi untuk approval.'
+        );
+        return;
+    }
+
+    if(
+        await applyApproval(
+            id,
+            shift
+        )
+    ){
+        closeApproveRetur();
+    }
+}
+async function rejectReturn(id){
+    if(
+        !['owner','admin'].includes(currentRole)
+    ){
+        showInfo(
+            'Akses Ditolak',
+            'Hanya Owner/Admin yang dapat menolak pengajuan retur.'
+        );
+        return;
+    }
+
+    const reason=await ldmDialog.prompt(
+        'Tolak Retur',
+        'Masukkan alasan penolakan retur.',
+        'Data tidak sesuai',
+        {
+            type:'warning',
+            okText:'Tolak Retur'
+        }
+    );
+
+    if(reason===null){
+        return;
+    }
+
+    const r=safeArray(RETUR_KEY).find(
+        x=>String(x.returId)===String(id)
+    );
+
+    if(!r || r.status!=='PENDING'){
+        return;
+    }
+
+    try{
+        await window.LDMReturns.reject(
+            r.cloudId || r._cloud?.id,
+            String(reason||'').trim()
+        );
+
+        syncTransactionReturnMeta(
+            r.transaksiId
+        );
+
+        renderReturns();
+
+        showInfo(
+            'Retur Ditolak',
+            `Retur <span class="code-pill">${esc(r.returId)}</span> berstatus <strong>REJECTED</strong> di cloud.`
+        );
+    }catch(error){
+        showInfo(
+            'Reject Gagal',
+            esc(error.message||String(error))
+        );
+    }
+}
+function canCancelReturn(r){
+    const status=
+        String(r?.status||'')
+            .toUpperCase();
+
+    if(status==='CANCELLED')return false;
+
+    if(currentRole==='owner'){
+        return true;
+    }
+
+    if(
+        currentRole==='admin'
+        &&
+        ['PENDING','REJECTED']
+            .includes(status)
+    ){
+        return true;
+    }
+
+    if(
+        currentRole==='kasir'
+        &&
+        status==='PENDING'
+        &&
+        String(r?.dibuatOleh||'')
+            .toLowerCase()
+        ===
+        String(currentUser)
+            .toLowerCase()
+    ){
+        return true;
+    }
+
+    return false;
+}
+
+function reverseApprovedReturnForCancel(r){
+    if(currentRole!=='owner'){
+        return {
+            ok:false,
+            message:
+                'Retur APPROVED hanya dapat dicancel oleh Owner.'
+        };
+    }
+
+    const closingExists=
+        safeArray('shiftClosingLog')
+            .some(log=>{
+                if(
+                    r.refundShiftId
+                    &&
+                    String(log.shiftId||'')
+                    === String(r.refundShiftId||'')
+                ){
+                    return true;
+                }
+
+                return (
+                    String(log.tanggal||'')
+                    === String(r.approvedTanggal||r.tanggal||'')
+                    &&
+                    String(log.kasir||'').trim().toLowerCase()
+                    === String(r.refundKasir||'').trim().toLowerCase()
+                    &&
+                    String(log.shift||'').trim().toLowerCase()
+                    === String(r.refundShift||'').trim().toLowerCase()
+                );
+            });
+
+    if(closingExists){
+        return {
+            ok:false,
+            message:
+                'Shift refund sudah memiliki Closing Log. Retur APPROVED tidak dapat dibatalkan karena akan mengubah kas pada shift yang sudah ditutup.'
+        };
+    }
+
+    const barang=safeArray('dataBarang');
+
+    /*
+     * Pastikan stok cukup untuk menarik kembali qty yang sebelumnya
+     * sempat dikembalikan saat approval.
+     */
+    for(const it of (r.items||[])){
+        if(!it.kembaliKeStok)continue;
+
+        let idx=barang.findIndex(
+            b=>
+                it.barcode
+                &&
+                String(b.barcode||'')
+                ===
+                String(it.barcode)
+        );
+
+        if(idx<0){
+            idx=barang.findIndex(
+                b=>
+                    String(b.nama||'')
+                        .trim()
+                        .toLowerCase()
+                    ===
+                    String(it.nama||'')
+                        .trim()
+                        .toLowerCase()
+            );
+        }
+
+        if(idx<0){
+            return {
+                ok:false,
+                message:
+                    `Barang ${it.nama} tidak ditemukan sehingga pembatalan stok tidak dapat dilakukan.`
+            };
+        }
+
+        if(
+            Number(barang[idx].stok||0)
+            <
+            Number(it.qtyRetur||0)
+        ){
+            return {
+                ok:false,
+                message:
+                    `Stok ${it.nama} saat ini tidak cukup untuk membalik retur. Stok minimal yang dibutuhkan: ${it.qtyRetur}.`
+            };
+        }
+    }
+
+    const logs=safeArray(
+        'kartuStokMutasi'
+    );
+
+    for(const it of (r.items||[])){
+        if(!it.kembaliKeStok)continue;
+
+        let idx=barang.findIndex(
+            b=>
+                it.barcode
+                &&
+                String(b.barcode||'')
+                ===
+                String(it.barcode)
+        );
+
+        if(idx<0){
+            idx=barang.findIndex(
+                b=>
+                    String(b.nama||'')
+                        .trim()
+                        .toLowerCase()
+                    ===
+                    String(it.nama||'')
+                        .trim()
+                        .toLowerCase()
+            );
+        }
+
+        const before=
+            Number(
+                barang[idx].stok||0
+            );
+
+        const amount=
+            Number(
+                it.qtyRetur||0
+            );
+
+        const after=
+            before-amount;
+
+        barang[idx].stok=after;
+
+        logs.unshift({
+            id:
+                `${Date.now()}-${Math.random()
+                    .toString(16)
+                    .slice(2)}`,
+            timestamp:Date.now(),
+            tanggal:dateWITA(),
+            waktu:timeWITA(),
+            barcode:
+                barang[idx].barcode
+                || it.barcode
+                || '',
+            namaBarang:
+                barang[idx].nama
+                || it.nama
+                || '',
+            barangIndex:idx,
+            jenis:'retur_cancelled',
+            sumber:'retur_cancel',
+            referensi:r.returId,
+            delta:-amount,
+            stokSebelum:before,
+            stokSesudah:after,
+            keterangan:
+                `Pembatalan retur ${r.returId}`,
+            petugas:currentUser
+        });
+    }
+
+    saveArray(
+        'dataBarang',
+        barang
+    );
+
+    saveArray(
+        'kartuStokMutasi',
+        logs
+    );
+
+    let muts=safeArray(MUTASI_KEY);
+
+    muts=muts.filter(
+        m=>
+            String(m.returId||'')
+            !==
+            String(r.returId)
+            &&
+            String(m.id||'')
+            !==
+            String(r.refundCashMutationId||'')
+    );
+
+    saveArray(
+        MUTASI_KEY,
+        muts
+    );
+
+    return {
+        ok:true,
+        message:''
+    };
+}
+
+async function cancelReturn(id){
+    const r=safeArray(RETUR_KEY).find(
+        x=>String(x.returId)===String(id)
+    );
+
+    if(!r){
+        return;
+    }
+
+    if(!canCancelReturn(r)){
+        showInfo(
+            'Akses Ditolak',
+            'Anda tidak memiliki izin untuk membatalkan retur ini.'
+        );
+        return;
+    }
+
+    const status=
+        String(r.status||'').toUpperCase();
+
+    if(status==='APPROVED'){
+        const closingExists=
+            safeArray('shiftClosingLog').some(log=>
+                String(log.tanggal||'')===
+                    String(r.approvedTanggal||r.tanggal||'')
+                &&
+                String(log.kasir||'').trim().toLowerCase()===
+                    String(r.refundKasir||'').trim().toLowerCase()
+                &&
+                String(log.shift||'').trim().toLowerCase()===
+                    String(r.refundShift||'').trim().toLowerCase()
+            );
+
+        if(closingExists){
+            showInfo(
+                'Tidak Dapat Dicancel',
+                'Closing lokal untuk kasir/shift refund ini sudah ada. Batalkan/rekonsiliasi Closing terlebih dahulu sebelum reversal retur.'
+            );
+            return;
+        }
+    }
+
+    const reason=await ldmDialog.prompt(
+        'Cancel Retur',
+        `Masukkan alasan cancel ${r.returId}.`,
+        status==='APPROVED'
+            ? 'Pembatalan retur yang sudah disetujui'
+            : 'Pengajuan dibatalkan',
+        {
+            type:
+                status==='APPROVED'
+                    ? 'danger'
+                    : 'warning',
+            okText:'Lanjutkan Cancel'
+        }
+    );
+
+    if(reason===null){
+        return;
+    }
+
+    const ok=await ldmDialog.confirm(
+        'Konfirmasi Cancel Retur',
+        `Cancel ${r.returId}? Jika APPROVED, stok cloud akan dibalik secara atomik.`,
+        status==='APPROVED'
+            ? 'danger'
+            : 'warning',
+        {
+            okText:'Ya, Cancel'
+        }
+    );
+
+    if(!ok){
+        return;
+    }
+
+    try{
+        await window.LDMReturns.cancel(
+            r.cloudId || r._cloud?.id,
+            String(reason||'').trim()
+        );
+
+        syncTransactionReturnMeta(
+            r.transaksiId
+        );
+
+        renderReturns();
+
+        showInfo(
+            'Retur Dicancel',
+            `Retur <span class="code-pill">${esc(r.returId)}</span> tetap tersimpan dengan status <strong>CANCELLED</strong>.`
+        );
+
+    }catch(error){
+        showInfo(
+            'Cancel Gagal',
+            esc(error.message||String(error))
+        );
+    }
+}
+
+async function deleteReturnPermanent(id){
+    if(currentRole!=='owner'){
+        showInfo(
+            'Akses Ditolak',
+            'Hanya Owner yang dapat mengarsipkan retur.'
+        );
+        return;
+    }
+
+    const r=safeArray(RETUR_KEY).find(
+        x=>String(x.returId)===String(id)
+    );
+
+    if(!r){
+        return;
+    }
+
+    if(
+        String(r.status||'').toUpperCase()==='APPROVED'
+    ){
+        showInfo(
+            'Cancel Terlebih Dahulu',
+            'Retur APPROVED harus dicancel terlebih dahulu agar efek stok dan kas dibalik dengan aman.'
+        );
+        return;
+    }
+
+    const ok=await ldmDialog.confirm(
+        'Arsipkan Retur',
+        `Arsipkan ${r.returId}? Record cloud memakai soft delete dan tidak dihapus keras.`,
+        'danger',
+        {
+            okText:'Arsipkan'
+        }
+    );
+
+    if(!ok){
+        return;
+    }
+
+    try{
+        await window.LDMReturns.softDelete(
+            r.cloudId || r._cloud?.id
+        );
+
+        syncTransactionReturnMeta(
+            r.transaksiId
+        );
+
+        renderReturns();
+
+        showInfo(
+            'Retur Diarsipkan',
+            'Record retur sudah di-soft-delete dari tampilan aktif cloud.'
+        );
+    }catch(error){
+        showInfo(
+            'Arsip Gagal',
+            esc(error.message||String(error))
+        );
+    }
+}
+
+function approvedForTx(code){return safeArray(RETUR_KEY).filter(r=>String(r.transaksiId)===String(code)&&String(r.status).toUpperCase()==='APPROVED')}
+function syncTransactionReturnMeta(code){const approved=approvedForTx(code),total=approved.reduce((a,r)=>a+Number(r.totalRetur||0),0),qtyMap=new Map();approved.forEach(r=>(r.items||[]).forEach(i=>qtyMap.set(itemKey(i),(qtyMap.get(itemKey(i))||0)+Number(i.qtyRetur||0))));['laporan','dataLaporan','laporanHistory'].forEach(key=>{const arr=safeArray(key);let changed=false;arr.forEach(tx=>{if(String(tx.kodeTransaksi||tx.id||tx.timestamp)!==String(code))return;const cart=Array.isArray(tx.keranjang)?tx.keranjang:[],full=cart.length>0&&cart.every(i=>(qtyMap.get(itemKey(i))||0)>=itemQty(i));tx.totalRetur=total;tx.totalBersih=Math.max(0,Number(tx.total||0)-total);tx.statusRetur=total<=0?'':(full||total>=Number(tx.total||0)?'PENUH':'SEBAGIAN');tx.returIds=approved.map(r=>r.returId);changed=true});if(changed)saveArray(key,arr)})}
+function resetReturnForm(){selectedTransactionCode='';document.getElementById('returTxSearch').value='';document.getElementById('returSelectedTx').classList.remove('show');document.getElementById('returItems').innerHTML='<div class="empty-state">Pilih transaksi terlebih dahulu.</div>';document.getElementById('returItemCount').textContent='0 Item';document.getElementById('returNote').value='';document.getElementById('returTotalPreview').textContent='Rp 0';fillRefundShift('returRefundShift')}
+function renderReturns(){
+    const data=safeArray(RETUR_KEY);
+    const today=dateWITA();
+
+    const q=String(
+        document.getElementById(
+            'returSearchHistory'
+        ).value||''
+    ).trim().toLowerCase();
+
+    const sf=
+        document.getElementById(
+            'returStatusFilter'
+        ).value;
+
+    const df=
+        document.getElementById(
+            'returDateFilter'
+        ).value;
+
+    const rows=data.filter(r=>
+        (
+            !q
+            ||
+            String(
+                `${r.returId} ${r.transaksiId} ${r.dibuatOleh} ${r.kasirAsli} ${r.status}`
+            ).toLowerCase().includes(q)
+        )
+        &&
+        (
+            !sf
+            ||
+            r.status===sf
+        )
+        &&
+        (
+            !df
+            ||
+            r.tanggal===df
+        )
+    );
+
+    const todayRows=
+        data.filter(
+            r=>r.tanggal===today
+        );
+
+    const approvedToday=
+        data.filter(
+            r=>
+                r.status==='APPROVED'
+                &&
+                String(
+                    r.approvedTanggal
+                    || r.tanggal
+                )===today
+        );
+
+    document.getElementById(
+        'sumReturToday'
+    ).textContent=todayRows.length;
+
+    document.getElementById(
+        'sumReturPending'
+    ).textContent=
+        data.filter(
+            r=>r.status==='PENDING'
+        ).length;
+
+    document.getElementById(
+        'sumReturApproved'
+    ).textContent=
+        approvedToday.length;
+
+    document.getElementById(
+        'sumReturValue'
+    ).textContent=
+        rp(
+            approvedToday.reduce(
+                (a,r)=>
+                    a
+                    +
+                    Number(
+                        r.totalRetur||0
+                    ),
+                0
+            )
+        );
+
+    document.getElementById(
+        'sumReturStock'
+    ).textContent=
+        approvedToday.reduce(
+            (a,r)=>
+                a
+                +
+                (r.items||[])
+                    .filter(
+                        i=>i.kembaliKeStok
+                    )
+                    .reduce(
+                        (x,i)=>
+                            x
+                            +
+                            Number(
+                                i.qtyRetur||0
+                            ),
+                        0
+                    ),
+            0
+        );
+
+    document.getElementById(
+        'returUpdateInfo'
+    ).textContent=
+        `${data.length} retur tersimpan`;
+
+    document.getElementById(
+        'returCount'
+    ).textContent=
+        `${rows.length} Retur`;
+
+    document.getElementById(
+        'returBody'
+    ).innerHTML=
+        rows.length
+            ? rows.map(r=>{
+                const status=
+                    String(r.status||'')
+                        .toUpperCase();
+
+                let act=
+                    `<button class="btn info" onclick="showReturnDetail('${r.returId}')">👁 Detail</button>`
+                    +
+                    `<button class="btn secondary" onclick="printReturn('${r.returId}')">🖨 Cetak</button>`;
+
+                /*
+                 * APPROVAL khusus Owner.
+                 */
+                if(
+                    status==='PENDING'
+                    &&
+                    currentRole==='owner'
+                ){
+                    act+=
+                        `<button class="btn success" onclick="openApproveReturn('${r.returId}')">✅ Approve</button>`;
+                }
+
+                /*
+                 * Owner / Admin boleh Reject.
+                 */
+                if(
+                    status==='PENDING'
+                    &&
+                    ['owner','admin']
+                        .includes(currentRole)
+                ){
+                    act+=
+                        `<button class="btn warning" onclick="rejectReturn('${r.returId}')">✕ Reject</button>`;
+                }
+
+                if(canCancelReturn(r)){
+                    act+=
+                        `<button class="btn danger" onclick="cancelReturn('${r.returId}')">🚫 Cancel</button>`;
+                }
+
+                if(
+                    currentRole==='owner'
+                    &&
+                    ['PENDING','REJECTED','CANCELLED']
+                        .includes(status)
+                ){
+                    act+=
+                        `<button class="btn danger" onclick="deleteReturnPermanent('${r.returId}')">🗄 Arsipkan</button>`;
+                }
+
+                return `
+                    <tr>
+                        <td data-label="Retur ID">
+                            <span class="code-pill">
+                                ${esc(r.returId)}
+                            </span>
+                            <br>
+                            <small>
+                                ${esc(r.tanggal)}
+                                ${esc(r.waktu||'')}
+                            </small>
+                        </td>
+
+                        <td data-label="Transaksi">
+                            <strong>
+                                ${esc(r.transaksiId)}
+                            </strong>
+                            <br>
+                            <small>
+                                ${esc(r.kasirAsli||'-')}
+                                •
+                                ${(r.items||[]).length} item
+                            </small>
+                        </td>
+
+                        <td data-label="Nilai">
+                            <strong>
+                                ${rp(r.totalRetur)}
+                            </strong>
+                        </td>
+
+                        <td data-label="Refund / Shift">
+                            ${esc(r.metodeRefund)}
+                            <br>
+                            <small>
+                                ${esc(r.refundKasir||'-')} • ${esc(r.refundShift||'-')}
+                            </small>
+                        </td>
+
+                        <td data-label="Status">
+                            <span class="status-pill ${String(r.status).toLowerCase()}">
+                                ${esc(r.status)}
+                            </span>
+                        </td>
+
+                        <td data-label="Aksi">
+                            <div class="retur-history-actions">
+                                ${act}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('')
+            : '<tr><td colspan="6" class="empty-state">Belum ada retur sesuai filter.</td></tr>';
+}
+function showReturnDetail(id){
+    const r=safeArray(RETUR_KEY).find(
+        x=>
+            String(x.returId)
+            ===
+            String(id)
+    );
+
+    if(!r)return;
+
+    document.getElementById(
+        'returDetailTitle'
+    ).textContent=
+        `↩️ ${r.returId}`;
+
+    document.getElementById(
+        'returDetailBody'
+    ).innerHTML=`
+        <div class="detail-grid-4">
+            <div class="detail-box">
+                <span>Transaksi Asli</span>
+                <strong>${esc(r.transaksiId)}</strong>
+            </div>
+
+            <div class="detail-box">
+                <span>Status</span>
+                <strong>${esc(r.status)}</strong>
+            </div>
+
+            <div class="detail-box">
+                <span>Total Refund</span>
+                <strong>${rp(r.totalRetur)}</strong>
+            </div>
+
+            <div class="detail-box">
+                <span>Metode</span>
+                <strong>${esc(r.metodeRefund)}</strong>
+            </div>
+        </div>
+
+        <div class="subtle-card" style="margin-top:10px">
+            ${(r.items||[]).map(i=>`
+                <div class="metric-line">
+                    <span>
+                        ${esc(i.nama)}
+                        •
+                        ${i.qtyRetur}
+                        ${esc(i.satuan)}
+                        <br>
+                        <small>
+                            ${esc(i.alasan)}
+                            •
+                            ${
+                                i.kembaliKeStok
+                                    ? 'Kembali stok'
+                                    : 'Tidak layak jual'
+                            }
+                        </small>
+                    </span>
+
+                    <strong>
+                        ${rp(i.nilaiRetur)}
+                    </strong>
+                </div>
+            `).join('')}
+        </div>
+
+        <div class="mini-note" style="margin-top:10px;line-height:1.75">
+            <strong>Dibuat:</strong>
+            ${esc(r.dibuatOleh)}
+            •
+            ${esc(r.tanggal)}
+            ${esc(r.waktu)}
+            <br>
+
+            <strong>Shift Refund:</strong>
+            ${esc(r.refundKasir||'-')} • ${esc(r.refundShift||'-')}
+            <br>
+
+            <strong>Approved:</strong>
+            ${esc(r.approvedBy||'-')}
+            ${esc(r.approvedAt||'')}
+            <br>
+
+            <strong>Catatan:</strong>
+            ${esc(r.catatan||'-')}
+
+            ${
+                r.rejectReason
+                    ? `
+                        <br>
+                        <strong>Alasan Reject:</strong>
+                        ${esc(r.rejectReason)}
+                    `
+                    : ''
+            }
+
+            ${
+                r.status==='CANCELLED'
+                    ? `
+                        <hr style="border:0;border-top:1px solid var(--border-color);margin:8px 0">
+                        <strong>Cancelled oleh:</strong>
+                        ${esc(r.cancelledBy||'-')}
+                        <br>
+                        <strong>Waktu Cancel:</strong>
+                        ${esc(r.cancelledAt||'-')}
+                        <br>
+                        <strong>Alasan Cancel:</strong>
+                        ${esc(r.cancelReason||'-')}
+                        <br>
+                        <strong>Pernah Approved:</strong>
+                        ${r.wasApprovedBeforeCancel?'Ya':'Tidak'}
+                    `
+                    : ''
+            }
+        </div>
+    `;
+
+    document.getElementById(
+        'returDetailModal'
+    ).style.display='flex';
+}
+function printReturn(id){const r=safeArray(RETUR_KEY).find(x=>String(x.returId)===String(id));if(!r)return;let cfg=DEFAULT_HEADER;try{cfg={...DEFAULT_HEADER,...(JSON.parse(localStorage.getItem('headerConfig')||'null')||{})}}catch{}document.getElementById('returPrintArea').innerHTML=`<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:7px;margin-bottom:9px"><h2 style="margin:0">${esc(cfg.judul||'LocDailyMar')}</h2><div>BUKTI RETUR PENJUALAN</div><small>${esc(r.returId)}</small></div><p style="font-size:9px">Transaksi Asli: ${esc(r.transaksiId)}<br>Tanggal: ${esc(r.tanggal)} ${esc(r.waktu)}<br>Status: ${esc(r.status)}<br>Refund: ${esc(r.metodeRefund)}<br>Petugas: ${esc(r.dibuatOleh)}</p><table><thead><tr><th>Barang</th><th>Qty</th><th>Harga</th><th>Nilai</th><th>Kondisi</th></tr></thead><tbody>${(r.items||[]).map(i=>`<tr><td>${esc(i.nama)}</td><td>${i.qtyRetur}</td><td>${rp(i.harga)}</td><td>${rp(i.nilaiRetur)}</td><td>${i.kembaliKeStok?'Kembali Stok':'Tidak Layak Jual'}</td></tr>`).join('')}</tbody></table><h3 style="text-align:right">TOTAL REFUND ${rp(r.totalRetur)}</h3>`;window.print()}
+function consumeSelectedTransaction(){try{const d=JSON.parse(localStorage.getItem('selectedTransactionForReturn')||'null');if(d&&d.code){localStorage.removeItem('selectedTransactionForReturn');selectTransaction(d.code)}}catch{}}
+function init(){
+    theme();
+
+    document.getElementById(
+        'txtUserLoggedIn'
+    ).textContent=
+        `👤 ${currentUser} • ${currentRole.toUpperCase()}`;
+
+    /*
+     * Simpan & Approve hanya terlihat untuk Owner.
+     */
+    document.getElementById(
+        'btnCreateApprove'
+    ).style.display=
+        currentRole==='owner'
+            ? 'inline-flex'
+            : 'none';
+
+    fillRefundShift(
+        'returRefundShift'
+    );
+
+    renderReturns();
+    consumeSelectedTransaction();
+}
+window.addEventListener(
+    'ldm-returns-cache-updated',
+    ()=>{
+        const codes=[
+            ...new Set(
+                safeArray(RETUR_KEY)
+                    .map(r=>r.transaksiId)
+                    .filter(Boolean)
+            )
+        ];
+
+        codes.forEach(
+            code=>syncTransactionReturnMeta(code)
+        );
+
+        fillRefundShift('returRefundShift');
+        renderReturns();
+    }
+);
+
+window.addEventListener(
+    'ldm-return-transactions-updated',
+    ()=>{
+        if(
+            document.activeElement?.id==='returTxSearch'
+        ){
+            searchTransaction(
+                document.getElementById('returTxSearch')?.value||''
+            );
+        }
+    }
+);
+
+document.addEventListener('click',e=>{const w=document.querySelector('.retur-search');if(w&&!w.contains(e.target))document.getElementById('returTxDropdown')?.classList.remove('show')});document.addEventListener('DOMContentLoaded',()=>{if(!requireAccess())return;init()});window.addEventListener('storage',e=>{if(['dataRetur','dataAbsensi','laporan','dataLaporan','laporanHistory','dataBarang'].includes(e.key)){fillRefundShift('returRefundShift');renderReturns()}if(e.key==='headerConfig')theme()});
+</script>
+<script id="ldmCompactNavigationScript">
+(function(){
+    const ACCESS={
+        "dashboard.html":["owner","admin","kasir"],
+        "absensi.html":["owner","admin","kasir"],
+        "kasir.html":["owner","admin","kasir"],
+        "retur.html":["owner","admin","kasir"],
+        "barang.html":["owner","admin"],
+        "supplier.html":["owner","admin"],
+        "Purchase-Order.html":["owner","admin"],
+        "goods.receipt.html":["owner","admin"],
+        "kartu-stok.html":["owner","admin","kasir"],
+        "stock-opname.html":["owner","admin","kasir"],
+        "laporan.html":["owner","admin","kasir"],
+        "shift-closing.html":["owner","admin"],
+        "eod.html":["owner","admin"],
+        "pengeluaran.html":["owner","admin"],
+        "backup%20%26%20restore.html":["owner","admin"],
+        "backup & restore.html":["owner","admin"]
+    };
+
+    function baseName(value){
+        let href=String(value||"").split("#")[0].split("?")[0];
+        try{href=decodeURIComponent(href)}catch(e){}
+        href=href.replace(/^\.\//,"");
+        return href.split("/").pop()||href;
+    }
+
+    function getRole(){
+        return String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function applyCompactNav(){
+        const role=getRole();
+        document.documentElement.setAttribute("data-ldm-role",role);
+
+        document.querySelectorAll(".nav-bar a.nav-item[href]").forEach(link=>{
+            const allowed=ACCESS[baseName(link.getAttribute("href"))];
+            if(!allowed)return;
+
+            if(role && !allowed.includes(role)){
+                link.style.setProperty("display","none","important");
+            }else if(role){
+                link.style.removeProperty("display");
+            }
+        });
+    }
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            applyCompactNav,
+            {once:true}
+        );
+    }else{
+        applyCompactNav();
+    }
+
+    window.addEventListener(
+        "load",
+        ()=>setTimeout(applyCompactNav,0),
+        {once:true}
+    );
+})();
+</script>
+
+
+<script id="ldmMegaMenuResponsiveScript">
+(function(){
+    const ROUTES=[
+        {page:"dashboard.html", icon:"📊", label:"Dashboard", group:"Utama", roles:["owner","admin","kasir"], quick:true},
+        {page:"absensi.html", icon:"📝", label:"Absensi", group:"Utama", roles:["owner","admin","kasir"]},
+        {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
+        {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
+
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
+        {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
+
+        {page:"supplier.html", icon:"🏢", label:"Supplier", group:"Supplier & Pembelian", roles:["owner","admin"]},
+        {page:"Purchase-Order.html", icon:"🛒", label:"Purchase Order", group:"Supplier & Pembelian", roles:["owner","admin"], badge:"pendingPOBadge"},
+        {page:"goods.receipt.html", icon:"📥", label:"Goods Receipt", group:"Supplier & Pembelian", roles:["owner","admin"], badge:"pendingGRBadge"},
+
+        {page:"laporan.html", icon:"📑", label:"Laporan", group:"Keuangan & Laporan", roles:["owner","admin","kasir"], quick:true},
+        {page:"pengeluaran.html", icon:"💸", label:"Pengeluaran", group:"Keuangan & Laporan", roles:["owner","admin"]},
+
+        {page:"shift-closing.html", icon:"🔒", label:"Closing Shift", group:"Closing & Data", roles:["owner","admin"]},
+        {page:"eod.html", icon:"🌙", label:"End of Day", group:"Closing & Data", roles:["owner","admin"]},
+        {page:"backup%20%26%20restore.html", icon:"💾", label:"Backup & Restore", group:"Closing & Data", roles:["owner","admin"]}
+    ];
+
+    const GROUP_META={
+        "Utama":"⚡",
+        "Inventori":"📦",
+        "Supplier & Pembelian":"🏢",
+        "Keuangan & Laporan":"📑",
+        "Closing & Data":"🔐"
+    };
+
+    function getSession(){
+        try{
+            if(typeof window.getSecuritySession==="function"){
+                const session=window.getSecuritySession();
+                if(session)return session;
+            }
+        }catch(e){}
+
+        return {
+            username:
+                localStorage.getItem("activeUsername")
+                || localStorage.getItem("loggedInUser")
+                || localStorage.getItem("username")
+                || "",
+            role:
+                localStorage.getItem("userRole")
+                || localStorage.getItem("role")
+                || ""
+        };
+    }
+
+    function normalizeRole(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function currentPage(){
+        let path=location.pathname.split("/").pop()||"dashboard.html";
+        try{path=decodeURIComponent(path)}catch(e){}
+        if(!path)path="dashboard.html";
+        return path;
+    }
+
+    function esc(value){
+        return String(value??"")
+            .replace(/&/g,"&amp;")
+            .replace(/</g,"&lt;")
+            .replace(/>/g,"&gt;")
+            .replace(/"/g,"&quot;")
+            .replace(/'/g,"&#039;");
+    }
+
+    function routeHref(page){
+        return page;
+    }
+
+    function routeAllowed(route,role){
+        return route.roles.includes(role);
+    }
+
+    function kasirOnClick(route){
+        if(route.page!=="kasir.html")return "";
+        return ` onclick="return window.verifikasiAksesKasir ? window.verifikasiAksesKasir(event) : true"`;
+    }
+
+    function linkHTML(route,current,klass="ldm-mega-link"){
+        const active=current===decodeURIComponent(route.page) || current===route.page;
+        return `
+            <a
+                href="${routeHref(route.page)}"
+                class="${klass}${active?" active":""}"
+                data-mega-route="${esc(route.page)}"
+                ${kasirOnClick(route)}
+            >
+                <span class="ldm-mega-icon">${route.icon}</span>
+                <span>${esc(route.label)}</span>
+                ${
+                    route.badge
+                        ? `<span class="ldm-mega-badge" data-source-badge="${esc(route.badge)}"></span>`
+                        : ""
+                }
+            </a>
+        `;
+    }
+
+    function buildMegaMenu(){
+        if(document.getElementById("ldmMegaNavShell"))return;
+
+        const app=document.querySelector(".app-layout");
+        const main=document.querySelector(".main-content");
+        if(!app || !main)return;
+
+        const session=getSession();
+        const role=normalizeRole(session?.role);
+
+        if(!role)return;
+
+        const visible=ROUTES.filter(route=>routeAllowed(route,role));
+        const current=currentPage();
+
+        const grouped={};
+        visible.forEach(route=>{
+            if(!grouped[route.group])grouped[route.group]=[];
+            grouped[route.group].push(route);
+        });
+
+        const groupsHTML=Object.entries(grouped)
+            .filter(([,routes])=>routes.length)
+            .map(([name,routes])=>`
+                <section class="ldm-mega-group">
+                    <div class="ldm-mega-group-title">
+                        <span>${GROUP_META[name]||"•"}</span>
+                        <span>${esc(name)}</span>
+                    </div>
+                    <div class="ldm-mega-links">
+                        ${routes.map(route=>linkHTML(route,current)).join("")}
+                    </div>
+                </section>
+            `)
+            .join("");
+
+        const quickHTML=visible
+            .filter(route=>route.quick)
+            .map(route=>{
+                const active=current===decodeURIComponent(route.page) || current===route.page;
+                return `
+                    <a
+                        href="${routeHref(route.page)}"
+                        class="${active?"active":""}"
+                        ${kasirOnClick(route)}
+                    >
+                        <span>${route.icon}</span>
+                        <span>${esc(route.label)}</span>
+                    </a>
+                `;
+            })
+            .join("");
+
+        const shell=document.createElement("div");
+        shell.className="ldm-mega-nav-shell";
+        shell.id="ldmMegaNavShell";
+
+        shell.innerHTML=`
+            <nav class="ldm-mega-nav" aria-label="Navigasi Mega Menu">
+                <button
+                    type="button"
+                    class="ldm-mega-trigger"
+                    id="ldmMegaTrigger"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                >
+                    <span>☷</span>
+                    <span>Mega Menu</span>
+                    <span class="ldm-mega-trigger-arrow">▼</span>
+                </button>
+
+                <div class="ldm-mega-quick">
+                    ${quickHTML}
+                </div>
+
+                <div class="ldm-mega-session">
+                    <span class="ldm-mega-role">
+                        👤 ${esc(role)}
+                    </span>
+                </div>
+
+                <div class="ldm-mega-panel" id="ldmMegaPanel">
+                    <div class="ldm-mega-panel-top">
+                        <div>
+                            <strong>Navigasi LocDailyMar</strong>
+                            <p>Semua menu dikelompokkan agar akses desktop lebih cepat dan tidak memenuhi sisi layar.</p>
+                        </div>
+                        <button type="button" class="ldm-mega-panel-close" id="ldmMegaClose">
+                            ✕ Tutup
+                        </button>
+                    </div>
+
+                    <div class="ldm-mega-grid">
+                        ${groupsHTML}
+                    </div>
+                </div>
+            </nav>
+        `;
+
+        app.insertBefore(shell,main);
+
+        const trigger=shell.querySelector("#ldmMegaTrigger");
+        const close=shell.querySelector("#ldmMegaClose");
+
+        function setOpen(open){
+            shell.classList.toggle("open",Boolean(open));
+            trigger?.setAttribute("aria-expanded",open?"true":"false");
+        }
+
+        trigger?.addEventListener("click",event=>{
+            event.stopPropagation();
+            setOpen(!shell.classList.contains("open"));
+        });
+
+        close?.addEventListener("click",()=>{
+            setOpen(false);
+            trigger?.focus();
+        });
+
+        /*
+         * Desktop tetap nyaman untuk mouse: hover membuka Mega Menu.
+         * Click tetap tersedia untuk trackpad/touch desktop.
+         */
+        let hoverTimer=null;
+
+        shell.addEventListener("mouseenter",()=>{
+            if(window.matchMedia("(min-width:900px)").matches){
+                clearTimeout(hoverTimer);
+                setOpen(true);
+            }
+        });
+
+        shell.addEventListener("mouseleave",()=>{
+            if(window.matchMedia("(min-width:900px)").matches){
+                clearTimeout(hoverTimer);
+                hoverTimer=setTimeout(()=>setOpen(false),180);
+            }
+        });
+
+        document.addEventListener("click",event=>{
+            if(!shell.contains(event.target)){
+                setOpen(false);
+            }
+        });
+
+        document.addEventListener("keydown",event=>{
+            if(event.key==="Escape"){
+                setOpen(false);
+            }
+        });
+
+        syncBadges();
+
+        /*
+         * Badge menu lama (stok/PO/GR) tetap menjadi sumber.
+         * MutationObserver membuat badge Mega Menu mengikuti perubahan.
+         */
+        ["navBadge","pendingPOBadge","pendingGRBadge"].forEach(id=>{
+            const source=document.getElementById(id);
+            if(!source)return;
+
+            const observer=new MutationObserver(syncBadges);
+            observer.observe(source,{
+                attributes:true,
+                childList:true,
+                subtree:true,
+                characterData:true,
+                attributeFilter:["style","class"]
+            });
+        });
+    }
+
+    function syncBadges(){
+        document.querySelectorAll("[data-source-badge]").forEach(target=>{
+            const source=document.getElementById(target.dataset.sourceBadge);
+            if(!source){
+                target.style.display="none";
+                return;
+            }
+
+            const text=String(source.textContent||"").trim();
+            const computed=getComputedStyle(source);
+            const visible=
+                computed.display!=="none"
+                && computed.visibility!=="hidden"
+                && text
+                && text!=="0";
+
+            if(visible){
+                target.textContent=text;
+                target.style.display="inline-flex";
+            }else{
+                target.style.display="none";
+            }
+        });
+    }
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            ()=>{
+                buildMegaMenu();
+                setTimeout(syncBadges,250);
+                setTimeout(syncBadges,900);
+            },
+            {once:true}
+        );
+    }else{
+        buildMegaMenu();
+        setTimeout(syncBadges,250);
+        setTimeout(syncBadges,900);
+    }
+})();
+</script>
+
+
+<script id="ldmEodMenuAvailabilityScript">
+(function(){
+    function readArray(key){
+        try{
+            const value=JSON.parse(localStorage.getItem(key)||"[]");
+            return Array.isArray(value)?value:[];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function witaDate(value){
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
+    }
+
+    function recordDate(item){
+        if(!item)return "";
+
+        const raw=
+            item.waktu_teks
+            || item.tanggal
+            || item.tgl
+            || item.date
+            || item.waktu
+            || item.created_at
+            || item.timestamp
+            || "";
+
+        if(
+            typeof raw==="string"
+            &&
+            /^\d{4}-\d{2}-\d{2}/.test(raw)
+        ){
+            return raw.slice(0,10);
+        }
+
+        const d=new Date(raw);
+        return isNaN(d)?"":witaDate(d);
+    }
+
+    function cashierName(item){
+        return String(
+            item?.kasir
+            || item?.user
+            || item?.username
+            || item?.admin
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function shiftName(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function calculateReadiness(){
+        const today=witaDate(new Date());
+
+        const laporan=readArray("laporan");
+
+        const transactions=(
+            laporan.length
+                ? laporan
+                : readArray("dataLaporan")
+        ).filter(item=>recordDate(item)===today);
+
+        const activeAccounts=new Set(
+            transactions
+                .map(cashierName)
+                .filter(Boolean)
+        );
+
+        if(activeAccounts.size===0){
+            return {
+                ready:false,
+                activeAccounts:[],
+                pendingAccounts:[],
+                hasShift1:false,
+                hasShift2:false
+            };
+        }
+
+        const closingToday=readArray("shiftClosingLog")
+            .filter(
+                item=>
+                    String(item?.tanggal||"").slice(0,10)===today
+            );
+
+        const closedAccounts=new Set(
+            closingToday
+                .map(
+                    item=>
+                        String(item?.kasir||"")
+                            .trim()
+                            .toLowerCase()
+                )
+                .filter(Boolean)
+        );
+
+        const pendingAccounts=
+            [...activeAccounts]
+                .filter(account=>!closedAccounts.has(account));
+
+        const hasShift1=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 1"
+            );
+
+        const hasShift2=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 2"
+            );
+
+        return {
+            ready:
+                pendingAccounts.length===0
+                && hasShift1
+                && hasShift2,
+            activeAccounts:[...activeAccounts],
+            pendingAccounts,
+            hasShift1,
+            hasShift2
+        };
+    }
+
+    let lastState=null;
+
+    function sync(){
+        const result=calculateReadiness();
+        const next=result.ready?"true":"false";
+
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            next
+        );
+
+        /*
+         * Beri title diagnostik pada link bila link sedang tersembunyi.
+         * Tidak mengubah akses halaman langsung, hanya visibilitas menu.
+         */
+        document.querySelectorAll('a[href="eod.html"]').forEach(link=>{
+            if(result.ready){
+                link.removeAttribute("data-eod-waiting");
+                link.title="End of Day siap karena seluruh Closing Shift wajib sudah lengkap.";
+            }else{
+                link.setAttribute("data-eod-waiting","true");
+                link.title="End of Day akan muncul setelah semua akun transaksi Closing Shift dan Shift 1 + Shift 2 tersedia.";
+            }
+        });
+
+        if(lastState!==next){
+            lastState=next;
+            window.dispatchEvent(
+                new CustomEvent(
+                    "ldm-eod-menu-readiness",
+                    {detail:result}
+                )
+            );
+        }
+
+        return result;
+    }
+
+    window.LDMEodMenuAvailability={
+        check:sync,
+        calculate:calculateReadiness
+    };
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            sync,
+            {once:true}
+        );
+    }else{
+        sync();
+    }
+
+    /*
+     * storage event berlaku untuk tab lain.
+     */
+    window.addEventListener("storage",event=>{
+        if(
+            [
+                "laporan",
+                "dataLaporan",
+                "shiftClosingLog",
+                "dataRetur"
+            ].includes(event.key)
+        ){
+            sync();
+        }
+    });
+
+    window.addEventListener("focus",sync);
+
+    document.addEventListener("visibilitychange",()=>{
+        if(!document.hidden)sync();
+    });
+
+    /*
+     * storage event tidak ditembakkan ke halaman yang melakukan
+     * setItem sendiri. Poll ringan ini membuat menu muncul segera
+     * setelah Closing Shift disimpan di halaman yang sama.
+     */
+    setInterval(()=>{
+        if(!document.hidden){
+            sync();
+        }
+    },2000);
+})();
+</script>
+
+<script src="js/global-system-navigation.js?v=23.0"></script></body></html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LocDailyMar 19.1.2 - Test Histori Harga Beli</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172033;margin:0}.wrap{width:min(980px,calc(100% - 24px));margin:24px auto}.card{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:16px;margin-bottom:12px}h1{font-size:1.25rem;margin:0 0 8px}p{font-size:.82rem;color:#667085;line-height:1.5}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a{border:0;border-radius:9px;padding:10px 13px;background:#0d2240;color:#fff;font-weight:700;text-decoration:none;cursor:pointer}.secondary{background:#fff;color:#172033;border:1px solid #d0d5dd}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#101828;color:#f2f4f7;border-radius:10px;padding:12px;font-size:.75rem;line-height:1.55}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/cost-history-service.js?v=19.1.2"></script>
+</head>
+<body>
+<div class="wrap">
+<div class="card"><h1>🧾 Test Histori Harga Beli 19.1.2</h1><p>Owner-only. Ubah Harga Beli suatu barang di barang.html, tunggu sinkron cloud, lalu Refresh. Harus muncul row histori baru tanpa mengubah snapshot HPP transaksi lama.</p><div class="actions"><button onclick="run()">Refresh</button><a class="secondary" href="barang.html">Data Barang</a><a class="secondary" href="dashboard.html">Dashboard</a></div></div>
+<div class="card"><pre id="out">Belum diperiksa.</pre></div>
+</div>
+<script>
+async function run(){
+ const out=document.getElementById("out");
+ try{
+   const ctx=await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+   if(String(ctx.profile.role||"").toLowerCase()!=="owner") throw new Error("Halaman ini khusus Owner.");
+   const rows=await LDMCostHistory.refreshCache();
+   const products=JSON.parse(localStorage.getItem("dataBarang")||"[]");
+   const byId=new Map(products.map(p=>[String(p.id||""),p.nama||p.name||p.id]));
+   out.textContent=[
+     "✅ HISTORI HARGA BELI AKTIF",
+     "",
+     `Store: ${ctx.profile.store_code||ctx.profile.store_id}`,
+     `Rows : ${rows.length}`,
+     "",
+     ...rows.slice(-50).reverse().map(r=>`${r.businessDate} | ${byId.get(r.productId)||r.productId} | Rp ${Number(r.purchasePrice).toLocaleString("id-ID")} | ${r.source} | ${r.effectiveAt}`)
+   ].join("\n");
+ }catch(error){ out.textContent="❌ GAGAL\n\n"+(error?.message||String(error)); }
+}
+document.addEventListener("DOMContentLoaded",run);
+</script>
+</body>
+</html>

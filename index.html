@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LocDailyMar POS</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F9D58">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+        <!-- Favicon standar -->
+    <link rel="icon" type="image/x-icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+
+    <!-- Icon dan PWA Manager Tahap 18 -->
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+    <script src="js/pwa-manager.js?v=18.0"></script>
+
+    <!-- Google Fonts Lengkap -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --app-font: 'Poppins', sans-serif;
+            --brand-font: 'Fredoka', cursive;
+            --bg-gradient-1: #0d2240;
+            --bg-gradient-2: #08172c;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --label-color: #475569;
+            --input-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --brand-bg: #0d2240;
+            --judul-color: #ffffff;
+            --outline-color: #d99b00;
+            --subjudul-color: #ffc107;
+            --btn-bg: #ffc107;
+            --btn-text: #0d2240;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--app-font); }
+        
+        body { 
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            transition: background 0.3s ease;
+        }
+
+        .login-card { 
+            background: var(--card-bg); 
+            width: 100%; 
+            max-width: 400px; 
+            padding: 32px 24px; 
+            border-radius: 24px; 
+            text-align: center; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.35); 
+            animation: fadeIn 0.4s ease-in-out;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 768px) {
+            .login-card {
+                padding: 40px 35px;
+            }
+        }
+
+        .logo-box { 
+            background: var(--brand-bg); 
+            padding: 16px; 
+            border-radius: 18px; 
+            margin-bottom: 24px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: background 0.3s ease;
+        }
+        
+        .login-logo-img {
+            max-height: 50px;
+            max-width: 150px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            display: none;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 6px;
+        }
+
+        .logo-box h1 { 
+            font-family: var(--brand-font); 
+            color: var(--judul-color); 
+            font-size: 2.3rem; 
+            line-height: 1; 
+            text-shadow: 2px 2px 0px var(--outline-color); 
+            transition: all 0.3s ease;
+        }
+        .logo-box h2 { 
+            font-family: var(--brand-font);
+            color: var(--subjudul-color); 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            letter-spacing: 2px; 
+            margin-top: 4px; 
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group { 
+            text-align: left; 
+            margin-bottom: 16px; 
+            position: relative;
+        }
+        .input-group label { 
+            display: block; 
+            font-size: 0.72rem; 
+            font-weight: 700; 
+            color: var(--label-color); 
+            margin-bottom: 6px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input { 
+            width: 100%; 
+            padding: 13px 14px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 12px; 
+            font-size: 0.92rem; 
+            outline: none; 
+            background: var(--input-bg); 
+            transition: all 0.2s;
+            color: var(--text-color);
+        }
+        .input-group input:focus { 
+            border-color: #ffc107; 
+            background: var(--card-bg); 
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #64748b;
+            user-select: none;
+        }
+
+        .btn-login { 
+            width: 100%; 
+            padding: 14px; 
+            background: var(--btn-bg); 
+            color: var(--btn-text); 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            font-size: 0.98rem; 
+            margin-top: 12px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+        }
+        .btn-login:hover { 
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-login:active {
+            transform: translateY(1px);
+        }
+
+        /* Styling Modal / Pop-up */
+        .popup { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(13,34,64,0.85); 
+            backdrop-filter: blur(4px); 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px; 
+            z-index: 999; 
+        }
+        .popup-card { 
+            background: var(--card-bg); 
+            color: var(--text-color);
+            width: 100%; 
+            max-width: 320px; 
+            padding: 25px 20px; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .btn-pop { 
+            width: 100%; 
+            padding: 12px; 
+            background: #0d2240; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: 600; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .btn-pop:hover { background: #1e3a8a; }
+
+        /* =====================================================
+   LOGIN SECURITY
+   ===================================================== */
+
+.login-security-status {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--label-color, #64748b);
+}
+
+.login-security-status.locked {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.login-attempt-warning {
+    display: none;
+
+    margin-top: 8px;
+    padding: 8px 10px;
+
+    border-radius: 7px;
+
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+
+    color: #991b1b;
+
+    font-size: 0.7rem;
+    text-align: center;
+}
+
+.login-attempt-warning.show {
+    display: block;
+}
+
+.login-session-info {
+    display: none;
+
+    margin-top: 8px;
+
+    font-size: 0.65rem;
+    text-align: center;
+
+    color: var(--label-color, #64748b);
+}
+    </style>
+    <script src="employee-id.js"></script>
+
+<style id="ldmThemedDialogStyle">
+    .ldm-dialog-overlay{
+        position:fixed;
+        inset:0;
+        z-index:999999;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+        background:rgba(15,23,42,.58);
+        backdrop-filter:blur(3px);
+    }
+
+    .ldm-dialog-overlay.show{
+        display:flex;
+    }
+
+    .ldm-dialog-card{
+        width:min(430px,100%);
+        max-height:min(88dvh,620px);
+        overflow:auto;
+        background:var(--bg-secondary,#fff);
+        color:var(--text-color,#334155);
+        border:1px solid var(--border-color,#e2e8f0);
+        border-radius:16px;
+        box-shadow:0 24px 60px rgba(15,23,42,.28);
+        padding:17px;
+        animation:ldmDialogIn .15s ease-out;
+    }
+
+    @keyframes ldmDialogIn{
+        from{opacity:0;transform:translateY(8px) scale(.985)}
+        to{opacity:1;transform:translateY(0) scale(1)}
+    }
+
+    .ldm-dialog-top{
+        display:flex;
+        gap:11px;
+        align-items:flex-start;
+    }
+
+    .ldm-dialog-icon{
+        width:38px;
+        height:38px;
+        flex:0 0 38px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:11px;
+        background:rgba(2,132,199,.10);
+        font-size:1.15rem;
+    }
+
+    .ldm-dialog-title{
+        margin:1px 0 4px;
+        color:var(--heading-color,#0f172a);
+        font-size:.92rem;
+        font-weight:850;
+        line-height:1.35;
+    }
+
+    .ldm-dialog-message{
+        color:var(--label-color,#64748b);
+        font-size:.72rem;
+        line-height:1.65;
+        white-space:pre-wrap;
+    }
+
+    .ldm-dialog-input{
+        width:100%;
+        min-height:44px;
+        margin-top:13px;
+        padding:10px 11px;
+        border:1px solid var(--border-color,#cbd5e1);
+        border-radius:9px;
+        background:var(--bg-primary,#f8fafc);
+        color:var(--text-color,#334155);
+        font:inherit;
+        font-size:.78rem;
+        outline:none;
+    }
+
+    .ldm-dialog-input:focus{
+        border-color:#0284c7;
+        box-shadow:0 0 0 3px rgba(2,132,199,.10);
+    }
+
+    .ldm-dialog-actions{
+        display:flex;
+        justify-content:flex-end;
+        gap:8px;
+        margin-top:15px;
+    }
+
+    .ldm-dialog-btn{
+        min-height:40px;
+        border:0;
+        border-radius:9px;
+        padding:8px 14px;
+        cursor:pointer;
+        font:inherit;
+        font-size:.72rem;
+        font-weight:850;
+        transition:.15s ease;
+    }
+
+    .ldm-dialog-btn:hover{
+        transform:translateY(-1px);
+    }
+
+    .ldm-dialog-btn.cancel{
+        background:var(--bg-primary,#f1f5f9);
+        color:var(--text-color,#475569);
+        border:1px solid var(--border-color,#e2e8f0);
+    }
+
+    .ldm-dialog-btn.ok{
+        background:#0d2240;
+        color:#fff;
+    }
+
+    .ldm-dialog-btn.danger{
+        background:#dc2626;
+        color:#fff;
+    }
+
+    @media(max-width:600px){
+        .ldm-dialog-overlay{
+            align-items:flex-end;
+            padding:8px;
+        }
+
+        .ldm-dialog-card{
+            width:100%;
+            border-radius:17px 17px 0 0;
+            padding:15px;
+        }
+
+        .ldm-dialog-actions{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+        }
+
+        .ldm-dialog-actions.single{
+            grid-template-columns:1fr;
+        }
+
+        .ldm-dialog-btn{
+            min-height:46px;
+            width:100%;
+            touch-action:manipulation;
+        }
+    }
+</style>
+
+
+<script id="ldmThemedDialogScript">
+(function(){
+    if(window.ldmDialog)return;
+
+    let activeResolve=null;
+
+    function ensure(){
+        let overlay=document.getElementById("ldmDialogOverlay");
+        if(overlay)return overlay;
+
+        overlay=document.createElement("div");
+        overlay.id="ldmDialogOverlay";
+        overlay.className="ldm-dialog-overlay";
+        overlay.innerHTML=`
+            <div class="ldm-dialog-card" role="dialog" aria-modal="true">
+                <div class="ldm-dialog-top">
+                    <div class="ldm-dialog-icon" id="ldmDialogIcon">ℹ️</div>
+                    <div style="min-width:0;flex:1">
+                        <div class="ldm-dialog-title" id="ldmDialogTitle">Informasi</div>
+                        <div class="ldm-dialog-message" id="ldmDialogMessage"></div>
+                    </div>
+                </div>
+
+                <input
+                    id="ldmDialogInput"
+                    class="ldm-dialog-input"
+                    style="display:none"
+                    autocomplete="off"
+                >
+
+                <div class="ldm-dialog-actions" id="ldmDialogActions">
+                    <button type="button" class="ldm-dialog-btn cancel" id="ldmDialogCancel">Batal</button>
+                    <button type="button" class="ldm-dialog-btn ok" id="ldmDialogOk">OK</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener("keydown",event=>{
+            if(event.key==="Escape"){
+                document.getElementById("ldmDialogCancel")?.click();
+            }
+        });
+
+        return overlay;
+    }
+
+    function iconFor(type){
+        return {
+            success:"✅",
+            danger:"🗑️",
+            warning:"⚠️",
+            question:"❓",
+            info:"ℹ️"
+        }[type] || "ℹ️";
+    }
+
+    function open(options={}){
+        return new Promise(resolve=>{
+            const overlay=ensure();
+            const title=overlay.querySelector("#ldmDialogTitle");
+            const message=overlay.querySelector("#ldmDialogMessage");
+            const icon=overlay.querySelector("#ldmDialogIcon");
+            const input=overlay.querySelector("#ldmDialogInput");
+            const actions=overlay.querySelector("#ldmDialogActions");
+            const cancel=overlay.querySelector("#ldmDialogCancel");
+            const ok=overlay.querySelector("#ldmDialogOk");
+
+            title.textContent=String(options.title||"Informasi");
+            message.textContent=String(options.message||"");
+            icon.textContent=iconFor(options.type||"info");
+
+            const mode=options.mode||"alert";
+            const needsInput=mode==="prompt";
+
+            input.style.display=needsInput?"block":"none";
+            input.value=needsInput?String(options.defaultValue||""):"";
+            input.placeholder=String(options.placeholder||"");
+
+            cancel.style.display=mode==="alert"?"none":"inline-flex";
+            actions.classList.toggle("single",mode==="alert");
+
+            ok.textContent=String(
+                options.okText
+                || (mode==="confirm"?"Lanjutkan":"OK")
+            );
+
+            cancel.textContent=String(options.cancelText||"Batal");
+
+            ok.classList.toggle(
+                "danger",
+                options.type==="danger"
+            );
+
+            function cleanup(result){
+                overlay.classList.remove("show");
+                ok.onclick=null;
+                cancel.onclick=null;
+                activeResolve=null;
+                resolve(result);
+            }
+
+            activeResolve=cleanup;
+
+            ok.onclick=()=>{
+                if(mode==="prompt"){
+                    cleanup(input.value);
+                }else{
+                    cleanup(true);
+                }
+            };
+
+            cancel.onclick=()=>{
+                cleanup(
+                    mode==="prompt"
+                        ? null
+                        : false
+                );
+            };
+
+            overlay.classList.add("show");
+
+            setTimeout(()=>{
+                if(needsInput){
+                    input.focus();
+                    input.select();
+                }else{
+                    ok.focus();
+                }
+            },20);
+        });
+    }
+
+    window.ldmDialog={
+        alert(title,message,type="info"){
+            return open({
+                mode:"alert",
+                title,
+                message,
+                type,
+                okText:"OK"
+            });
+        },
+
+        confirm(title,message,type="question",options={}){
+            return open({
+                mode:"confirm",
+                title,
+                message,
+                type,
+                okText:options.okText||"Lanjutkan",
+                cancelText:options.cancelText||"Batal"
+            });
+        },
+
+        prompt(title,message,defaultValue="",options={}){
+            return open({
+                mode:"prompt",
+                title,
+                message,
+                type:options.type||"question",
+                defaultValue,
+                placeholder:options.placeholder||"",
+                okText:options.okText||"Simpan",
+                cancelText:options.cancelText||"Batal"
+            });
+        }
+    };
+})();
+</script>
+
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-box" id="loginLogoBox">
+            <img id="imgLogoLogin" class="login-logo-img" alt="Logo Toko">
+            <h1 id="txtLoginJudul">LocDailyMar</h1>
+            <h2 id="txtLoginSubJudul"></h2>
+        </div>
+
+        <form id="formLogin" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label for="username">Email Auth Supabase</label>
+                <div class="input-wrapper">
+                    <input type="email" id="username" placeholder="Masukkan email akun Supabase" required autocomplete="username">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" placeholder="Masukkan password Supabase Auth" required autocomplete="current-password">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
+                </div>
+            </div>
+
+            <div
+    id="loginAttemptWarning"
+    class="login-attempt-warning"
+></div>
+
+<div
+    id="loginSecurityStatus"
+    class="login-security-status"
+>
+    🔒 Supabase Auth aktif
+</div>
+
+            <button type="submit" class="btn-login">Masuk</button>
+            <button
+                type="button"
+                onclick="requestPasswordReset()"
+                style="width:100%;margin-top:8px;border:none;background:transparent;color:#475569;font-weight:700;cursor:pointer;padding:8px;"
+            >Lupa Password?</button>
+        </form>
+    </div>
+
+    <!-- POPUP ALERT -->
+    <div class="popup" id="alertPopup">
+        <div class="popup-card">
+            <div id="popupIcon" style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
+            <h3 id="popupTitle" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">Peringatan</h3>
+            <p id="popupMessage" style="font-size: 0.85rem; color: #64748b; line-height: 1.4;">Pesan alert...</p>
+            <button class="btn-pop" onclick="closePopup()">Tutup</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=6.0"></script>
+
+    <script>
+        // Sinkronisasi Tema & Konfigurasi dari LocalStorage (tersambung ke dashboard.html)
+        function muatTemaLogin() {
+            const savedConfig = JSON.parse(localStorage.getItem("headerConfig"));
+            if (!savedConfig) return;
+
+            const elJudul = document.getElementById("txtLoginJudul");
+            const elSubJudul = document.getElementById("txtLoginSubJudul");
+            const elLogoBox = document.getElementById("loginLogoBox");
+            const elImgLogo = document.getElementById("imgLogoLogin");
+
+            if (elJudul) {
+                elJudul.innerText = savedConfig.judul || "LocDailyMar";
+                elJudul.style.color = savedConfig.warnaJudul || "#ffffff";
+                elJudul.style.textShadow = `2px 2px 0px ${savedConfig.warnaOutline || "#d99b00"}`;
+            }
+
+            if (elSubJudul) {
+                elSubJudul.innerText = savedConfig.subJudul || "";
+                elSubJudul.style.color = savedConfig.warnaSubJudul || "#ffc107";
+            }
+
+            if (savedConfig.logoData && elImgLogo) {
+                elImgLogo.src = savedConfig.logoData;
+                elImgLogo.style.display = "block";
+            } else if (elImgLogo) {
+                elImgLogo.style.display = "none";
+            }
+
+            if (elLogoBox) {
+                elLogoBox.style.background = savedConfig.warnaBgHeader || "#0d2240";
+            }
+
+            if (savedConfig.darkMode) {
+                document.documentElement.style.setProperty('--card-bg', '#1e293b');
+                document.documentElement.style.setProperty('--text-color', '#e2e8f0');
+                document.documentElement.style.setProperty('--label-color', '#94a3b8');
+                document.documentElement.style.setProperty('--input-bg', '#0f172a');
+                document.documentElement.style.setProperty('--border-color', '#334155');
+                document.documentElement.style.setProperty('--bg-gradient-1', '#090d16');
+                document.documentElement.style.setProperty('--bg-gradient-2', '#020617');
+            }
+
+            if (savedConfig.fontFamily) {
+                document.documentElement.style.setProperty('--app-font', savedConfig.fontFamily);
+            }
+            if (savedConfig.brandFontFamily || savedConfig.fontFamily) {
+                document.documentElement.style.setProperty('--brand-font', savedConfig.brandFontFamily || savedConfig.fontFamily);
+            }
+        }
+
+        function showAlert(title, message, icon = "⚠️") {
+            document.getElementById("popupTitle").innerText = title;
+            document.getElementById("popupMessage").innerText = message;
+            document.getElementById("popupIcon").innerText = icon;
+            document.getElementById("alertPopup").style.display = "flex";
+        }
+
+        function closePopup() {
+            document.getElementById("alertPopup").style.display = "none";
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById("password");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+            } else {
+                passwordInput.type = "password";
+            }
+        }
+
+        function getDatabaseAkun() {
+    try {
+        const raw =
+            localStorage.getItem("daftarAkun");
+
+        /*
+         * Jika database akun belum pernah dibuat pada browser ini,
+         * buat akun default langsung dari halaman Login.
+         * Sebelumnya akun default hanya dibuat dari absensi.html,
+         * sehingga browser baru bisa selalu gagal login.
+         */
+        if (!raw) {
+            // Supabase Auth adalah satu-satunya authority login. Tahap 19 tidak
+            // lagi menanam akun/password default di browser baru.
+            const defaultAccounts = [];
+
+            localStorage.setItem(
+                "daftarAkun",
+                JSON.stringify(defaultAccounts)
+            );
+
+            return defaultAccounts;
+        }
+
+        const data =
+            JSON.parse(raw);
+
+        if (!Array.isArray(data)) {
+            console.warn(
+                "daftarAkun bukan array yang valid."
+            );
+
+            return [];
+        }
+
+        return data;
+
+    } catch (error) {
+
+        console.error(
+            "Gagal membaca daftarAkun:",
+            error
+        );
+
+        return [];
+    }
+}
+
+
+// =====================================================
+// AMBIL DATA KEAMANAN LOGIN
+// =====================================================
+
+function getLoginSecurityData() {
+
+    return JSON.parse(
+        localStorage.getItem("loginSecurity")
+    ) || {
+
+        failedAttempts: 0,
+
+        lockedUntil: 0,
+
+        lastLogin: 0
+
+    };
+
+}
+
+
+// =====================================================
+// SIMPAN DATA KEAMANAN LOGIN
+// =====================================================
+
+function saveLoginSecurityData(data) {
+
+    localStorage.setItem(
+        "loginSecurity",
+        JSON.stringify(data)
+    );
+
+}
+
+
+// =====================================================
+// CEK APAKAH LOGIN SEDANG DIKUNCI
+// =====================================================
+
+function isLoginLocked() {
+
+    const security =
+        getLoginSecurityData();
+
+    if (!security.lockedUntil) {
+        return false;
+    }
+
+
+    const sekarang =
+        Date.now();
+
+
+    if (sekarang < security.lockedUntil) {
+
+        return true;
+
+    }
+
+
+    // Masa lock sudah habis
+
+    security.lockedUntil = 0;
+    security.failedAttempts = 0;
+
+    saveLoginSecurityData(security);
+
+    return false;
+
+}
+
+
+// =====================================================
+// TAMPILKAN STATUS LOCK
+// =====================================================
+
+function updateLoginSecurityDisplay() {
+
+    const warning =
+        document.getElementById(
+            "loginAttemptWarning"
+        );
+
+    const status =
+        document.getElementById(
+            "loginSecurityStatus"
+        );
+
+
+    if (!warning || !status) {
+        return;
+    }
+
+
+    const security =
+        getLoginSecurityData();
+
+
+    if (
+        security.lockedUntil &&
+        Date.now() < security.lockedUntil
+    ) {
+
+        const sisa =
+            Math.ceil(
+                (
+                    security.lockedUntil -
+                    Date.now()
+                ) / 1000
+            );
+
+
+        const menit =
+            Math.floor(sisa / 60);
+
+        const detik =
+            sisa % 60;
+
+
+        warning.textContent =
+            `🔒 Login dikunci sementara. ` +
+            `Coba lagi dalam ${menit}:${String(detik).padStart(2, "0")}.`;
+
+
+        warning.classList.add("show");
+
+        status.textContent =
+            "🔒 Akun sementara dikunci";
+
+        status.classList.add("locked");
+
+        return;
+
+    }
+
+
+    warning.classList.remove("show");
+
+    status.textContent =
+        "🔒 Sistem login aktif";
+
+    status.classList.remove("locked");
+
+}
+
+async function hashPassword(password) {
+
+    const encoder =
+        new TextEncoder();
+
+    const data =
+        encoder.encode(password);
+
+    const hashBuffer =
+        await crypto.subtle.digest(
+            "SHA-256",
+            data
+        );
+
+    const hashArray =
+        Array.from(
+            new Uint8Array(hashBuffer)
+        );
+
+    return hashArray
+        .map(
+            byte =>
+                byte
+                    .toString(16)
+                    .padStart(2, "0")
+        )
+        .join("");
+}
+
+async function migrateOldAccounts() {
+
+    const raw =
+        localStorage.getItem("daftarAkun");
+
+    if (!raw) {
+        return;
+    }
+
+
+    let accounts;
+
+    try {
+
+        accounts =
+            JSON.parse(raw);
+
+    } catch {
+
+        console.warn(
+            "Data daftarAkun tidak valid."
+        );
+
+        return;
+    }
+
+
+    if (!Array.isArray(accounts)) {
+        return;
+    }
+
+
+    let changed = false;
+
+
+    for (const account of accounts) {
+
+        /*
+         * Jika akun lama masih mempunyai
+         * password plaintext
+         */
+
+        if (account.password) {
+
+            /*
+             * Jika versi lama menyimpan password plaintext sekaligus
+             * passwordHash yang sudah usang, anggap password plaintext
+             * sebagai nilai terbaru, lalu bangun ulang hash.
+             */
+            account.passwordHash =
+                await hashPassword(
+                    account.password
+                );
+
+
+            /*
+             * Setelah berhasil di-hash,
+             * password plaintext dihapus.
+             */
+
+            delete account.password;
+
+            changed = true;
+        }
+
+    }
+
+
+    if (changed) {
+
+        localStorage.setItem(
+            "daftarAkun",
+            JSON.stringify(accounts)
+        );
+
+        console.log(
+            "Akun lama berhasil dimigrasikan."
+        );
+    }
+}
+
+
+// =====================================================
+// LOGIN UTAMA
+// =====================================================
+
+async function handleLogin(event) {
+
+    event.preventDefault();
+
+    if (
+        isLoginLocked()
+    ) {
+        updateLoginSecurityDisplay();
+
+        showAlert(
+            "Login Dikunci",
+            "Tunggu sampai masa penguncian login selesai.",
+            "🔒"
+        );
+
+        return;
+    }
+
+    const emailInput =
+        document
+            .getElementById("username")
+            .value
+            .trim()
+            .toLowerCase();
+
+    const passwordInput =
+        document
+            .getElementById("password")
+            .value;
+
+    if (
+        !emailInput ||
+        !passwordInput
+    ) {
+        showAlert(
+            "Login Gagal",
+            "Email dan password wajib diisi.",
+            "⚠️"
+        );
+
+        return;
+    }
+
+    if (
+        !window.LDMSupabase ||
+        !window.LDMSupabase.isConfigured()
+    ) {
+        showAlert(
+            "Supabase Belum Siap",
+            "Isi Project URL dan Publishable Key di js/supabase-config.js.",
+            "⚠️"
+        );
+
+        return;
+    }
+
+    if (
+        !window.LDMCloudSession
+    ) {
+        showAlert(
+            "Komponen Auth Gagal Dimuat",
+            "Pastikan js/cloud-auth.js dan js/cloud-session.js tersedia di GitHub.",
+            "❌"
+        );
+
+        return;
+    }
+
+    const submitButton =
+        document.querySelector(
+            "#formLogin .btn-login"
+        );
+
+    if(submitButton){
+        submitButton.disabled = true;
+        submitButton.textContent =
+            "Memeriksa akun...";
+    }
+
+    try {
+
+        const context =
+            await window.LDMCloudSession
+                .signIn(
+                    emailInput,
+                    passwordInput
+                );
+
+        const profile =
+            context.profile;
+
+        const security =
+            getLoginSecurityData();
+
+        security.failedAttempts = 0;
+        security.lockedUntil = 0;
+        security.lastLogin =
+            Date.now();
+
+        saveLoginSecurityData(
+            security
+        );
+
+        window.location.replace(
+            "dashboard.html"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Cloud login gagal:",
+            error
+        );
+
+        showAlert(
+            "Login Cloud Gagal",
+            error &&
+            error.message
+                ? error.message
+                : "Email atau password tidak valid.",
+            "❌"
+        );
+
+    } finally {
+
+        if(submitButton){
+            submitButton.disabled =
+                false;
+
+            submitButton.textContent =
+                "Masuk";
+        }
+    }
+}
+
+async function requestPasswordReset() {
+    const email = String(
+        document.getElementById("username").value || ""
+    )
+        .trim()
+        .toLowerCase();
+
+    if (!email) {
+        showAlert(
+            "Email Diperlukan",
+            "Isi Email Auth Supabase terlebih dahulu, lalu tekan Lupa Password.",
+            "✉️"
+        );
+        return;
+    }
+
+    try {
+        const client =
+            window.LDMSupabase.createClient();
+
+        const redirectTo =
+            new URL(
+                "account-password-reset.html",
+                window.location.href
+            ).href;
+
+        const { error } =
+            await client.auth.resetPasswordForEmail(
+                email,
+                { redirectTo }
+            );
+
+        if (error) {
+            throw error;
+        }
+
+        showAlert(
+            "Permintaan Dikirim",
+            "Jika email terdaftar dan pengiriman email Supabase aktif, link reset password akan dikirim. Periksa inbox dan folder spam.",
+            "✅"
+        );
+
+    } catch (error) {
+        console.error(
+            "Password recovery gagal:",
+            error
+        );
+
+        showAlert(
+            "Reset Password Gagal",
+            error && error.message
+                ? error.message
+                : "Permintaan reset password gagal.",
+            "❌"
+        );
+    }
+}
+
+async function resumeCloudLogin() {
+
+    if (
+        !window.LDMSupabase ||
+        !window.LDMSupabase.isConfigured() ||
+        !window.LDMCloudSession
+    ) {
+        return;
+    }
+
+    try {
+
+        const context =
+            await window.LDMCloudSession
+                .resume();
+
+        if(context){
+            window.location.replace(
+                "dashboard.html"
+            );
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "Tidak ada session cloud yang dapat dilanjutkan:",
+            error
+        );
+
+        window.LDMCloudSession
+            .clearCompatibilityCache();
+    }
+}
+
+function showCloudAuthErrorFromUrl() {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const message =
+        params.get(
+            "cloudAuthError"
+        );
+
+    if(!message){
+        return;
+    }
+
+    history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+    );
+
+    showAlert(
+        "Session Cloud Tidak Valid",
+        message,
+        "🔒"
+    );
+}
+
+// =====================================================
+// CEK SESSION
+// =====================================================
+
+function cekSessionLogin() {
+
+    if (
+        localStorage.getItem(
+            "ldmAuthSource"
+        ) !== "supabase"
+    ) {
+        return false;
+    }
+
+
+    const isLoggedIn =
+        localStorage.getItem(
+            "isLoggedIn"
+        );
+
+
+    const loginTimestamp =
+        parseInt(
+            localStorage.getItem(
+                "loginTimestamp"
+            ) || "0",
+            10
+        );
+
+
+    if (
+        isLoggedIn !== "true" ||
+        !loginTimestamp
+    ) {
+
+        return false;
+
+    }
+
+
+    const sekarang =
+        Date.now();
+
+
+    const umurSession =
+        sekarang -
+        loginTimestamp;
+
+
+    if (
+        umurSession >
+        LOGIN_SECURITY.SESSION_TIME
+    ) {
+
+        localStorage.removeItem(
+            "isLoggedIn"
+        );
+
+        localStorage.removeItem(
+            "userRole"
+        );
+
+        localStorage.removeItem(
+            "username"
+        );
+
+        localStorage.removeItem(
+            "activeUserId"
+        );
+
+        localStorage.removeItem(
+            "loginTimestamp"
+        );
+
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+// =====================================================
+// JIKA SUDAH LOGIN, JANGAN KEMBALI KE LOGIN
+// =====================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        muatTemaLogin();
+
+        updateLoginSecurityDisplay();
+
+
+        if (cekSessionLogin()) {
+
+            // Jika session masih aktif,
+            // arahkan kembali ke dashboard.
+
+            window.location.href =
+                "dashboard.html";
+
+        }
+
+    }
+);
+
+        document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        /*
+         * Muat tampilan login
+         */
+        muatTemaLogin();
+
+
+        /*
+         * Migrasi password lama
+         */
+        await migrateOldAccounts();
+
+
+        /*
+         * Cek apakah session masih valid
+         */
+        validateLoginSession();
+
+    }
+);
+
+        window.addEventListener(
+    "storage",
+    function(event) {
+
+        if (
+            event.key === "isLoggedIn" ||
+            event.key === "userRole" ||
+            event.key === "username" ||
+            event.key === "loginTimestamp"
+        ) {
+
+            const session =
+                getSecuritySession();
+
+
+            if (!session) {
+
+                window.location.replace(
+                    "index.html"
+                );
+
+            }
+
+        }
+
+    }
+);
+
+function generateSessionToken() {
+
+    if (
+        window.crypto &&
+        crypto.randomUUID
+    ) {
+
+        return crypto.randomUUID();
+
+    }
+
+
+    /*
+     * Fallback jika randomUUID tidak tersedia
+     */
+
+    const array =
+        new Uint8Array(32);
+
+    crypto.getRandomValues(array);
+
+
+    return Array
+        .from(array)
+        .map(
+            byte =>
+                byte
+                    .toString(16)
+                    .padStart(2, "0")
+        )
+        .join("");
+}
+
+function createLoginSession(account) {
+
+    const now =
+        Date.now();
+
+
+    /*
+     * 30 menit
+     */
+    const SESSION_DURATION =
+        30 * 60 * 1000;
+
+
+    const session = {
+
+        token:
+            generateSessionToken(),
+
+        username:
+            account.username,
+
+        role:
+            account.role,
+
+        createdAt:
+            now,
+
+        expiresAt:
+            now + SESSION_DURATION
+
+    };
+
+
+    localStorage.setItem(
+        "loginSession",
+        JSON.stringify(session)
+    );
+
+
+    /*
+     * Tetap simpan variabel lama
+     * untuk kompatibilitas dengan halaman
+     * yang belum kita migrasikan.
+     */
+
+    localStorage.setItem(
+        "isLoggedIn",
+        "true"
+    );
+
+
+    localStorage.setItem(
+        "username",
+        account.username
+    );
+
+
+    localStorage.setItem(
+        "userRole",
+        account.role
+    );
+
+
+    localStorage.setItem(
+        "loginTimestamp",
+        now.toString()
+    );
+}
+
+function validateLoginSession() {
+
+    if (
+        localStorage.getItem(
+            "ldmAuthSource"
+        ) !== "supabase"
+    ) {
+        return false;
+    }
+
+
+    const raw =
+        localStorage.getItem(
+            "loginSession"
+        );
+
+
+    if (!raw) {
+        return false;
+    }
+
+
+    let session;
+
+    try {
+
+        session =
+            JSON.parse(raw);
+
+    } catch {
+
+        clearLoginSession();
+
+        return false;
+    }
+
+
+    if (
+        !session.token ||
+        !session.username ||
+        !session.role ||
+        !session.expiresAt
+    ) {
+
+        clearLoginSession();
+
+        return false;
+    }
+
+
+    if (
+        Date.now() >=
+        Number(session.expiresAt)
+    ) {
+
+        clearLoginSession();
+
+        return false;
+    }
+
+
+    return true;
+}
+
+function clearLoginSession() {
+
+    localStorage.removeItem(
+        "loginSession"
+    );
+
+    localStorage.removeItem(
+        "isLoggedIn"
+    );
+
+    localStorage.removeItem(
+        "username"
+    );
+
+    localStorage.removeItem(
+        "userRole"
+    );
+
+    localStorage.removeItem(
+        "activeUsername"
+    );
+
+    localStorage.removeItem(
+        "loggedInUser"
+    );
+
+    localStorage.removeItem(
+        "activeUserId"
+    );
+
+    localStorage.removeItem(
+        "loginTimestamp"
+    );
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        muatTemaLogin();
+
+
+        await migrateOldAccounts();
+
+
+        /*
+         * Jika masih mempunyai session valid,
+         * langsung ke dashboard.
+         */
+
+        if (
+            validateLoginSession()
+        ) {
+
+            window.location.replace(
+                "dashboard.html"
+            );
+
+            return;
+        }
+
+    }
+);
+
+setInterval(
+    () => {
+
+        if (
+            !validateLoginSession()
+        ) {
+
+            return;
+        }
+
+    },
+    10 * 1000
+);
+    </script>
+
+<script>
+document.addEventListener(
+    "DOMContentLoaded",
+    async function(){
+        showCloudAuthErrorFromUrl();
+        await resumeCloudLogin();
+    }
+);
+</script>
+
+</body>
+</html>

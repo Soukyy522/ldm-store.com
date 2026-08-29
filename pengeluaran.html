@@ -1,0 +1,3280 @@
+<!DOCTYPE html><html lang="id" class="secure-page-pending"><head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Pengeluaran - LocDailyMar POS</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0d2240"><link rel="stylesheet" href="style.css"><link rel="icon" type="image/png" href="icon.png"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>.secure-page-pending body{visibility:hidden!important;}
+
+        :root {
+            --app-font: 'Poppins', sans-serif;
+            --brand-font: 'Poppins', sans-serif;
+            --bg-primary: #f4f6f9;
+            --bg-secondary: #ffffff;
+            --text-color: #334155;
+            --heading-color: #0d2240;
+            --border-color: #e2e8f0;
+            --card-shadow: rgba(0,0,0,0.03);
+            --nav-bg: #ffffff;
+            --nav-desktop-bg: #0d2240;
+            --accent-color: #ffc107;
+            --input-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-color: #e2e8f0;
+            --heading-color: #f8fafc;
+            --border-color: #334155;
+            --card-shadow: rgba(0,0,0,0.25);
+            --nav-bg: #1e293b;
+            --nav-desktop-bg: #1e293b;
+            --accent-color: #ffc107;
+            --input-bg: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--app-font); }
+        body { background-color: var(--bg-primary); color: var(--text-color); min-height: 100vh; transition: background-color 0.3s ease, color 0.3s ease; }
+
+        .app-layout { display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Tombol Garis 3 (Hamburger Menu) di HP Presisi Sesuai dashboard.html */
+        .btn-toggle-menu {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 4px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: 0.2s;
+        }
+        .btn-toggle-menu:hover { background: rgba(255, 255, 255, 0.35); }
+
+        /* Overlay Layar Gelap saat Menu Terbuka di HP Presisi Sesuai dashboard.html */
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .nav-overlay.active { display: block; opacity: 1; }
+
+        /* Navigation Bar Presisi Sesuai dashboard.html */
+        .nav-bar { 
+            position: fixed; 
+            top: 0; left: -260px; 
+            width: 250px; height: 100vh;
+            background: var(--nav-desktop-bg); 
+            display: flex; flex-direction: column;
+            justify-content: flex-start; 
+            padding: 20px 15px; 
+            z-index: 999; 
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2); 
+            transition: left 0.3s ease, background 0.3s ease;
+            gap: 8px;
+        }
+        .nav-bar.active { left: 0; }
+
+        .nav-header-mobile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-bottom: 12px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-close-menu { background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+
+        .nav-item { 
+            text-decoration: none; 
+            color: #94a3b8; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            display: flex; 
+            flex-direction: row;
+            align-items: center; 
+            gap: 12px; 
+            position: relative;
+            padding: 10px 14px;
+            border-radius: 10px;
+            transition: color 0.3s ease, background 0.3s ease;
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .nav-item span { font-size: 1.2rem; }
+        .nav-item.active { background: var(--accent-color); color: #0d2240; font-weight: 700; }
+
+        .nav-badge {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .main-content { padding: 12px; padding-bottom: 75px; flex: 1; }
+        
+        .header-app { 
+            background: #0d2240; 
+            color: white; 
+            padding: 14px 16px; 
+            border-radius: 14px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-brand-container { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .header-logo-img { max-height: 42px; max-width: 120px; object-fit: contain; border-radius: 8px; display: none; }
+
+        .header-app h1 { 
+            font-family: var(--brand-font); 
+            font-size: 1.3rem; 
+            color: #ffffff; 
+            text-shadow: 1px 1px 0px #d99b00; 
+            line-height: 1.2;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            transition: all 0.3s ease;
+        }
+        .header-app p { font-family: var(--brand-font); font-size: 0.7rem; color: #ffc107; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; }
+
+        .btn-header-action {
+            background: rgba(255, 255, 255, 0.2);
+            border: none; color: white;
+            padding: 6px 12px; border-radius: 8px;
+            font-size: 0.72rem; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 4px; transition: 0.2s;
+        }
+        .btn-header-action:hover { background: rgba(255, 255, 255, 0.35); }
+        .btn-header-logout { background: #ef4444; color: white; }
+        .btn-header-logout:hover { background: #dc2626; }
+
+        /* Running Clock & Filter Bar */
+        .filter-date-box {
+            background: var(--bg-secondary);
+            color: var(--text-color);
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .running-clock-display {
+            background: #0d2240;
+            color: #ffc107;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        .input-date-filter {
+            padding: 5px 10px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            outline: none;
+        }
+
+        /* Grid Cards Summary */
+        .grid-cards { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 15px; 
+        }
+
+        .card { 
+            background: var(--bg-secondary); 
+            padding: 12px 14px; 
+            border-radius: 14px; 
+            box-shadow: 0 2px 8px var(--card-shadow); 
+            border: 1px solid var(--border-color); 
+            display: flex; align-items: center; gap: 10px; 
+            width: 100%; min-width: 0;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+        .card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; flex-shrink: 0; }
+        .card-info { min-width: 0; flex: 1; }
+        .card-info h4 { font-size: 0.68rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-info h2 { font-size: 1rem; color: var(--heading-color); font-weight: 700; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .card.modal-awal .card-icon { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+        .card.omzet .card-icon { background: rgba(2, 132, 199, 0.15); color: #0284c7; }
+        .card.tunai .card-icon { background: rgba(22, 163, 74, 0.15); color: #16a34a; }
+        .card.tunai h2 { color: #16a34a; }
+        .card.nontunai .card-icon { background: rgba(217, 119, 6, 0.15); color: #d97706; }
+        .card.nontunai h2 { color: #d97706; }
+        .card.selisih .card-icon { background: rgba(147, 51, 234, 0.15); color: #9333ea; }
+        .card.selisih.plus h2 { color: #16a34a; }
+        .card.selisih.minus h2 { color: #dc2626; }
+
+        /* Form closing & Log section */
+        .closing-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .box-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 2px 8px var(--card-shadow);
+        }
+
+        .box-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--heading-color);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { border-color: #0284c7; }
+
+        .btn-submit-closing {
+            width: 100%;
+            padding: 12px;
+            background: #0d2240;
+            color: #ffc107;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .btn-submit-closing:hover { background: #ffc107; color: #0d2240; }
+
+        /* Table Log */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            text-align: left;
+        }
+        .log-table th {
+            background: var(--bg-primary);
+            color: #64748b;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .log-table td {
+            padding: 10px;
+            border-bottom: 1px dashed var(--border-color);
+            color: var(--text-color);
+            vertical-align: middle;
+        }
+        .badge-shift {
+            background: rgba(2, 132, 199, 0.12);
+            color: #0284c7;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            display: inline-block;
+        }
+        .btn-delete-log {
+            background: #fecaca;
+            color: #dc2626;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-delete-log:hover { background: #ef4444; color: white; }
+
+        .btn-print-log {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-right: 4px;
+        }
+        .btn-print-log:hover { background: #15803d; }
+
+
+        /* Mutasi Kas terintegrasi */
+        .mutasi-panel {
+            margin-top: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            background: var(--bg-primary);
+        }
+        .mutasi-title {
+            display:flex; align-items:center; justify-content:space-between; gap:8px;
+            font-size:.78rem; font-weight:800; color:var(--heading-color); margin-bottom:9px;
+        }
+        .mutasi-help { font-size:.64rem; color:#64748b; line-height:1.5; margin-bottom:10px; }
+        .mutasi-grid { display:grid; grid-template-columns:130px 1fr; gap:8px; margin-bottom:8px; }
+        .mutasi-grid-2 { display:grid; grid-template-columns:1fr auto; gap:8px; }
+        .btn-mutasi-add {
+            border:0; border-radius:8px; padding:8px 12px; font-size:.72rem; font-weight:800;
+            cursor:pointer; background:#0284c7; color:#fff; white-space:nowrap;
+        }
+        .mutasi-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:10px 0; }
+        .mutasi-summary-box { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:9px; padding:8px; }
+        .mutasi-summary-box span { display:block; color:#64748b; font-size:.58rem; text-transform:uppercase; font-weight:700; }
+        .mutasi-summary-box strong { display:block; margin-top:3px; color:var(--heading-color); font-size:.75rem; }
+        .mutasi-list { max-height:180px; overflow:auto; border-top:1px solid var(--border-color); margin-top:8px; }
+        .mutasi-item { display:grid; grid-template-columns:72px 86px 1fr auto; gap:7px; align-items:center; padding:8px 2px; border-bottom:1px dashed var(--border-color); font-size:.66rem; }
+        .mutasi-badge { padding:3px 6px; border-radius:6px; font-weight:800; text-align:center; }
+        .mutasi-badge.masuk { background:rgba(22,163,74,.12); color:#16a34a; }
+        .mutasi-badge.keluar { background:rgba(220,38,38,.10); color:#dc2626; }
+        .btn-mutasi-delete { border:0; background:#fee2e2; color:#dc2626; border-radius:6px; padding:4px 7px; cursor:pointer; font-weight:800; }
+        .card.mutasi-masuk .card-icon { background:rgba(22,163,74,.13); color:#16a34a; }
+        .card.mutasi-keluar .card-icon { background:rgba(220,38,38,.11); color:#dc2626; }
+        .card.ekspektasi .card-icon { background:rgba(14,165,233,.14); color:#0ea5e9; }
+        @media(max-width:650px){
+            .mutasi-grid,.mutasi-grid-2{grid-template-columns:1fr;}
+            .mutasi-summary{grid-template-columns:1fr;}
+            .mutasi-item{grid-template-columns:70px 80px 1fr;}
+            .mutasi-item .btn-mutasi-delete{grid-column:1/-1;width:100%;}
+        }
+
+        /* Modal Custom Alert & Password Modals */
+        .modal-alert {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center; align-items: center;
+            padding: 15px;
+        }
+        .modal-alert-content {
+            background: var(--bg-secondary);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 14px;
+            width: 100%; max-width: 360px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .modal-alert-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .modal-alert-title { font-size: 1.05rem; font-weight: 700; color: var(--heading-color); margin-bottom: 6px; }
+        .modal-alert-msg { font-size: 0.85rem; color: #64748b; margin-bottom: 18px; line-height: 1.4; word-break: break-word; }
+        .btn-modal-ok {
+            width: 100%; padding: 10px;
+            background: #0d2240; color: white;
+            border: none; border-radius: 8px;
+            font-weight: 700; font-size: 0.85rem; cursor: pointer;
+        }
+
+        /* Printable Area */
+        #printArea { display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea {
+                display: block !important;
+                position: absolute;
+                left: 0; top: 0;
+                width: 100%;
+                color: #000;
+                background: #fff;
+                font-family: monospace;
+                padding: 10px;
+            }
+            .print-receipt { width: 280px; margin: 0 auto; border: 1px dashed #000; padding: 10px; }
+            .print-title { text-align: center; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+            .print-sub { text-align: center; font-size: 0.8rem; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 5px; }
+            .print-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin: 3px 0; }
+            .print-divider { border-bottom: 1px dashed #000; margin: 8px 0; }
+        }
+
+        @media (max-width: 600px) {
+            .btn-toggle-menu { display: inline-flex; }
+            .grid-cards { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .card { padding: 10px; border-radius: 12px; gap: 8px; }
+            .card-icon { width: 34px; height: 34px; font-size: 1.05rem; border-radius: 8px; }
+            .card-info h4 { font-size: 0.6rem; }
+            .card-info h2 { font-size: 0.88rem; }
+        }
+
+        @media (min-width: 768px) {
+            .btn-toggle-menu { display: none !important; }
+            .nav-header-mobile { display: none; }
+            .nav-overlay { display: none !important; }
+            .app-layout { flex-direction: row; }
+            .nav-bar { 
+                position: sticky; 
+                top: 0; left: 0; 
+                height: 100vh; 
+                width: 240px; 
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 30px 15px; 
+                border-top: none;
+                border-right: 1px solid var(--border-color);
+                gap: 10px;
+                background: var(--nav-desktop-bg);
+                flex-shrink: 0;
+                box-shadow: none;
+            }
+            .nav-item { 
+                flex-direction: row; 
+                gap: 15px; 
+                padding: 12px 18px; 
+                border-radius: 12px; 
+                color: #94a3b8; 
+                font-size: 0.95rem;
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .nav-item.active { 
+                background: var(--accent-color); 
+                color: #0d2240; 
+            }
+            .nav-badge { top: 12px; right: 15px; }
+            .main-content { padding: 30px; padding-bottom: 30px; }
+        }
+    
+        /*
+         * Proteksi tampilan awal:
+         * halaman baru ditampilkan setelah role Owner/Admin lolos validasi.
+         */
+        html.closing-access-pending body {
+            visibility: hidden !important;
+        }
+
+    
+
+        .expense-grid{display:grid;grid-template-columns:minmax(300px,.9fr) minmax(420px,1.5fr);gap:15px;margin-bottom:18px}
+        .summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:15px}
+        .summary-card{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:13px;box-shadow:0 2px 8px var(--card-shadow)}
+        .summary-card span{font-size:.62rem;text-transform:uppercase;color:#64748b;font-weight:700}.summary-card strong{display:block;margin-top:4px;color:var(--heading-color);font-size:.95rem}
+        .expense-form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+        .hint-box{padding:10px 12px;border-radius:10px;background:rgba(2,132,199,.08);border:1px solid rgba(2,132,199,.18);font-size:.68rem;line-height:1.55;color:#64748b;margin-bottom:12px}
+        .btn-main{width:100%;padding:11px;border-radius:9px;border:1px solid #ffc107;background:#0d2240;color:#ffc107;font-weight:800;cursor:pointer}.btn-main:hover{background:#ffc107;color:#0d2240}
+        .btn-small{border:0;border-radius:6px;padding:5px 8px;font-size:.66rem;font-weight:800;cursor:pointer}.btn-delete{background:#fee2e2;color:#dc2626}
+        .filter-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:12px}.filter-row .form-group{margin:0;min-width:160px;flex:1}
+
+        .receipt-upload-box{
+            border:1px dashed var(--border-color);
+            background:rgba(2,132,199,.035);
+            border-radius:12px;
+            padding:12px;
+        }
+        .receipt-upload-actions{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:8px;
+        }
+        .btn-receipt{
+            border:1px solid var(--border-color);
+            background:var(--bg-secondary);
+            color:var(--heading-color);
+            border-radius:9px;
+            padding:9px 10px;
+            font-size:.7rem;
+            font-weight:800;
+            cursor:pointer;
+            transition:.18s ease;
+        }
+        .btn-receipt:hover{
+            border-color:#0284c7;
+            color:#0284c7;
+            background:rgba(2,132,199,.06);
+        }
+        .receipt-help{
+            margin-top:8px;
+            color:#64748b;
+            font-size:.61rem;
+            line-height:1.5;
+        }
+        .receipt-preview-wrap{
+            display:none;
+            margin-top:10px;
+            border-top:1px solid var(--border-color);
+            padding-top:10px;
+        }
+        .receipt-preview{
+            width:100%;
+            max-height:260px;
+            object-fit:contain;
+            background:#0f172a;
+            border-radius:10px;
+            border:1px solid var(--border-color);
+        }
+        .receipt-preview-meta{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:8px;
+            margin-top:8px;
+            flex-wrap:wrap;
+            font-size:.62rem;
+            color:#64748b;
+        }
+        .btn-remove-receipt{
+            border:0;
+            border-radius:7px;
+            padding:6px 9px;
+            background:#fee2e2;
+            color:#dc2626;
+            font-size:.63rem;
+            font-weight:800;
+            cursor:pointer;
+        }
+        .receipt-status{
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            padding:4px 7px;
+            border-radius:7px;
+            background:rgba(22,163,74,.10);
+            color:#16a34a;
+            font-size:.62rem;
+            font-weight:800;
+        }
+        .receipt-status.empty{
+            background:rgba(100,116,139,.10);
+            color:#64748b;
+        }
+        .btn-view-receipt{
+            border:0;
+            border-radius:7px;
+            padding:5px 8px;
+            background:rgba(2,132,199,.12);
+            color:#0284c7;
+            font-size:.63rem;
+            font-weight:800;
+            cursor:pointer;
+            margin-top:5px;
+        }
+        .receipt-modal{
+            display:none;
+            position:fixed;
+            inset:0;
+            z-index:2500;
+            background:rgba(15,23,42,.78);
+            padding:18px;
+            align-items:center;
+            justify-content:center;
+            backdrop-filter:blur(4px);
+        }
+        .receipt-modal-card{
+            width:min(720px,100%);
+            max-height:92vh;
+            background:var(--bg-secondary);
+            border:1px solid var(--border-color);
+            border-radius:16px;
+            padding:14px;
+            box-shadow:0 20px 60px rgba(0,0,0,.35);
+            overflow:auto;
+        }
+        .receipt-modal-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            margin-bottom:10px;
+        }
+        .receipt-modal-head strong{
+            color:var(--heading-color);
+            font-size:.86rem;
+        }
+        .receipt-modal-img{
+            width:100%;
+            max-height:72vh;
+            object-fit:contain;
+            border-radius:10px;
+            background:#0f172a;
+        }
+        .btn-close-receipt{
+            border:0;
+            border-radius:8px;
+            padding:7px 10px;
+            cursor:pointer;
+            background:#e2e8f0;
+            color:#334155;
+            font-weight:800;
+        }
+        body.dark-mode .btn-close-receipt{
+            background:#334155;
+            color:#e2e8f0;
+        }
+
+        .browser-camera-modal{
+            display:none;position:fixed;inset:0;z-index:2700;
+            background:rgba(15,23,42,.86);padding:16px;
+            align-items:center;justify-content:center;backdrop-filter:blur(5px);
+        }
+        .browser-camera-card{
+            width:min(720px,100%);max-height:94vh;overflow:auto;
+            border-radius:16px;border:1px solid var(--border-color);
+            background:var(--bg-secondary);box-shadow:0 22px 70px rgba(0,0,0,.42);
+            padding:14px;
+        }
+        .browser-camera-head{
+            display:flex;align-items:center;justify-content:space-between;
+            gap:10px;margin-bottom:10px;
+        }
+        .browser-camera-head strong{color:var(--heading-color);font-size:.88rem}
+        .browser-camera-view{
+            position:relative;overflow:hidden;border-radius:12px;background:#020617;
+            min-height:240px;display:flex;align-items:center;justify-content:center;
+        }
+        .browser-camera-view video{
+            width:100%;max-height:68vh;display:block;object-fit:contain;background:#020617;
+        }
+        .browser-camera-status{
+            position:absolute;left:10px;right:10px;bottom:10px;border-radius:8px;
+            background:rgba(15,23,42,.76);color:#f8fafc;padding:7px 9px;
+            font-size:.62rem;line-height:1.45;text-align:center;backdrop-filter:blur(3px);
+        }
+        .browser-camera-actions{
+            display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;
+        }
+        .btn-camera-action{
+            border:1px solid var(--border-color);border-radius:9px;padding:9px 10px;
+            font-size:.68rem;font-weight:800;cursor:pointer;
+            background:var(--bg-secondary);color:var(--heading-color);
+        }
+        .btn-camera-action.capture{background:#0d2240;border-color:#ffc107;color:#ffc107}
+        .btn-camera-action.capture:hover{background:#ffc107;color:#0d2240}
+        .btn-camera-action.switch{color:#0284c7}
+        .btn-camera-action.close{color:#dc2626}
+        .browser-camera-note{
+            margin-top:9px;padding:8px 10px;border-radius:9px;
+            background:rgba(2,132,199,.07);color:#64748b;font-size:.6rem;line-height:1.5;
+        }
+        @media(max-width:600px){
+            .browser-camera-modal{padding:8px}
+            .browser-camera-card{padding:10px;border-radius:13px}
+            .browser-camera-actions{grid-template-columns:1fr}
+            .browser-camera-view{min-height:220px}
+        }
+        @media(max-width:900px){.expense-grid{grid-template-columns:1fr}.summary-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:600px){.expense-form-row,.summary-grid,.receipt-upload-actions{grid-template-columns:1fr}}
+</style>
+<script id="ldmCompactNavRoleEarly">
+(function(){
+    try{
+        const role=String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+        document.documentElement.setAttribute("data-ldm-role",role);
+    }catch(e){}
+})();
+</script>
+<style id="ldmCompactNavigationStyle">
+    .nav-bar{
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        scrollbar-width:thin;
+        scrollbar-color:rgba(148,163,184,.38) transparent;
+    }
+    .nav-bar::-webkit-scrollbar{width:5px}
+    .nav-bar::-webkit-scrollbar-track{background:transparent}
+    .nav-bar::-webkit-scrollbar-thumb{
+        background:rgba(148,163,184,.34);
+        border-radius:20px;
+    }
+    .nav-header-mobile{
+        font-size:.78rem !important;
+        padding:4px 2px 8px !important;
+        margin-bottom:4px !important;
+        min-height:30px;
+    }
+    .nav-item{
+        min-height:34px !important;
+        padding:7px 9px !important;
+        margin:0 0 2px 0 !important;
+        gap:8px !important;
+        border-radius:8px !important;
+        font-size:.73rem !important;
+        line-height:1.15 !important;
+        flex-shrink:0;
+    }
+    .nav-item > span:first-child{
+        display:inline-flex;
+        width:20px;
+        min-width:20px;
+        height:20px;
+        align-items:center;
+        justify-content:center;
+        font-size:.93rem !important;
+        line-height:1 !important;
+    }
+    .nav-item .nav-badge{
+        transform:scale(.82);
+        transform-origin:center;
+    }
+
+    /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
+    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="shift-closing.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="eod.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="pengeluaran.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="backup%20%26%20restore.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="backup & restore.html"]{
+        display:none !important;
+    }
+
+    @media (min-width:768px){
+        .nav-bar{
+            width:205px !important;
+            min-width:205px !important;
+            padding:14px 10px !important;
+            gap:2px !important;
+        }
+        .nav-item{
+            padding:7px 9px !important;
+            font-size:.73rem !important;
+        }
+    }
+
+    @media (max-width:767px){
+        .nav-bar{
+            width:min(82vw,238px) !important;
+            padding:10px 9px !important;
+            gap:2px !important;
+        }
+        .nav-item{
+            min-height:33px !important;
+            padding:7px 9px !important;
+            font-size:.72rem !important;
+        }
+        .nav-header-mobile{font-size:.76rem !important}
+    }
+</style>
+
+
+<!-- =========================================================
+     LOCDailyMar RESPONSIVE MEGA MENU
+     Desktop  : Mega Menu
+     HP/Tablet: Hamburger Drawer
+     ========================================================= -->
+<style id="ldmMegaMenuResponsiveStyle">
+    .ldm-mega-nav-shell{
+        display:none;
+    }
+
+    /* =====================================================
+       DESKTOP MEGA MENU
+       ===================================================== */
+    @media (min-width:900px){
+        /*
+         * Sidebar lama hanya dipakai sebagai sumber struktur/menu
+         * dan sebagai menu mobile. Desktop memakai Mega Menu.
+         */
+        .nav-bar,
+        .nav-overlay,
+        .btn-toggle-menu,
+        .nav-header-mobile{
+            display:none !important;
+        }
+
+        .app-layout{
+            display:flex !important;
+            flex-direction:column !important;
+            min-height:100vh !important;
+            width:100% !important;
+        }
+
+        .main-content{
+            width:100% !important;
+            max-width:none !important;
+            padding:24px 28px 30px !important;
+            margin:0 !important;
+        }
+
+        .ldm-mega-nav-shell{
+            display:block;
+            position:sticky;
+            top:0;
+            z-index:1200;
+            width:100%;
+            background:var(--nav-desktop-bg);
+            border-bottom:1px solid var(--border-color);
+            box-shadow:0 7px 24px rgba(15,23,42,.08);
+        }
+
+        .ldm-mega-nav{
+            position:relative;
+            width:100%;
+            min-height:58px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:9px 22px;
+        }
+
+        .ldm-mega-trigger{
+            height:38px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            border:1px solid rgba(255,193,7,.45);
+            border-radius:10px;
+            padding:0 14px;
+            cursor:pointer;
+            background:var(--accent-color);
+            color:#0d2240;
+            font-size:.78rem;
+            font-weight:900;
+            white-space:nowrap;
+            transition:.18s ease;
+        }
+
+        .ldm-mega-trigger:hover,
+        .ldm-mega-nav-shell.open .ldm-mega-trigger{
+            transform:translateY(-1px);
+            box-shadow:0 7px 18px rgba(0,0,0,.14);
+        }
+
+        .ldm-mega-trigger-arrow{
+            font-size:.62rem;
+            transition:transform .18s ease;
+        }
+
+        .ldm-mega-nav-shell.open .ldm-mega-trigger-arrow{
+            transform:rotate(180deg);
+        }
+
+        .ldm-mega-quick{
+            display:flex;
+            align-items:center;
+            gap:4px;
+            min-width:0;
+        }
+
+        .ldm-mega-quick a{
+            position:relative;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            height:36px;
+            padding:0 10px;
+            border-radius:9px;
+            color:#94a3b8;
+            text-decoration:none;
+            font-size:.72rem;
+            font-weight:750;
+            white-space:nowrap;
+            transition:.18s ease;
+        }
+
+        .ldm-mega-quick a:hover{
+            color:#f8fafc;
+            background:rgba(148,163,184,.12);
+        }
+
+        .ldm-mega-quick a.active{
+            color:#0d2240;
+            background:var(--accent-color);
+        }
+
+        .ldm-mega-session{
+            margin-left:auto;
+            min-width:0;
+            display:flex;
+            align-items:center;
+            gap:7px;
+            color:#94a3b8;
+            font-size:.67rem;
+            font-weight:700;
+        }
+
+        .ldm-mega-role{
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            padding:5px 9px;
+            border-radius:999px;
+            background:rgba(148,163,184,.10);
+            border:1px solid rgba(148,163,184,.15);
+            color:#cbd5e1;
+            text-transform:capitalize;
+            white-space:nowrap;
+        }
+
+        .ldm-mega-panel{
+            position:absolute;
+            left:22px;
+            top:calc(100% - 3px);
+            width:min(980px, calc(100vw - 44px));
+            visibility:hidden;
+            opacity:0;
+            pointer-events:none;
+            transform:translateY(-5px);
+            transition:
+                opacity .16s ease,
+                transform .16s ease,
+                visibility .16s ease;
+            background:var(--bg-secondary);
+            color:var(--text-color);
+            border:1px solid var(--border-color);
+            border-radius:0 0 16px 16px;
+            box-shadow:0 24px 55px rgba(15,23,42,.24);
+            padding:16px;
+        }
+
+        .ldm-mega-nav-shell.open .ldm-mega-panel{
+            visibility:visible;
+            opacity:1;
+            pointer-events:auto;
+            transform:translateY(0);
+        }
+
+        .ldm-mega-panel-top{
+            display:flex;
+            justify-content:space-between;
+            gap:18px;
+            align-items:flex-start;
+            padding:1px 3px 13px;
+            border-bottom:1px solid var(--border-color);
+            margin-bottom:13px;
+        }
+
+        .ldm-mega-panel-top strong{
+            display:block;
+            color:var(--heading-color);
+            font-size:.84rem;
+        }
+
+        .ldm-mega-panel-top p{
+            margin-top:3px;
+            color:#64748b;
+            font-size:.63rem;
+            line-height:1.45;
+        }
+
+        .ldm-mega-panel-close{
+            border:0;
+            background:transparent;
+            color:#64748b;
+            cursor:pointer;
+            font-size:.72rem;
+            font-weight:800;
+            padding:5px 7px;
+            border-radius:7px;
+        }
+
+        .ldm-mega-panel-close:hover{
+            background:rgba(148,163,184,.10);
+            color:var(--heading-color);
+        }
+
+        .ldm-mega-grid{
+            display:grid;
+            grid-template-columns:repeat(5,minmax(0,1fr));
+            gap:10px;
+        }
+
+        .ldm-mega-group{
+            min-width:0;
+            padding:10px;
+            border-radius:11px;
+            background:rgba(148,163,184,.045);
+            border:1px solid transparent;
+        }
+
+        .ldm-mega-group:hover{
+            border-color:var(--border-color);
+        }
+
+        .ldm-mega-group-title{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-bottom:7px;
+            color:#64748b;
+            font-size:.61rem;
+            font-weight:900;
+            letter-spacing:.055em;
+            text-transform:uppercase;
+        }
+
+        .ldm-mega-links{
+            display:flex;
+            flex-direction:column;
+            gap:3px;
+        }
+
+        .ldm-mega-link{
+            position:relative;
+            min-height:34px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:7px 8px;
+            border-radius:8px;
+            text-decoration:none;
+            color:var(--text-color);
+            font-size:.7rem;
+            font-weight:700;
+            line-height:1.2;
+            transition:.15s ease;
+        }
+
+        .ldm-mega-link:hover{
+            background:rgba(2,132,199,.08);
+            color:#0284c7;
+        }
+
+        .ldm-mega-link.active{
+            background:var(--accent-color);
+            color:#0d2240;
+        }
+
+        .ldm-mega-icon{
+            width:22px;
+            height:22px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            flex:0 0 22px;
+            border-radius:7px;
+            background:rgba(148,163,184,.08);
+            font-size:.88rem;
+        }
+
+        .ldm-mega-link.active .ldm-mega-icon{
+            background:rgba(255,255,255,.35);
+        }
+
+        .ldm-mega-badge{
+            display:none;
+            margin-left:auto;
+            min-width:18px;
+            height:18px;
+            padding:0 5px;
+            align-items:center;
+            justify-content:center;
+            border-radius:999px;
+            background:#ef4444;
+            color:#fff;
+            font-size:.55rem;
+            font-weight:900;
+        }
+
+        @media (max-width:1120px){
+            .ldm-mega-grid{
+                grid-template-columns:repeat(3,minmax(0,1fr));
+            }
+
+            .ldm-mega-quick a:nth-child(n+4){
+                display:none;
+            }
+        }
+    }
+
+    /* =====================================================
+       HP / TABLET: HAMBURGER MENU
+       ===================================================== */
+    @media (max-width:899px){
+        .ldm-mega-nav-shell{
+            display:none !important;
+        }
+
+        .app-layout{
+            display:flex !important;
+            flex-direction:column !important;
+            min-height:100vh !important;
+        }
+
+        .btn-toggle-menu{
+            display:inline-flex !important;
+        }
+
+        .nav-bar{
+            position:fixed !important;
+            top:0 !important;
+            left:-270px !important;
+            width:min(82vw,250px) !important;
+            min-width:0 !important;
+            height:100dvh !important;
+            padding:11px 10px !important;
+            flex-direction:column !important;
+            justify-content:flex-start !important;
+            gap:3px !important;
+            z-index:999 !important;
+            border-right:1px solid var(--border-color) !important;
+            box-shadow:3px 0 18px rgba(15,23,42,.28) !important;
+            overflow-y:auto !important;
+            transition:left .25s ease !important;
+        }
+
+        .nav-bar.active{
+            left:0 !important;
+        }
+
+        .nav-header-mobile{
+            display:flex !important;
+            padding:5px 3px 9px !important;
+            margin-bottom:3px !important;
+            font-size:.76rem !important;
+        }
+
+        .nav-item{
+            min-height:35px !important;
+            padding:7px 9px !important;
+            margin:0 !important;
+            gap:8px !important;
+            border-radius:8px !important;
+            font-size:.72rem !important;
+        }
+
+        .nav-item > span:first-child{
+            width:20px !important;
+            min-width:20px !important;
+            font-size:.92rem !important;
+        }
+
+        .main-content{
+            width:100% !important;
+            margin:0 !important;
+            padding:12px !important;
+            padding-bottom:28px !important;
+        }
+    }
+</style>
+
+
+<script id="ldmEodMenuAvailabilityEarly">
+(function(){
+    function readArray(key){
+        try{
+            const value=JSON.parse(localStorage.getItem(key)||"[]");
+            return Array.isArray(value)?value:[];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function witaDate(value){
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
+    }
+
+    function recordDate(item){
+        if(!item)return "";
+        const raw=
+            item.waktu_teks
+            || item.tanggal
+            || item.tgl
+            || item.date
+            || item.waktu
+            || item.created_at
+            || item.timestamp
+            || "";
+
+        if(typeof raw==="string" && /^\d{4}-\d{2}-\d{2}/.test(raw)){
+            return raw.slice(0,10);
+        }
+
+        const d=new Date(raw);
+        return isNaN(d)?"":witaDate(d);
+    }
+
+    function cashierName(item){
+        return String(
+            item?.kasir
+            || item?.user
+            || item?.username
+            || item?.admin
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function shiftName(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function isReady(){
+        const today=witaDate(new Date());
+        const laporan=readArray("laporan");
+        const transaksi=(laporan.length?laporan:readArray("dataLaporan"))
+            .filter(item=>recordDate(item)===today);
+
+        const activeAccounts=new Set(
+            transaksi
+                .map(cashierName)
+                .filter(Boolean)
+        );
+
+        if(activeAccounts.size===0){
+            return false;
+        }
+
+        const closingToday=readArray("shiftClosingLog")
+            .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
+
+        const closedAccounts=new Set(
+            closingToday
+                .map(item=>String(item?.kasir||"").trim().toLowerCase())
+                .filter(Boolean)
+        );
+
+        const allClosed=
+            [...activeAccounts]
+                .every(account=>closedAccounts.has(account));
+
+        const hasShift1=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 1"
+        );
+
+        const hasShift2=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 2"
+        );
+        return allClosed && hasShift1 && hasShift2;
+    }
+
+    try{
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            isReady()?"true":"false"
+        );
+    }catch(e){
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            "false"
+        );
+    }
+})();
+</script>
+
+
+<style id="ldmMobileTouchAndEodStyle">
+    /*
+     * End of Day disembunyikan sampai seluruh akun yang transaksi
+     * sudah Closing Shift dan Shift 1 + Shift 2 tersedia.
+     * Berlaku untuk Mega Menu desktop dan Hamburger Menu HP.
+     */
+    html:not([data-ldm-eod-ready="true"]) a[href="eod.html"]{
+        display:none !important;
+    }
+
+    /*
+     * Mobile / tablet hanya Hamburger Menu.
+     * Target sentuh dibuat lebih lega agar nyaman ditekan dengan jari.
+     */
+    @media (max-width:899px){
+        .ldm-mega-nav-shell{
+            display:none !important;
+        }
+
+        .nav-bar{
+            width:min(86vw,270px) !important;
+            padding:14px 11px 20px !important;
+            gap:6px !important;
+        }
+
+        .nav-header-mobile{
+            min-height:42px !important;
+            padding:7px 5px 12px !important;
+            margin-bottom:5px !important;
+            font-size:.8rem !important;
+        }
+
+        .nav-item{
+            min-height:46px !important;
+            padding:11px 12px !important;
+            margin:0 !important;
+            gap:11px !important;
+            border-radius:10px !important;
+            font-size:.78rem !important;
+            line-height:1.22 !important;
+            touch-action:manipulation;
+            -webkit-tap-highlight-color:rgba(255,193,7,.18);
+        }
+
+        .nav-item + .nav-item{
+            margin-top:2px !important;
+        }
+
+        .nav-item > span:first-child{
+            width:24px !important;
+            min-width:24px !important;
+            height:24px !important;
+            font-size:1rem !important;
+        }
+
+        .btn-toggle-menu{
+            min-width:42px !important;
+            min-height:42px !important;
+            width:42px !important;
+            height:42px !important;
+            align-items:center !important;
+            justify-content:center !important;
+            border-radius:10px !important;
+            touch-action:manipulation;
+        }
+
+        .nav-overlay.active{
+            display:block !important;
+        }
+    }
+
+    @media (max-width:420px){
+        .nav-bar{
+            width:min(88vw,268px) !important;
+        }
+
+        .nav-item{
+            min-height:48px !important;
+            padding:12px !important;
+            font-size:.79rem !important;
+        }
+    }
+</style>
+
+
+<style id="ldmThemedDialogStyle">
+    .ldm-dialog-overlay{
+        position:fixed;
+        inset:0;
+        z-index:999999;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+        background:rgba(15,23,42,.58);
+        backdrop-filter:blur(3px);
+    }
+
+    .ldm-dialog-overlay.show{
+        display:flex;
+    }
+
+    .ldm-dialog-card{
+        width:min(430px,100%);
+        max-height:min(88dvh,620px);
+        overflow:auto;
+        background:var(--bg-secondary,#fff);
+        color:var(--text-color,#334155);
+        border:1px solid var(--border-color,#e2e8f0);
+        border-radius:16px;
+        box-shadow:0 24px 60px rgba(15,23,42,.28);
+        padding:17px;
+        animation:ldmDialogIn .15s ease-out;
+    }
+
+    @keyframes ldmDialogIn{
+        from{opacity:0;transform:translateY(8px) scale(.985)}
+        to{opacity:1;transform:translateY(0) scale(1)}
+    }
+
+    .ldm-dialog-top{
+        display:flex;
+        gap:11px;
+        align-items:flex-start;
+    }
+
+    .ldm-dialog-icon{
+        width:38px;
+        height:38px;
+        flex:0 0 38px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:11px;
+        background:rgba(2,132,199,.10);
+        font-size:1.15rem;
+    }
+
+    .ldm-dialog-title{
+        margin:1px 0 4px;
+        color:var(--heading-color,#0f172a);
+        font-size:.92rem;
+        font-weight:850;
+        line-height:1.35;
+    }
+
+    .ldm-dialog-message{
+        color:var(--label-color,#64748b);
+        font-size:.72rem;
+        line-height:1.65;
+        white-space:pre-wrap;
+    }
+
+    .ldm-dialog-input{
+        width:100%;
+        min-height:44px;
+        margin-top:13px;
+        padding:10px 11px;
+        border:1px solid var(--border-color,#cbd5e1);
+        border-radius:9px;
+        background:var(--bg-primary,#f8fafc);
+        color:var(--text-color,#334155);
+        font:inherit;
+        font-size:.78rem;
+        outline:none;
+    }
+
+    .ldm-dialog-input:focus{
+        border-color:#0284c7;
+        box-shadow:0 0 0 3px rgba(2,132,199,.10);
+    }
+
+    .ldm-dialog-actions{
+        display:flex;
+        justify-content:flex-end;
+        gap:8px;
+        margin-top:15px;
+    }
+
+    .ldm-dialog-btn{
+        min-height:40px;
+        border:0;
+        border-radius:9px;
+        padding:8px 14px;
+        cursor:pointer;
+        font:inherit;
+        font-size:.72rem;
+        font-weight:850;
+        transition:.15s ease;
+    }
+
+    .ldm-dialog-btn:hover{
+        transform:translateY(-1px);
+    }
+
+    .ldm-dialog-btn.cancel{
+        background:var(--bg-primary,#f1f5f9);
+        color:var(--text-color,#475569);
+        border:1px solid var(--border-color,#e2e8f0);
+    }
+
+    .ldm-dialog-btn.ok{
+        background:#0d2240;
+        color:#fff;
+    }
+
+    .ldm-dialog-btn.danger{
+        background:#dc2626;
+        color:#fff;
+    }
+
+    @media(max-width:600px){
+        .ldm-dialog-overlay{
+            align-items:flex-end;
+            padding:8px;
+        }
+
+        .ldm-dialog-card{
+            width:100%;
+            border-radius:17px 17px 0 0;
+            padding:15px;
+        }
+
+        .ldm-dialog-actions{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+        }
+
+        .ldm-dialog-actions.single{
+            grid-template-columns:1fr;
+        }
+
+        .ldm-dialog-btn{
+            min-height:46px;
+            width:100%;
+            touch-action:manipulation;
+        }
+    }
+</style>
+
+
+<script id="ldmThemedDialogScript">
+(function(){
+    if(window.ldmDialog)return;
+
+    let activeResolve=null;
+
+    function ensure(){
+        let overlay=document.getElementById("ldmDialogOverlay");
+        if(overlay)return overlay;
+
+        overlay=document.createElement("div");
+        overlay.id="ldmDialogOverlay";
+        overlay.className="ldm-dialog-overlay";
+        overlay.innerHTML=`
+            <div class="ldm-dialog-card" role="dialog" aria-modal="true">
+                <div class="ldm-dialog-top">
+                    <div class="ldm-dialog-icon" id="ldmDialogIcon">ℹ️</div>
+                    <div style="min-width:0;flex:1">
+                        <div class="ldm-dialog-title" id="ldmDialogTitle">Informasi</div>
+                        <div class="ldm-dialog-message" id="ldmDialogMessage"></div>
+                    </div>
+                </div>
+
+                <input
+                    id="ldmDialogInput"
+                    class="ldm-dialog-input"
+                    style="display:none"
+                    autocomplete="off"
+                >
+
+                <div class="ldm-dialog-actions" id="ldmDialogActions">
+                    <button type="button" class="ldm-dialog-btn cancel" id="ldmDialogCancel">Batal</button>
+                    <button type="button" class="ldm-dialog-btn ok" id="ldmDialogOk">OK</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener("keydown",event=>{
+            if(event.key==="Escape"){
+                document.getElementById("ldmDialogCancel")?.click();
+            }
+        });
+
+        return overlay;
+    }
+
+    function iconFor(type){
+        return {
+            success:"✅",
+            danger:"🗑️",
+            warning:"⚠️",
+            question:"❓",
+            info:"ℹ️"
+        }[type] || "ℹ️";
+    }
+
+    function open(options={}){
+        return new Promise(resolve=>{
+            const overlay=ensure();
+            const title=overlay.querySelector("#ldmDialogTitle");
+            const message=overlay.querySelector("#ldmDialogMessage");
+            const icon=overlay.querySelector("#ldmDialogIcon");
+            const input=overlay.querySelector("#ldmDialogInput");
+            const actions=overlay.querySelector("#ldmDialogActions");
+            const cancel=overlay.querySelector("#ldmDialogCancel");
+            const ok=overlay.querySelector("#ldmDialogOk");
+
+            title.textContent=String(options.title||"Informasi");
+            message.textContent=String(options.message||"");
+            icon.textContent=iconFor(options.type||"info");
+
+            const mode=options.mode||"alert";
+            const needsInput=mode==="prompt";
+
+            input.style.display=needsInput?"block":"none";
+            input.value=needsInput?String(options.defaultValue||""):"";
+            input.placeholder=String(options.placeholder||"");
+
+            cancel.style.display=mode==="alert"?"none":"inline-flex";
+            actions.classList.toggle("single",mode==="alert");
+
+            ok.textContent=String(
+                options.okText
+                || (mode==="confirm"?"Lanjutkan":"OK")
+            );
+
+            cancel.textContent=String(options.cancelText||"Batal");
+
+            ok.classList.toggle(
+                "danger",
+                options.type==="danger"
+            );
+
+            function cleanup(result){
+                overlay.classList.remove("show");
+                ok.onclick=null;
+                cancel.onclick=null;
+                activeResolve=null;
+                resolve(result);
+            }
+
+            activeResolve=cleanup;
+
+            ok.onclick=()=>{
+                if(mode==="prompt"){
+                    cleanup(input.value);
+                }else{
+                    cleanup(true);
+                }
+            };
+
+            cancel.onclick=()=>{
+                cleanup(
+                    mode==="prompt"
+                        ? null
+                        : false
+                );
+            };
+
+            overlay.classList.add("show");
+
+            setTimeout(()=>{
+                if(needsInput){
+                    input.focus();
+                    input.select();
+                }else{
+                    ok.focus();
+                }
+            },20);
+        });
+    }
+
+    window.ldmDialog={
+        alert(title,message,type="info"){
+            return open({
+                mode:"alert",
+                title,
+                message,
+                type,
+                okText:"OK"
+            });
+        },
+
+        confirm(title,message,type="question",options={}){
+            return open({
+                mode:"confirm",
+                title,
+                message,
+                type,
+                okText:options.okText||"Lanjutkan",
+                cancelText:options.cancelText||"Batal"
+            });
+        },
+
+        prompt(title,message,defaultValue="",options={}){
+            return open({
+                mode:"prompt",
+                title,
+                message,
+                type:options.type||"question",
+                defaultValue,
+                placeholder:options.placeholder||"",
+                okText:options.okText||"Simpan",
+                cancelText:options.cancelText||"Batal"
+            });
+        }
+    };
+})();
+</script>
+
+    <!-- Live Sync Tahap 6: Supabase Auth authoritative guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=6.0"></script>
+    <script src="js/cloud-session-guard.js?v=15.0"></script><script src="js/license-service.js?v=23.0"></script><script src="js/license-guard.js?v=23.0"></script>
+
+
+    <!-- Live Sync Tahap 12: Final Cloud Reporting Authority -->
+    <script src="js/reporting-service.js?v=12.0"></script>
+    <script src="js/reporting-bootstrap.js?v=12.0"></script>
+</head>
+<body>
+<div class="nav-overlay" id="navOverlay" onclick="tutupMenuNavigasi()"></div>
+<div class="app-layout">
+<nav class="nav-bar" id="navSidebar"><div class="nav-header-mobile"><span>☰ Menu</span><button class="btn-close-menu" onclick="tutupMenuNavigasi()">✕</button></div>
+
+            <a href="dashboard.html" class="nav-item"><span>📊</span> Dashboard</a>
+            <a href="absensi.html" class="nav-item"><span>📝</span> Absensi</a>
+            <a href="kasir.html" class="nav-item"><span>💵</span> Kasir</a><a href="retur.html" class="nav-item"><span>↩️</span> Retur</a>
+            <a href="barang.html" class="nav-item"><span>📦</span> Barang</a><a href="supplier.html" class="nav-item" data-role-access="owner,admin"><span>🏢</span> Supplier</a>
+            <a href="Purchase-Order.html" class="nav-item" data-role-access="owner,admin"><span>🛒</span> Purchase Order</a>
+            <a href="goods.receipt.html" class="nav-item" data-role-access="owner,admin"><span>📥</span> Goods Receipt</a>
+            <a href="kartu-stok.html" class="nav-item"><span>📒</span> Kartu Stok</a><a href="stock-opname.html" class="nav-item"><span>📋</span> Stock Opname</a>
+            <a href="laporan.html" class="nav-item"><span>📋</span> Laporan</a>
+            <a href="shift-closing.html" class="nav-item" data-role-access="owner,admin"><span>🔒</span> Closing Shift</a>
+            <a href="eod.html" class="nav-item" data-role-access="owner,admin"><span>🌙</span> End of Day</a>
+            <a href="pengeluaran.html" class="nav-item active" data-role-access="owner,admin"><span>💸</span> Pengeluaran</a>
+            <a href="backup%20%26%20restore.html" class="nav-item" data-role-access="owner,admin"><span>💾</span> Backup & Restore</a>
+</nav>
+<main class="main-content">
+<header class="header-app" id="headerApp"><div class="header-brand-container"><button class="btn-toggle-menu" onclick="bukaMenuNavigasi()">☰</button><img id="imgLogoToko" class="header-logo-img" alt="Logo"><div><h1 id="txtJudulToko">LocDailyMar</h1><p id="txtSubJudulToko">Pengeluaran & Biaya Operasional</p></div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span id="txtUserLoggedIn" style="font-size:.78rem;font-weight:600;background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px">👤 -</span><button class="btn-header-action btn-header-logout" onclick="logout()">🚪 Logout</button></div></header>
+<div class="filter-date-box"><div><span style="color:#64748b;font-size:.75rem">🕒 Waktu WITA:</span> <span class="running-clock-display" id="clockDisplay">00:00:00 WITA</span></div><div style="font-size:.72rem;color:#64748b">💸 Pencatatan biaya toko terpusat</div></div>
+<div class="summary-grid"><div class="summary-card"><span>Pengeluaran Hari Terpilih</span><strong id="sumHari">Rp 0</strong></div><div class="summary-card"><span>Pengeluaran Bulan Ini</span><strong id="sumBulan">Rp 0</strong></div><div class="summary-card"><span>Dengan Nota / Struk</span><strong id="sumReceipt">0 Bukti</strong></div><div class="summary-card"><span>Jumlah Catatan</span><strong id="sumCount">0</strong></div></div>
+<div class="expense-grid">
+<section class="box-container"><div class="box-title"><span>➕ Input Pengeluaran</span></div><div class="hint-box">Data disimpan ke <strong>operasional</strong> agar tetap terbaca oleh perhitungan profit Dashboard. Untuk pengeluaran yang memengaruhi uang fisik di laci, pencatatan <strong>Mutasi Kas</strong> dilakukan langsung melalui halaman Closing Shift.</div>
+<form id="expenseForm" onsubmit="saveExpense(event)">
+<div class="expense-form-row"><div class="form-group"><label>Tanggal</label><input type="date" id="expenseDate" class="form-control" required></div><div class="form-group"><label>Kategori</label><select id="expenseCategory" class="form-control"><option>Perlengkapan</option><option>Listrik</option><option>Air</option><option>Internet</option><option>Transportasi</option><option>Maintenance</option><option>Konsumsi</option><option>Biaya Bank</option><option>Lainnya</option></select></div></div>
+<div class="form-group"><label>Nominal (Rp)</label><input type="number" id="expenseAmount" class="form-control" min="1" placeholder="Contoh: 50000" required></div>
+<div class="form-group"><label>Keterangan</label><input type="text" id="expenseDesc" class="form-control" placeholder="Contoh: Beli plastik belanja" required></div>
+<div class="expense-form-row"><div class="form-group"><label>Penerima / Tujuan (Opsional)</label><input type="text" id="expenseTarget" class="form-control" placeholder="Contoh: Toko Plastik ABC"></div><div class="form-group"><label>No. Referensi (Opsional)</label><input type="text" id="expenseRef" class="form-control" placeholder="Nomor nota / invoice"></div></div>
+
+<div class="form-group">
+    <label>Foto Nota / Struk (Opsional)</label>
+    <div class="receipt-upload-box">
+        <input type="file" id="expenseReceiptCamera" accept="image/*" capture="environment" hidden onchange="handleReceiptFile(event)">
+        <input type="file" id="expenseReceiptFile" accept="image/*" hidden onchange="handleReceiptFile(event)">
+
+        <div class="receipt-upload-actions">
+            <button type="button" class="btn-receipt" onclick="openReceiptCamera()">📷 Buka Kamera Browser</button>
+            <button type="button" class="btn-receipt" onclick="document.getElementById('expenseReceiptFile').click()">🖼️ Upload dari Galeri / File</button>
+        </div>
+
+        <div class="receipt-help">
+            Tombol <strong>Buka Kamera Browser</strong> memakai kamera langsung dari browser. Pada HP sistem mencoba kamera belakang. Jika browser tidak mendukung kamera langsung, fallback kamera perangkat tetap tersedia.
+        </div>
+
+        <div class="receipt-preview-wrap" id="receiptPreviewWrap">
+            <img id="receiptPreview" class="receipt-preview" alt="Preview Nota / Struk">
+            <div class="receipt-preview-meta">
+                <span id="receiptMeta">Bukti siap disimpan.</span>
+                <button type="button" class="btn-remove-receipt" onclick="clearReceipt()">🗑️ Hapus Foto</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="btn-main" type="submit" id="btnSaveExpense">💾 Simpan Pengeluaran</button></form></section>
+<section class="box-container"><div class="box-title"><span>📜 Riwayat Pengeluaran</span><small id="recordInfo" style="font-size:.68rem;color:#64748b">0 Record</small></div><div class="filter-row"><div class="form-group"><label>Filter Tanggal</label><input type="date" id="filterExpenseDate" class="form-control" onchange="renderExpenses()"></div><div class="form-group"><label>Kategori</label><select id="filterCategory" class="form-control" onchange="renderExpenses()"><option value="">Semua Kategori</option><option>Perlengkapan</option><option>Listrik</option><option>Air</option><option>Internet</option><option>Transportasi</option><option>Maintenance</option><option>Konsumsi</option><option>Biaya Bank</option><option>Lainnya</option></select></div></div><div class="table-responsive"><table class="log-table"><thead><tr><th>Waktu</th><th>Kategori / Keterangan</th><th>Nota / Struk</th><th>Nominal</th><th>Aksi</th></tr></thead><tbody id="expenseBody"></tbody></table></div></section>
+</div></main></div>
+<div class="modal-alert" id="customAlertModal"><div class="modal-alert-content"><div class="modal-alert-icon" id="customAlertIcon">✅</div><div class="modal-alert-title" id="customAlertTitle">Informasi</div><div class="modal-alert-msg" id="customAlertMsg">-</div><button class="btn-modal-ok" onclick="closeAlert()">Tutup</button></div></div>
+
+<div class="receipt-modal" id="receiptModal" onclick="if(event.target===this)closeReceiptModal()">
+    <div class="receipt-modal-card">
+        <div class="receipt-modal-head">
+            <strong id="receiptModalTitle">🧾 Nota / Struk</strong>
+            <button type="button" class="btn-close-receipt" onclick="closeReceiptModal()">✕ Tutup</button>
+        </div>
+        <img id="receiptModalImage" class="receipt-modal-img" alt="Nota / Struk">
+    </div>
+</div>
+
+<div class="browser-camera-modal" id="browserCameraModal">
+    <div class="browser-camera-card">
+        <div class="browser-camera-head">
+            <strong>📷 Kamera Nota / Struk</strong>
+            <button type="button" class="btn-close-receipt" onclick="closeReceiptCamera()">✕ Tutup</button>
+        </div>
+        <div class="browser-camera-view">
+            <video id="receiptCameraVideo" autoplay playsinline muted></video>
+            <div class="browser-camera-status" id="receiptCameraStatus">Menunggu akses kamera...</div>
+        </div>
+        <div class="browser-camera-actions">
+            <button type="button" class="btn-camera-action switch" onclick="switchReceiptCamera()">🔄 Ganti Kamera</button>
+            <button type="button" class="btn-camera-action capture" id="btnCaptureReceipt" onclick="captureReceiptPhoto()">📸 Ambil Foto</button>
+            <button type="button" class="btn-camera-action close" onclick="closeReceiptCamera()">Batal</button>
+        </div>
+        <div class="browser-camera-note">
+            Browser akan meminta izin kamera. Akses kamera langsung umumnya memerlukan <strong>HTTPS</strong> atau <strong>localhost</strong>. Jika diblokir, gunakan Upload dari Galeri/File atau fallback kamera perangkat.
+        </div>
+    </div>
+</div>
+
+<script>
+const DEFAULT_HEADER={judul:"LocDailyMar",subJudul:"POS & Management",warnaJudul:"#ffffff",warnaOutline:"#d99b00",warnaSubJudul:"#ffc107",warnaBgHeader:"#0d2240",fontFamily:"'Poppins', sans-serif",brandFontFamily:"'Poppins', sans-serif",bgPrimary:"#f4f6f9",bgSecondary:"#ffffff",darkMode:false,logoData:null};
+let currentUser="",currentRole="";
+function getTanggalWITA(d=new Date()){const x=new Date(d);const w=new Date((isNaN(x)?Date.now():x.getTime())+8*3600000);return `${w.getUTCFullYear()}-${String(w.getUTCMonth()+1).padStart(2,'0')}-${String(w.getUTCDate()).padStart(2,'0')}`}
+function getWaktuWITA(){const w=new Date(Date.now()+8*3600000);return `${String(w.getUTCHours()).padStart(2,'0')}:${String(w.getUTCMinutes()).padStart(2,'0')}:${String(w.getUTCSeconds()).padStart(2,'0')}`}
+function bukaMenuNavigasi(){document.getElementById('navSidebar')?.classList.add('active');document.getElementById('navOverlay')?.classList.add('active')}
+function tutupMenuNavigasi(){document.getElementById('navSidebar')?.classList.remove('active');document.getElementById('navOverlay')?.classList.remove('active')}
+function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
+function rupiah(n){return 'Rp '+Number(n||0).toLocaleString('id-ID')}
+function getRole(){return String(localStorage.getItem('userRole')||localStorage.getItem('role')||'').trim().toLowerCase()}
+function getUser(){return localStorage.getItem('activeUsername')||localStorage.getItem('loggedInUser')||localStorage.getItem('username')||localStorage.getItem('currentUser')||'-'}
+function requireOwnerAdmin(){if(localStorage.getItem('isLoggedIn')!=='true'){location.replace('index.html');return false}currentRole=getRole();currentUser=getUser();if(!['owner','admin'].includes(currentRole)){location.replace('dashboard.html');return false}document.documentElement.classList.remove('secure-page-pending');return true}
+function applyRoleMenu(){document.querySelectorAll('[data-role-access]').forEach(el=>{const allowed=String(el.dataset.roleAccess||'').split(',').map(x=>x.trim().toLowerCase());if(!allowed.includes(currentRole))el.style.display='none'})}
+function muatTema(){let c;try{c=JSON.parse(localStorage.getItem('headerConfig')||'null')||DEFAULT_HEADER}catch{c=DEFAULT_HEADER}const h=document.getElementById('headerApp'),logo=document.getElementById('imgLogoToko'),title=document.getElementById('txtJudulToko'),sub=document.getElementById('txtSubJudulToko');if(logo){if(c.logoData){logo.src=c.logoData;logo.style.display='block'}else logo.style.display='none'}if(title){title.textContent=c.judul||DEFAULT_HEADER.judul;title.style.color=c.warnaJudul||'#fff';title.style.textShadow=`1px 1px 0 ${c.warnaOutline||DEFAULT_HEADER.warnaOutline}`}if(sub){sub.style.color=c.warnaSubJudul||DEFAULT_HEADER.warnaSubJudul}if(h)h.style.background=c.warnaBgHeader||DEFAULT_HEADER.warnaBgHeader;document.documentElement.style.setProperty('--app-font',c.fontFamily||DEFAULT_HEADER.fontFamily);document.documentElement.style.setProperty('--brand-font',c.brandFontFamily||c.fontFamily||DEFAULT_HEADER.brandFontFamily);document.documentElement.style.setProperty('--bg-primary',c.bgPrimary||DEFAULT_HEADER.bgPrimary);document.documentElement.style.setProperty('--bg-secondary',c.bgSecondary||DEFAULT_HEADER.bgSecondary);document.documentElement.style.setProperty('--accent-color',c.warnaSubJudul||DEFAULT_HEADER.warnaSubJudul);document.documentElement.style.setProperty('--nav-desktop-bg',c.warnaBgHeader||DEFAULT_HEADER.warnaBgHeader);document.body.classList.toggle('dark-mode',!!c.darkMode)}
+function initHeader(){document.getElementById('txtUserLoggedIn').textContent=`👤 ${currentUser} (${currentRole.toUpperCase()})`;const clock=document.getElementById('clockDisplay');const tick=()=>{if(clock)clock.textContent=getWaktuWITA()+' WITA'};tick();setInterval(tick,1000)}
+function showAlert(title,msg,type='success'){const modal=document.getElementById('customAlertModal');document.getElementById('customAlertIcon').textContent=type==='success'?'✅':type==='warning'?'⚠️':'❌';document.getElementById('customAlertTitle').textContent=title;document.getElementById('customAlertMsg').textContent=msg;modal.style.display='flex'}
+function closeAlert(){document.getElementById('customAlertModal').style.display='none'}
+function logout(){localStorage.setItem('isLoggedIn','false');['loginTimestamp','loginSession'].forEach(k=>localStorage.removeItem(k));location.replace('index.html')}
+
+const EXPENSE_KEY='operasional', MUTATION_KEY='mutasiKasShift';
+let receiptDataUrl='';
+let receiptOriginalName='';
+let receiptOriginalSize=0;
+let receiptProcessing=false;
+
+let receiptCameraStream=null;
+let receiptFacingMode='environment';
+let receiptCameraOpening=false;
+
+function arr(key){
+    try{
+        const v=JSON.parse(localStorage.getItem(key)||'[]');
+        return Array.isArray(v)?v:[];
+    }catch{
+        return [];
+    }
+}
+
+function saveArr(key,v){
+    try{
+        localStorage.setItem(key,JSON.stringify(v));
+        return true;
+    }catch(err){
+        const quota=
+            err &&
+            (
+                err.name==='QuotaExceededError' ||
+                err.name==='NS_ERROR_DOM_QUOTA_REACHED' ||
+                err.code===22 ||
+                err.code===1014
+            );
+
+        showAlert(
+            quota?'Penyimpanan Browser Penuh':'Gagal Menyimpan Data',
+            quota
+                ? 'Data tidak dapat disimpan karena kapasitas penyimpanan browser hampir penuh. Hapus foto nota lama yang tidak diperlukan atau buat Backup terlebih dahulu.'
+                : 'Terjadi kesalahan saat menyimpan pengeluaran.',
+            'warning'
+        );
+
+        return false;
+    }
+}
+
+function parseDate(x){
+    const r=x?.tanggal||x?.tgl||x?.date||'';
+    if(typeof r==='string'&&/^\d{4}-\d{2}-\d{2}/.test(r))return r.slice(0,10);
+    const d=new Date(r);
+    return isNaN(d)?'':getTanggalWITA(d);
+}
+
+/*
+ * Fungsi ini dipertahankan hanya untuk kompatibilitas record lama
+ * yang sebelumnya pernah terhubung dengan Mutasi Kas.
+ */
+function closingExists(date,kasir,shift){
+    return arr('shiftClosingLog').some(
+        x =>
+            String(x.tanggal||'')===date &&
+            String(x.kasir||'').toLowerCase()===String(kasir||'').toLowerCase() &&
+            String(x.shift||'').toLowerCase()===String(shift||'').toLowerCase()
+    );
+}
+
+function formatBytes(bytes){
+    const n=Number(bytes||0);
+    if(!n)return '0 KB';
+    if(n<1024)return n+' B';
+    if(n<1024*1024)return (n/1024).toFixed(1)+' KB';
+    return (n/(1024*1024)).toFixed(2)+' MB';
+}
+
+function readFileAsDataURL(file){
+    return new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(reader.result);
+        reader.onerror=()=>reject(new Error('File gambar tidak dapat dibaca.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadImage(src){
+    return new Promise((resolve,reject)=>{
+        const img=new Image();
+        img.onload=()=>resolve(img);
+        img.onerror=()=>reject(new Error('Format gambar tidak dapat diproses oleh browser ini.'));
+        img.src=src;
+    });
+}
+
+async function compressReceipt(file){
+    if(!file || !String(file.type||'').startsWith('image/')){
+        throw new Error('Pilih file gambar untuk Nota / Struk.');
+    }
+
+    if(file.size>12*1024*1024){
+        throw new Error('Ukuran foto terlalu besar. Maksimal 12 MB sebelum kompresi.');
+    }
+
+    const source=await readFileAsDataURL(file);
+    const img=await loadImage(source);
+
+    const maxSide=1100;
+    const scale=Math.min(1,maxSide/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+    const width=Math.max(1,Math.round((img.naturalWidth||1)*scale));
+    const height=Math.max(1,Math.round((img.naturalHeight||1)*scale));
+
+    const canvas=document.createElement('canvas');
+    canvas.width=width;
+    canvas.height=height;
+
+    const ctx=canvas.getContext('2d',{alpha:false});
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,width,height);
+    ctx.drawImage(img,0,0,width,height);
+
+    let quality=.72;
+    let data=canvas.toDataURL('image/jpeg',quality);
+
+    /*
+     * Turunkan kualitas jika hasil masih terlalu besar.
+     * Target kira-kira <= 550 KB per nota agar localStorage tidak lekas sesak.
+     */
+    while(data.length>750000 && quality>.42){
+        quality-=.08;
+        data=canvas.toDataURL('image/jpeg',quality);
+    }
+
+    if(data.length>1200000){
+        throw new Error('Foto masih terlalu besar setelah dikompres. Coba foto ulang dengan resolusi lebih rendah.');
+    }
+
+    return data;
+}
+
+function updateReceiptPreview(){
+    const wrap=document.getElementById('receiptPreviewWrap');
+    const img=document.getElementById('receiptPreview');
+    const meta=document.getElementById('receiptMeta');
+
+    if(!wrap||!img||!meta)return;
+
+    if(receiptDataUrl){
+        wrap.style.display='block';
+        img.src=receiptDataUrl;
+        meta.textContent=
+            `${receiptOriginalName||'Nota / Struk'} • asli ${formatBytes(receiptOriginalSize)} • sudah dikompres`;
+    }else{
+        wrap.style.display='none';
+        img.removeAttribute('src');
+        meta.textContent='Bukti siap disimpan.';
+    }
+}
+
+function stopReceiptCameraStream(){
+    if(receiptCameraStream){
+        receiptCameraStream.getTracks().forEach(track=>track.stop());
+    }
+    receiptCameraStream=null;
+    const video=document.getElementById('receiptCameraVideo');
+    if(video)video.srcObject=null;
+}
+
+function setReceiptCameraStatus(message){
+    const el=document.getElementById('receiptCameraStatus');
+    if(el)el.textContent=message;
+}
+
+function cameraFallback(){
+    closeReceiptCamera();
+    const input=document.getElementById('expenseReceiptCamera');
+    if(input)input.click();
+}
+
+async function startReceiptCamera(){
+    if(receiptCameraOpening)return;
+    receiptCameraOpening=true;
+
+    const captureBtn=document.getElementById('btnCaptureReceipt');
+    if(captureBtn)captureBtn.disabled=true;
+
+    setReceiptCameraStatus('Meminta izin kamera...');
+    stopReceiptCameraStream();
+
+    try{
+        if(!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia!=='function'){
+            const error=new Error('Browser tidak mendukung akses kamera langsung.');
+            error.code='CAMERA_UNSUPPORTED';
+            throw error;
+        }
+
+        receiptCameraStream=await navigator.mediaDevices.getUserMedia({
+            audio:false,
+            video:{
+                facingMode:{ideal:receiptFacingMode},
+                width:{ideal:1920},
+                height:{ideal:1080}
+            }
+        });
+
+        const video=document.getElementById('receiptCameraVideo');
+        if(!video)throw new Error('Elemen kamera tidak ditemukan.');
+
+        video.srcObject=receiptCameraStream;
+        await video.play();
+
+        setReceiptCameraStatus(
+            receiptFacingMode==='environment'
+                ? 'Kamera belakang aktif. Arahkan ke Nota / Struk.'
+                : 'Kamera depan aktif.'
+        );
+
+        if(captureBtn)captureBtn.disabled=false;
+    }catch(error){
+        stopReceiptCameraStream();
+
+        let message='Kamera browser tidak dapat dibuka.';
+        if(error?.name==='NotAllowedError' || error?.name==='PermissionDeniedError'){
+            message='Izin kamera ditolak. Izinkan akses kamera pada browser lalu coba lagi.';
+        }else if(error?.name==='NotFoundError' || error?.name==='DevicesNotFoundError'){
+            message='Kamera tidak ditemukan pada perangkat ini.';
+        }else if(error?.name==='NotReadableError'){
+            message='Kamera sedang dipakai aplikasi lain atau tidak dapat diakses.';
+        }else if(!window.isSecureContext){
+            message='Browser memblokir kamera karena halaman tidak berjalan melalui HTTPS atau localhost.';
+        }
+
+        setReceiptCameraStatus(message);
+
+        if(error?.code==='CAMERA_UNSUPPORTED'){
+            showAlert(
+                'Kamera Browser Tidak Tersedia',
+                'Browser ini tidak mendukung kamera langsung. Sistem akan membuka kamera/file perangkat sebagai fallback.',
+                'warning'
+            );
+            setTimeout(cameraFallback,250);
+        }else{
+            showAlert(
+                'Kamera Tidak Dapat Dibuka',
+                message+' Kamu masih bisa memakai Upload dari Galeri / File.',
+                'warning'
+            );
+        }
+    }finally{
+        receiptCameraOpening=false;
+    }
+}
+
+async function openReceiptCamera(){
+    const modal=document.getElementById('browserCameraModal');
+    if(!modal)return;
+    receiptFacingMode='environment';
+    modal.style.display='flex';
+    await startReceiptCamera();
+}
+
+function closeReceiptCamera(){
+    stopReceiptCameraStream();
+    const modal=document.getElementById('browserCameraModal');
+    if(modal)modal.style.display='none';
+    setReceiptCameraStatus('Menunggu akses kamera...');
+}
+
+async function switchReceiptCamera(){
+    receiptFacingMode=receiptFacingMode==='environment'?'user':'environment';
+    await startReceiptCamera();
+}
+
+function captureReceiptPhoto(){
+    const video=document.getElementById('receiptCameraVideo');
+
+    if(!video || !video.videoWidth || !video.videoHeight){
+        showAlert(
+            'Kamera Belum Siap',
+            'Tunggu sampai gambar kamera tampil terlebih dahulu.',
+            'warning'
+        );
+        return;
+    }
+
+    const maxSide=1100;
+    const scale=Math.min(1,maxSide/Math.max(video.videoWidth,video.videoHeight));
+    const width=Math.max(1,Math.round(video.videoWidth*scale));
+    const height=Math.max(1,Math.round(video.videoHeight*scale));
+
+    const canvas=document.createElement('canvas');
+    canvas.width=width;
+    canvas.height=height;
+
+    const ctx=canvas.getContext('2d',{alpha:false});
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,width,height);
+    ctx.drawImage(video,0,0,width,height);
+
+    let quality=.75;
+    let data=canvas.toDataURL('image/jpeg',quality);
+
+    while(data.length>750000 && quality>.43){
+        quality-=.08;
+        data=canvas.toDataURL('image/jpeg',quality);
+    }
+
+    if(data.length>1200000){
+        showAlert(
+            'Foto Terlalu Besar',
+            'Hasil foto masih terlalu besar. Coba ambil foto kembali dengan jarak lebih dekat.',
+            'warning'
+        );
+        return;
+    }
+
+    receiptDataUrl=data;
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+    receiptOriginalName=`nota-kamera-${stamp}.jpg`;
+    receiptOriginalSize=Math.round((data.length-(data.split(',')[0]||'').length-1)*.75);
+
+    updateReceiptPreview();
+    closeReceiptCamera();
+
+    showAlert(
+        'Foto Berhasil Diambil',
+        'Foto Nota / Struk dari kamera browser sudah masuk ke preview dan siap disimpan.',
+        'success'
+    );
+}
+
+async function handleReceiptFile(event){
+    const input=event.target;
+    const file=input?.files?.[0];
+
+    if(!file)return;
+
+    receiptProcessing=true;
+
+    const saveBtn=document.getElementById('btnSaveExpense');
+    if(saveBtn){
+        saveBtn.disabled=true;
+        saveBtn.textContent='⏳ Memproses Foto...';
+    }
+
+    try{
+        const compressed=await compressReceipt(file);
+
+        receiptDataUrl=compressed;
+        receiptOriginalName=file.name||'nota-struk.jpg';
+        receiptOriginalSize=Number(file.size||0);
+
+        updateReceiptPreview();
+    }catch(err){
+        clearReceipt();
+        showAlert(
+            'Foto Tidak Dapat Digunakan',
+            err?.message||'Gagal memproses foto Nota / Struk.',
+            'warning'
+        );
+    }finally{
+        receiptProcessing=false;
+
+        if(saveBtn){
+            saveBtn.disabled=false;
+            saveBtn.textContent='💾 Simpan Pengeluaran';
+        }
+
+        /*
+         * Reset input supaya file yang sama dapat dipilih lagi bila diperlukan.
+         */
+        if(input)input.value='';
+    }
+}
+
+function clearReceipt(){
+    receiptDataUrl='';
+    receiptOriginalName='';
+    receiptOriginalSize=0;
+
+    const camera=document.getElementById('expenseReceiptCamera');
+    const file=document.getElementById('expenseReceiptFile');
+
+    if(camera)camera.value='';
+    if(file)file.value='';
+
+    updateReceiptPreview();
+}
+
+function saveExpense(ev){
+    ev.preventDefault();
+
+    if(!['owner','admin'].includes(currentRole))return;
+
+    if(receiptProcessing){
+        showAlert(
+            'Foto Sedang Diproses',
+            'Tunggu proses kompresi Nota / Struk selesai sebelum menyimpan.',
+            'warning'
+        );
+        return;
+    }
+
+    const tanggal=
+        document.getElementById('expenseDate').value
+        ||
+        getTanggalWITA();
+
+    const nominal=
+        Number(document.getElementById('expenseAmount').value||0);
+
+    const ket=
+        document.getElementById('expenseDesc').value.trim();
+
+    if(!(nominal>0)||!ket){
+        showAlert(
+            'Data Belum Lengkap',
+            'Nominal dan keterangan pengeluaran wajib diisi.',
+            'warning'
+        );
+        return;
+    }
+
+    const id=Date.now();
+
+    const item={
+        id,
+        tanggal,
+        waktu:getWaktuWITA(),
+        ket,
+        nominal,
+        kategori:document.getElementById('expenseCategory').value,
+        tujuan:document.getElementById('expenseTarget').value.trim(),
+        referensi:document.getElementById('expenseRef').value.trim(),
+        notaGambar:receiptDataUrl||'',
+        notaNama:receiptOriginalName||'',
+        notaUkuranAsli:receiptOriginalSize||0,
+        dibuatOleh:currentUser,
+        role:currentRole,
+        versiPengeluaran:3,
+        mutasiId:null
+    };
+
+    const all=arr(EXPENSE_KEY);
+    all.push(item);
+
+    if(!saveArr(EXPENSE_KEY,all)){
+        return;
+    }
+
+    document.getElementById('expenseAmount').value='';
+    document.getElementById('expenseDesc').value='';
+    document.getElementById('expenseTarget').value='';
+    document.getElementById('expenseRef').value='';
+
+    clearReceipt();
+    renderExpenses();
+
+    showAlert(
+        'Pengeluaran Disimpan',
+        item.notaGambar
+            ? 'Pengeluaran dan foto Nota / Struk berhasil disimpan.'
+            : 'Pengeluaran berhasil dicatat.',
+        'success'
+    );
+}
+
+async function deleteExpense(id){
+    if(currentRole!=='owner'){
+        showAlert(
+            'Akses Ditolak',
+            'Hanya Owner yang dapat menghapus pengeluaran.',
+            'warning'
+        );
+        return;
+    }
+
+    const all=arr(EXPENSE_KEY);
+    const x=all.find(i=>Number(i.id)===Number(id));
+
+    if(!x)return;
+
+    /*
+     * Proteksi khusus record lama yang pernah membuat Mutasi Kas otomatis.
+     */
+    if(
+        x.sumberPembayaran==='kas_shift' &&
+        closingExists(x.tanggal,x.kasirShift,x.shift)
+    ){
+        showAlert(
+            'Data Terkunci',
+            'Pengeluaran lama ini sudah ikut pada Closing Shift. Hapus/reset Closing Shift terkait terlebih dahulu jika data memang harus dikoreksi.',
+            'warning'
+        );
+        return;
+    }
+
+    if(
+        !await ldmDialog.confirm(
+            'Hapus Pengeluaran',
+            `Hapus pengeluaran ${rupiah(x.nominal)} - ${x.ket}?`,
+            'danger',
+            {okText:'Hapus'}
+        )
+    )return;
+
+    if(!saveArr(
+        EXPENSE_KEY,
+        all.filter(i=>Number(i.id)!==Number(id))
+    )){
+        return;
+    }
+
+    /*
+     * Jika yang dihapus adalah record versi lama, mutasi pasangannya juga dibersihkan.
+     * Record versi baru tidak lagi membuat mutasi otomatis.
+     */
+    if(x.mutasiId){
+        saveArr(
+            MUTATION_KEY,
+            arr(MUTATION_KEY).filter(
+                m=>Number(m.id)!==Number(x.mutasiId)
+            )
+        );
+    }
+
+    renderExpenses();
+}
+
+function viewReceipt(id){
+    const x=arr(EXPENSE_KEY).find(i=>Number(i.id)===Number(id));
+
+    if(!x?.notaGambar){
+        showAlert(
+            'Tidak Ada Bukti',
+            'Pengeluaran ini tidak memiliki foto Nota / Struk.',
+            'warning'
+        );
+        return;
+    }
+
+    const modal=document.getElementById('receiptModal');
+    const image=document.getElementById('receiptModalImage');
+    const title=document.getElementById('receiptModalTitle');
+
+    image.src=x.notaGambar;
+    title.textContent=
+        `🧾 ${x.notaNama||'Nota / Struk'} • ${rupiah(x.nominal)}`;
+
+    modal.style.display='flex';
+}
+
+function closeReceiptModal(){
+    const modal=document.getElementById('receiptModal');
+    const image=document.getElementById('receiptModalImage');
+
+    if(modal)modal.style.display='none';
+    if(image)image.removeAttribute('src');
+}
+
+function renderExpenses(){
+    const filter=document.getElementById('filterExpenseDate').value;
+    const cat=document.getElementById('filterCategory').value;
+
+    const all=
+        arr(EXPENSE_KEY)
+            .sort(
+                (a,b)=>Number(b.id||0)-Number(a.id||0)
+            );
+
+    const rows=
+        all.filter(
+            x =>
+                (!filter||parseDate(x)===filter)
+                &&
+                (!cat||String(x.kategori||'Lainnya')===cat)
+        );
+
+    const body=document.getElementById('expenseBody');
+    document.getElementById('recordInfo').textContent=`${rows.length} Record`;
+
+    body.innerHTML=
+        rows.length
+            ? rows.map(
+                x => {
+                    const receiptCell=
+                        x.notaGambar
+                            ? `<span class="receipt-status">✅ Ada Bukti</span><br><button type="button" class="btn-view-receipt" onclick="viewReceipt(${Number(x.id)})">👁️ Lihat Nota</button>`
+                            : `<span class="receipt-status empty">— Tidak Ada</span>`;
+
+                    return `
+                        <tr>
+                            <td>
+                                <strong>${escapeHtml(parseDate(x))}</strong><br>
+                                <small>${escapeHtml(x.waktu||'')}</small>
+                            </td>
+
+                            <td>
+                                <strong>${escapeHtml(x.kategori||'Operasional')}</strong><br>
+                                ${escapeHtml(x.ket||'-')}<br>
+                                <small style="color:#94a3b8">
+                                    ${escapeHtml(x.tujuan||'')}
+                                    ${x.referensi?' • Ref: '+escapeHtml(x.referensi):''}
+                                </small>
+                            </td>
+
+                            <td>${receiptCell}</td>
+
+                            <td>
+                                <strong>${rupiah(x.nominal)}</strong>
+                            </td>
+
+                            <td>
+                                ${
+                                    currentRole==='owner'
+                                        ? `<button class="btn-small btn-delete" onclick="deleteExpense(${Number(x.id)})">Hapus</button>`
+                                        : '<span style="color:#94a3b8;font-size:.62rem">🔒</span>'
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }
+            ).join('')
+            : '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:18px">Belum ada pengeluaran pada filter ini.</td></tr>';
+
+    renderSummary();
+}
+
+function renderSummary(){
+    const all=arr(EXPENSE_KEY);
+    const day=document.getElementById('filterExpenseDate').value||getTanggalWITA();
+    const month=day.slice(0,7);
+
+    const daily=all.filter(x=>parseDate(x)===day);
+    const monthly=all.filter(x=>parseDate(x).slice(0,7)===month);
+    const receiptCount=daily.filter(x=>Boolean(x.notaGambar)).length;
+
+    document.getElementById('sumHari').textContent=
+        rupiah(
+            daily.reduce(
+                (a,x)=>a+Number(x.nominal||0),
+                0
+            )
+        );
+
+    document.getElementById('sumBulan').textContent=
+        rupiah(
+            monthly.reduce(
+                (a,x)=>a+Number(x.nominal||0),
+                0
+            )
+        );
+
+    document.getElementById('sumReceipt').textContent=
+        `${receiptCount} Bukti`;
+
+    document.getElementById('sumCount').textContent=
+        daily.length;
+}
+
+document.addEventListener(
+    'DOMContentLoaded',
+    ()=>{
+        if(!requireOwnerAdmin())return;
+
+        muatTema();
+        applyRoleMenu();
+        initHeader();
+
+        document.getElementById('expenseDate').value=
+            getTanggalWITA();
+
+        document.getElementById('filterExpenseDate').value=
+            getTanggalWITA();
+
+        updateReceiptPreview();
+        renderExpenses();
+    }
+);
+
+window.addEventListener('pagehide',()=>{
+    stopReceiptCameraStream();
+});
+
+document.addEventListener('visibilitychange',()=>{
+    if(document.hidden && document.getElementById('browserCameraModal')?.style.display==='flex'){
+        stopReceiptCameraStream();
+        setReceiptCameraStatus('Kamera dijeda karena tab tidak aktif. Tutup lalu buka kembali Kamera Browser.');
+    }
+});
+
+window.addEventListener(
+    'storage',
+    e=>{
+        if(
+            [
+                'operasional',
+                'mutasiKasShift',
+                'shiftClosingLog',
+                'headerConfig'
+            ].includes(e.key)
+        ){
+            if(e.key==='headerConfig')muatTema();
+            renderExpenses();
+        }
+    }
+);
+</script>
+<script id="ldmCompactNavigationScript">
+(function(){
+    const ACCESS={
+        "dashboard.html":["owner","admin","kasir"],
+        "absensi.html":["owner","admin","kasir"],
+        "kasir.html":["owner","admin","kasir"],
+        "retur.html":["owner","admin","kasir"],
+        "barang.html":["owner","admin"],
+        "supplier.html":["owner","admin"],
+        "Purchase-Order.html":["owner","admin"],
+        "goods.receipt.html":["owner","admin"],
+        "kartu-stok.html":["owner","admin","kasir"],
+        "stock-opname.html":["owner","admin","kasir"],
+        "laporan.html":["owner","admin","kasir"],
+        "shift-closing.html":["owner","admin"],
+        "eod.html":["owner","admin"],
+        "pengeluaran.html":["owner","admin"],
+        "backup%20%26%20restore.html":["owner","admin"],
+        "backup & restore.html":["owner","admin"]
+    };
+
+    function baseName(value){
+        let href=String(value||"").split("#")[0].split("?")[0];
+        try{href=decodeURIComponent(href)}catch(e){}
+        href=href.replace(/^\.\//,"");
+        return href.split("/").pop()||href;
+    }
+
+    function getRole(){
+        return String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function applyCompactNav(){
+        const role=getRole();
+        document.documentElement.setAttribute("data-ldm-role",role);
+
+        document.querySelectorAll(".nav-bar a.nav-item[href]").forEach(link=>{
+            const allowed=ACCESS[baseName(link.getAttribute("href"))];
+            if(!allowed)return;
+
+            if(role && !allowed.includes(role)){
+                link.style.setProperty("display","none","important");
+            }else if(role){
+                link.style.removeProperty("display");
+            }
+        });
+    }
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            applyCompactNav,
+            {once:true}
+        );
+    }else{
+        applyCompactNav();
+    }
+
+    window.addEventListener(
+        "load",
+        ()=>setTimeout(applyCompactNav,0),
+        {once:true}
+    );
+})();
+</script>
+
+
+<script id="ldmMegaMenuResponsiveScript">
+(function(){
+    const ROUTES=[
+        {page:"dashboard.html", icon:"📊", label:"Dashboard", group:"Utama", roles:["owner","admin","kasir"], quick:true},
+        {page:"absensi.html", icon:"📝", label:"Absensi", group:"Utama", roles:["owner","admin","kasir"]},
+        {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
+        {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
+
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
+        {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
+
+        {page:"supplier.html", icon:"🏢", label:"Supplier", group:"Supplier & Pembelian", roles:["owner","admin"]},
+        {page:"Purchase-Order.html", icon:"🛒", label:"Purchase Order", group:"Supplier & Pembelian", roles:["owner","admin"], badge:"pendingPOBadge"},
+        {page:"goods.receipt.html", icon:"📥", label:"Goods Receipt", group:"Supplier & Pembelian", roles:["owner","admin"], badge:"pendingGRBadge"},
+
+        {page:"laporan.html", icon:"📑", label:"Laporan", group:"Keuangan & Laporan", roles:["owner","admin","kasir"], quick:true},
+        {page:"pengeluaran.html", icon:"💸", label:"Pengeluaran", group:"Keuangan & Laporan", roles:["owner","admin"]},
+
+        {page:"shift-closing.html", icon:"🔒", label:"Closing Shift", group:"Closing & Data", roles:["owner","admin"]},
+        {page:"eod.html", icon:"🌙", label:"End of Day", group:"Closing & Data", roles:["owner","admin"]},
+        {page:"backup%20%26%20restore.html", icon:"💾", label:"Backup & Restore", group:"Closing & Data", roles:["owner","admin"]}
+    ];
+
+    const GROUP_META={
+        "Utama":"⚡",
+        "Inventori":"📦",
+        "Supplier & Pembelian":"🏢",
+        "Keuangan & Laporan":"📑",
+        "Closing & Data":"🔐"
+    };
+
+    function getSession(){
+        try{
+            if(typeof window.getSecuritySession==="function"){
+                const session=window.getSecuritySession();
+                if(session)return session;
+            }
+        }catch(e){}
+
+        return {
+            username:
+                localStorage.getItem("activeUsername")
+                || localStorage.getItem("loggedInUser")
+                || localStorage.getItem("username")
+                || "",
+            role:
+                localStorage.getItem("userRole")
+                || localStorage.getItem("role")
+                || ""
+        };
+    }
+
+    function normalizeRole(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function currentPage(){
+        let path=location.pathname.split("/").pop()||"dashboard.html";
+        try{path=decodeURIComponent(path)}catch(e){}
+        if(!path)path="dashboard.html";
+        return path;
+    }
+
+    function esc(value){
+        return String(value??"")
+            .replace(/&/g,"&amp;")
+            .replace(/</g,"&lt;")
+            .replace(/>/g,"&gt;")
+            .replace(/"/g,"&quot;")
+            .replace(/'/g,"&#039;");
+    }
+
+    function routeHref(page){
+        return page;
+    }
+
+    function routeAllowed(route,role){
+        return route.roles.includes(role);
+    }
+
+    function kasirOnClick(route){
+        if(route.page!=="kasir.html")return "";
+        return ` onclick="return window.verifikasiAksesKasir ? window.verifikasiAksesKasir(event) : true"`;
+    }
+
+    function linkHTML(route,current,klass="ldm-mega-link"){
+        const active=current===decodeURIComponent(route.page) || current===route.page;
+        return `
+            <a
+                href="${routeHref(route.page)}"
+                class="${klass}${active?" active":""}"
+                data-mega-route="${esc(route.page)}"
+                ${kasirOnClick(route)}
+            >
+                <span class="ldm-mega-icon">${route.icon}</span>
+                <span>${esc(route.label)}</span>
+                ${
+                    route.badge
+                        ? `<span class="ldm-mega-badge" data-source-badge="${esc(route.badge)}"></span>`
+                        : ""
+                }
+            </a>
+        `;
+    }
+
+    function buildMegaMenu(){
+        if(document.getElementById("ldmMegaNavShell"))return;
+
+        const app=document.querySelector(".app-layout");
+        const main=document.querySelector(".main-content");
+        if(!app || !main)return;
+
+        const session=getSession();
+        const role=normalizeRole(session?.role);
+
+        if(!role)return;
+
+        const visible=ROUTES.filter(route=>routeAllowed(route,role));
+        const current=currentPage();
+
+        const grouped={};
+        visible.forEach(route=>{
+            if(!grouped[route.group])grouped[route.group]=[];
+            grouped[route.group].push(route);
+        });
+
+        const groupsHTML=Object.entries(grouped)
+            .filter(([,routes])=>routes.length)
+            .map(([name,routes])=>`
+                <section class="ldm-mega-group">
+                    <div class="ldm-mega-group-title">
+                        <span>${GROUP_META[name]||"•"}</span>
+                        <span>${esc(name)}</span>
+                    </div>
+                    <div class="ldm-mega-links">
+                        ${routes.map(route=>linkHTML(route,current)).join("")}
+                    </div>
+                </section>
+            `)
+            .join("");
+
+        const quickHTML=visible
+            .filter(route=>route.quick)
+            .map(route=>{
+                const active=current===decodeURIComponent(route.page) || current===route.page;
+                return `
+                    <a
+                        href="${routeHref(route.page)}"
+                        class="${active?"active":""}"
+                        ${kasirOnClick(route)}
+                    >
+                        <span>${route.icon}</span>
+                        <span>${esc(route.label)}</span>
+                    </a>
+                `;
+            })
+            .join("");
+
+        const shell=document.createElement("div");
+        shell.className="ldm-mega-nav-shell";
+        shell.id="ldmMegaNavShell";
+
+        shell.innerHTML=`
+            <nav class="ldm-mega-nav" aria-label="Navigasi Mega Menu">
+                <button
+                    type="button"
+                    class="ldm-mega-trigger"
+                    id="ldmMegaTrigger"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                >
+                    <span>☷</span>
+                    <span>Mega Menu</span>
+                    <span class="ldm-mega-trigger-arrow">▼</span>
+                </button>
+
+                <div class="ldm-mega-quick">
+                    ${quickHTML}
+                </div>
+
+                <div class="ldm-mega-session">
+                    <span class="ldm-mega-role">
+                        👤 ${esc(role)}
+                    </span>
+                </div>
+
+                <div class="ldm-mega-panel" id="ldmMegaPanel">
+                    <div class="ldm-mega-panel-top">
+                        <div>
+                            <strong>Navigasi LocDailyMar</strong>
+                            <p>Semua menu dikelompokkan agar akses desktop lebih cepat dan tidak memenuhi sisi layar.</p>
+                        </div>
+                        <button type="button" class="ldm-mega-panel-close" id="ldmMegaClose">
+                            ✕ Tutup
+                        </button>
+                    </div>
+
+                    <div class="ldm-mega-grid">
+                        ${groupsHTML}
+                    </div>
+                </div>
+            </nav>
+        `;
+
+        app.insertBefore(shell,main);
+
+        const trigger=shell.querySelector("#ldmMegaTrigger");
+        const close=shell.querySelector("#ldmMegaClose");
+
+        function setOpen(open){
+            shell.classList.toggle("open",Boolean(open));
+            trigger?.setAttribute("aria-expanded",open?"true":"false");
+        }
+
+        trigger?.addEventListener("click",event=>{
+            event.stopPropagation();
+            setOpen(!shell.classList.contains("open"));
+        });
+
+        close?.addEventListener("click",()=>{
+            setOpen(false);
+            trigger?.focus();
+        });
+
+        /*
+         * Desktop tetap nyaman untuk mouse: hover membuka Mega Menu.
+         * Click tetap tersedia untuk trackpad/touch desktop.
+         */
+        let hoverTimer=null;
+
+        shell.addEventListener("mouseenter",()=>{
+            if(window.matchMedia("(min-width:900px)").matches){
+                clearTimeout(hoverTimer);
+                setOpen(true);
+            }
+        });
+
+        shell.addEventListener("mouseleave",()=>{
+            if(window.matchMedia("(min-width:900px)").matches){
+                clearTimeout(hoverTimer);
+                hoverTimer=setTimeout(()=>setOpen(false),180);
+            }
+        });
+
+        document.addEventListener("click",event=>{
+            if(!shell.contains(event.target)){
+                setOpen(false);
+            }
+        });
+
+        document.addEventListener("keydown",event=>{
+            if(event.key==="Escape"){
+                setOpen(false);
+            }
+        });
+
+        syncBadges();
+
+        /*
+         * Badge menu lama (stok/PO/GR) tetap menjadi sumber.
+         * MutationObserver membuat badge Mega Menu mengikuti perubahan.
+         */
+        ["navBadge","pendingPOBadge","pendingGRBadge"].forEach(id=>{
+            const source=document.getElementById(id);
+            if(!source)return;
+
+            const observer=new MutationObserver(syncBadges);
+            observer.observe(source,{
+                attributes:true,
+                childList:true,
+                subtree:true,
+                characterData:true,
+                attributeFilter:["style","class"]
+            });
+        });
+    }
+
+    function syncBadges(){
+        document.querySelectorAll("[data-source-badge]").forEach(target=>{
+            const source=document.getElementById(target.dataset.sourceBadge);
+            if(!source){
+                target.style.display="none";
+                return;
+            }
+
+            const text=String(source.textContent||"").trim();
+            const computed=getComputedStyle(source);
+            const visible=
+                computed.display!=="none"
+                && computed.visibility!=="hidden"
+                && text
+                && text!=="0";
+
+            if(visible){
+                target.textContent=text;
+                target.style.display="inline-flex";
+            }else{
+                target.style.display="none";
+            }
+        });
+    }
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            ()=>{
+                buildMegaMenu();
+                setTimeout(syncBadges,250);
+                setTimeout(syncBadges,900);
+            },
+            {once:true}
+        );
+    }else{
+        buildMegaMenu();
+        setTimeout(syncBadges,250);
+        setTimeout(syncBadges,900);
+    }
+})();
+</script>
+
+
+<script id="ldmEodMenuAvailabilityScript">
+(function(){
+    function readArray(key){
+        try{
+            const value=JSON.parse(localStorage.getItem(key)||"[]");
+            return Array.isArray(value)?value:[];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function witaDate(value){
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
+    }
+
+    function recordDate(item){
+        if(!item)return "";
+
+        const raw=
+            item.waktu_teks
+            || item.tanggal
+            || item.tgl
+            || item.date
+            || item.waktu
+            || item.created_at
+            || item.timestamp
+            || "";
+
+        if(
+            typeof raw==="string"
+            &&
+            /^\d{4}-\d{2}-\d{2}/.test(raw)
+        ){
+            return raw.slice(0,10);
+        }
+
+        const d=new Date(raw);
+        return isNaN(d)?"":witaDate(d);
+    }
+
+    function cashierName(item){
+        return String(
+            item?.kasir
+            || item?.user
+            || item?.username
+            || item?.admin
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function shiftName(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function calculateReadiness(){
+        const today=witaDate(new Date());
+
+        const laporan=readArray("laporan");
+
+        const transactions=(
+            laporan.length
+                ? laporan
+                : readArray("dataLaporan")
+        ).filter(item=>recordDate(item)===today);
+
+        const activeAccounts=new Set(
+            transactions
+                .map(cashierName)
+                .filter(Boolean)
+        );
+
+        if(activeAccounts.size===0){
+            return {
+                ready:false,
+                activeAccounts:[],
+                pendingAccounts:[],
+                hasShift1:false,
+                hasShift2:false
+            };
+        }
+
+        const closingToday=readArray("shiftClosingLog")
+            .filter(
+                item=>
+                    String(item?.tanggal||"").slice(0,10)===today
+            );
+
+        const closedAccounts=new Set(
+            closingToday
+                .map(
+                    item=>
+                        String(item?.kasir||"")
+                            .trim()
+                            .toLowerCase()
+                )
+                .filter(Boolean)
+        );
+
+        const pendingAccounts=
+            [...activeAccounts]
+                .filter(account=>!closedAccounts.has(account));
+
+        const hasShift1=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 1"
+            );
+
+        const hasShift2=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 2"
+            );
+
+        return {
+            ready:
+                pendingAccounts.length===0
+                && hasShift1
+                && hasShift2,
+            activeAccounts:[...activeAccounts],
+            pendingAccounts,
+            hasShift1,
+            hasShift2
+        };
+    }
+
+    let lastState=null;
+
+    function sync(){
+        const result=calculateReadiness();
+        const next=result.ready?"true":"false";
+
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            next
+        );
+
+        /*
+         * Beri title diagnostik pada link bila link sedang tersembunyi.
+         * Tidak mengubah akses halaman langsung, hanya visibilitas menu.
+         */
+        document.querySelectorAll('a[href="eod.html"]').forEach(link=>{
+            if(result.ready){
+                link.removeAttribute("data-eod-waiting");
+                link.title="End of Day siap karena seluruh Closing Shift wajib sudah lengkap.";
+            }else{
+                link.setAttribute("data-eod-waiting","true");
+                link.title="End of Day akan muncul setelah semua akun transaksi Closing Shift dan Shift 1 + Shift 2 tersedia.";
+            }
+        });
+
+        if(lastState!==next){
+            lastState=next;
+            window.dispatchEvent(
+                new CustomEvent(
+                    "ldm-eod-menu-readiness",
+                    {detail:result}
+                )
+            );
+        }
+
+        return result;
+    }
+
+    window.LDMEodMenuAvailability={
+        check:sync,
+        calculate:calculateReadiness
+    };
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            sync,
+            {once:true}
+        );
+    }else{
+        sync();
+    }
+
+    /*
+     * storage event berlaku untuk tab lain.
+     */
+    window.addEventListener("storage",event=>{
+        if(
+            [
+                "laporan",
+                "dataLaporan",
+                "shiftClosingLog",
+                "dataRetur"
+            ].includes(event.key)
+        ){
+            sync();
+        }
+    });
+
+    window.addEventListener("focus",sync);
+
+    document.addEventListener("visibilitychange",()=>{
+        if(!document.hidden)sync();
+    });
+
+    /*
+     * storage event tidak ditembakkan ke halaman yang melakukan
+     * setItem sendiri. Poll ringan ini membuat menu muncul segera
+     * setelah Closing Shift disimpan di halaman yang sama.
+     */
+    setInterval(()=>{
+        if(!document.hidden){
+            sync();
+        }
+    },2000);
+})();
+</script>
+
+
+<script id="ldmStage12ExpenseCloudOverride">
+(function(){
+    "use strict";
+
+    window.saveExpense = async function(ev){
+        ev.preventDefault();
+        if(!["owner","admin"].includes(currentRole)) return;
+
+        if(receiptProcessing){
+            showAlert("Foto Sedang Diproses","Tunggu kompresi Nota selesai.","warning");
+            return;
+        }
+
+        const tanggal = document.getElementById("expenseDate").value || getTanggalWITA();
+        const nominal = Number(document.getElementById("expenseAmount").value || 0);
+        const ket = document.getElementById("expenseDesc").value.trim();
+
+        if(!(nominal > 0) || !ket){
+            showAlert("Data Belum Lengkap","Nominal dan keterangan wajib diisi.","warning");
+            return;
+        }
+
+        if(!window.LDMReporting){
+            showAlert("Cloud Reporting Belum Siap","reporting-service.js belum termuat.","danger");
+            return;
+        }
+
+        const button = document.getElementById("btnSaveExpense");
+        const oldText = button ? button.textContent : "";
+        if(button){
+            button.disabled = true;
+            button.textContent = "☁️ Menyimpan ke Cloud...";
+        }
+
+        try{
+            await window.LDMReporting.saveExpense({
+                businessDate:tanggal,
+                description:ket,
+                category:document.getElementById("expenseCategory").value,
+                target:document.getElementById("expenseTarget").value.trim(),
+                reference:document.getElementById("expenseRef").value.trim(),
+                amount:nominal,
+                receiptDataURL:receiptDataUrl || "",
+                receiptName:receiptOriginalName || "",
+                receiptOriginalSize:receiptOriginalSize || 0
+            });
+
+            document.getElementById("expenseAmount").value = "";
+            document.getElementById("expenseDesc").value = "";
+            document.getElementById("expenseTarget").value = "";
+            document.getElementById("expenseRef").value = "";
+            clearReceipt();
+            renderExpenses();
+            showAlert("Pengeluaran Disimpan","Pengeluaran berhasil disimpan ke cloud.","success");
+        }catch(error){
+            showAlert("Pengeluaran Gagal",error?.message || String(error),"danger");
+        }finally{
+            if(button){
+                button.disabled = false;
+                button.textContent = oldText || "💾 Simpan Pengeluaran";
+            }
+        }
+    };
+
+    window.deleteExpense = async function(id){
+        if(currentRole !== "owner"){
+            showAlert("Akses Ditolak","Hanya Owner yang dapat menghapus pengeluaran.","warning");
+            return;
+        }
+
+        const target = arr(EXPENSE_KEY).find(row => Number(row.id) === Number(id));
+        if(!target) return;
+
+        if(!target.cloudId){
+            showAlert("Pengeluaran Legacy","Migrasikan data ini ke Tahap 12 terlebih dahulu.","warning");
+            return;
+        }
+
+        const ok = await ldmDialog.confirm(
+            "Hapus Pengeluaran",
+            `Hapus pengeluaran ${rupiah(target.nominal)} - ${target.ket}?`,
+            "danger",
+            {okText:"Hapus"}
+        );
+        if(!ok) return;
+
+        try{
+            await window.LDMReporting.deleteExpense(target.cloudId);
+            renderExpenses();
+            showAlert("Pengeluaran Dihapus","Data cloud di-soft-delete.","success");
+        }catch(error){
+            showAlert("Hapus Gagal",error?.message || String(error),"danger");
+        }
+    };
+
+    window.addEventListener("ldm-reporting-cache-updated",function(){
+        if(typeof renderExpenses === "function") renderExpenses();
+    });
+})();
+</script>
+
+<script src="js/global-system-navigation.js?v=23.0"></script></body></html>

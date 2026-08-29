@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0F9D58">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+    <title>Aplikasi & Update - LocDailyMar</title>
+    <style>
+        *{box-sizing:border-box}body{margin:0;background:#f4f7f5;color:#263442;font-family:Inter,system-ui,sans-serif}.top{background:linear-gradient(135deg,#0d2240,#0f9d58);color:#fff;padding:24px}.top-inner,.wrap{width:min(1050px,calc(100% - 28px));margin:auto}.top-inner{display:flex;gap:16px;align-items:center}.top img{width:68px;height:68px;border-radius:18px}.top h1{margin:0 0 5px;font-size:clamp(22px,4vw,32px)}.top p{margin:0;color:#d9f7e6}.wrap{padding:22px 0 40px}.notice{background:#fff8dc;border:1px solid #ead27a;border-radius:14px;padding:14px 16px;margin-bottom:18px;line-height:1.55}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}.card{background:#fff;border:1px solid #dfe8e3;border-radius:18px;padding:19px;box-shadow:0 7px 24px #1231}.card h2{font-size:17px;margin:0 0 15px}.row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #edf2ef;font-size:14px}.row:last-of-type{border-bottom:0}.value{text-align:right;font-weight:800;overflow-wrap:anywhere}.good{color:#08783e}.warn{color:#a05a00}.bad{color:#b42318}.bar{height:10px;background:#e8eeeb;border-radius:99px;overflow:hidden;margin:12px 0}.bar>span{display:block;height:100%;width:0;background:#0f9d58}.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}.primary{background:#0f9d58;color:#fff}.navy{background:#0d2240;color:#fff}.light{background:#e7eeea;color:#263442}.danger{background:#ffe4e1;color:#9b1c14}.btn:disabled{opacity:.55;cursor:wait}.log{margin-top:18px;padding:14px;border-radius:12px;background:#0d2240;color:#d9f7e6;white-space:pre-wrap;min-height:48px;font:13px/1.5 ui-monospace,monospace}@media(max-width:600px){.top-inner{align-items:flex-start}.top img{width:54px;height:54px}.row{display:block}.value{text-align:left;margin-top:4px}}
+    </style>
+    <script src="js/pwa-manager.js?v=19.1"></script>
+</head>
+<body>
+    <header class="top"><div class="top-inner">
+        <img src="assets/icons/icon-192.png" alt="Ikon LocDailyMar">
+        <div><h1>Aplikasi & Update</h1><p> PWA Installation & Safe Update Manager</p></div>
+    </div></header>
+    <main class="wrap">
+        <div class="notice"><strong>Aturan aman:</strong> pembaruan dan pembersihan cache ditolak apabila ada transaksi offline atau reservasi stok lokal yang belum tersinkron.</div>
+        <div class="grid">
+            <section class="card">
+                <h2>📲 Status Aplikasi</h2>
+                <div class="row"><span>Versi frontend</span><span class="value" id="appVersion">-</span></div>
+                <div class="row"><span>Mode aplikasi</span><span class="value" id="installStatus">-</span></div>
+                <div class="row"><span>Service Worker</span><span class="value" id="workerStatus">-</span></div>
+                <div class="row"><span>Internet</span><span class="value" id="onlineStatus">-</span></div>
+                <div class="buttons"><button class="btn primary" id="installBtn">Pasang Aplikasi</button><button class="btn navy" id="checkBtn">Cek Update</button><button class="btn primary" id="applyBtn">Terapkan Update</button></div>
+            </section>
+            <section class="card">
+                <h2>🔄 Keamanan Sinkronisasi</h2>
+                <div class="row"><span>Antrean belum sinkron</span><span class="value" id="queueCount">-</span></div>
+                <div class="row"><span>Reservasi stok lokal</span><span class="value" id="reservationCount">-</span></div>
+                <div class="row"><span>Status pembaruan</span><span class="value" id="updateSafety">-</span></div>
+                <div class="row"><span>Sinkronisasi terakhir</span><span class="value" id="lastSync">-</span></div>
+                <div class="buttons"><button class="btn light" id="syncBtn">Sinkronkan Sekarang</button></div>
+            </section>
+            <section class="card">
+                <h2>💾 Penyimpanan Perangkat</h2>
+                <div class="row"><span>Terpakai</span><span class="value" id="storageUsage">-</span></div>
+                <div class="row"><span>Kuota browser</span><span class="value" id="storageQuota">-</span></div>
+                <div class="bar"><span id="storageBar"></span></div>
+                <div class="row"><span>Penyimpanan persisten</span><span class="value" id="persistStatus">-</span></div>
+                <div class="buttons"><button class="btn navy" id="persistBtn">Minta Penyimpanan Persisten</button><button class="btn danger" id="clearBtn">Bersihkan Cache Aman</button></div>
+            </section>
+        </div>
+        <div class="log" id="activityLog" role="status">Menyiapkan diagnostik Tahap 18…</div>
+        <div class="buttons"><a class="btn light" href="dashboard.html">← Kembali ke Dashboard</a><a class="btn light" href="kasir.html">Buka Kasir</a></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/offline-queue.js?v=17.0"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=16.0"></script>
+    <script src="js/cloud-session-guard.js?v=16.0"></script>
+    <script>
+    (function(){
+        "use strict";
+        const byId=id=>document.getElementById(id);
+        const log=message=>{byId("activityLog").textContent=`${new Date().toLocaleTimeString("id-ID")} · ${message}`;};
+        const bytes=value=>{
+            const amount=Number(value||0);if(!amount)return "0 B";
+            const units=["B","KB","MB","GB"];const index=Math.min(Math.floor(Math.log(amount)/Math.log(1024)),3);
+            return `${(amount/Math.pow(1024,index)).toFixed(index?1:0)} ${units[index]}`;
+        };
+        const busy=async(button,task)=>{button.disabled=true;try{return await task();}finally{button.disabled=false;}};
+
+        async function refresh(){
+            if(!window.LDMPWA){log("PWA Manager belum dimuat.");return;}
+            const state=window.LDMPWA.getState();
+            const risk=await window.LDMPWA.getQueueRisk();
+            const storage=await window.LDMPWA.getStorageInfo().catch(()=>({usage:0,quota:0,persisted:null}));
+            byId("appVersion").textContent=window.LDMPWA.version;
+            byId("installStatus").textContent=state.installed?"Terpasang (standalone)":state.installAvailable?"Siap dipasang":"Dibuka di browser";
+            byId("workerStatus").textContent=state.supported?(state.updateAvailable?"Update menunggu":"Aktif"):"Tidak didukung";
+            byId("onlineStatus").textContent=navigator.onLine?"Online":"Offline";
+            byId("onlineStatus").className=`value ${navigator.onLine?"good":"bad"}`;
+            byId("queueCount").textContent=String(risk.unsynced);
+            byId("reservationCount").textContent=String(risk.reservedItems);
+            byId("updateSafety").textContent=risk.safe?"Aman diperbarui":"Sinkronkan dahulu";
+            byId("updateSafety").className=`value ${risk.safe?"good":"warn"}`;
+            const last=Number(localStorage.getItem("ldmOfflineLastSyncAt")||0);
+            byId("lastSync").textContent=last?new Date(last).toLocaleString("id-ID"):"Belum tercatat";
+            byId("storageUsage").textContent=bytes(storage.usage);
+            byId("storageQuota").textContent=bytes(storage.quota);
+            byId("storageBar").style.width=`${storage.quota?Math.min(100,storage.usage/storage.quota*100):0}%`;
+            byId("persistStatus").textContent=storage.persisted===true?"Aktif":storage.persisted===false?"Belum aktif":"Tidak tersedia";
+            byId("applyBtn").disabled=!state.updateAvailable;
+            if(state.message) log(state.message);
+        }
+
+        byId("installBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.install();log(result.message||`Pilihan instalasi: ${result.outcome||"selesai"}`);await refresh();});
+        byId("checkBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.checkForUpdate();log(result.message);await refresh();});
+        byId("applyBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.applyUpdate();log(result.message);if(!result.ok)alert(result.message);await refresh();});
+        byId("persistBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.requestPersistentStorage();log(result.message);await refresh();});
+        byId("clearBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!confirm("Bersihkan hanya cache aplikasi? Data transaksi lokal tidak dihapus."))return;const result=await LDMPWA.clearCachesSafely();log(result.message);if(!result.ok)alert(result.message);await refresh();});
+        byId("syncBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!window.LDMOfflineQueue)throw new Error("Offline Queue belum tersedia.");const result=await LDMOfflineQueue.syncNow({force:true});log(`Sinkronisasi selesai. Sisa antrean: ${result.remaining}.`);await refresh();});
+        addEventListener("ldm-pwa-state-changed",refresh);addEventListener("ldm-offline-queue-updated",refresh);addEventListener("online",refresh);addEventListener("offline",refresh);
+        if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",refresh,{once:true});else refresh();
+    })();
+    </script>
+<script src="js/global-system-navigation.js?v=23.0"></script>
+</body>
+</html>

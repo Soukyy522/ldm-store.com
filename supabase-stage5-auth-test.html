@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 5 Auth Test</title>
+<style>
+:root{
+    --bg:#f4f7fb;
+    --card:#fff;
+    --text:#172033;
+    --muted:#667085;
+    --line:#e4e7ec;
+    --good:#15803d;
+    --bad:#b42318;
+    --warn:#b54708;
+    --primary:#0d2240;
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+.wrap{
+    width:min(920px,calc(100% - 24px));
+    margin:24px auto;
+}
+.card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:12px;
+    box-shadow:0 8px 28px rgba(16,24,40,.05);
+}
+h1{font-size:1.35rem;margin:0 0 6px}
+h2{font-size:.96rem;margin:0 0 12px}
+p{
+    color:var(--muted);
+    font-size:.8rem;
+    line-height:1.55;
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+}
+.field{
+    display:grid;
+    gap:5px;
+}
+label{
+    color:var(--muted);
+    font-size:.72rem;
+    font-weight:700;
+}
+input{
+    width:100%;
+    min-height:43px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:10px 11px;
+    font-size:.82rem;
+}
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+}
+button,a.btn{
+    min-height:43px;
+    border:0;
+    border-radius:9px;
+    padding:9px 13px;
+    background:var(--primary);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.secondary{
+    background:white!important;
+    color:var(--text)!important;
+    border:1px solid var(--line)!important;
+}
+.danger{
+    background:#b42318!important;
+}
+.item{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px;
+    min-width:0;
+}
+.item span{
+    display:block;
+    color:var(--muted);
+    font-size:.68rem;
+    margin-bottom:4px;
+}
+.item strong{
+    display:block;
+    font-size:.78rem;
+    overflow-wrap:anywhere;
+}
+.good strong{color:var(--good)}
+.warn strong{color:var(--warn)}
+.bad strong{color:var(--bad)}
+pre{
+    margin:0;
+    background:#101828;
+    color:#f2f4f7;
+    border-radius:10px;
+    padding:12px;
+    font-size:.73rem;
+    line-height:1.55;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+}
+.notice{
+    border-left:4px solid #f59e0b;
+    padding:10px 12px;
+    background:#fffbeb;
+    color:#7c2d12;
+    border-radius:8px;
+    font-size:.75rem;
+    line-height:1.55;
+}
+@media(max-width:620px){
+    .wrap{margin:12px auto}
+    .card{padding:13px}
+    .grid{grid-template-columns:1fr}
+    .actions{display:grid}
+    button,a.btn{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>🔐 Tahap 5 - Supabase Auth Test</h1>
+        <p>
+            Halaman ini menguji Auth cloud, profile, store membership,
+            dan device registration. Password tidak disimpan oleh halaman ini.
+        </p>
+        <div class="grid" id="statusGrid"></div>
+    </div>
+
+    <div class="card" id="loginCard">
+        <h2>Login Auth Cloud</h2>
+
+        <div class="grid">
+            <div class="field">
+                <label for="authEmail">Email Auth Supabase</label>
+                <input
+                    id="authEmail"
+                    type="email"
+                    autocomplete="username"
+                    placeholder="email yang ada di Authentication > Users"
+                >
+            </div>
+
+            <div class="field">
+                <label for="authPassword">Password</label>
+                <input
+                    id="authPassword"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Password Auth Supabase"
+                >
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="btnLogin" onclick="loginCloud()">
+                Login Cloud
+            </button>
+            <button class="secondary" onclick="refreshContext()">
+                Refresh Context
+            </button>
+            <button class="danger" onclick="logoutCloud()">
+                Logout Cloud
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Hasil</h2>
+        <pre id="result">Belum diuji.</pre>
+    </div>
+
+    <div class="card">
+        <div class="notice">
+            Login utama <strong>index.html</strong> belum diganti pada Tahap 5.
+            Ini disengaja agar aplikasi lama tetap dapat digunakan selama Auth cloud divalidasi.
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+
+<script>
+let currentSubscription =
+    null;
+
+function getCloudAuth(){
+    const helper =
+        window.LDMCloudAuth;
+
+    if(
+        !helper ||
+        typeof helper.signIn !== "function"
+    ){
+        throw new Error(
+            "Helper Auth tidak termuat. Pastikan file js/cloud-auth.js ada di repository GitHub dan dapat dibuka dari alamat situs."
+        );
+    }
+
+    return helper;
+}
+
+function statusItem(
+    label,
+    value,
+    state = ""
+){
+    return `
+        <div class="item ${state}">
+            <span>${label}</span>
+            <strong>${value}</strong>
+        </div>
+    `;
+}
+
+function renderStatus(
+    context = null
+){
+    const configured =
+        window.LDMSupabase &&
+        LDMSupabase.isConfigured();
+
+    const loggedIn =
+        Boolean(
+            context &&
+            context.user
+        );
+
+    document
+        .getElementById(
+            "statusGrid"
+        )
+        .innerHTML = [
+            statusItem(
+                "Supabase Config",
+                configured
+                    ? "SIAP"
+                    : "BELUM DIISI",
+                configured
+                    ? "good"
+                    : "bad"
+            ),
+            statusItem(
+                "Secure Context",
+                window.isSecureContext
+                    ? "YA"
+                    : "TIDAK",
+                window.isSecureContext
+                    ? "good"
+                    : "warn"
+            ),
+            statusItem(
+                "Auth",
+                loggedIn
+                    ? "SIGNED IN"
+                    : "SIGNED OUT",
+                loggedIn
+                    ? "good"
+                    : "warn"
+            ),
+            statusItem(
+                "Device ID",
+                (
+                    window.LDMCloudAuth
+                        ? window.LDMCloudAuth
+                            .getOrCreateDeviceId()
+                        : "-"
+                ),
+                ""
+            )
+        ].join("");
+}
+
+function setResult(
+    text
+){
+    document
+        .getElementById(
+            "result"
+        )
+        .textContent =
+            text;
+}
+
+async function getFullCloudState(){
+    const cloudAuth =
+        getCloudAuth();
+
+    const context =
+        await cloudAuth.getContext();
+
+    if(!context){
+        return null;
+    }
+
+    const device =
+        await cloudAuth
+            .registerCurrentDevice();
+
+    const devices =
+        await cloudAuth
+            .listDevices();
+
+    return {
+        context,
+        device,
+        devices
+    };
+}
+
+function formatCloudState(
+    state
+){
+    if(!state){
+        return [
+            "Status: SIGNED OUT",
+            "",
+            "Belum ada session Supabase Auth aktif."
+        ].join("\n");
+    }
+
+    const profile =
+        state.context.profile;
+
+    const user =
+        state.context.user;
+
+    const lines = [
+        "✅ SUPABASE AUTH BERHASIL",
+        "",
+        `Auth User ID : ${user.id}`,
+        `Email        : ${user.email || "-"}`,
+        `Username     : ${profile.username || "-"}`,
+        `Role         : ${profile.role || "-"}`,
+        `Store Code   : ${profile.store_code || "-"}`,
+        `Store Name   : ${profile.store_name || "-"}`,
+        `Store ID     : ${profile.store_id || "-"}`,
+        "",
+        `Device UUID  : ${state.device.id || "-"}`,
+        `Client ID    : ${state.device.clientDeviceId || "-"}`,
+        `Devices Seen : ${state.devices.length}`,
+        "",
+        "Tahap 5 Auth foundation aktif.",
+        "Login utama aplikasi masih menggunakan mode legacy sementara."
+    ];
+
+    return lines.join("\n");
+}
+
+async function refreshContext(){
+    try{
+        setResult(
+            "Membaca session cloud..."
+        );
+
+        const state =
+            await getFullCloudState();
+
+        renderStatus(
+            state
+                ? state.context
+                : null
+        );
+
+        setResult(
+            formatCloudState(
+                state
+            )
+        );
+
+    }catch(error){
+        renderStatus(null);
+
+        setResult(
+            "❌ GAGAL MEMBACA CONTEXT\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }
+}
+
+async function loginCloud(){
+    const email =
+        document
+            .getElementById(
+                "authEmail"
+            )
+            .value;
+
+    const password =
+        document
+            .getElementById(
+                "authPassword"
+            )
+            .value;
+
+    const button =
+        document
+            .getElementById(
+                "btnLogin"
+            );
+
+    button.disabled =
+        true;
+
+    try{
+        setResult(
+            "Login ke Supabase Auth..."
+        );
+
+        await getCloudAuth().signIn(
+            email,
+            password
+        );
+
+        document
+            .getElementById(
+                "authPassword"
+            )
+            .value =
+                "";
+
+        await refreshContext();
+
+    }catch(error){
+        setResult(
+            "❌ LOGIN CLOUD GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+            +
+            "\n\nPeriksa email/password Auth dan pastikan profile Owner sudah di-bootstrap."
+        );
+
+    }finally{
+        button.disabled =
+            false;
+    }
+}
+
+async function logoutCloud(){
+    try{
+        await getCloudAuth().signOut();
+
+        renderStatus(null);
+
+        setResult(
+            "✅ Session Supabase Auth sudah logout."
+        );
+
+    }catch(error){
+        setResult(
+            "❌ LOGOUT GAGAL\n\n"
+            +
+            (
+                error.message ||
+                String(error)
+            )
+        );
+    }
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function(){
+        renderStatus(null);
+
+        if(
+            !window.LDMSupabase ||
+            !LDMSupabase.isConfigured()
+        ){
+            setResult(
+                "Supabase belum dikonfigurasi. Isi js/supabase-config.js."
+            );
+
+            return;
+        }
+
+        currentSubscription =
+            getCloudAuth().watchAuth(
+                function(
+                    event
+                ){
+                    console.log(
+                        "LDM Auth Event:",
+                        event
+                    );
+                }
+            );
+
+        await refreshContext();
+    }
+);
+
+window.addEventListener(
+    "beforeunload",
+    function(){
+        if(
+            currentSubscription &&
+            typeof currentSubscription.unsubscribe === "function"
+        ){
+            currentSubscription.unsubscribe();
+        }
+    }
+);
+</script>
+</body>
+</html>

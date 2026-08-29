@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>LocDailyMar — Tes Tahap 20</title>
+    <style>
+        body{font-family:Inter,system-ui,sans-serif;background:#f4f7f6;color:#2c3e50;margin:0;padding:22px}
+        main{max-width:860px;margin:auto;background:#fff;border-radius:18px;padding:22px;box-shadow:0 12px 35px #0f9d5818}
+        h1{margin-top:0;color:#0f9d58}.actions{display:flex;gap:10px;flex-wrap:wrap}
+        button,a{border:0;border-radius:10px;padding:10px 14px;font-weight:700;text-decoration:none;cursor:pointer}
+        button{background:#0f9d58;color:#fff}a{background:#e8f5ee;color:#0f9d58}
+        .row{padding:11px 12px;border:1px solid #dfe8e4;border-radius:10px;margin-top:9px}
+        .pass{border-color:#86d4aa;background:#effaf4}.fail{border-color:#f3a4a4;background:#fff1f1}
+        code{background:#edf2f0;padding:2px 5px;border-radius:5px}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-session.js?v=6.0"></script>
+    <script src="js/unit-conversion.js?v=20.0"></script>
+</head>
+<body>
+<main>
+    <h1>Tes Tahap 20</h1>
+    <p>Tes baca-saja untuk kolom cloud dan perhitungan konversi kemasan.</p>
+    <div class="actions">
+        <button onclick="runTest()">Jalankan Tes</button>
+        <a href="barang.html">Buka Data Barang</a>
+    </div>
+    <div id="results"></div>
+</main>
+<script>
+function addResult(ok,title,detail){
+    const row=document.createElement("div");
+    row.className=`row ${ok?"pass":"fail"}`;
+    row.innerHTML=`<strong>${ok?"PASS":"FAIL"} — ${title}</strong><div>${detail}</div>`;
+    document.getElementById("results").appendChild(row);
+}
+async function runTest(){
+    const target=document.getElementById("results");
+    target.innerHTML="";
+    try{
+        const sample={satuan:"Pcs",satuanBeli:"Dus",konversiBeli:24};
+        const base=window.LDMUnits.toBase(2,sample);
+        const price=window.LDMUnits.packagePrice(2500,sample);
+        addResult(base===48,"Konversi Qty",`2 Dus = ${base} Pcs`);
+        addResult(price===60000,"Konversi Harga",`Rp2.500/Pcs = Rp${price.toLocaleString("id-ID")}/Dus`);
+
+        await window.LDMCloudSession.ensureAuthenticated({registerDevice:false});
+        const client=window.LDMSupabase.createClient();
+        const {data,error}=await client.from("products")
+            .select("id,name,unit,purchase_unit,purchase_unit_factor")
+            .limit(5);
+        if(error) throw error;
+        const valid=(data||[]).every(row=>row.purchase_unit&&Number(row.purchase_unit_factor)>0);
+        addResult(valid,"Kolom Cloud Tahap 20",`${(data||[]).length} produk sampel berhasil dibaca.`);
+    }catch(error){
+        addResult(false,"Koneksi/Migrasi",String(error.message||error));
+    }
+}
+</script>
+</body>
+</html>

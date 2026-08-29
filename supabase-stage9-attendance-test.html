@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocDailyMar - Tahap 9 Attendance Test</title>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}.wrap{width:min(950px,calc(100% - 24px));margin:24px auto}.card{background:#fff;border:1px solid #e4e7ec;border-radius:16px;padding:18px;margin-bottom:12px}h1{font-size:1.35rem;margin:0 0 6px}p{font-size:.8rem;color:#667085;line-height:1.55}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a{min-height:42px;border:0;border-radius:9px;padding:9px 13px;background:#0d2240;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}.secondary{background:#fff;color:#172033;border:1px solid #e4e7ec}pre{background:#101828;color:#f2f4f7;padding:12px;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.73rem;line-height:1.55}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=6.0"></script>
+<script src="js/attendance-service.js?v=9.1"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>⚡ Tahap 9 - Cloud Attendance Test</h1>
+        <p>
+            Buka halaman ini pada Device A, lalu lakukan Absensi dari Device B.
+        </p>
+        <div class="actions">
+            <button onclick="start()">Start / Refresh</button>
+            <a class="secondary" href="absensi.html">Buka Absensi</a>
+            <a class="secondary" href="kasir.html">Buka Kasir</a>
+        </div>
+    </div>
+    <div class="card"><pre id="result">Belum dimulai.</pre></div>
+</div>
+
+<script>
+let events = 0;
+
+function out(value){
+    document.getElementById("result").textContent = value;
+}
+
+async function render(label){
+    const context = await LDMCloudSession.ensureAuthenticated({registerDevice:false});
+    const cache = LDMAttendance.readCache();
+    const profiles = LDMAttendance.readProfilesCache();
+
+    out([
+        label,
+        "",
+        `Role            : ${context.profile.role}`,
+        `Store           : ${context.profile.store_code}`,
+        `Profile Cache   : ${profiles.length}`,
+        `Attendance Cache: ${cache.length}`,
+        `Realtime Events : ${events}`,
+        `Cloud Enabled   : ${LDMAttendance.isEnabled() ? "YA" : "BELUM"}`,
+        "",
+        ...cache.slice(-10).reverse().map(item =>
+            `${item.tanggal} ${item.waktu} | ${item.username} | ${item.jenis} | ${item.shift}`
+        )
+    ].join("\n"));
+}
+
+async function start(){
+    try{
+        await LDMAttendance.fetchProfiles();
+        await LDMAttendance.refreshCache({preserveLegacy:true});
+        await LDMAttendance.startRealtime();
+        await render("✅ CLOUD ATTENDANCE AKTIF");
+    }catch(error){
+        out("❌ GAGAL\n\n" + (error.message || String(error)));
+    }
+}
+
+window.addEventListener("ldm-attendance-cache-updated", async function(){
+    events += 1;
+    await render("⚡ ATTENDANCE CACHE DIPERBARUI");
+});
+
+document.addEventListener("DOMContentLoaded", start);
+</script>
+</body>
+</html>

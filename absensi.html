@@ -1,0 +1,6002 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Karyawan - LocDailyMar POS</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d2240">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <!-- Google Fonts Lengkap -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --app-font: 'Poppins', sans-serif;
+            --brand-font: 'Poppins', sans-serif;
+            --bg-primary: #f4f6f9;
+            --bg-secondary: #ffffff;
+            --text-color: #334155;
+            --heading-color: #0d2240;
+            --border-color: #e2e8f0;
+            --card-shadow: rgba(0,0,0,0.03);
+            --nav-bg: #ffffff;
+            --nav-desktop-bg: #0d2240;
+            --accent-color: #ffc107;
+            --input-bg: #ffffff;
+        }
+
+        /* TEMA GELAP GLOBAL */
+        body.dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-color: #e2e8f0;
+            --heading-color: #f8fafc;
+            --border-color: #334155;
+            --card-shadow: rgba(0,0,0,0.25);
+            --nav-bg: #1e293b;
+            --nav-desktop-bg: #1e293b;
+            --accent-color: #ffc107;
+            --input-bg: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--app-font); }
+        body { background-color: var(--bg-primary); color: var(--text-color); min-height: 100vh; transition: background-color 0.3s ease, color 0.3s ease; overflow-x: hidden; }
+
+        .app-layout { display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Tombol Garis 3 (Hamburger Menu) di HP */
+        .btn-toggle-menu {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 4px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: 0.2s;
+        }
+        .btn-toggle-menu:hover { background: rgba(255, 255, 255, 0.35); }
+
+        /* Overlay Layar Gelap saat Menu Terbuka di HP */
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .nav-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .nav-bar { 
+            position: fixed; 
+            top: 0; 
+            left: -260px; /* Sembunyi ke kiri layar pada versi HP */
+            width: 250px; 
+            height: 100vh;
+            background: var(--nav-desktop-bg); 
+            display: flex; 
+            flex-direction: column;
+            justify-content: flex-start; 
+            padding: 20px 15px; 
+            z-index: 999; 
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2); 
+            transition: left 0.3s ease, background 0.3s ease;
+            gap: 8px;
+        }
+        .nav-bar.active {
+            left: 0; /* Bergeser muncul dari kiri */
+        }
+
+        .nav-header-mobile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-bottom: 12px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-close-menu {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .nav-item { 
+            text-decoration: none; 
+            color: #94a3b8; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            gap: 12px; 
+            position: relative; 
+            padding: 10px 14px;
+            border-radius: 10px;
+            transition: color 0.3s ease, background 0.3s ease;
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .nav-item span { font-size: 1.2rem; }
+        .nav-item.active { 
+            background: var(--accent-color); 
+            color: #0d2240; 
+            font-weight: 700; 
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .main-content { padding: 12px; padding-bottom: 30px; flex: 1; width: 100%; }
+        
+        /* HEADER APLIKASI */
+        .header-app { 
+            background: #0d2240; 
+            color: white; 
+            padding: 12px 14px; 
+            border-radius: 14px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: all 0.3s ease;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .header-brand-container { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+
+        .header-logo-img { max-height: 38px; max-width: 100px; object-fit: contain; border-radius: 8px; display: none; }
+        .header-app h1 { 
+            font-family: var(--brand-font); 
+            font-size: 1.15rem; 
+            color: #ffffff; 
+            text-shadow: 1px 1px 0px #d99b00; 
+            transition: all 0.3s ease;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .header-app p { 
+            font-family: var(--brand-font);
+            font-size: 0.65rem; 
+            color: #ffc107; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            transition: all 0.3s ease;
+        }
+
+        .btn-header-action {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-header-action:hover { background: rgba(255, 255, 255, 0.35); }
+        .btn-header-logout { background: #ef4444; color: white; }
+        .btn-header-logout:hover { background: #dc2626; }
+
+        /* JAM BERJALAN RUNNING CLOCK */
+        .clock-banner {
+            background: var(--bg-secondary);
+            color: var(--text-color);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px var(--card-shadow);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .clock-title { font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .clock-display {
+            background: #0d2240;
+            color: #ffc107;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
+        /* GRID DUA KOLOM DENGAN DESAIN MODERN */
+        .absen-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 14px;
+            margin-bottom: 15px;
+        }
+
+        .card-box {
+            background: var(--bg-secondary);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px var(--card-shadow);
+            transition: background 0.3s ease, border-color 0.3s ease;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .card-box h3 {
+            font-size: 0.95rem;
+            color: var(--heading-color);
+            margin-bottom: 14px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* FORM STYLING */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            font-size: 0.83rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: #0284c7; }
+
+        /* BUTTON KAMERA */
+        .btn-camera-trigger {
+            width: 100%;
+            padding: 10px;
+            background: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
+            white-space: nowrap;
+        }
+        .btn-camera-trigger:hover { background: #0369a1; }
+        .btn-snap {
+            width: 100%;
+            padding: 8px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-top: 6px;
+            cursor: pointer;
+        }
+
+        .btn-submit-absen {
+            width: 100%;
+            padding: 11px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);
+            text-align: center;
+            word-break: break-word;
+        }
+        .btn-submit-absen:hover { background: #15803d; }
+        .btn-submit-absen:disabled { opacity: 0.55; cursor: not-allowed; background: #64748b; box-shadow: none; }
+        .btn-submit-keluar {
+            background: #dc2626;
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);
+        }
+        .btn-submit-keluar:hover { background: #b91c1c; }
+
+        /* BUTTON HAPUS (KHUSUS OWNER) */
+        .btn-delete-log {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-delete-log:hover { background: #dc2626; }
+
+        /* DAFTAR STATUS AKUN UNTUK HARI INI */
+        .account-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .account-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .account-info { min-width: 0; flex: 1; }
+        .account-info h5 { font-size: 0.82rem; color: var(--heading-color); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .account-info p { font-size: 0.7rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* BADGE STATUS ABSEN */
+        .badge-status {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            display: inline-block;
+        }
+        .badge-belum { background: #fef3c7; color: #d97706; }
+        /* =====================================================
+   RIWAYAT ABSENSI SEBELUMNYA - KHUSUS OWNER
+   ===================================================== */
+
+.owner-attendance-panel {
+    display: none;
+    margin-bottom: 15px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+/* =====================================================
+   TOMBOL PEMERIKSAAN ABSENSI OWNER
+   ===================================================== */
+
+.owner-attendance-button-wrapper {
+    display: none;
+    margin-bottom: 15px;
+}
+
+.owner-attendance-button-wrapper.show {
+    display: block;
+}
+
+.btn-open-owner-attendance {
+    position: relative;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 9px 13px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--bg-secondary);
+    color: var(--heading-color);
+
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.btn-open-owner-attendance:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+/* Saat ada akun yang tidak absen */
+
+.owner-attendance-notification-badge {
+    display: none;
+
+    min-width: 18px;
+    height: 18px;
+
+    padding: 0 5px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #dc2626;
+    color: white;
+
+    font-size: 0.6rem;
+    font-weight: 900;
+}
+
+.owner-attendance-notification-badge.show {
+    display: inline-flex;
+}
+
+
+/* Panel saat dibuka */
+
+.owner-attendance-panel {
+    display: none;
+}
+
+.owner-attendance-panel.show {
+    display: block;
+}
+
+
+.owner-attendance-panel.show {
+    display: block;
+}
+
+
+.owner-attendance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+
+.owner-attendance-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--heading-color);
+    text-transform: uppercase;
+}
+
+
+.owner-attendance-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+
+.owner-attendance-controls input {
+    padding: 7px 9px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 0.75rem;
+}
+
+
+.btn-owner-attendance {
+    padding: 7px 10px;
+    border: none;
+    border-radius: 7px;
+    background: #0284c7;
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+
+.btn-owner-attendance:hover {
+    background: #0369a1;
+}
+
+
+/* NOTIFIKASI OWNER */
+
+.owner-attendance-alert {
+    display: none;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+
+.owner-attendance-alert.show {
+    display: block;
+}
+
+
+.owner-attendance-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+
+.owner-summary-box {
+    padding: 9px;
+    border-radius: 8px;
+    text-align: center;
+
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+}
+
+
+.owner-summary-box strong {
+    display: block;
+    font-size: 1rem;
+    color: var(--heading-color);
+}
+
+
+.owner-summary-box span {
+    font-size: 0.65rem;
+    color: #64748b;
+}
+
+
+.owner-summary-box.total strong {
+    color: #0284c7;
+}
+
+
+.owner-summary-box.hadir strong {
+    color: #16a34a;
+}
+
+
+.owner-summary-box.tidak-absen strong {
+    color: #dc2626;
+}
+
+
+.owner-attendance-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+}
+
+
+.owner-attendance-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    padding: 9px 10px;
+
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+
+.owner-attendance-card .user-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--heading-color);
+}
+
+
+.owner-attendance-card .user-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+
+.owner-status-hadir {
+    color: #16a34a;
+}
+
+
+.owner-status-tidak {
+    color: #dc2626;
+}
+
+
+.owner-status-izin {
+    color: #0284c7;
+}
+
+
+@media (max-width: 600px) {
+
+    .owner-attendance-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-attendance-controls {
+        width: 100%;
+    }
+
+    .owner-attendance-controls input {
+        flex: 1;
+    }
+
+}
+        .badge-masuk { background: #dcfce7; color: #16a34a; }
+        .badge-keluar { background: #e0e7ff; color: #4338ca; }
+        .badge-sakit { background: #fee2e2; color: #dc2626; }
+        .badge-izin { background: #e0f2fe; color: #0284c7; }
+
+        /* TABEL LOG RIWAYAT ABSEN */
+        .table-responsive { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            margin: 0 -4px; 
+            padding: 0 4px;
+        }
+        table.custom-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.78rem; white-space: nowrap; }
+        table.custom-table th, table.custom-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
+        table.custom-table th { background: var(--bg-primary); color: #64748b; font-size: 0.7rem; text-transform: uppercase; }
+
+        .surat-preview-link {
+            color: #0284c7;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* MODAL PREVIEW SURAT DOKUMEN */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            backdrop-filter: blur(4px);
+            z-index: 1090; 
+            justify-content: center; align-items: center; 
+            padding: 15px; 
+        }
+        .modal-content { 
+            background: var(--bg-secondary); 
+            color: var(--text-color);
+            padding: 20px; 
+            border-radius: 18px; 
+            width: 100%; max-width: 520px; 
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.3); 
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .modal-header-title { 
+            font-weight: 700; color: var(--heading-color); font-size: 1.1rem; 
+            margin-bottom: 14px; border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* MODAL ALERT CUSTOM */
+        .modal-alert {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 1100;
+            justify-content: center; align-items: center; padding: 15px;
+        }
+        .modal-alert-content {
+            background: var(--bg-secondary); color: var(--text-color);
+            padding: 20px; border-radius: 14px; width: 100%; max-width: 360px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .modal-alert-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .modal-alert-title { font-size: 1.05rem; font-weight: 700; color: var(--heading-color); margin-bottom: 6px; }
+        .modal-alert-msg { font-size: 0.85rem; color: #64748b; margin-bottom: 18px; line-height: 1.4; word-break: break-word; }
+        .btn-modal-ok {
+            width: 100%; padding: 10px; background: #0d2240; color: white;
+            border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+        }
+
+        @media (max-width: 850px) {
+            .absen-grid { grid-template-columns: 1fr; }
+            .account-status-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .btn-toggle-menu { display: inline-flex; } /* Munculkan tombol garis 3 pada layar kecil */
+        }
+
+        @media (max-width: 480px) {
+            .account-status-grid { grid-template-columns: 1fr; }
+            .clock-banner { flex-direction: column; align-items: flex-start; }
+            .clock-display { width: 100%; text-align: center; }
+        }
+
+        @media (min-width: 768px) {
+            .btn-toggle-menu { display: none !important; }
+            .nav-header-mobile { display: none; }
+            .nav-overlay { display: none !important; }
+            .app-layout { flex-direction: row; }
+            .nav-bar { 
+                position: sticky; 
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 240px; 
+                flex-direction: column; 
+                justify-content: flex-start; 
+                padding: 30px 15px; 
+                border-top: none; 
+                border-right: 1px solid var(--border-color); 
+                gap: 10px;
+                background: var(--nav-desktop-bg); 
+                flex-shrink: 0;
+                box-shadow: none;
+            }
+            .nav-item { 
+                flex-direction: row; 
+                gap: 15px; 
+                padding: 12px 18px; 
+                border-radius: 12px; 
+                color: #94a3b8; 
+                font-size: 0.95rem;
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .nav-item.active { 
+                background: var(--accent-color); 
+                color: #0d2240; 
+            }
+            .nav-badge { top: 12px; right: 15px; }
+            .main-content { padding: 30px; padding-bottom: 30px; }
+        }
+
+        /* =====================================================
+   PEMERIKSAAN & RIWAYAT ABSENSI OWNER
+   ===================================================== */
+
+.owner-history-wrapper {
+    display: none;
+    margin-bottom: 15px;
+}
+
+.owner-history-wrapper.show {
+    display: block;
+}
+
+
+/* TOMBOL UTAMA */
+
+.btn-owner-history {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 9px 13px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+
+    background: var(--bg-secondary);
+    color: var(--heading-color);
+
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 800;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-owner-history:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+
+/* BADGE NOTIFIKASI */
+
+.owner-history-notification {
+    display: none;
+
+    min-width: 18px;
+    height: 18px;
+
+    padding: 0 5px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #dc2626;
+    color: white;
+
+    font-size: 0.6rem;
+    font-weight: 900;
+}
+
+.owner-history-notification.show {
+    display: inline-flex;
+}
+
+
+/* PANEL */
+
+.owner-history-panel {
+    display: none;
+
+    margin-top: 10px;
+    padding: 12px;
+
+    background: var(--bg-secondary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.owner-history-panel.show {
+    display: block;
+}
+
+
+/* HEADER */
+
+.owner-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+    flex-wrap: wrap;
+
+    margin-bottom: 10px;
+}
+
+.owner-history-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+
+    color: var(--heading-color);
+}
+
+.owner-history-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.owner-history-controls input {
+    padding: 7px 9px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+
+    background: var(--input-bg);
+    color: var(--text-color);
+
+    font-family: inherit;
+    font-size: 0.72rem;
+}
+
+.btn-owner-check {
+    padding: 7px 10px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #0284c7;
+    color: white;
+
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* RINGKASAN */
+
+.owner-history-summary {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 8px;
+
+    margin-bottom: 12px;
+}
+
+.owner-history-summary-box {
+    padding: 9px;
+
+    text-align: center;
+
+    background: var(--bg-primary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.owner-history-summary-box strong {
+    display: block;
+
+    font-size: 1rem;
+
+    color: var(--heading-color);
+}
+
+.owner-history-summary-box span {
+    font-size: 0.63rem;
+
+    color: #64748b;
+}
+
+.owner-summary-total strong {
+    color: #0284c7;
+}
+
+.owner-summary-hadir strong {
+    color: #16a34a;
+}
+
+.owner-summary-tidak strong {
+    color: #dc2626;
+}
+
+
+/* NOTIFIKASI */
+
+.owner-history-alert {
+    display: none;
+
+    margin-bottom: 10px;
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+
+    color: #991b1b;
+
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.owner-history-alert.show {
+    display: block;
+}
+
+
+/* DAFTAR DETAIL */
+
+.owner-history-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
+    gap: 9px;
+}
+
+
+/* CARD */
+
+.owner-history-card {
+    overflow: hidden;
+
+    background: var(--bg-primary);
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+}
+
+
+/* FOTO */
+
+.owner-history-photo {
+    width: 100%;
+    height: 180px;
+
+    object-fit: cover;
+
+    display: block;
+
+    background: #e2e8f0;
+
+    cursor: pointer;
+}
+
+.owner-history-no-photo {
+    height: 180px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f8fafc;
+
+    color: #94a3b8;
+
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+
+/* DETAIL CARD */
+
+.owner-history-info {
+    padding: 10px;
+}
+
+.owner-history-user {
+    margin-bottom: 7px;
+
+    font-size: 0.82rem;
+    font-weight: 800;
+
+    color: var(--heading-color);
+}
+
+.owner-history-row {
+    display: flex;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 3px 0;
+
+    font-size: 0.68rem;
+}
+
+.owner-history-row span:first-child {
+    color: #64748b;
+}
+
+.owner-history-row span:last-child {
+    color: var(--heading-color);
+    font-weight: 700;
+}
+
+
+/* BADGE STATUS */
+
+.owner-status-badge {
+    display: inline-block;
+
+    padding: 4px 7px;
+
+    border-radius: 6px;
+
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.owner-status-masuk {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.owner-status-keluar {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.owner-status-izin {
+    background: #dbeafe;
+    color: #0369a1;
+}
+
+.owner-status-sakit {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.owner-status-tidak {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+
+    .owner-history-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-history-controls {
+        width: 100%;
+    }
+
+    .owner-history-controls input {
+        flex: 1;
+    }
+
+}
+    </style>
+
+<script id="ldmCompactNavRoleEarly">
+(function(){
+    try{
+        const role=String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+        document.documentElement.setAttribute("data-ldm-role",role);
+    }catch(e){}
+})();
+</script>
+<style id="ldmCompactNavigationStyle">
+    .nav-bar{
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+        scrollbar-width:thin;
+        scrollbar-color:rgba(148,163,184,.38) transparent;
+    }
+    .nav-bar::-webkit-scrollbar{width:5px}
+    .nav-bar::-webkit-scrollbar-track{background:transparent}
+    .nav-bar::-webkit-scrollbar-thumb{
+        background:rgba(148,163,184,.34);
+        border-radius:20px;
+    }
+    .nav-header-mobile{
+        font-size:.78rem !important;
+        padding:4px 2px 8px !important;
+        margin-bottom:4px !important;
+        min-height:30px;
+    }
+    .nav-item{
+        min-height:34px !important;
+        padding:7px 9px !important;
+        margin:0 0 2px 0 !important;
+        gap:8px !important;
+        border-radius:8px !important;
+        font-size:.73rem !important;
+        line-height:1.15 !important;
+        flex-shrink:0;
+    }
+    .nav-item > span:first-child{
+        display:inline-flex;
+        width:20px;
+        min-width:20px;
+        height:20px;
+        align-items:center;
+        justify-content:center;
+        font-size:.93rem !important;
+        line-height:1 !important;
+    }
+    .nav-item .nav-badge{
+        transform:scale(.82);
+        transform-origin:center;
+    }
+
+    /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
+    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="shift-closing.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="eod.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="pengeluaran.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="backup%20%26%20restore.html"],
+    html[data-ldm-role="kasir"] .nav-bar a[href="backup & restore.html"]{
+        display:none !important;
+    }
+
+    @media (min-width:768px){
+        .nav-bar{
+            width:205px !important;
+            min-width:205px !important;
+            padding:14px 10px !important;
+            gap:2px !important;
+        }
+        .nav-item{
+            padding:7px 9px !important;
+            font-size:.73rem !important;
+        }
+    }
+
+    @media (max-width:767px){
+        .nav-bar{
+            width:min(82vw,238px) !important;
+            padding:10px 9px !important;
+            gap:2px !important;
+        }
+        .nav-item{
+            min-height:33px !important;
+            padding:7px 9px !important;
+            font-size:.72rem !important;
+        }
+        .nav-header-mobile{font-size:.76rem !important}
+    }
+</style>
+
+
+<!-- =========================================================
+     LOCDailyMar RESPONSIVE MEGA MENU
+     Desktop  : Mega Menu
+     HP/Tablet: Hamburger Drawer
+     ========================================================= -->
+<style id="ldmMegaMenuResponsiveStyle">
+    .ldm-mega-nav-shell{
+        display:none;
+    }
+
+    /* =====================================================
+       DESKTOP MEGA MENU
+       ===================================================== */
+    @media (min-width:900px){
+        /*
+         * Sidebar lama hanya dipakai sebagai sumber struktur/menu
+         * dan sebagai menu mobile. Desktop memakai Mega Menu.
+         */
+        .nav-bar,
+        .nav-overlay,
+        .btn-toggle-menu,
+        .nav-header-mobile{
+            display:none !important;
+        }
+
+        .app-layout{
+            display:flex !important;
+            flex-direction:column !important;
+            min-height:100vh !important;
+            width:100% !important;
+        }
+
+        .main-content{
+            width:100% !important;
+            max-width:none !important;
+            padding:24px 28px 30px !important;
+            margin:0 !important;
+        }
+
+        .ldm-mega-nav-shell{
+            display:block;
+            position:sticky;
+            top:0;
+            z-index:1200;
+            width:100%;
+            background:var(--nav-desktop-bg);
+            border-bottom:1px solid var(--border-color);
+            box-shadow:0 7px 24px rgba(15,23,42,.08);
+        }
+
+        .ldm-mega-nav{
+            position:relative;
+            width:100%;
+            min-height:58px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:9px 22px;
+        }
+
+        .ldm-mega-trigger{
+            height:38px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            border:1px solid rgba(255,193,7,.45);
+            border-radius:10px;
+            padding:0 14px;
+            cursor:pointer;
+            background:var(--accent-color);
+            color:#0d2240;
+            font-size:.78rem;
+            font-weight:900;
+            white-space:nowrap;
+            transition:.18s ease;
+        }
+
+        .ldm-mega-trigger:hover,
+        .ldm-mega-nav-shell.open .ldm-mega-trigger{
+            transform:translateY(-1px);
+            box-shadow:0 7px 18px rgba(0,0,0,.14);
+        }
+
+        .ldm-mega-trigger-arrow{
+            font-size:.62rem;
+            transition:transform .18s ease;
+        }
+
+        .ldm-mega-nav-shell.open .ldm-mega-trigger-arrow{
+            transform:rotate(180deg);
+        }
+
+        .ldm-mega-quick{
+            display:flex;
+            align-items:center;
+            gap:4px;
+            min-width:0;
+        }
+
+        .ldm-mega-quick a{
+            position:relative;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            height:36px;
+            padding:0 10px;
+            border-radius:9px;
+            color:#94a3b8;
+            text-decoration:none;
+            font-size:.72rem;
+            font-weight:750;
+            white-space:nowrap;
+            transition:.18s ease;
+        }
+
+        .ldm-mega-quick a:hover{
+            color:#f8fafc;
+            background:rgba(148,163,184,.12);
+        }
+
+        .ldm-mega-quick a.active{
+            color:#0d2240;
+            background:var(--accent-color);
+        }
+
+        .ldm-mega-session{
+            margin-left:auto;
+            min-width:0;
+            display:flex;
+            align-items:center;
+            gap:7px;
+            color:#94a3b8;
+            font-size:.67rem;
+            font-weight:700;
+        }
+
+        .ldm-mega-role{
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            padding:5px 9px;
+            border-radius:999px;
+            background:rgba(148,163,184,.10);
+            border:1px solid rgba(148,163,184,.15);
+            color:#cbd5e1;
+            text-transform:capitalize;
+            white-space:nowrap;
+        }
+
+        .ldm-mega-panel{
+            position:absolute;
+            left:22px;
+            top:calc(100% - 3px);
+            width:min(980px, calc(100vw - 44px));
+            visibility:hidden;
+            opacity:0;
+            pointer-events:none;
+            transform:translateY(-5px);
+            transition:
+                opacity .16s ease,
+                transform .16s ease,
+                visibility .16s ease;
+            background:var(--bg-secondary);
+            color:var(--text-color);
+            border:1px solid var(--border-color);
+            border-radius:0 0 16px 16px;
+            box-shadow:0 24px 55px rgba(15,23,42,.24);
+            padding:16px;
+        }
+
+        .ldm-mega-nav-shell.open .ldm-mega-panel{
+            visibility:visible;
+            opacity:1;
+            pointer-events:auto;
+            transform:translateY(0);
+        }
+
+        .ldm-mega-panel-top{
+            display:flex;
+            justify-content:space-between;
+            gap:18px;
+            align-items:flex-start;
+            padding:1px 3px 13px;
+            border-bottom:1px solid var(--border-color);
+            margin-bottom:13px;
+        }
+
+        .ldm-mega-panel-top strong{
+            display:block;
+            color:var(--heading-color);
+            font-size:.84rem;
+        }
+
+        .ldm-mega-panel-top p{
+            margin-top:3px;
+            color:#64748b;
+            font-size:.63rem;
+            line-height:1.45;
+        }
+
+        .ldm-mega-panel-close{
+            border:0;
+            background:transparent;
+            color:#64748b;
+            cursor:pointer;
+            font-size:.72rem;
+            font-weight:800;
+            padding:5px 7px;
+            border-radius:7px;
+        }
+
+        .ldm-mega-panel-close:hover{
+            background:rgba(148,163,184,.10);
+            color:var(--heading-color);
+        }
+
+        .ldm-mega-grid{
+            display:grid;
+            grid-template-columns:repeat(5,minmax(0,1fr));
+            gap:10px;
+        }
+
+        .ldm-mega-group{
+            min-width:0;
+            padding:10px;
+            border-radius:11px;
+            background:rgba(148,163,184,.045);
+            border:1px solid transparent;
+        }
+
+        .ldm-mega-group:hover{
+            border-color:var(--border-color);
+        }
+
+        .ldm-mega-group-title{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-bottom:7px;
+            color:#64748b;
+            font-size:.61rem;
+            font-weight:900;
+            letter-spacing:.055em;
+            text-transform:uppercase;
+        }
+
+        .ldm-mega-links{
+            display:flex;
+            flex-direction:column;
+            gap:3px;
+        }
+
+        .ldm-mega-link{
+            position:relative;
+            min-height:34px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:7px 8px;
+            border-radius:8px;
+            text-decoration:none;
+            color:var(--text-color);
+            font-size:.7rem;
+            font-weight:700;
+            line-height:1.2;
+            transition:.15s ease;
+        }
+
+        .ldm-mega-link:hover{
+            background:rgba(2,132,199,.08);
+            color:#0284c7;
+        }
+
+        .ldm-mega-link.active{
+            background:var(--accent-color);
+            color:#0d2240;
+        }
+
+        .ldm-mega-icon{
+            width:22px;
+            height:22px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            flex:0 0 22px;
+            border-radius:7px;
+            background:rgba(148,163,184,.08);
+            font-size:.88rem;
+        }
+
+        .ldm-mega-link.active .ldm-mega-icon{
+            background:rgba(255,255,255,.35);
+        }
+
+        .ldm-mega-badge{
+            display:none;
+            margin-left:auto;
+            min-width:18px;
+            height:18px;
+            padding:0 5px;
+            align-items:center;
+            justify-content:center;
+            border-radius:999px;
+            background:#ef4444;
+            color:#fff;
+            font-size:.55rem;
+            font-weight:900;
+        }
+
+        @media (max-width:1120px){
+            .ldm-mega-grid{
+                grid-template-columns:repeat(3,minmax(0,1fr));
+            }
+
+            .ldm-mega-quick a:nth-child(n+4){
+                display:none;
+            }
+        }
+    }
+
+    /* =====================================================
+       HP / TABLET: HAMBURGER MENU
+       ===================================================== */
+    @media (max-width:899px){
+        .ldm-mega-nav-shell{
+            display:none !important;
+        }
+
+        .app-layout{
+            display:flex !important;
+            flex-direction:column !important;
+            min-height:100vh !important;
+        }
+
+        .btn-toggle-menu{
+            display:inline-flex !important;
+        }
+
+        .nav-bar{
+            position:fixed !important;
+            top:0 !important;
+            left:-270px !important;
+            width:min(82vw,250px) !important;
+            min-width:0 !important;
+            height:100dvh !important;
+            padding:11px 10px !important;
+            flex-direction:column !important;
+            justify-content:flex-start !important;
+            gap:3px !important;
+            z-index:999 !important;
+            border-right:1px solid var(--border-color) !important;
+            box-shadow:3px 0 18px rgba(15,23,42,.28) !important;
+            overflow-y:auto !important;
+            transition:left .25s ease !important;
+        }
+
+        .nav-bar.active{
+            left:0 !important;
+        }
+
+        .nav-header-mobile{
+            display:flex !important;
+            padding:5px 3px 9px !important;
+            margin-bottom:3px !important;
+            font-size:.76rem !important;
+        }
+
+        .nav-item{
+            min-height:35px !important;
+            padding:7px 9px !important;
+            margin:0 !important;
+            gap:8px !important;
+            border-radius:8px !important;
+            font-size:.72rem !important;
+        }
+
+        .nav-item > span:first-child{
+            width:20px !important;
+            min-width:20px !important;
+            font-size:.92rem !important;
+        }
+
+        .main-content{
+            width:100% !important;
+            margin:0 !important;
+            padding:12px !important;
+            padding-bottom:28px !important;
+        }
+    }
+</style>
+
+
+<script id="ldmEodMenuAvailabilityEarly">
+(function(){
+    function readArray(key){
+        try{
+            const value=JSON.parse(localStorage.getItem(key)||"[]");
+            return Array.isArray(value)?value:[];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function witaDate(value){
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
+    }
+
+    function recordDate(item){
+        if(!item)return "";
+        const raw=
+            item.waktu_teks
+            || item.tanggal
+            || item.tgl
+            || item.date
+            || item.waktu
+            || item.created_at
+            || item.timestamp
+            || "";
+
+        if(typeof raw==="string" && /^\d{4}-\d{2}-\d{2}/.test(raw)){
+            return raw.slice(0,10);
+        }
+
+        const d=new Date(raw);
+        return isNaN(d)?"":witaDate(d);
+    }
+
+    function cashierName(item){
+        return String(
+            item?.kasir
+            || item?.user
+            || item?.username
+            || item?.admin
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function shiftName(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function isReady(){
+        const today=witaDate(new Date());
+        const laporan=readArray("laporan");
+        const transaksi=(laporan.length?laporan:readArray("dataLaporan"))
+            .filter(item=>recordDate(item)===today);
+
+        const activeAccounts=new Set(
+            transaksi
+                .map(cashierName)
+                .filter(Boolean)
+        );
+
+        if(activeAccounts.size===0){
+            return false;
+        }
+
+        const closingToday=readArray("shiftClosingLog")
+            .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
+
+        const closedAccounts=new Set(
+            closingToday
+                .map(item=>String(item?.kasir||"").trim().toLowerCase())
+                .filter(Boolean)
+        );
+
+        const allClosed=
+            [...activeAccounts]
+                .every(account=>closedAccounts.has(account));
+
+        const hasShift1=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 1"
+        );
+
+        const hasShift2=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 2"
+        );
+        return allClosed && hasShift1 && hasShift2;
+    }
+
+    try{
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            isReady()?"true":"false"
+        );
+    }catch(e){
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            "false"
+        );
+    }
+})();
+</script>
+
+
+<style id="ldmMobileTouchAndEodStyle">
+    /*
+     * End of Day disembunyikan sampai seluruh akun yang transaksi
+     * sudah Closing Shift dan Shift 1 + Shift 2 tersedia.
+     * Berlaku untuk Mega Menu desktop dan Hamburger Menu HP.
+     */
+    html:not([data-ldm-eod-ready="true"]) a[href="eod.html"]{
+        display:none !important;
+    }
+
+    /*
+     * Mobile / tablet hanya Hamburger Menu.
+     * Target sentuh dibuat lebih lega agar nyaman ditekan dengan jari.
+     */
+    @media (max-width:899px){
+        .ldm-mega-nav-shell{
+            display:none !important;
+        }
+
+        .nav-bar{
+            width:min(86vw,270px) !important;
+            padding:14px 11px 20px !important;
+            gap:6px !important;
+        }
+
+        .nav-header-mobile{
+            min-height:42px !important;
+            padding:7px 5px 12px !important;
+            margin-bottom:5px !important;
+            font-size:.8rem !important;
+        }
+
+        .nav-item{
+            min-height:46px !important;
+            padding:11px 12px !important;
+            margin:0 !important;
+            gap:11px !important;
+            border-radius:10px !important;
+            font-size:.78rem !important;
+            line-height:1.22 !important;
+            touch-action:manipulation;
+            -webkit-tap-highlight-color:rgba(255,193,7,.18);
+        }
+
+        .nav-item + .nav-item{
+            margin-top:2px !important;
+        }
+
+        .nav-item > span:first-child{
+            width:24px !important;
+            min-width:24px !important;
+            height:24px !important;
+            font-size:1rem !important;
+        }
+
+        .btn-toggle-menu{
+            min-width:42px !important;
+            min-height:42px !important;
+            width:42px !important;
+            height:42px !important;
+            align-items:center !important;
+            justify-content:center !important;
+            border-radius:10px !important;
+            touch-action:manipulation;
+        }
+
+        .nav-overlay.active{
+            display:block !important;
+        }
+    }
+
+    @media (max-width:420px){
+        .nav-bar{
+            width:min(88vw,268px) !important;
+        }
+
+        .nav-item{
+            min-height:48px !important;
+            padding:12px !important;
+            font-size:.79rem !important;
+        }
+    }
+</style>
+
+
+<style id="ldmThemedDialogStyle">
+    .ldm-dialog-overlay{
+        position:fixed;
+        inset:0;
+        z-index:999999;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:16px;
+        background:rgba(15,23,42,.58);
+        backdrop-filter:blur(3px);
+    }
+
+    .ldm-dialog-overlay.show{
+        display:flex;
+    }
+
+    .ldm-dialog-card{
+        width:min(430px,100%);
+        max-height:min(88dvh,620px);
+        overflow:auto;
+        background:var(--bg-secondary,#fff);
+        color:var(--text-color,#334155);
+        border:1px solid var(--border-color,#e2e8f0);
+        border-radius:16px;
+        box-shadow:0 24px 60px rgba(15,23,42,.28);
+        padding:17px;
+        animation:ldmDialogIn .15s ease-out;
+    }
+
+    @keyframes ldmDialogIn{
+        from{opacity:0;transform:translateY(8px) scale(.985)}
+        to{opacity:1;transform:translateY(0) scale(1)}
+    }
+
+    .ldm-dialog-top{
+        display:flex;
+        gap:11px;
+        align-items:flex-start;
+    }
+
+    .ldm-dialog-icon{
+        width:38px;
+        height:38px;
+        flex:0 0 38px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:11px;
+        background:rgba(2,132,199,.10);
+        font-size:1.15rem;
+    }
+
+    .ldm-dialog-title{
+        margin:1px 0 4px;
+        color:var(--heading-color,#0f172a);
+        font-size:.92rem;
+        font-weight:850;
+        line-height:1.35;
+    }
+
+    .ldm-dialog-message{
+        color:var(--label-color,#64748b);
+        font-size:.72rem;
+        line-height:1.65;
+        white-space:pre-wrap;
+    }
+
+    .ldm-dialog-input{
+        width:100%;
+        min-height:44px;
+        margin-top:13px;
+        padding:10px 11px;
+        border:1px solid var(--border-color,#cbd5e1);
+        border-radius:9px;
+        background:var(--bg-primary,#f8fafc);
+        color:var(--text-color,#334155);
+        font:inherit;
+        font-size:.78rem;
+        outline:none;
+    }
+
+    .ldm-dialog-input:focus{
+        border-color:#0284c7;
+        box-shadow:0 0 0 3px rgba(2,132,199,.10);
+    }
+
+    .ldm-dialog-actions{
+        display:flex;
+        justify-content:flex-end;
+        gap:8px;
+        margin-top:15px;
+    }
+
+    .ldm-dialog-btn{
+        min-height:40px;
+        border:0;
+        border-radius:9px;
+        padding:8px 14px;
+        cursor:pointer;
+        font:inherit;
+        font-size:.72rem;
+        font-weight:850;
+        transition:.15s ease;
+    }
+
+    .ldm-dialog-btn:hover{
+        transform:translateY(-1px);
+    }
+
+    .ldm-dialog-btn.cancel{
+        background:var(--bg-primary,#f1f5f9);
+        color:var(--text-color,#475569);
+        border:1px solid var(--border-color,#e2e8f0);
+    }
+
+    .ldm-dialog-btn.ok{
+        background:#0d2240;
+        color:#fff;
+    }
+
+    .ldm-dialog-btn.danger{
+        background:#dc2626;
+        color:#fff;
+    }
+
+    @media(max-width:600px){
+        .ldm-dialog-overlay{
+            align-items:flex-end;
+            padding:8px;
+        }
+
+        .ldm-dialog-card{
+            width:100%;
+            border-radius:17px 17px 0 0;
+            padding:15px;
+        }
+
+        .ldm-dialog-actions{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+        }
+
+        .ldm-dialog-actions.single{
+            grid-template-columns:1fr;
+        }
+
+        .ldm-dialog-btn{
+            min-height:46px;
+            width:100%;
+            touch-action:manipulation;
+        }
+    }
+</style>
+
+
+<script id="ldmThemedDialogScript">
+(function(){
+    if(window.ldmDialog)return;
+
+    let activeResolve=null;
+
+    function ensure(){
+        let overlay=document.getElementById("ldmDialogOverlay");
+        if(overlay)return overlay;
+
+        overlay=document.createElement("div");
+        overlay.id="ldmDialogOverlay";
+        overlay.className="ldm-dialog-overlay";
+        overlay.innerHTML=`
+            <div class="ldm-dialog-card" role="dialog" aria-modal="true">
+                <div class="ldm-dialog-top">
+                    <div class="ldm-dialog-icon" id="ldmDialogIcon">ℹ️</div>
+                    <div style="min-width:0;flex:1">
+                        <div class="ldm-dialog-title" id="ldmDialogTitle">Informasi</div>
+                        <div class="ldm-dialog-message" id="ldmDialogMessage"></div>
+                    </div>
+                </div>
+
+                <input
+                    id="ldmDialogInput"
+                    class="ldm-dialog-input"
+                    style="display:none"
+                    autocomplete="off"
+                >
+
+                <div class="ldm-dialog-actions" id="ldmDialogActions">
+                    <button type="button" class="ldm-dialog-btn cancel" id="ldmDialogCancel">Batal</button>
+                    <button type="button" class="ldm-dialog-btn ok" id="ldmDialogOk">OK</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener("keydown",event=>{
+            if(event.key==="Escape"){
+                document.getElementById("ldmDialogCancel")?.click();
+            }
+        });
+
+        return overlay;
+    }
+
+    function iconFor(type){
+        return {
+            success:"✅",
+            danger:"🗑️",
+            warning:"⚠️",
+            question:"❓",
+            info:"ℹ️"
+        }[type] || "ℹ️";
+    }
+
+    function open(options={}){
+        return new Promise(resolve=>{
+            const overlay=ensure();
+            const title=overlay.querySelector("#ldmDialogTitle");
+            const message=overlay.querySelector("#ldmDialogMessage");
+            const icon=overlay.querySelector("#ldmDialogIcon");
+            const input=overlay.querySelector("#ldmDialogInput");
+            const actions=overlay.querySelector("#ldmDialogActions");
+            const cancel=overlay.querySelector("#ldmDialogCancel");
+            const ok=overlay.querySelector("#ldmDialogOk");
+
+            title.textContent=String(options.title||"Informasi");
+            message.textContent=String(options.message||"");
+            icon.textContent=iconFor(options.type||"info");
+
+            const mode=options.mode||"alert";
+            const needsInput=mode==="prompt";
+
+            input.style.display=needsInput?"block":"none";
+            input.value=needsInput?String(options.defaultValue||""):"";
+            input.placeholder=String(options.placeholder||"");
+
+            cancel.style.display=mode==="alert"?"none":"inline-flex";
+            actions.classList.toggle("single",mode==="alert");
+
+            ok.textContent=String(
+                options.okText
+                || (mode==="confirm"?"Lanjutkan":"OK")
+            );
+
+            cancel.textContent=String(options.cancelText||"Batal");
+
+            ok.classList.toggle(
+                "danger",
+                options.type==="danger"
+            );
+
+            function cleanup(result){
+                overlay.classList.remove("show");
+                ok.onclick=null;
+                cancel.onclick=null;
+                activeResolve=null;
+                resolve(result);
+            }
+
+            activeResolve=cleanup;
+
+            ok.onclick=()=>{
+                if(mode==="prompt"){
+                    cleanup(input.value);
+                }else{
+                    cleanup(true);
+                }
+            };
+
+            cancel.onclick=()=>{
+                cleanup(
+                    mode==="prompt"
+                        ? null
+                        : false
+                );
+            };
+
+            overlay.classList.add("show");
+
+            setTimeout(()=>{
+                if(needsInput){
+                    input.focus();
+                    input.select();
+                }else{
+                    ok.focus();
+                }
+            },20);
+        });
+    }
+
+    window.ldmDialog={
+        alert(title,message,type="info"){
+            return open({
+                mode:"alert",
+                title,
+                message,
+                type,
+                okText:"OK"
+            });
+        },
+
+        confirm(title,message,type="question",options={}){
+            return open({
+                mode:"confirm",
+                title,
+                message,
+                type,
+                okText:options.okText||"Lanjutkan",
+                cancelText:options.cancelText||"Batal"
+            });
+        },
+
+        prompt(title,message,defaultValue="",options={}){
+            return open({
+                mode:"prompt",
+                title,
+                message,
+                type:options.type||"question",
+                defaultValue,
+                placeholder:options.placeholder||"",
+                okText:options.okText||"Simpan",
+                cancelText:options.cancelText||"Batal"
+            });
+        }
+    };
+})();
+</script>
+
+    <!-- Live Sync Tahap 6: Supabase Auth authoritative guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=6.0"></script>
+    <script src="js/cloud-session-guard.js?v=15.0"></script><script src="js/license-service.js?v=23.0"></script><script src="js/license-guard.js?v=23.0"></script>
+    <!-- Live Sync Tahap 9: Cloud Absensi -->
+    <script src="js/attendance-service.js?v=9.1"></script>
+    <script src="js/attendance-bootstrap.js?v=9.0"></script>
+    <!-- Live Sync Tahap 7: Cloud Master Barang -->
+    <script src="js/products-service.js?v=21.0"></script>
+    <script src="js/products-bootstrap.js?v=7.0"></script>
+
+</head>
+<body>
+
+    <!-- Overlay latar belakang saat sidebar menu HP terbuka -->
+    <div class="nav-overlay" id="navOverlay" onclick="tutupMenuNavigasi()"></div>
+
+    <div class="app-layout">
+        <!-- Navigasi Sidebar / Bottombar -->
+        <div class="nav-bar" id="navSidebar">
+            <div class="nav-header-mobile">
+                <span>☰ Menu</span>
+                <button class="btn-close-menu" onclick="tutupMenuNavigasi()">✕</button>
+            </div>
+            <a href="dashboard.html" class="nav-item"><span>📊</span> Dashboard</a>
+            <a href="absensi.html" class="nav-item active" data-permission="absensi.view"><span>📝</span> Absensi</a>
+            <a href="kasir.html" class="nav-item" onclick="return verifikasiAksesKasir(event)"><span>💵</span> Kasir</a><a href="retur.html" class="nav-item"><span>↩️</span> Retur</a>
+            <a href="barang.html" class="nav-item"><span>📦</span> Barang<div class="nav-badge" id="navBadge">!</div></a><a href="supplier.html" class="nav-item" data-role-access="owner,admin"><span>🏢</span> Supplier</a>
+            <a href="Purchase-Order.html" class="nav-item" data-role-access="owner,admin"><span>🛒</span> Purchase Order</a>
+            <a href="goods.receipt.html" class="nav-item" data-role-access="owner,admin"><span>📥</span> Goods Receipt</a>
+            <a href="kartu-stok.html" class="nav-item"><span>📒</span> Kartu Stok</a><a href="stock-opname.html" class="nav-item"><span>📋</span> Stock Opname</a>
+            <a href="laporan.html" class="nav-item"><span>📋</span> Laporan</a>
+            <a href="shift-closing.html" class="nav-item"><span>🔒</span> Closing Shift</a>
+            <a href="eod.html" class="nav-item" data-role-access="owner,admin"><span>🌙</span> End of Day</a>
+            <a href="pengeluaran.html" class="nav-item" data-role-access="owner,admin"><span>💸</span> Pengeluaran</a>
+            <a href="backup%20%26%20restore.html" class="nav-item" data-role-access="owner,admin"><span>💾</span> Backup & Restore</a>
+        </div>
+
+        <!-- Area Konten Utama -->
+        <div class="main-content">
+            
+            <!-- HEADER APLIKASI -->
+            <div class="header-app" id="headerApp">
+                <div class="header-brand-container">
+                    <!-- Tombol Garis 3 Hamburger di Pojok Kiri Atas (Versi HP) -->
+                    <button class="btn-toggle-menu" onclick="bukaMenuNavigasi()" aria-label="Buka Menu">☰</button>
+                    
+                    <img id="imgLogoToko" class="header-logo-img" alt="Logo Toko">
+                    <div id="boxTeksToko" style="min-width: 0;">
+                        <h1 id="txtJudulToko">LocDailyMar</h1>
+                        <p id="txtSubJudulToko">Frozen Food</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <button class="btn-header-action btn-header-logout" onclick="konfirmasiLogout()">🚪 Log out</button>
+                </div>
+            </div>
+
+            <!-- RUNNING CLOCK BANNER -->
+            <div class="clock-banner">
+                <div>
+                    <div class="clock-title">🗓️ Tanggal & Waktu Presensi</div>
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-top:2px;" id="txtTanggalHariIni">-</div>
+                </div>
+                <div class="clock-display" id="runningClock">00:00:00 WITA</div>
+            </div>
+
+<!-- =====================================================
+     TOMBOL PEMERIKSAAN ABSENSI OWNER
+     ===================================================== -->
+
+<div
+    id="ownerAttendanceButtonWrapper"
+    class="owner-attendance-button-wrapper"
+>
+
+    <button
+        type="button"
+        id="btnOpenOwnerAttendance"
+        class="btn-open-owner-attendance"
+        data-permission="absensi.history"
+        onclick="toggleOwnerAttendancePanel()"
+    >
+
+        📊 Pemeriksaan Absensi
+
+        <span
+            id="ownerAttendanceNotificationBadge"
+            class="owner-attendance-notification-badge"
+        >
+            0
+        </span>
+
+    </button>
+
+</div>
+
+                <!-- =====================================================
+     PANEL RIWAYAT ABSENSI SEBELUMNYA
+     KHUSUS OWNER
+     ===================================================== -->
+
+<div id="ownerAttendancePanel" class="owner-attendance-panel">
+
+    <div class="owner-attendance-header">
+
+        <div class="owner-attendance-title">
+            📊 Pemeriksaan Absensi Sebelumnya
+        </div>
+
+        <div class="owner-attendance-controls">
+
+            <input
+                type="date"
+                id="ownerAttendanceDate"
+                onchange="cekAbsensiOwnerTanggal()"
+            >
+
+            <button
+                type="button"
+                class="btn-owner-attendance"
+                onclick="cekAbsensiOwnerTanggal()"
+            >
+                🔍 Cek Absensi
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- NOTIFIKASI -->
+
+    <div
+        id="ownerAttendanceAlert"
+        class="owner-attendance-alert"
+    ></div>
+
+
+    <!-- RINGKASAN -->
+
+    <div class="owner-attendance-summary">
+
+        <div class="owner-summary-box total">
+            <strong id="ownerTotalAkun">0</strong>
+            <span>Total Akun</span>
+        </div>
+
+        <div class="owner-summary-box hadir">
+            <strong id="ownerTotalAbsen">0</strong>
+            <span>Sudah Absen</span>
+        </div>
+
+        <div class="owner-summary-box tidak-absen">
+            <strong id="ownerTotalTidakAbsen">0</strong>
+            <span>Tidak Absen</span>
+        </div>
+
+    </div>
+
+
+    <!-- DAFTAR AKUN -->
+
+    <div
+        id="ownerAttendanceList"
+        class="owner-attendance-list"
+    ></div>
+
+</div>
+
+            <!-- DAFTAR STATUS ABSEN SELURUH AKUN HARI INI -->
+            <div style="margin-bottom: 15px;">
+                <h4 style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">
+                    📌 Status Absensi Akun Karyawan Hari Ini
+                </h4>
+                <div class="account-status-grid" id="accountStatusGrid"></div>
+            </div>
+
+<!-- =====================================================
+     FITUR RIWAYAT ABSENSI
+     KHUSUS OWNER
+     ===================================================== -->
+
+<div
+    id="ownerHistoryWrapper"
+    class="owner-history-wrapper"
+>
+
+    <button
+        type="button"
+        id="btnOwnerHistory"
+        class="btn-owner-history"
+        onclick="toggleOwnerHistory()"
+    >
+
+        📊 Pemeriksaan & Riwayat Absensi
+
+        <span
+            id="ownerHistoryNotification"
+            class="owner-history-notification"
+        >
+            0
+        </span>
+
+    </button>
+
+
+    <!-- PANEL -->
+
+    <div
+        id="ownerHistoryPanel"
+        class="owner-history-panel"
+    >
+
+        <div class="owner-history-header">
+
+            <div class="owner-history-title">
+                📜 Riwayat Absensi
+            </div>
+
+
+            <div class="owner-history-controls">
+
+                <input
+                    type="date"
+                    id="ownerHistoryDate"
+                >
+
+                <button
+                    type="button"
+                    class="btn-owner-check"
+                    onclick="cekRiwayatAbsensiOwner()"
+                >
+                    🔍 Cek Tanggal
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTIFIKASI -->
+
+        <div
+            id="ownerHistoryAlert"
+            class="owner-history-alert"
+        ></div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="owner-history-summary">
+
+            <div
+                class="
+                    owner-history-summary-box
+                    owner-summary-total
+                "
+            >
+
+                <strong id="ownerHistoryTotal">
+                    0
+                </strong>
+
+                <span>
+                    Total Akun
+                </span>
+
+            </div>
+
+
+            <div
+                class="
+                    owner-history-summary-box
+                    owner-summary-hadir
+                "
+            >
+
+                <strong id="ownerHistoryHadir">
+                    0
+                </strong>
+
+                <span>
+                    Sudah Absen
+                </span>
+
+            </div>
+
+
+            <div
+                class="
+                    owner-history-summary-box
+                    owner-summary-tidak
+                "
+            >
+
+                <strong id="ownerHistoryTidak">
+                    0
+                </strong>
+
+                <span>
+                    Tidak Absen
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- DAFTAR DETAIL -->
+
+        <div
+            id="ownerHistoryList"
+            class="owner-history-list"
+        ></div>
+
+    </div>
+
+</div>
+
+            <!-- GRID DUA KOLOM -->
+            <div class="absen-grid">
+                
+                <!-- KOLOM 1: FORM PENGISIAN ABSENSI -->
+                <div class="card-box">
+                    <h3><span id="txtFormHeader">✍️ Form Presensi Masuk / Keluar</span></h3>
+
+                    <form id="formAbsensi" onsubmit="submitAbsensi(event)">
+                        
+                        <div class="form-group">
+                            <label>Pilih Akun / Karyawan</label>
+                            <select id="selectAkunAbsen" required onchange="cekStatusAutoIsi()"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Jenis Presensi</label>
+                            <select id="selectJenisAbsen" required onchange="handleJenisAbsenChange()">
+                                <option value="Masuk">Absen Masuk</option>
+                                <option value="Keluar">Absen Keluar</option>
+                                <option value="Sakit">Izin Sakit</option>
+                                <option value="Izin">Izin Keperluan / Cuti</option>
+                            </select>
+                        </div>
+
+                        <!-- SHIFT -->
+                        <div class="form-group" id="groupShift">
+                            <label>Pilihan Shift Kerja</label>
+                            <select id="selectShift">
+                                <option value="Shift 1">Shift 1 (Pagi - Siang)</option>
+                                <option value="Shift 2">Shift 2 (Siang - Malam)</option>
+                                <option value="Full Day">Full Day (Penuh / Seharian)</option>
+                            </select>
+                        </div>
+
+                        <!-- FOTO SELFIE -->
+                        <div class="form-group" id="groupSelfie">
+                            <label style="color: #0284c7;">
+                                📸 Foto Selfie Di Tempat <span style="color:#dc2626;">*Wajib</span>
+                            </label>
+                            <button type="button" class="btn-camera-trigger" onclick="bukaKameraSelfie()">
+                                📷 Buka Kamera Selfie
+                            </button>
+
+                            <div id="cameraSelfieBox" style="display:none; margin-top:10px; text-align: center;">
+                                <video id="videoSelfie" autoplay playsinline style="width:100%; max-width:350px; border-radius:8px; border:1px solid #ccc;"></video>
+                                <button type="button" class="btn-snap" onclick="ambilFotoSelfie()">📸 Ambil Foto Selfie</button>
+                                <canvas id="canvasSelfie" style="display:none;"></canvas>
+                            </div>
+
+                            <div id="previewSelfieBox" style="display:none; margin-top:10px; text-align: center;">
+                                <img id="imgPreviewSelfie" alt="Pratinjau foto absensi" style="max-width:100%; max-height:200px; border-radius:8px; border:1px solid #ccc;">
+                            </div>
+                        </div>
+
+                        <!-- BUKTI DOKUMEN SURAT (LANGSUNG KAMERA) -->
+                        <div class="form-group" id="groupSurat" style="display: none;">
+                            <label style="color: #dc2626;">
+                                📄 Foto Surat Keterangan / Bukti <span style="color:#dc2626;">*Wajib</span>
+                            </label>
+                            <button type="button" class="btn-camera-trigger" style="background: #dc2626;" onclick="bukaKameraSurat()">
+                                📷 Foto Surat Keterangan
+                            </button>
+
+                            <div id="cameraSuratBox" style="display:none; margin-top:10px; text-align: center;">
+                                <video id="videoSurat" autoplay playsinline style="width:100%; max-width:350px; border-radius:8px; border:1px solid #ccc;"></video>
+                                <button type="button" class="btn-snap" style="background:#dc2626;" onclick="ambilFotoSurat()">📸 Ambil Foto Surat</button>
+                                <canvas id="canvasSurat" style="display:none;"></canvas>
+                            </div>
+
+                            <div id="previewSuratBox" style="display: none; margin-top: 10px; text-align: center;">
+                                <img id="imgPreviewSurat" src="" alt="Pratinjau surat pendukung" style="max-height: 180px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Catatan / Keterangan Tambahan (Opsional)</label>
+                            <input type="text" id="txtCatatanAbsen" placeholder="Misal: Datang tepat waktu / Keterangan Dokter">
+                        </div>
+
+                        <button type="submit" id="btnSubmitAbsen" class="btn-submit-absen">
+                            <span>📌</span> Simpan Presensi Hari Ini
+                        </button>
+                    </form>
+                </div>
+
+                <!-- KOLOM 2: TABEL RIWAYAT LOG ABSENSI -->
+                <div class="card-box">
+                    <h3>
+                        <span>📋 Log Presensi Akun Ini</span>
+                        <small style="font-size: 0.72rem; color: #64748b;" id="totalLogCount">0 Data Presensi</small>
+                    </h3>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>Akun</th>
+                                    <th>Jenis</th>
+                                    <th>Shift</th>
+                                    <th>Bukti Foto / Surat</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyAbsen"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW SURAT/SELFIE BUKTI -->
+    <div class="modal" id="modalPreviewSurat">
+        <div class="modal-content">
+            <div class="modal-header-title">
+                <span>📄 Bukti Presensi Foto / Surat</span>
+                <button type="button" class="btn-header-action" onclick="tutupModalSurat()" style="background: #ef4444;">✕</button>
+            </div>
+            <div style="text-align: center; padding: 10px;">
+                <img id="imgSuratFull" src="" alt="Surat pendukung absensi" style="max-width: 100%; max-height: 70vh; border-radius: 10px; border: 1px solid var(--border-color);">
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+                <button class="btn-modal-ok" onclick="tutupModalSurat()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ALERT CUSTOM -->
+    <div class="modal-alert" id="customAlertModal">
+        <div class="modal-alert-content">
+            <div class="modal-alert-icon" id="customAlertIcon">✅</div>
+            <div class="modal-alert-title" id="customAlertTitle">Informasi</div>
+            <div class="modal-alert-msg" id="customAlertMsg">Pesan...</div>
+            <button class="btn-modal-ok" id="btnCustomAlertOk" onclick="tutupAlertCustom()">Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        let streamSelfie = null;
+        let streamSurat = null;
+        let tempBase64Surat = "";
+        let tempBase64Selfie = "";
+
+        // NAVIGASI MOBILE SLIDE (PERSIS DASHBOARD.HTML)
+        function bukaMenuNavigasi() {
+            document.getElementById("navSidebar").classList.add("active");
+            document.getElementById("navOverlay").classList.add("active");
+        }
+
+        function tutupMenuNavigasi() {
+            document.getElementById("navSidebar").classList.remove("active");
+            document.getElementById("navOverlay").classList.remove("active");
+        }
+
+        // FUNGSI MEMATIKAN STREAM KAMERA AKTIF
+        function stopActiveStreams() {
+            if (streamSelfie) {
+                streamSelfie.getTracks().forEach(track => track.stop());
+                streamSelfie = null;
+            }
+            if (streamSurat) {
+                streamSurat.getTracks().forEach(track => track.stop());
+                streamSurat = null;
+            }
+            document.getElementById("cameraSelfieBox").style.display = "none";
+            document.getElementById("cameraSuratBox").style.display = "none";
+        }
+
+        // MEMPERTAHANKAN ROLE AKTIF
+        function getActiveUserRole() {
+            let role = (localStorage.getItem("userRole") || "").toLowerCase();
+            if (!role) {
+                const session =
+    requireLogin();
+
+if (!session) {
+    return;
+}
+
+const loggedUser =
+    session.username;
+                const akunList = getDatabaseAkun();
+                const currentAcc = akunList.find(a => a.username.toString().trim().toLowerCase() === loggedUser.toString().trim().toLowerCase());
+                if (currentAcc) {
+                    role = currentAcc.role.toLowerCase();
+                    localStorage.setItem("userRole", role);
+                }
+            }
+            return role;
+        }
+
+        // =====================================================
+// CEK AKUN OWNER
+// =====================================================
+
+function isOwnerAccount() {
+
+    return getActiveUserRole() === "owner";
+
+}
+
+        // =====================================================
+// CEK APAKAH AKUN SAAT INI OWNER
+// =====================================================
+
+function isOwnerAccount() {
+    return getActiveUserRole() === "owner";
+}
+
+
+// =====================================================
+// FORMAT TANGGAL INDONESIA
+// =====================================================
+
+function formatTanggalOwner(tanggal) {
+
+    if (!tanggal) return "-";
+
+    const parts = tanggal.split("-");
+
+    if (parts.length !== 3) return tanggal;
+
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+
+// =====================================================
+// CEK ABSENSI PADA TANGGAL TERTENTU
+// KHUSUS OWNER
+// =====================================================
+
+function cekAbsensiOwnerTanggal() {
+
+    // SECURITY CHECK UI
+    if (!isOwnerAccount()) {
+        return;
+    }
+
+    const inputTanggal =
+        document.getElementById("ownerAttendanceDate");
+
+    const tanggal =
+        inputTanggal.value;
+
+    if (!tanggal) {
+
+        tampilkanAlertCustom(
+            "Tanggal Belum Dipilih",
+            "Silakan pilih tanggal absensi yang ingin diperiksa.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    const akunList =
+        getDatabaseAkun();
+
+    const logAbsensi =
+        JSON.parse(
+            localStorage.getItem("dataAbsensi")
+        ) || [];
+
+
+    const listContainer =
+        document.getElementById(
+            "ownerAttendanceList"
+        );
+
+    const alertBox =
+        document.getElementById(
+            "ownerAttendanceAlert"
+        );
+
+
+    listContainer.innerHTML = "";
+
+    alertBox.classList.remove("show");
+    alertBox.innerHTML = "";
+
+
+    let totalAkun =
+        akunList.length;
+
+    let totalSudahAbsen = 0;
+
+    let totalTidakAbsen = 0;
+
+    let daftarTidakAbsen = [];
+
+
+    akunList.forEach(acc => {
+
+        const username =
+            acc.username
+                .toString()
+                .trim()
+                .toLowerCase();
+
+
+        const userLogs =
+            logAbsensi.filter(a =>
+                a.username
+                    .toString()
+                    .trim()
+                    .toLowerCase() === username
+                &&
+                a.tanggal === tanggal
+            );
+
+
+        let statusText = "Tidak Absen";
+
+        let statusClass =
+            "owner-status-tidak";
+
+
+        if (userLogs.length > 0) {
+
+            totalSudahAbsen++;
+
+
+            const jenisSet =
+                userLogs.map(
+                    a => a.jenis
+                );
+
+
+            if (
+                jenisSet.includes("Sakit")
+            ) {
+
+                statusText =
+                    "Sakit";
+
+                statusClass =
+                    "owner-status-izin";
+
+            } else if (
+                jenisSet.includes("Izin")
+            ) {
+
+                statusText =
+                    "Izin";
+
+                statusClass =
+                    "owner-status-izin";
+
+            } else if (
+                jenisSet.includes("Masuk") ||
+                jenisSet.includes("Hadir")
+            ) {
+
+                statusText =
+                    "Sudah Absen";
+
+                statusClass =
+                    "owner-status-hadir";
+
+            } else {
+
+                statusText =
+                    "Sudah Absen";
+
+                statusClass =
+                    "owner-status-hadir";
+            }
+
+        } else {
+
+            totalTidakAbsen++;
+
+            daftarTidakAbsen.push(
+                acc.username
+            );
+        }
+
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "owner-attendance-card";
+
+
+        card.innerHTML = `
+
+            <div>
+
+                <div class="user-name">
+                    👤 ${acc.username}
+                </div>
+
+            </div>
+
+            <div
+                class="user-status ${statusClass}"
+            >
+                ${statusText}
+            </div>
+
+        `;
+
+
+        listContainer.appendChild(card);
+
+    });
+
+
+    // UPDATE SUMMARY
+
+    document.getElementById(
+        "ownerTotalAkun"
+    ).innerText = totalAkun;
+
+
+    document.getElementById(
+        "ownerTotalAbsen"
+    ).innerText = totalSudahAbsen;
+
+
+    document.getElementById(
+        "ownerTotalTidakAbsen"
+    ).innerText = totalTidakAbsen;
+
+
+    // NOTIFIKASI JIKA ADA YANG TIDAK ABSEN
+
+    if (totalTidakAbsen > 0) {
+
+        alertBox.innerHTML = `
+
+            ⚠️ <strong>Perhatian</strong>
+
+            <br>
+
+            Pada tanggal
+            <strong>
+                ${formatTanggalOwner(tanggal)}
+            </strong>
+
+            terdapat
+            <strong>
+                ${totalTidakAbsen} akun
+            </strong>
+            yang tidak melakukan absensi.
+
+            <br><br>
+
+            <strong>Akun:</strong>
+            ${daftarTidakAbsen.join(", ")}
+
+        `;
+
+        alertBox.classList.add("show");
+
+    } else {
+
+        alertBox.innerHTML = `
+
+            ✅ <strong>Semua akun sudah melakukan presensi</strong>
+
+            <br>
+
+            Tidak ditemukan akun yang tidak melakukan absensi
+            pada tanggal
+            <strong>
+                ${formatTanggalOwner(tanggal)}
+            </strong>.
+
+        `;
+
+        alertBox.style.background = "#f0fdf4";
+        alertBox.style.borderColor = "#bbf7d0";
+        alertBox.style.color = "#166534";
+
+        alertBox.classList.add("show");
+    }
+
+}
+
+// =====================================================
+// CEK OTOMATIS ABSENSI HARI SEBELUMNYA
+// =====================================================
+
+function cekNotifikasiAbsensiOwner() {
+
+    if (!hasPermission("absensi.history")) {
+        return;
+    }
+
+    const inputTanggal =
+        document.getElementById(
+            "ownerAttendanceDate"
+        );
+
+    if (!inputTanggal) {
+        return;
+    }
+
+
+    const yesterday =
+        new Date();
+
+    yesterday.setDate(
+        yesterday.getDate() - 1
+    );
+
+
+    const tanggalKemarin =
+        getTanggalWITA(yesterday);
+
+
+    inputTanggal.value =
+        tanggalKemarin;
+
+
+    // Hanya update badge.
+    // Panel tidak dibuka otomatis.
+
+    updateOwnerNotificationBadge();
+}
+
+        // VERIFIKASI SEBELUM MASUK KE KASIR
+        function verifikasiAksesKasir(e) {
+            const session =
+    requireLogin();
+
+if (!session) {
+    return;
+}
+
+const loggedUser =
+    session.username;
+            const logAbsensi = JSON.parse(localStorage.getItem("dataAbsensi")) || [];
+            const tglToday = getTanggalWITA();
+
+            const userTodayLogs = logAbsensi.filter(a => 
+                a.username.toString().trim().toLowerCase() === loggedUser.toString().trim().toLowerCase() && 
+                a.tanggal === tglToday
+            );
+            const sudahAbsenMasuk = userTodayLogs.some(a => a.jenis === "Masuk" || a.jenis === "Hadir");
+
+            if (!sudahAbsenMasuk) {
+                if (e) e.preventDefault();
+                tampilkanAlertCustom("Peringatan Absensi", "Kamu belum melakukan Absensi masuk hari ini, segera absen terlebih dahulu!", "warning");
+                return false;
+            }
+            return true;
+        }
+
+        const defaultHeaderConfig = {
+            judul: "LocDailyMar", subJudul: "Absensi", warnaJudul: "#ffffff", warnaOutline: "#d99b00",
+            warnaSubJudul: "#ffc107", warnaBgHeader: "#0d2240", fontFamily: "'Poppins', sans-serif",
+            brandFontFamily: "'Poppins', sans-serif", bgPrimary: "#f4f6f9", bgSecondary: "#ffffff", logoData: "", darkMode: false
+        };
+
+        function getDynamicTextColor(hexColor) {
+            if (!hexColor) return '#ffffff';
+            let c = hexColor.replace('#', '');
+            if (c.length === 3) c = c.split('').map(x => x + x).join('');
+            const r = parseInt(c.substr(0, 2), 16), g = parseInt(c.substr(2, 2), 16), b = parseInt(c.substr(4, 2), 16);
+            return ((r * 299 + g * 587 + b * 114) / 1000) >= 128 ? '#0f172a' : '#ffffff';
+        }
+
+        function muatHeaderToko() {
+            let config = JSON.parse(localStorage.getItem("headerConfig")) || defaultHeaderConfig;
+            const elJudul = document.getElementById("txtJudulToko");
+            const elSubJudul = document.getElementById("txtSubJudulToko");
+            const elHeader = document.getElementById("headerApp");
+            const elImgLogo = document.getElementById("imgLogoToko");
+
+            if (config.logoData && elImgLogo) {
+                elImgLogo.src = config.logoData; elImgLogo.style.display = "block";
+            } else if (elImgLogo) { elImgLogo.style.display = "none"; }
+
+            if (elJudul) {
+                elJudul.innerText = config.judul || defaultHeaderConfig.judul;
+                const bgHeaderColor = config.warnaBgHeader || defaultHeaderConfig.warnaBgHeader;
+                elJudul.style.color = config.warnaJudul || getDynamicTextColor(bgHeaderColor);
+                elJudul.style.textShadow = `1px 1px 0px ${config.warnaOutline || defaultHeaderConfig.warnaOutline}`;
+            }
+
+            if (elSubJudul) {
+                elSubJudul.innerText = config.subJudul || defaultHeaderConfig.subJudul;
+                elSubJudul.style.color = config.warnaSubJudul || defaultHeaderConfig.warnaSubJudul;
+            }
+
+            if (elHeader) elHeader.style.background = config.warnaBgHeader || defaultHeaderConfig.warnaBgHeader;
+
+            if (config.darkMode) document.body.classList.add("dark-mode");
+            else document.body.classList.remove("dark-mode");
+
+            document.documentElement.style.setProperty('--app-font', config.fontFamily || defaultHeaderConfig.fontFamily);
+            document.documentElement.style.setProperty('--brand-font', config.brandFontFamily || config.fontFamily || defaultHeaderConfig.brandFontFamily);
+            document.documentElement.style.setProperty('--bg-primary', config.bgPrimary || defaultHeaderConfig.bgPrimary);
+            document.documentElement.style.setProperty('--bg-secondary', config.bgSecondary || defaultHeaderConfig.bgSecondary);
+            document.documentElement.style.setProperty('--accent-color', config.warnaSubJudul || defaultHeaderConfig.warnaSubJudul);
+            
+            const navBgColor = config.darkMode ? (config.warnaBgHeader !== defaultHeaderConfig.warnaBgHeader ? config.warnaBgHeader : '#1e293b') : (config.warnaBgHeader || defaultHeaderConfig.warnaBgHeader);
+            document.documentElement.style.setProperty('--nav-desktop-bg', navBgColor);
+        }
+
+        function getDatabaseAkun() {
+            try {
+                const cloudProfiles =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "ldmAttendanceProfiles"
+                        ) || "[]"
+                    );
+
+                if (
+                    Array.isArray(cloudProfiles) &&
+                    cloudProfiles.length > 0
+                ) {
+                    return cloudProfiles;
+                }
+            } catch (error) {
+                console.warn(
+                    "Cache profile Absensi tidak dapat dibaca:",
+                    error
+                );
+            }
+
+            // Compatibility fallback selama bootstrap cloud belum selesai.
+            let akunList =
+                JSON.parse(
+                    localStorage.getItem(
+                        "daftarAkun"
+                    )
+                ) || [];
+
+            return Array.isArray(akunList)
+                ? akunList
+                : [];
+        }
+
+        function getTanggalWITA(dateObj = new Date()) {
+            const utcTime = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
+            const witaTime = new Date(utcTime + (3600000 * 8));
+            const year = witaTime.getFullYear();
+            const month = String(witaTime.getMonth() + 1).padStart(2, '0');
+            const day = String(witaTime.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function startRunningClock() {
+            function updateClock() {
+                const now = new Date();
+                const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const witaNow = new Date(utcNow + (3600000 * 8));
+
+                const hrs = String(witaNow.getHours()).padStart(2, '0');
+                const mins = String(witaNow.getMinutes()).padStart(2, '0');
+                const secs = String(witaNow.getSeconds()).padStart(2, '0');
+
+                const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById("txtTanggalHariIni").innerText = witaNow.toLocaleDateString('id-ID', optionsDate);
+                document.getElementById("runningClock").innerText = `${hrs}:${mins}:${secs} WITA`;
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function tampilkanAlertCustom(judul, pesan, tipe = 'success') {
+            const modal = document.getElementById("customAlertModal");
+            document.getElementById("customAlertIcon").innerText = tipe === 'success' ? "✅" : (tipe === 'warning' ? "⚠️" : "❌");
+            document.getElementById("customAlertTitle").innerText = judul;
+            document.getElementById("customAlertMsg").innerText = pesan;
+            modal.style.display = "flex";
+        }
+
+        function tutupAlertCustom() {
+            document.getElementById("customAlertModal").style.display = "none";
+        }
+
+        function handleJenisAbsenChange() {
+            stopActiveStreams();
+            tempBase64Selfie = "";
+            tempBase64Surat = "";
+            document.getElementById("previewSelfieBox").style.display = "none";
+            document.getElementById("previewSuratBox").style.display = "none";
+
+            const jenis = document.getElementById("selectJenisAbsen").value;
+            const groupShift = document.getElementById("groupShift");
+            const groupSelfie = document.getElementById("groupSelfie");
+            const groupSurat = document.getElementById("groupSurat");
+            const btnSubmit = document.getElementById("btnSubmitAbsen");
+
+            if (jenis === "Sakit" || jenis === "Izin") {
+                groupShift.style.display = "none";
+                groupSelfie.style.display = "none";
+                groupSurat.style.display = "block";
+                btnSubmit.className = "btn-submit-absen";
+                btnSubmit.innerHTML = `<span>📌</span> Simpan Presensi Hari Ini`;
+            } else if (jenis === "Keluar") {
+                groupShift.style.display = "block";
+                groupSelfie.style.display = "block";
+                groupSurat.style.display = "none";
+                btnSubmit.className = "btn-submit-absen btn-submit-keluar";
+                btnSubmit.innerHTML = `<span>🚪</span> Simpan Absen Keluar Hari Ini`;
+            } else {
+                groupShift.style.display = "block";
+                groupSelfie.style.display = "block";
+                groupSurat.style.display = "none";
+                btnSubmit.className = "btn-submit-absen";
+                btnSubmit.innerHTML = `<span>📌</span> Simpan Absen Masuk Hari Ini`;
+            }
+        }
+
+        // FUNGSI KAMERA SELFIE
+        async function bukaKameraSelfie() {
+            try {
+                stopActiveStreams();
+                streamSelfie = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                const videoEl = document.getElementById("videoSelfie");
+                document.getElementById("cameraSelfieBox").style.display = "block";
+                videoEl.srcObject = streamSelfie;
+                videoEl.play().catch(e => console.log("Auto-play prevented", e));
+            } catch (err) {
+                tampilkanAlertCustom("Kamera Gagal", "Gagal mengakses kamera selfie: " + err.message, "warning");
+            }
+        }
+
+        function ambilFotoSelfie() {
+            const video = document.getElementById("videoSelfie");
+            const canvas = document.getElementById("canvasSelfie");
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            tempBase64Selfie = canvas.toDataURL("image/jpeg", 0.8);
+            document.getElementById("imgPreviewSelfie").src = tempBase64Selfie;
+            document.getElementById("previewSelfieBox").style.display = "block";
+
+            stopActiveStreams();
+        }
+
+        // FUNGSI KAMERA SURAT KETERANGAN
+        async function bukaKameraSurat() {
+            try {
+                stopActiveStreams();
+                streamSurat = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+                const videoEl = document.getElementById("videoSurat");
+                document.getElementById("cameraSuratBox").style.display = "block";
+                videoEl.srcObject = streamSurat;
+                videoEl.play().catch(e => console.log("Auto-play prevented", e));
+            } catch (err) {
+                tampilkanAlertCustom("Kamera Gagal", "Gagal mengakses kamera surat: " + err.message, "warning");
+            }
+        }
+
+        function ambilFotoSurat() {
+            const video = document.getElementById("videoSurat");
+            const canvas = document.getElementById("canvasSurat");
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            tempBase64Surat = canvas.toDataURL("image/jpeg", 0.8);
+            document.getElementById("imgPreviewSurat").src = tempBase64Surat;
+            document.getElementById("previewSuratBox").style.display = "block";
+
+            stopActiveStreams();
+        }
+
+        function populateSelectAkun() {
+            const select =
+                document.getElementById(
+                    "selectAkunAbsen"
+                );
+
+            const akunList =
+                getDatabaseAkun();
+
+            const session =
+                requireLogin();
+
+            if (!session) {
+                return;
+            }
+
+            const loggedUser =
+                session.username;
+
+            const role =
+                String(
+                    localStorage.getItem(
+                        "userRole"
+                    ) || ""
+                )
+                    .trim()
+                    .toLowerCase();
+
+            const visibleAccounts =
+                role === "owner"
+                    ? akunList
+                    : akunList.filter(
+                        account =>
+                            String(
+                                account.username || ""
+                            )
+                                .trim()
+                                .toLowerCase() ===
+                            String(
+                                loggedUser || ""
+                            )
+                                .trim()
+                                .toLowerCase()
+                    );
+
+            select.innerHTML = "";
+
+            visibleAccounts.forEach(
+                account => {
+                    const opt =
+                        document.createElement(
+                            "option"
+                        );
+
+                    opt.value =
+                        account.username;
+
+                    opt.innerText =
+                        account.username;
+
+                    select.appendChild(
+                        opt
+                    );
+                }
+            );
+
+            if (loggedUser) {
+                select.value =
+                    loggedUser;
+            }
+
+            select.disabled =
+                role !== "owner";
+
+            cekStatusAutoIsi();
+        }
+
+        function cekStatusAutoIsi() {
+            const username = document.getElementById("selectAkunAbsen").value;
+            if (!username) return;
+
+            const logAbsensi = JSON.parse(localStorage.getItem("dataAbsensi")) || [];
+            const tglToday = getTanggalWITA();
+
+            const userTodayLogs = logAbsensi.filter(a => a.username.toString().trim().toLowerCase() === username.toString().trim().toLowerCase() && a.tanggal === tglToday);
+            const hasDoneToday = userTodayLogs.some(a => a.jenis === "Sakit" || a.jenis === "Izin");
+            const hasMasuk = userTodayLogs.some(a => a.jenis === "Masuk" || a.jenis === "Hadir");
+            const hasKeluar = userTodayLogs.some(a => a.jenis === "Keluar");
+
+            const selectJenis = document.getElementById("selectJenisAbsen");
+            const optMasuk = selectJenis.querySelector("option[value='Masuk']");
+            const optKeluar = selectJenis.querySelector("option[value='Keluar']");
+
+            if (optMasuk) optMasuk.disabled = hasMasuk;
+            if (optKeluar) optKeluar.disabled = hasKeluar;
+
+            const btnSubmit = document.getElementById("btnSubmitAbsen");
+
+            if (hasDoneToday || (hasMasuk && hasKeluar)) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = "🔒 Presensi Hari Ini Sudah Selesai (1x Sehari)";
+            } else if (hasMasuk) {
+                btnSubmit.disabled = false;
+                selectJenis.value = "Keluar";
+                handleJenisAbsenChange();
+            } else {
+                btnSubmit.disabled = false;
+                selectJenis.value = "Masuk";
+                handleJenisAbsenChange();
+            }
+
+            renderTableLog();
+        }
+
+        async function submitAbsensi(e) {
+            e.preventDefault();
+
+            const username =
+                document.getElementById(
+                    "selectAkunAbsen"
+                ).value;
+
+            const jenis =
+                document.getElementById(
+                    "selectJenisAbsen"
+                ).value;
+
+            const shift =
+                (jenis === "Masuk" || jenis === "Keluar")
+                    ? document.getElementById(
+                        "selectShift"
+                    ).value
+                    : null;
+
+            const catatan =
+                document.getElementById(
+                    "txtCatatanAbsen"
+                ).value.trim();
+
+            const tglToday =
+                getTanggalWITA();
+
+            const logAbsensi =
+                JSON.parse(
+                    localStorage.getItem(
+                        "dataAbsensi"
+                    ) || "[]"
+                );
+
+            const userTodayLogs =
+                logAbsensi.filter(
+                    item =>
+                        String(item.username || "")
+                            .trim()
+                            .toLowerCase() ===
+                        String(username || "")
+                            .trim()
+                            .toLowerCase()
+                        && item.tanggal === tglToday
+                );
+
+            if (
+                userTodayLogs.some(
+                    item =>
+                        item.jenis === "Sakit" ||
+                        item.jenis === "Izin"
+                )
+            ) {
+                tampilkanAlertCustom(
+                    "Presensi Dibatasi",
+                    `Akun "${username}" telah menyelesaikan presensi hari ini.`,
+                    "warning"
+                );
+                return;
+            }
+
+            if (
+                jenis === "Masuk" &&
+                userTodayLogs.some(
+                    item =>
+                        item.jenis === "Masuk" ||
+                        item.jenis === "Hadir"
+                )
+            ) {
+                tampilkanAlertCustom(
+                    "Presensi Dibatasi",
+                    `Akun "${username}" sudah melakukan Absen Masuk hari ini!`,
+                    "warning"
+                );
+                return;
+            }
+
+            if (
+                jenis === "Keluar" &&
+                userTodayLogs.some(
+                    item => item.jenis === "Keluar"
+                )
+            ) {
+                tampilkanAlertCustom(
+                    "Presensi Dibatasi",
+                    `Akun "${username}" sudah melakukan Absen Keluar hari ini!`,
+                    "warning"
+                );
+                return;
+            }
+
+            if (
+                (jenis === "Masuk" || jenis === "Keluar") &&
+                !tempBase64Selfie
+            ) {
+                tampilkanAlertCustom(
+                    "Selfie Wajib",
+                    "Anda WAJIB mengambil foto selfie langsung dari kamera saat absen Masuk atau Keluar!",
+                    "warning"
+                );
+                return;
+            }
+
+            if (
+                (jenis === "Sakit" || jenis === "Izin") &&
+                !tempBase64Surat
+            ) {
+                tampilkanAlertCustom(
+                    "Surat Wajib Diambil",
+                    "Absen Sakit atau Izin WAJIB mengambil foto surat keterangan secara langsung dari kamera!",
+                    "warning"
+                );
+                return;
+            }
+
+            if (
+                !window.LDMAttendance ||
+                typeof window.LDMAttendance.recordAttendance !==
+                    "function"
+            ) {
+                tampilkanAlertCustom(
+                    "Cloud Absensi Belum Siap",
+                    "attendance-service.js belum termuat.",
+                    "danger"
+                );
+                return;
+            }
+
+            const button =
+                document.getElementById(
+                    "btnSubmitAbsen"
+                );
+
+            const oldHTML =
+                button.innerHTML;
+
+            button.disabled = true;
+            button.innerHTML =
+                "☁️ Menyimpan Presensi...";
+
+            try {
+                const proofDataURL =
+                    (jenis === "Sakit" || jenis === "Izin")
+                        ? tempBase64Surat
+                        : tempBase64Selfie;
+
+                await window.LDMAttendance
+                    .recordAttendance({
+                        username,
+                        type: jenis,
+                        shift,
+                        note: catatan,
+                        proofDataURL
+                    });
+
+                localStorage.setItem(
+                    "activeUsername",
+                    username
+                );
+
+                localStorage.setItem(
+                    "loggedInUser",
+                    username
+                );
+
+                tempBase64Surat = "";
+                tempBase64Selfie = "";
+
+                document
+                    .getElementById(
+                        "previewSuratBox"
+                    )
+                    .style.display = "none";
+
+                document
+                    .getElementById(
+                        "previewSelfieBox"
+                    )
+                    .style.display = "none";
+
+                document
+                    .getElementById(
+                        "txtCatatanAbsen"
+                    ).value = "";
+
+                tampilkanAlertCustom(
+                    "Berhasil",
+                    `Presensi (${jenis}) untuk akun "${username}" berhasil disimpan ke cloud!`,
+                    "success"
+                );
+
+                renderStatusAkun();
+                cekStatusAutoIsi();
+
+            } catch (error) {
+                console.error(
+                    "Cloud Attendance gagal:",
+                    error
+                );
+
+                tampilkanAlertCustom(
+                    "Presensi Gagal",
+                    error.message || String(error),
+                    "danger"
+                );
+
+            } finally {
+                button.disabled = false;
+                button.innerHTML = oldHTML;
+                cekStatusAutoIsi();
+            }
+        }
+
+        function renderStatusAkun() {
+            const container = document.getElementById("accountStatusGrid");
+            const akunList = getDatabaseAkun();
+            const logAbsensi = JSON.parse(localStorage.getItem("dataAbsensi")) || [];
+            const tglToday = getTanggalWITA();
+
+            container.innerHTML = "";
+
+            akunList.forEach(acc => {
+                const userLogs = logAbsensi.filter(a => a.username.toString().trim().toLowerCase() === acc.username.toString().trim().toLowerCase() && a.tanggal === tglToday);
+                
+                let badgeHTML = `<span class="badge-status badge-belum">Belum Absen</span>`;
+                let infoSub = "Belum ada presensi";
+
+                if (userLogs.length > 0) {
+                    const lastLog = userLogs[userLogs.length - 1];
+                    if (lastLog.jenis === "Masuk" || lastLog.jenis === "Hadir") {
+                        badgeHTML = `<span class="badge-status badge-masuk">Sudah Masuk (${lastLog.shift})</span>`;
+                        infoSub = `Masuk jam ${lastLog.waktu} WITA`;
+                    } else if (lastLog.jenis === "Keluar") {
+                        badgeHTML = `<span class="badge-status badge-keluar">Sudah Keluar</span>`;
+                        infoSub = `Keluar jam ${lastLog.waktu} WITA`;
+                    } else if (lastLog.jenis === "Sakit") {
+                        badgeHTML = `<span class="badge-status badge-sakit">Izin Sakit</span>`;
+                        infoSub = `Dengan Surat Dokter`;
+                    } else {
+                        badgeHTML = `<span class="badge-status badge-izin">Izin</span>`;
+                        infoSub = lastLog.catatan || `Izin Keperluan`;
+                    }
+                }
+
+                const card = document.createElement("div");
+                card.className = "account-card";
+                card.innerHTML = `
+                    <div class="account-info">
+                        <h5>👤 ${acc.username}</h5>
+                        <p>${infoSub}</p>
+                    </div>
+                    <div>${badgeHTML}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderTableLog() {
+            const tbody = document.getElementById("tableBodyAbsen");
+            const countLabel = document.getElementById("totalLogCount");
+            const selectedUser = document.getElementById("selectAkunAbsen").value;
+            if (!selectedUser) return;
+
+            const logAbsensi = JSON.parse(localStorage.getItem("dataAbsensi")) || [];
+            const tglToday = getTanggalWITA();
+
+            const activeRole = getActiveUserRole();
+            const logUserToday = logAbsensi.filter(a => a.username.toString().trim().toLowerCase() === selectedUser.toString().trim().toLowerCase() && a.tanggal === tglToday);
+            countLabel.innerText = `${logUserToday.length} Data Presensi (${selectedUser})`;
+
+            tbody.innerHTML = "";
+
+            if (logUserToday.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:15px;">Belum ada log presensi hari ini untuk akun ${selectedUser}.</td></tr>`;
+                return;
+            }
+
+            logUserToday.slice().reverse().forEach((item) => {
+                const tr = document.createElement("tr");
+
+                let suratCol = "-";
+                if (item.surat) {
+                    suratCol = `<span class="surat-preview-link" onclick="bukaModalSurat('${item.id}')">🔍 Lihat Bukti Foto</span>`;
+                }
+
+                let badgeClass = 'badge-masuk';
+                if (item.jenis === 'Keluar') badgeClass = 'badge-keluar';
+                else if (item.jenis === 'Sakit') badgeClass = 'badge-sakit';
+                else if (item.jenis === 'Izin') badgeClass = 'badge-izin';
+
+                let hapusCol = `-`;
+                if (
+                    hasPermission(
+                        "absensi.history"
+                    )
+                ) {
+                    hapusCol = `<button class="btn-delete-log" onclick="hapusAbsensi('${item.id}')">🗑️ Hapus</button>`;
+                }
+
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${item.waktu} WITA</td>
+                    <td><b>${item.username}</b></td>
+                    <td><span class="badge-status ${badgeClass}">${item.jenis}</span></td>
+                    <td>${item.shift}</td>
+                    <td>${suratCol}</td>
+                    <td>${hapusCol}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function hapusAbsensi(id) {
+
+    if (
+        !requirePermission(
+            "absensi.history"
+        )
+    ) {
+        return;
+    }
+
+    if (
+        !await ldmDialog.confirm(
+            "Hapus Data Presensi",
+            "Apakah Anda yakin ingin menghapus data presensi ini? Data cloud akan di-soft-delete.",
+            "danger",
+            {
+                okText: "Hapus"
+            }
+        )
+    ) {
+        return;
+    }
+
+    if (
+        !window.LDMAttendance ||
+        typeof window.LDMAttendance.softDelete !==
+            "function"
+    ) {
+        tampilkanAlertCustom(
+            "Cloud Absensi Belum Siap",
+            "attendance-service.js belum termuat.",
+            "danger"
+        );
+        return;
+    }
+
+    try {
+        await window.LDMAttendance
+            .softDelete(id);
+
+        tampilkanAlertCustom(
+            "Terhapus",
+            "Data presensi berhasil di-soft-delete dari cloud.",
+            "success"
+        );
+
+        renderStatusAkun();
+        cekStatusAutoIsi();
+
+        if (
+            typeof cekRiwayatAbsensiOwner ===
+                "function" &&
+            hasPermission(
+                "absensi.history"
+            )
+        ) {
+            cekRiwayatAbsensiOwner();
+        }
+
+    } catch (error) {
+        tampilkanAlertCustom(
+            "Gagal Menghapus",
+            error.message || String(error),
+            "danger"
+        );
+    }
+}
+
+        function bukaModalSurat(idAbsen) {
+            const logAbsensi = JSON.parse(localStorage.getItem("dataAbsensi")) || [];
+            const item = logAbsensi.find(a => a.id == idAbsen);
+            if (item && item.surat) {
+                document.getElementById("imgSuratFull").src = item.surat;
+                document.getElementById("modalPreviewSurat").style.display = "flex";
+            }
+        }
+
+        function tutupModalSurat() {
+            document.getElementById("modalPreviewSurat").style.display = "none";
+        }
+
+        function konfirmasiLogout() {
+
+    stopActiveStreams();
+
+    tampilkanAlertCustom(
+        "Log Out",
+        "Anda berhasil keluar dari sistem.",
+        "success"
+    );
+
+
+    setTimeout(
+        () => {
+
+            secureLogout();
+
+        },
+        500
+    );
+
+}
+
+        function cekPeringatanStok() {
+            const dataBarang = JSON.parse(localStorage.getItem("dataBarang")) || [];
+            const badge = document.getElementById("navBadge");
+            const adaStokMata = dataBarang.some(b => Number(b.stok || 0) <= 2);
+            if (badge) badge.style.display = adaStokMata ? "flex" : "none";
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+    muatHeaderToko();
+
+    startRunningClock();
+
+    populateSelectAkun();
+
+    renderStatusAkun();
+
+    cekPeringatanStok();
+
+
+    // FITUR OWNER
+
+    const ownerWrapper =
+        document.getElementById(
+            "ownerHistoryWrapper"
+        );
+
+
+    if (
+    hasPermission(
+        "absensi.history"
+    )
+) {
+
+        ownerWrapper.classList.add("show");
+
+        setTanggalRiwayatOwner();
+
+        updateOwnerHistoryNotification();
+
+    }
+
+});
+
+// =====================================================
+// BUKA / TUTUP PANEL PEMERIKSAAN ABSENSI OWNER
+// =====================================================
+
+function toggleOwnerAttendancePanel() {
+
+    if (
+    !hasPermission(
+        "absensi.history"
+    )
+) {
+    return;
+}
+
+    const panel =
+        document.getElementById(
+            "ownerAttendancePanel"
+        );
+
+    const button =
+        document.getElementById(
+            "btnOpenOwnerAttendance"
+        );
+
+    if (!panel) return;
+
+    const isOpen =
+        panel.classList.contains("show");
+
+    if (isOpen) {
+
+        panel.classList.remove("show");
+
+        button.innerHTML = `
+            📊 Pemeriksaan Absensi
+
+            <span
+                id="ownerAttendanceNotificationBadge"
+                class="owner-attendance-notification-badge"
+            >
+                0
+            </span>
+        `;
+
+        // Kembalikan badge notifikasi
+        updateOwnerNotificationBadge();
+
+    } else {
+
+        panel.classList.add("show");
+
+        button.innerHTML = `
+            🔼 Tutup Pemeriksaan Absensi
+
+            <span
+                id="ownerAttendanceNotificationBadge"
+                class="owner-attendance-notification-badge"
+            >
+                0
+            </span>
+        `;
+
+        updateOwnerNotificationBadge();
+    }
+}
+
+// =====================================================
+// BUKA / TUTUP PANEL RIWAYAT OWNER
+// =====================================================
+
+function toggleOwnerHistory() {
+
+    if (
+    !requirePermission(
+        "absensi.history"
+    )
+) {
+    return;
+}
+
+    if (!hasPermission("absensi.history")) {
+
+        tampilkanAlertCustom(
+            "Akses Ditolak",
+            "Fitur ini hanya dapat digunakan oleh Owner.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    const panel =
+        document.getElementById(
+            "ownerHistoryPanel"
+        );
+
+    const button =
+        document.getElementById(
+            "btnOwnerHistory"
+        );
+
+
+    const sedangTerbuka =
+        panel.classList.contains("show");
+
+
+    if (sedangTerbuka) {
+
+        panel.classList.remove("show");
+
+        button.innerHTML = `
+            📊 Pemeriksaan & Riwayat Absensi
+
+            <span
+                id="ownerHistoryNotification"
+                class="owner-history-notification"
+            >
+                0
+            </span>
+        `;
+
+        updateOwnerHistoryNotification();
+
+    } else {
+
+        panel.classList.add("show");
+
+        button.innerHTML = `
+            🔼 Tutup Pemeriksaan & Riwayat
+
+            <span
+                id="ownerHistoryNotification"
+                class="owner-history-notification"
+            >
+                0
+            </span>
+        `;
+
+        updateOwnerHistoryNotification();
+
+        cekRiwayatAbsensiOwner();
+
+    }
+
+}
+
+// =====================================================
+// CEK RIWAYAT ABSENSI OWNER
+// =====================================================
+
+function cekRiwayatAbsensiOwner() {
+
+    if (
+    !requirePermission(
+        "absensi.history"
+    )
+) {
+    return;
+}
+
+    if (!hasPermission("absensi.history")) {
+        return;
+    }
+
+
+    const dateInput =
+        document.getElementById(
+            "ownerHistoryDate"
+        );
+
+
+    const tanggal =
+        dateInput.value;
+
+
+    if (!tanggal) {
+
+        tampilkanAlertCustom(
+            "Tanggal Belum Dipilih",
+            "Silakan pilih tanggal yang ingin diperiksa.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    const akunList =
+        getDatabaseAkun();
+
+
+    const logAbsensi =
+        JSON.parse(
+            localStorage.getItem("dataAbsensi")
+        ) || [];
+
+
+    const list =
+        document.getElementById(
+            "ownerHistoryList"
+        );
+
+
+    const alertBox =
+        document.getElementById(
+            "ownerHistoryAlert"
+        );
+
+
+    list.innerHTML = "";
+
+    alertBox.innerHTML = "";
+
+    alertBox.classList.remove("show");
+
+
+    let totalAkun =
+        akunList.length;
+
+
+    let totalAbsen = 0;
+
+    let totalTidakAbsen = 0;
+
+    let daftarTidakAbsen = [];
+
+
+    // =================================================
+    // PERIKSA SETIAP AKUN
+    // =================================================
+
+    akunList.forEach(akun => {
+
+        const username =
+            akun.username
+                .toString()
+                .trim();
+
+
+        const usernameLower =
+            username.toLowerCase();
+
+
+        const dataUser =
+            logAbsensi.filter(item =>
+
+                item.tanggal === tanggal
+
+                &&
+
+                item.username
+                    .toString()
+                    .trim()
+                    .toLowerCase() === usernameLower
+
+            );
+
+
+        // =================================================
+        // TIDAK ABSEN
+        // =================================================
+
+        if (dataUser.length === 0) {
+
+            totalTidakAbsen++;
+
+            daftarTidakAbsen.push(
+                username
+            );
+
+
+            const card =
+                document.createElement("div");
+
+
+            card.className =
+                "owner-history-card";
+
+
+            card.innerHTML = `
+
+                <div
+                    class="owner-history-no-photo"
+                >
+                    🚫 Tidak ada foto
+                </div>
+
+                <div
+                    class="owner-history-info"
+                >
+
+                    <div
+                        class="owner-history-user"
+                    >
+                        👤 ${username}
+                    </div>
+
+
+                    <div
+                        class="owner-history-row"
+                    >
+
+                        <span>
+                            Status
+                        </span>
+
+                        <span>
+                            <span
+                                class="
+                                    owner-status-badge
+                                    owner-status-tidak
+                                "
+                            >
+                                Tidak Absen
+                            </span>
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="owner-history-row"
+                    >
+
+                        <span>
+                            Waktu
+                        </span>
+
+                        <span>
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="owner-history-row"
+                    >
+
+                        <span>
+                            Shift
+                        </span>
+
+                        <span>
+                            -
+                        </span>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            list.appendChild(card);
+
+
+            return;
+        }
+
+
+        // =================================================
+        // SUDAH ABSEN
+        // =================================================
+
+        totalAbsen++;
+
+
+        // Ambil data presensi terbaru
+        const item =
+            dataUser
+                .slice()
+                .sort(
+                    (a, b) =>
+                        (b.id || 0) -
+                        (a.id || 0)
+                )[0];
+
+
+        let statusClass =
+            "owner-status-masuk";
+
+
+        if (item.jenis === "Keluar") {
+
+            statusClass =
+                "owner-status-keluar";
+
+        } else if (item.jenis === "Izin") {
+
+            statusClass =
+                "owner-status-izin";
+
+        } else if (item.jenis === "Sakit") {
+
+            statusClass =
+                "owner-status-sakit";
+        }
+
+
+        // =================================================
+        // FOTO
+        // =================================================
+
+        let fotoHTML = `
+            <div
+                class="owner-history-no-photo"
+            >
+                📷 Tidak ada foto
+            </div>
+        `;
+
+
+        if (item.surat) {
+
+            fotoHTML = `
+
+                <img
+                    src="${item.surat}"
+                    class="owner-history-photo"
+                    alt="Bukti presensi ${item.username}"
+                    onclick="bukaModalSurat('${item.id}')"
+                    title="Klik untuk memperbesar foto"
+                >
+
+            `;
+
+        }
+
+
+        // =================================================
+        // CARD DETAIL
+        // =================================================
+
+        const card =
+            document.createElement("div");
+
+
+        card.className =
+            "owner-history-card";
+
+
+        card.innerHTML = `
+
+            ${fotoHTML}
+
+
+            <div
+                class="owner-history-info"
+            >
+
+                <div
+                    class="owner-history-user"
+                >
+                    👤 ${item.username}
+                </div>
+
+
+                <div
+                    class="owner-history-row"
+                >
+
+                    <span>
+                        Status
+                    </span>
+
+                    <span>
+
+                        <span
+                            class="
+                                owner-status-badge
+                                ${statusClass}
+                            "
+                        >
+                            ${item.jenis}
+                        </span>
+
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="owner-history-row"
+                >
+
+                    <span>
+                        Waktu
+                    </span>
+
+                    <span>
+                        ${item.waktu || "-"} WITA
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="owner-history-row"
+                >
+
+                    <span>
+                        Shift
+                    </span>
+
+                    <span>
+                        ${item.shift || "-"}
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="owner-history-row"
+                >
+
+                    <span>
+                        Catatan
+                    </span>
+
+                    <span>
+                        ${item.catatan || "-"}
+                    </span>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        list.appendChild(card);
+
+    });
+
+
+    // =================================================
+    // UPDATE SUMMARY
+    // =================================================
+
+    document.getElementById(
+        "ownerHistoryTotal"
+    ).textContent =
+        totalAkun;
+
+
+    document.getElementById(
+        "ownerHistoryHadir"
+    ).textContent =
+        totalAbsen;
+
+
+    document.getElementById(
+        "ownerHistoryTidak"
+    ).textContent =
+        totalTidakAbsen;
+
+
+    // =================================================
+    // NOTIFIKASI
+    // =================================================
+
+    if (totalTidakAbsen > 0) {
+
+        alertBox.innerHTML = `
+
+            ⚠️ <strong>Perhatian Owner</strong>
+
+            <br>
+
+            Pada tanggal
+            <strong>
+                ${formatTanggalOwner(tanggal)}
+            </strong>
+
+            terdapat
+            <strong>
+                ${totalTidakAbsen}
+            </strong>
+            akun yang tidak melakukan presensi.
+
+            <br><br>
+
+            <strong>Akun:</strong>
+            ${daftarTidakAbsen.join(", ")}
+
+        `;
+
+        alertBox.classList.add("show");
+
+    } else {
+
+        alertBox.innerHTML = `
+
+            ✅ <strong>Semua akun sudah melakukan presensi</strong>
+
+            <br>
+
+            Tidak ditemukan akun yang tidak absen
+            pada tanggal
+            ${formatTanggalOwner(tanggal)}.
+
+        `;
+
+        alertBox.style.background =
+            "#f0fdf4";
+
+        alertBox.style.borderColor =
+            "#bbf7d0";
+
+        alertBox.style.color =
+            "#166534";
+
+        alertBox.classList.add("show");
+
+    }
+
+}
+
+function formatTanggalOwner(tanggal) {
+
+    if (!tanggal) {
+        return "-";
+    }
+
+
+    const parts =
+        tanggal.split("-");
+
+
+    if (parts.length !== 3) {
+        return tanggal;
+    }
+
+
+    const bulan = [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember"
+    ];
+
+
+    return `
+        ${parseInt(parts[2])}
+        ${bulan[parseInt(parts[1]) - 1]}
+        ${parts[0]}
+    `;
+}
+
+function formatTanggalOwner(tanggal) {
+
+    if (!tanggal) {
+        return "-";
+    }
+
+
+    const parts =
+        tanggal.split("-");
+
+
+    if (parts.length !== 3) {
+        return tanggal;
+    }
+
+
+    const bulan = [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember"
+    ];
+
+
+    return `
+        ${parseInt(parts[2])}
+        ${bulan[parseInt(parts[1]) - 1]}
+        ${parts[0]}
+    `;
+}
+
+// =====================================================
+// SET TANGGAL DEFAULT RIWAYAT
+// =====================================================
+
+function setTanggalRiwayatOwner() {
+
+    if (!hasPermission("absensi.history")) {
+        return;
+    }
+
+
+    const input =
+        document.getElementById(
+            "ownerHistoryDate"
+        );
+
+
+    if (!input) {
+        return;
+    }
+
+
+    const kemarin =
+        new Date();
+
+
+    kemarin.setDate(
+        kemarin.getDate() - 1
+    );
+
+
+    const tanggal =
+        getTanggalWITA(kemarin);
+
+
+    input.value =
+        tanggal;
+
+
+    // Tidak boleh memilih hari ini atau masa depan
+    input.max =
+        tanggal;
+
+}// =====================================================
+// SECURITY GUARD - FASE 1C
+// =====================================================
+
+const SECURITY_CONFIG = {
+
+    LOGIN_PAGE:
+        "index.html",
+
+    DASHBOARD_PAGE:
+        "dashboard.html",
+
+    /*
+     * Maksimal satu sesi kerja:
+     * 8 jam
+     */
+    SESSION_TIMEOUT:
+        8 * 60 * 60 * 1000,
+
+    /*
+     * Tidak ada aktivitas:
+     * 30 menit
+     */
+    IDLE_TIMEOUT:
+        30 * 60 * 1000,
+
+    ACTIVITY_REFRESH_INTERVAL:
+        60 * 1000
+
+};
+
+
+// =====================================================
+// AMBIL SESSION AKTIF
+// =====================================================
+
+function getSecuritySession() {
+
+    const isLoggedIn =
+        localStorage.getItem("isLoggedIn");
+
+
+    const username =
+        localStorage.getItem("username") ||
+        localStorage.getItem("activeUsername") ||
+        localStorage.getItem("loggedInUser");
+
+
+    const role =
+        localStorage.getItem("userRole");
+
+
+    const loginTimestamp =
+        parseInt(
+            localStorage.getItem("loginTimestamp") || "0",
+            10
+        );
+
+
+    // Jangan pernah menggunakan
+    // fallback "admin" di sini.
+
+    if (
+        isLoggedIn !== "true" ||
+        !username ||
+        !role ||
+        !loginTimestamp
+    ) {
+
+        return null;
+
+    }
+
+
+    // Normalisasi role
+
+    const normalizedRole =
+        role
+            .toString()
+            .trim()
+            .toLowerCase();
+
+
+    const allowedRoles = [
+        "owner",
+        "admin",
+        "kasir"
+    ];
+
+
+    if (
+        !allowedRoles.includes(
+            normalizedRole
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    // Cek session timeout
+
+    if (
+        Date.now() -
+        loginTimestamp >
+        SECURITY_CONFIG.SESSION_TIMEOUT
+    ) {
+
+        clearSecuritySession();
+
+        return null;
+
+    }
+
+
+    return {
+
+        username:
+            username.toString().trim(),
+
+        role:
+            normalizedRole,
+
+        loginTimestamp:
+            loginTimestamp
+
+    };
+
+}
+
+
+// =====================================================
+// HAPUS SESSION
+// =====================================================
+
+function clearSecuritySession() {
+
+    localStorage.removeItem(
+        "isLoggedIn"
+    );
+
+    localStorage.removeItem(
+        "userRole"
+    );
+
+    localStorage.removeItem(
+        "username"
+    );
+
+    localStorage.removeItem(
+        "activeUsername"
+    );
+
+    localStorage.removeItem(
+        "loggedInUser"
+    );
+
+    localStorage.removeItem(
+        "activeUserId"
+    );
+
+    localStorage.removeItem(
+        "loginTimestamp"
+    );
+
+}
+
+
+// =====================================================
+// WAJIB LOGIN
+// =====================================================
+
+function requireLogin() {
+
+    const session =
+        getSecuritySession();
+
+
+    if (!session) {
+
+        clearSecuritySession();
+
+        window.location.replace(
+            SECURITY_CONFIG.LOGIN_PAGE
+        );
+
+        return null;
+
+    }
+
+
+    return session;
+
+}
+
+
+// =====================================================
+// CEK ROLE
+// =====================================================
+
+function requireRole(
+    allowedRoles = []
+) {
+
+    const session =
+        requireLogin();
+
+
+    if (!session) {
+
+        return null;
+
+    }
+
+
+    const allowed =
+        allowedRoles.map(
+            role =>
+                role.toLowerCase()
+        );
+
+
+    if (
+        !allowed.includes(
+            session.role
+        )
+    ) {
+
+        window.location.replace(
+            SECURITY_CONFIG.DASHBOARD_PAGE
+        );
+
+        return null;
+
+    }
+
+
+    return session;
+
+}
+
+
+// =====================================================
+// LOGOUT
+// =====================================================
+
+function secureLogout() {
+
+    clearSecuritySession();
+
+    window.location.replace(
+        SECURITY_CONFIG.LOGIN_PAGE
+    );
+
+}
+
+
+// =====================================================
+// PERPANJANG SESSION
+// =====================================================
+
+function refreshSession() {
+
+    if (
+        localStorage.getItem(
+            "isLoggedIn"
+        ) !== "true"
+    ) {
+
+        return;
+
+    }
+
+
+    localStorage.setItem(
+        "loginTimestamp",
+        Date.now().toString()
+    );
+
+}
+
+
+// =====================================================
+// AKTIVITAS USER
+// Session diperpanjang ketika user aktif
+// =====================================================
+
+let lastActivityRefresh = 0;
+
+
+function registerSecurityActivity() {
+
+    const now =
+        Date.now();
+
+
+    // Jangan menulis localStorage
+    // setiap beberapa milidetik.
+
+    if (
+        now -
+        lastActivityRefresh <
+        60 * 1000
+    ) {
+
+        return;
+
+    }
+
+
+    lastActivityRefresh =
+        now;
+
+
+    refreshSession();
+
+}
+
+
+[
+    "click",
+    "keydown",
+    "mousemove",
+    "touchstart"
+].forEach(
+    eventName => {
+
+        document.addEventListener(
+            eventName,
+            registerSecurityActivity,
+            {
+                passive: true
+            }
+        );
+
+    }
+);
+
+function proteksiHalamanAbsensi() {
+
+    const session =
+        requireRole([
+            "owner",
+            "admin",
+            "kasir"
+        ]);
+
+
+    if (!session) {
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        if (
+            !proteksiHalamanAbsensi()
+        ) {
+
+            return;
+
+        }
+
+
+        // kode absensi
+        // tetap berjalan
+
+    }
+);
+
+function bolehLihatRiwayatAbsensiSemua() {
+
+    return hasPermission(
+        "absensi.history"
+    );
+
+}
+
+window.addEventListener(
+    "storage",
+    function(event) {
+
+        if (
+            event.key === "isLoggedIn" ||
+            event.key === "userRole" ||
+            event.key === "username" ||
+            event.key === "loginTimestamp"
+        ) {
+
+            const session =
+                getSecuritySession();
+
+
+            if (!session) {
+
+                window.location.replace(
+                    "index.html"
+                );
+
+            }
+
+        }
+
+    }
+);
+
+const ROLE_CONFIG = {
+
+    OWNER: "owner",
+
+    ADMIN: "admin",
+
+    KASIR: "kasir"
+
+};
+
+const ROLE_PERMISSIONS = {
+
+    owner: [
+
+        "dashboard.view",
+
+        "barang.view",
+        "barang.add",
+        "barang.edit",
+        "barang.delete",
+        "barang.price",
+
+        "kasir.access",
+
+        "laporan.view",
+        "laporan.delete",
+
+        "stockopname.view",
+        "stockopname.create",
+        "stockopname.approve",
+        "stockopname.delete",
+
+        "absensi.view",
+        "absensi.history",
+
+        "closing.view",
+        "closing.approve",
+
+        "akun.view",
+        "akun.manage",
+
+        "settings.view"
+
+    ],
+
+
+    admin: [
+
+        "dashboard.view",
+
+        "barang.view",
+        "barang.add",
+        "barang.edit",
+
+        "kasir.access",
+
+        "laporan.view",
+
+        "stockopname.view",
+        "stockopname.create",
+
+        "absensi.view",
+
+        "closing.view"
+
+    ],
+
+
+    kasir: [
+
+        "dashboard.view",
+
+        "barang.view",
+
+        "kasir.access",
+
+        "laporan.view",
+
+        "stockopname.view",
+
+        "stockopname.create",
+
+        "absensi.view",
+
+        "closing.view"
+
+    ]
+
+};
+
+function normalizeRole(role) {
+
+    return String(role || "")
+        .trim()
+        .toLowerCase();
+
+}
+
+function getCurrentRole() {
+
+    const session =
+        typeof getSecuritySession === "function"
+            ? getSecuritySession()
+            : null;
+
+
+    if (
+        session &&
+        session.role
+    ) {
+
+        return normalizeRole(
+            session.role
+        );
+
+    }
+
+
+    /*
+     * Fallback untuk sistem lama
+     */
+
+    return normalizeRole(
+        localStorage.getItem(
+            "userRole"
+        )
+    );
+
+}
+
+function hasPermission(
+    permission
+) {
+
+    const role =
+        getCurrentRole();
+
+
+    if (!role) {
+
+        return false;
+
+    }
+
+
+    const permissions =
+        ROLE_PERMISSIONS[role];
+
+
+    if (!Array.isArray(
+        permissions
+    )) {
+
+        return false;
+
+    }
+
+
+    return permissions.includes(
+        permission
+    );
+
+}
+
+function requirePermission(
+    permission,
+    options = {}
+) {
+
+    const {
+        showMessage = true,
+        redirect = false
+    } = options;
+
+
+    /*
+     * Pastikan login terlebih dahulu.
+     */
+
+    if (
+        typeof requireLogin ===
+        "function"
+    ) {
+
+        const session =
+            requireLogin();
+
+
+        if (!session) {
+
+            return false;
+
+        }
+
+    }
+
+
+    if (
+        hasPermission(
+            permission
+        )
+    ) {
+
+        return true;
+
+    }
+
+
+    if (
+        showMessage &&
+        typeof tampilkanNotifikasi ===
+        "function"
+    ) {
+
+        tampilkanNotifikasi(
+            "Akses Ditolak",
+            "Anda tidak memiliki izin untuk menggunakan fitur ini.",
+            "🔒"
+        );
+
+    }
+
+
+    if (
+        showMessage &&
+        typeof showAlert ===
+        "function"
+    ) {
+
+        showAlert(
+            "Akses Ditolak",
+            "Anda tidak memiliki izin untuk menggunakan fitur ini."
+        );
+
+    }
+
+
+    if (redirect) {
+
+        window.location.replace(
+            "dashboard.html"
+        );
+
+    }
+
+
+    return false;
+
+}
+
+function terapkanPermissionUI() {
+
+    document
+        .querySelectorAll(
+            "[data-permission]"
+        )
+        .forEach(
+            element => {
+
+                const permission =
+                    element.dataset
+                        .permission;
+
+
+                if (
+                    !hasPermission(
+                        permission
+                    )
+                ) {
+
+                    element.style.display =
+                        "none";
+
+                }
+
+            }
+        );
+
+}
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        if (
+            typeof requireLogin ===
+            "function"
+        ) {
+
+            const session =
+                requireLogin();
+
+
+            if (!session) {
+
+                return;
+
+            }
+
+        }
+
+
+        terapkanPermissionUI();
+
+    }
+);
+
+    </script>
+
+<script id="ldmCompactNavigationScript">
+(function(){
+    const ACCESS={
+        "dashboard.html":["owner","admin","kasir"],
+        "absensi.html":["owner","admin","kasir"],
+        "kasir.html":["owner","admin","kasir"],
+        "retur.html":["owner","admin","kasir"],
+        "barang.html":["owner","admin"],
+        "supplier.html":["owner","admin"],
+        "Purchase-Order.html":["owner","admin"],
+        "goods.receipt.html":["owner","admin"],
+        "kartu-stok.html":["owner","admin","kasir"],
+        "stock-opname.html":["owner","admin","kasir"],
+        "laporan.html":["owner","admin","kasir"],
+        "shift-closing.html":["owner","admin"],
+        "eod.html":["owner","admin"],
+        "pengeluaran.html":["owner","admin"],
+        "backup%20%26%20restore.html":["owner","admin"],
+        "backup & restore.html":["owner","admin"]
+    };
+
+    function baseName(value){
+        let href=String(value||"").split("#")[0].split("?")[0];
+        try{href=decodeURIComponent(href)}catch(e){}
+        href=href.replace(/^\.\//,"");
+        return href.split("/").pop()||href;
+    }
+
+    function getRole(){
+        return String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function applyCompactNav(){
+        const role=getRole();
+        document.documentElement.setAttribute("data-ldm-role",role);
+
+        document.querySelectorAll(".nav-bar a.nav-item[href]").forEach(link=>{
+            const allowed=ACCESS[baseName(link.getAttribute("href"))];
+            if(!allowed)return;
+
+            if(role && !allowed.includes(role)){
+                link.style.setProperty("display","none","important");
+            }else if(role){
+                link.style.removeProperty("display");
+            }
+        });
+    }
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            applyCompactNav,
+            {once:true}
+        );
+    }else{
+        applyCompactNav();
+    }
+
+    window.addEventListener(
+        "load",
+        ()=>setTimeout(applyCompactNav,0),
+        {once:true}
+    );
+})();
+</script>
+
+
+<script id="ldmMegaMenuResponsiveScript">
+(function(){
+    const ROUTES=[
+        {page:"dashboard.html", icon:"📊", label:"Dashboard", group:"Utama", roles:["owner","admin","kasir"], quick:true},
+        {page:"absensi.html", icon:"📝", label:"Absensi", group:"Utama", roles:["owner","admin","kasir"]},
+        {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
+        {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
+
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
+        {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
+
+        {page:"supplier.html", icon:"🏢", label:"Supplier", group:"Supplier & Pembelian", roles:["owner","admin"]},
+        {page:"Purchase-Order.html", icon:"🛒", label:"Purchase Order", group:"Supplier & Pembelian", roles:["owner","admin"], badge:"pendingPOBadge"},
+        {page:"goods.receipt.html", icon:"📥", label:"Goods Receipt", group:"Supplier & Pembelian", roles:["owner","admin"], badge:"pendingGRBadge"},
+
+        {page:"laporan.html", icon:"📑", label:"Laporan", group:"Keuangan & Laporan", roles:["owner","admin","kasir"], quick:true},
+        {page:"pengeluaran.html", icon:"💸", label:"Pengeluaran", group:"Keuangan & Laporan", roles:["owner","admin"]},
+
+        {page:"shift-closing.html", icon:"🔒", label:"Closing Shift", group:"Closing & Data", roles:["owner","admin"]},
+        {page:"eod.html", icon:"🌙", label:"End of Day", group:"Closing & Data", roles:["owner","admin"]},
+        {page:"backup%20%26%20restore.html", icon:"💾", label:"Backup & Restore", group:"Closing & Data", roles:["owner","admin"]}
+    ];
+
+    const GROUP_META={
+        "Utama":"⚡",
+        "Inventori":"📦",
+        "Supplier & Pembelian":"🏢",
+        "Keuangan & Laporan":"📑",
+        "Closing & Data":"🔐"
+    };
+
+    function getSession(){
+        try{
+            if(typeof window.getSecuritySession==="function"){
+                const session=window.getSecuritySession();
+                if(session)return session;
+            }
+        }catch(e){}
+
+        return {
+            username:
+                localStorage.getItem("activeUsername")
+                || localStorage.getItem("loggedInUser")
+                || localStorage.getItem("username")
+                || "",
+            role:
+                localStorage.getItem("userRole")
+                || localStorage.getItem("role")
+                || ""
+        };
+    }
+
+    function normalizeRole(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function currentPage(){
+        let path=location.pathname.split("/").pop()||"dashboard.html";
+        try{path=decodeURIComponent(path)}catch(e){}
+        if(!path)path="dashboard.html";
+        return path;
+    }
+
+    function esc(value){
+        return String(value??"")
+            .replace(/&/g,"&amp;")
+            .replace(/</g,"&lt;")
+            .replace(/>/g,"&gt;")
+            .replace(/"/g,"&quot;")
+            .replace(/'/g,"&#039;");
+    }
+
+    function routeHref(page){
+        return page;
+    }
+
+    function routeAllowed(route,role){
+        return route.roles.includes(role);
+    }
+
+    function kasirOnClick(route){
+        if(route.page!=="kasir.html")return "";
+        return ` onclick="return window.verifikasiAksesKasir ? window.verifikasiAksesKasir(event) : true"`;
+    }
+
+    function linkHTML(route,current,klass="ldm-mega-link"){
+        const active=current===decodeURIComponent(route.page) || current===route.page;
+        return `
+            <a
+                href="${routeHref(route.page)}"
+                class="${klass}${active?" active":""}"
+                data-mega-route="${esc(route.page)}"
+                ${kasirOnClick(route)}
+            >
+                <span class="ldm-mega-icon">${route.icon}</span>
+                <span>${esc(route.label)}</span>
+                ${
+                    route.badge
+                        ? `<span class="ldm-mega-badge" data-source-badge="${esc(route.badge)}"></span>`
+                        : ""
+                }
+            </a>
+        `;
+    }
+
+    function buildMegaMenu(){
+        if(document.getElementById("ldmMegaNavShell"))return;
+
+        const app=document.querySelector(".app-layout");
+        const main=document.querySelector(".main-content");
+        if(!app || !main)return;
+
+        const session=getSession();
+        const role=normalizeRole(session?.role);
+
+        if(!role)return;
+
+        const visible=ROUTES.filter(route=>routeAllowed(route,role));
+        const current=currentPage();
+
+        const grouped={};
+        visible.forEach(route=>{
+            if(!grouped[route.group])grouped[route.group]=[];
+            grouped[route.group].push(route);
+        });
+
+        const groupsHTML=Object.entries(grouped)
+            .filter(([,routes])=>routes.length)
+            .map(([name,routes])=>`
+                <section class="ldm-mega-group">
+                    <div class="ldm-mega-group-title">
+                        <span>${GROUP_META[name]||"•"}</span>
+                        <span>${esc(name)}</span>
+                    </div>
+                    <div class="ldm-mega-links">
+                        ${routes.map(route=>linkHTML(route,current)).join("")}
+                    </div>
+                </section>
+            `)
+            .join("");
+
+        const quickHTML=visible
+            .filter(route=>route.quick)
+            .map(route=>{
+                const active=current===decodeURIComponent(route.page) || current===route.page;
+                return `
+                    <a
+                        href="${routeHref(route.page)}"
+                        class="${active?"active":""}"
+                        ${kasirOnClick(route)}
+                    >
+                        <span>${route.icon}</span>
+                        <span>${esc(route.label)}</span>
+                    </a>
+                `;
+            })
+            .join("");
+
+        const shell=document.createElement("div");
+        shell.className="ldm-mega-nav-shell";
+        shell.id="ldmMegaNavShell";
+
+        shell.innerHTML=`
+            <nav class="ldm-mega-nav" aria-label="Navigasi Mega Menu">
+                <button
+                    type="button"
+                    class="ldm-mega-trigger"
+                    id="ldmMegaTrigger"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                >
+                    <span>☷</span>
+                    <span>Mega Menu</span>
+                    <span class="ldm-mega-trigger-arrow">▼</span>
+                </button>
+
+                <div class="ldm-mega-quick">
+                    ${quickHTML}
+                </div>
+
+                <div class="ldm-mega-session">
+                    <span class="ldm-mega-role">
+                        👤 ${esc(role)}
+                    </span>
+                </div>
+
+                <div class="ldm-mega-panel" id="ldmMegaPanel">
+                    <div class="ldm-mega-panel-top">
+                        <div>
+                            <strong>Navigasi LocDailyMar</strong>
+                            <p>Semua menu dikelompokkan agar akses desktop lebih cepat dan tidak memenuhi sisi layar.</p>
+                        </div>
+                        <button type="button" class="ldm-mega-panel-close" id="ldmMegaClose">
+                            ✕ Tutup
+                        </button>
+                    </div>
+
+                    <div class="ldm-mega-grid">
+                        ${groupsHTML}
+                    </div>
+                </div>
+            </nav>
+        `;
+
+        app.insertBefore(shell,main);
+
+        const trigger=shell.querySelector("#ldmMegaTrigger");
+        const close=shell.querySelector("#ldmMegaClose");
+
+        function setOpen(open){
+            shell.classList.toggle("open",Boolean(open));
+            trigger?.setAttribute("aria-expanded",open?"true":"false");
+        }
+
+        trigger?.addEventListener("click",event=>{
+            event.stopPropagation();
+            setOpen(!shell.classList.contains("open"));
+        });
+
+        close?.addEventListener("click",()=>{
+            setOpen(false);
+            trigger?.focus();
+        });
+
+        /*
+         * Desktop tetap nyaman untuk mouse: hover membuka Mega Menu.
+         * Click tetap tersedia untuk trackpad/touch desktop.
+         */
+        let hoverTimer=null;
+
+        shell.addEventListener("mouseenter",()=>{
+            if(window.matchMedia("(min-width:900px)").matches){
+                clearTimeout(hoverTimer);
+                setOpen(true);
+            }
+        });
+
+        shell.addEventListener("mouseleave",()=>{
+            if(window.matchMedia("(min-width:900px)").matches){
+                clearTimeout(hoverTimer);
+                hoverTimer=setTimeout(()=>setOpen(false),180);
+            }
+        });
+
+        document.addEventListener("click",event=>{
+            if(!shell.contains(event.target)){
+                setOpen(false);
+            }
+        });
+
+        document.addEventListener("keydown",event=>{
+            if(event.key==="Escape"){
+                setOpen(false);
+            }
+        });
+
+        syncBadges();
+
+        /*
+         * Badge menu lama (stok/PO/GR) tetap menjadi sumber.
+         * MutationObserver membuat badge Mega Menu mengikuti perubahan.
+         */
+        ["navBadge","pendingPOBadge","pendingGRBadge"].forEach(id=>{
+            const source=document.getElementById(id);
+            if(!source)return;
+
+            const observer=new MutationObserver(syncBadges);
+            observer.observe(source,{
+                attributes:true,
+                childList:true,
+                subtree:true,
+                characterData:true,
+                attributeFilter:["style","class"]
+            });
+        });
+    }
+
+    function syncBadges(){
+        document.querySelectorAll("[data-source-badge]").forEach(target=>{
+            const source=document.getElementById(target.dataset.sourceBadge);
+            if(!source){
+                target.style.display="none";
+                return;
+            }
+
+            const text=String(source.textContent||"").trim();
+            const computed=getComputedStyle(source);
+            const visible=
+                computed.display!=="none"
+                && computed.visibility!=="hidden"
+                && text
+                && text!=="0";
+
+            if(visible){
+                target.textContent=text;
+                target.style.display="inline-flex";
+            }else{
+                target.style.display="none";
+            }
+        });
+    }
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            ()=>{
+                buildMegaMenu();
+                setTimeout(syncBadges,250);
+                setTimeout(syncBadges,900);
+            },
+            {once:true}
+        );
+    }else{
+        buildMegaMenu();
+        setTimeout(syncBadges,250);
+        setTimeout(syncBadges,900);
+    }
+})();
+</script>
+
+
+<script id="ldmEodMenuAvailabilityScript">
+(function(){
+    function readArray(key){
+        try{
+            const value=JSON.parse(localStorage.getItem(key)||"[]");
+            return Array.isArray(value)?value:[];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function witaDate(value){
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
+    }
+
+    function recordDate(item){
+        if(!item)return "";
+
+        const raw=
+            item.waktu_teks
+            || item.tanggal
+            || item.tgl
+            || item.date
+            || item.waktu
+            || item.created_at
+            || item.timestamp
+            || "";
+
+        if(
+            typeof raw==="string"
+            &&
+            /^\d{4}-\d{2}-\d{2}/.test(raw)
+        ){
+            return raw.slice(0,10);
+        }
+
+        const d=new Date(raw);
+        return isNaN(d)?"":witaDate(d);
+    }
+
+    function cashierName(item){
+        return String(
+            item?.kasir
+            || item?.user
+            || item?.username
+            || item?.admin
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function shiftName(value){
+        return String(value||"").trim().toLowerCase();
+    }
+
+    function calculateReadiness(){
+        const today=witaDate(new Date());
+
+        const laporan=readArray("laporan");
+
+        const transactions=(
+            laporan.length
+                ? laporan
+                : readArray("dataLaporan")
+        ).filter(item=>recordDate(item)===today);
+
+        const activeAccounts=new Set(
+            transactions
+                .map(cashierName)
+                .filter(Boolean)
+        );
+
+        if(activeAccounts.size===0){
+            return {
+                ready:false,
+                activeAccounts:[],
+                pendingAccounts:[],
+                hasShift1:false,
+                hasShift2:false
+            };
+        }
+
+        const closingToday=readArray("shiftClosingLog")
+            .filter(
+                item=>
+                    String(item?.tanggal||"").slice(0,10)===today
+            );
+
+        const closedAccounts=new Set(
+            closingToday
+                .map(
+                    item=>
+                        String(item?.kasir||"")
+                            .trim()
+                            .toLowerCase()
+                )
+                .filter(Boolean)
+        );
+
+        const pendingAccounts=
+            [...activeAccounts]
+                .filter(account=>!closedAccounts.has(account));
+
+        const hasShift1=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 1"
+            );
+
+        const hasShift2=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 2"
+            );
+
+        return {
+            ready:
+                pendingAccounts.length===0
+                && hasShift1
+                && hasShift2,
+            activeAccounts:[...activeAccounts],
+            pendingAccounts,
+            hasShift1,
+            hasShift2
+        };
+    }
+
+    let lastState=null;
+
+    function sync(){
+        const result=calculateReadiness();
+        const next=result.ready?"true":"false";
+
+        document.documentElement.setAttribute(
+            "data-ldm-eod-ready",
+            next
+        );
+
+        /*
+         * Beri title diagnostik pada link bila link sedang tersembunyi.
+         * Tidak mengubah akses halaman langsung, hanya visibilitas menu.
+         */
+        document.querySelectorAll('a[href="eod.html"]').forEach(link=>{
+            if(result.ready){
+                link.removeAttribute("data-eod-waiting");
+                link.title="End of Day siap karena seluruh Closing Shift wajib sudah lengkap.";
+            }else{
+                link.setAttribute("data-eod-waiting","true");
+                link.title="End of Day akan muncul setelah semua akun transaksi Closing Shift dan Shift 1 + Shift 2 tersedia.";
+            }
+        });
+
+        if(lastState!==next){
+            lastState=next;
+            window.dispatchEvent(
+                new CustomEvent(
+                    "ldm-eod-menu-readiness",
+                    {detail:result}
+                )
+            );
+        }
+
+        return result;
+    }
+
+    window.LDMEodMenuAvailability={
+        check:sync,
+        calculate:calculateReadiness
+    };
+
+    if(document.readyState==="loading"){
+        document.addEventListener(
+            "DOMContentLoaded",
+            sync,
+            {once:true}
+        );
+    }else{
+        sync();
+    }
+
+    /*
+     * storage event berlaku untuk tab lain.
+     */
+    window.addEventListener("storage",event=>{
+        if(
+            [
+                "laporan",
+                "dataLaporan",
+                "shiftClosingLog",
+                "dataRetur"
+            ].includes(event.key)
+        ){
+            sync();
+        }
+    });
+
+    window.addEventListener("focus",sync);
+
+    document.addEventListener("visibilitychange",()=>{
+        if(!document.hidden)sync();
+    });
+
+    /*
+     * storage event tidak ditembakkan ke halaman yang melakukan
+     * setItem sendiri. Poll ringan ini membuat menu muncul segera
+     * setelah Closing Shift disimpan di halaman yang sama.
+     */
+    setInterval(()=>{
+        if(!document.hidden){
+            sync();
+        }
+    },2000);
+})();
+</script>
+
+
+<script>
+window.addEventListener(
+    "ldm-attendance-profiles-updated",
+    function(){
+        if(typeof populateSelectAkun === "function"){
+            populateSelectAkun();
+        }
+
+        if(typeof renderStatusAkun === "function"){
+            renderStatusAkun();
+        }
+    }
+);
+
+window.addEventListener(
+    "ldm-attendance-cache-updated",
+    function(){
+        if(typeof renderStatusAkun === "function"){
+            renderStatusAkun();
+        }
+
+        if(typeof cekStatusAutoIsi === "function"){
+            cekStatusAutoIsi();
+        }
+
+        if(
+            typeof updateOwnerNotificationBadge === "function" &&
+            typeof hasPermission === "function" &&
+            hasPermission("absensi.history")
+        ){
+            updateOwnerNotificationBadge();
+        }
+
+        if(
+            typeof updateOwnerHistoryNotification === "function" &&
+            typeof hasPermission === "function" &&
+            hasPermission("absensi.history")
+        ){
+            updateOwnerHistoryNotification();
+        }
+    }
+);
+</script>
+
+<script src="js/global-system-navigation.js?v=23.0"></script>
+</body>
+</html>

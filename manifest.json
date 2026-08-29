@@ -1,0 +1,52 @@
+{
+  "name": "LocDailyMar POS",
+  "short_name": "LocDailyMar",
+  "id": "./dashboard.html",
+  "description": "Aplikasi kasir, stok, laporan, absensi, dan operasional LocDailyMar.",
+  "lang": "id-ID",
+  "dir": "ltr",
+  "start_url": "./dashboard.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f4f6f9",
+  "theme_color": "#0F9D58",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buka Kasir",
+      "short_name": "Kasir",
+      "description": "Langsung membuka halaman transaksi Kasir.",
+      "url": "./kasir.html?source=pwa-shortcut",
+      "icons": [{"src": "./assets/icons/icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Membuka ringkasan operasional toko.",
+      "url": "./dashboard.html?source=pwa-shortcut",
+      "icons": [{"src": "./assets/icons/icon-192.png", "sizes": "192x192"}]
+    }
+  ]
+}
