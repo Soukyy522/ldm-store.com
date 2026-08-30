@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#0f9d58">
-    <title>Multi-Toko, Transfer Stok & Karyawan - LocDailyMar</title>
+    <title>Multi-Toko & Transfer Stok - LocDailyMar</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -22,10 +22,9 @@
         .ms-form{display:grid;gap:10px}.ms-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ms-field label{display:block;font-size:.7rem;font-weight:800;margin-bottom:5px}.ms-field input,.ms-field select,.ms-field textarea{width:100%;border:1px solid #ced8d3;border-radius:9px;padding:10px;background:#fff;color:#253746;font:inherit;font-size:.78rem}.ms-field textarea{resize:vertical;min-height:68px}.ms-check{display:flex;align-items:center;gap:8px;font-size:.73rem;color:var(--ms-muted)}
         .ms-table-wrap{overflow:auto;border:1px solid var(--ms-border);border-radius:11px}.ms-table{width:100%;border-collapse:collapse;min-width:620px}.ms-table th,.ms-table td{padding:9px 10px;border-bottom:1px solid #edf1ef;text-align:left;font-size:.72rem}.ms-table th{background:#f7faf8;color:#53645d;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}.ms-table input[type=number]{width:88px;border:1px solid #ccd8d1;border-radius:7px;padding:7px}.ms-not-ready{color:var(--ms-danger);font-size:.65rem;font-weight:750}.ms-empty{text-align:center;padding:22px;color:var(--ms-muted);font-size:.77rem}
         .ms-transfer{border:1px solid var(--ms-border);border-radius:12px;padding:13px;margin-bottom:10px}.ms-transfer-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.ms-transfer-code{font-weight:850;font-size:.82rem}.ms-transfer-route{font-size:.72rem;color:var(--ms-muted);margin-top:4px}.ms-status{padding:4px 7px;border-radius:99px;font-size:.61rem;font-weight:850;white-space:nowrap}.status-draft{background:#f2f4f7;color:#475467}.status-in_transit{background:#fff7e8;color:#b54708}.status-received{background:#ecfdf3;color:#087443}.status-cancelled{background:#fef3f2;color:#b42318}.ms-transfer-items{font-size:.69rem;color:#596b63;margin-top:9px}.ms-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-
-        .ms-employee-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:14px}.ms-employee-info{border:1px dashed #b9cbc2;background:#f7fbf9;border-radius:11px;padding:11px;font-size:.72rem;color:#52645c;line-height:1.55}.ms-employee-history{display:grid;gap:9px;max-height:390px;overflow:auto;padding-right:2px}.ms-employee-move{border:1px solid var(--ms-border);border-radius:11px;padding:11px;background:#fbfdfc}.ms-employee-move strong{font-size:.78rem}.ms-employee-move p{margin:5px 0 0;font-size:.68rem;color:var(--ms-muted);line-height:1.5}.ms-role-pill{display:inline-flex;margin-left:6px;padding:3px 6px;border-radius:99px;background:#edf4f1;color:#176b45;font-size:.6rem;font-weight:850;text-transform:uppercase}.ms-security-note{margin-top:10px;border-left:3px solid #f4b323;background:#fffaf0;padding:9px 10px;border-radius:7px;font-size:.69rem;color:#71520a;line-height:1.55}
         .ms-loading{opacity:.58;pointer-events:none}.ms-offline{background:#fff4e5;color:#934f00;padding:8px 12px;text-align:center;font-size:.72rem;font-weight:800;display:none}.ms-offline.show{display:block}
-        @media(max-width:820px){.ms-grid,.ms-employee-grid{grid-template-columns:1fr}.ms-summary{grid-template-columns:1fr 1fr}.ms-summary .ms-stat:last-child{grid-column:1/-1}.ms-header-inner{align-items:flex-start}.ms-form-grid{grid-template-columns:1fr}}
+        .ms-staff-info{display:grid;gap:3px;padding:11px 12px;border:1px solid #cce5d7;border-radius:10px;background:#f3fbf7;color:#315a47;font-size:.72rem}.ms-staff-info strong{color:#174a33;font-size:.78rem}.ms-staff-info span{color:var(--ms-muted)}.ms-check-card{align-items:flex-start;padding:10px 11px;border:1px solid var(--ms-border);border-radius:10px;background:#fafcfb;line-height:1.45}.ms-check-card input{margin-top:2px;flex:0 0 auto}
+        @media(max-width:820px){.ms-grid{grid-template-columns:1fr}.ms-summary{grid-template-columns:1fr 1fr}.ms-summary .ms-stat:last-child{grid-column:1/-1}.ms-header-inner{align-items:flex-start}.ms-form-grid{grid-template-columns:1fr}}
         @media(max-width:480px){.ms-header-inner,.ms-main{width:min(100% - 18px,1180px)}.ms-header{padding:17px 9px}.ms-title h1{font-size:1.05rem}.ms-back{padding:8px}.ms-panel{padding:14px}.ms-summary{gap:8px}.ms-stat{padding:12px}.ms-panel-head{display:block}.ms-panel-head .ms-btn{margin-top:10px;width:100%}.ms-store{grid-template-columns:1fr}.ms-store .ms-btn{width:100%}}
     </style>
     <link rel="stylesheet" href="css/multi-store-dashboard-theme.css?v=22.1">
@@ -37,9 +36,9 @@
     <script src="js/cloud-session.js?v=22.0"></script>
     <script src="js/cloud-session-guard.js?v=22.0"></script>
     <script src="js/multi-store-service.js?v=24.1.0"></script>
-<script src="js/license-v2-config.js?v=24.0.0"></script>
-<script src="js/license-v2-client.js?v=24.0.0"></script>
-<script defer src="js/license-v2-guard.js?v=24.0.0"></script>
+<script src="js/license-v2-config.js?v=24.1.0"></script>
+<script src="js/license-v2-client.js?v=24.1.0"></script>
+<script defer src="js/license-v2-guard.js?v=24.1.0"></script>
 </head>
 <body>
     <div class="ms-offline" id="offlineBanner">Mode offline — pergantian toko dan transfer stok dinonaktifkan.</div>
@@ -48,7 +47,7 @@
             <div class="ms-brand">
                 <button class="ms-menu-toggle" type="button" data-ldm-menu-toggle aria-label="Buka menu navigasi" aria-expanded="false">☰</button>
                 <img class="ms-brand-logo" data-ldm-brand-logo alt="Logo toko">
-                <div class="ms-title"><h1 data-ldm-brand-title>LocDailyMar</h1><p data-ldm-brand-subtitle>Multi-Toko, Transfer Stok & Karyawan</p></div>
+                <div class="ms-title"><h1 data-ldm-brand-title>LocDailyMar</h1><p data-ldm-brand-subtitle>Multi-Toko & Transfer Stok</p></div>
             </div>
             <div class="ms-header-actions">
                 <span class="ms-role-chip" id="roleChip">👤 Memuat</span>
@@ -60,8 +59,8 @@
         <section class="ms-page-intro">
             <div class="ms-page-intro-copy">
                 <span class="ms-page-eyebrow">Operasional Cabang</span>
-                <h1>Multi-Toko, Transfer Stok & Karyawan</h1>
-                <p>Kelola toko aktif, cabang usaha, perpindahan persediaan, serta penempatan karyawan antar cabang dari satu halaman.</p>
+                <h1>Multi-Toko & Transfer Stok</h1>
+                <p>Kelola toko aktif perangkat, cabang usaha, dan perpindahan persediaan dari satu halaman.</p>
             </div>
             <div class="ms-page-state"><span></span> Terhubung ke Cloud</div>
         </section>
@@ -90,6 +89,32 @@
                         <button class="ms-btn ms-btn-primary" type="submit">Buat Cabang Baru</button>
                     </form>
                 </section>
+
+                <section class="ms-panel" id="staffTransferPanel" style="display:none">
+                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">👥 Tim Cabang</span><h2>Penempatan Karyawan</h2><p>Pindahkan Admin atau Kasir ke cabang lain tanpa membuat akun baru.</p></div></div>
+                    <form class="ms-form" id="staffTransferForm">
+                        <div class="ms-field">
+                            <label>Karyawan</label>
+                            <select id="staffUser" required><option value="">Pilih karyawan</option></select>
+                        </div>
+                        <div class="ms-staff-info" id="staffCurrentInfo">Pilih karyawan untuk melihat cabang saat ini.</div>
+                        <div class="ms-form-grid">
+                            <div class="ms-field">
+                                <label>Cabang Tujuan</label>
+                                <select id="staffDestinationStore" required><option value="">Pilih cabang tujuan</option></select>
+                            </div>
+                            <div class="ms-field">
+                                <label>Role di Cabang Tujuan</label>
+                                <select id="staffDestinationRole" required>
+                                    <option value="kasir">Kasir</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <label class="ms-check ms-check-card"><input type="checkbox" id="staffKeepSourceAccess"> Tetap izinkan akses ke cabang lama. Jika tidak dicentang, pemindahan bersifat permanen.</label>
+                        <button class="ms-btn ms-btn-primary" type="submit">Pindahkan Karyawan</button>
+                    </form>
+                </section>
             </div>
 
             <div>
@@ -109,37 +134,12 @@
                 </section>
             </div>
         </div>
-
-        <section class="ms-panel" id="employeeTransferPanel" style="display:none">
-            <div class="ms-panel-head">
-                <div>
-                    <span class="ms-panel-kicker">👥 Penempatan Karyawan</span>
-                    <h2>Pindahkan Karyawan Antar Cabang</h2>
-                    <p>Akun, Employee ID, dan role tetap sama. Akses cabang lama dihentikan setelah pemindahan.</p>
-                </div>
-                <button class="ms-btn ms-btn-light" id="refreshEmployees" type="button">Muat Ulang</button>
-            </div>
-            <div class="ms-employee-grid">
-                <form class="ms-form" id="employeeTransferForm">
-                    <div class="ms-field"><label>Karyawan</label><select id="employeeSelect" required><option value="">Pilih karyawan</option></select></div>
-                    <div class="ms-employee-info" id="employeeInfo">Pilih karyawan untuk melihat cabang asal dan role.</div>
-                    <div class="ms-field"><label>Cabang Tujuan</label><select id="employeeDestination" required><option value="">Pilih cabang tujuan</option></select></div>
-                    <div class="ms-field"><label>Catatan Pemindahan</label><textarea id="employeeTransferNote" maxlength="500" placeholder="Contoh: Rotasi kasir ke cabang baru"></textarea></div>
-                    <button class="ms-btn ms-btn-primary" type="submit">Pindahkan Karyawan</button>
-                    <div class="ms-security-note">🔐 Hanya Owner yang dapat memindahkan karyawan. Owner tidak dapat dipindahkan dari panel ini. Setelah pindah, perangkat karyawan pada cabang lama direvoke dan perlu diotorisasi pada cabang tujuan.</div>
-                </form>
-                <div>
-                    <div class="ms-panel-head" style="margin-bottom:9px"><div><span class="ms-panel-kicker">🕘 Audit</span><h2>Riwayat Pemindahan</h2><p>Jejak perpindahan disimpan di database dan tidak bergantung pada browser.</p></div></div>
-                    <div class="ms-employee-history" id="employeeTransferList"><div class="ms-empty">Memuat riwayat…</div></div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <script>
     (function(){
         "use strict";
-        let stores=[];let transfers=[];let candidates=[];let employees=[];let employeeTransfers=[];let context=null;
+        let stores=[];let transfers=[];let candidates=[];let staff=[];let context=null;
         const $=id=>document.getElementById(id);
         const esc=value=>String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
         const num=value=>Number(value||0).toLocaleString("id-ID",{maximumFractionDigits:3});
@@ -155,7 +155,7 @@
             $("storeCount").textContent=stores.length;
             $("roleChip").textContent=`👤 ${currentRole()||"pengguna"}`;
             $("branchPanel").style.display=currentRole()==="owner"?"block":"none";
-            $("employeeTransferPanel").style.display=currentRole()==="owner"?"block":"none";
+            $("staffTransferPanel").style.display=currentRole()==="owner"?"block":"none";
             $("storeList").innerHTML=stores.length?stores.map(store=>`
                 <div class="ms-store ${store.is_current?"current":""}">
                     <div><div class="ms-store-name">${esc(store.store_name)}</div><div class="ms-store-code">${esc(store.store_code)} · ${esc(store.member_role)}</div><div class="ms-store-meta">${num(store.product_count)} produk · total stok ${num(store.total_stock)}</div></div>
@@ -163,6 +163,29 @@
                 </div>`).join(""):'<div class="ms-empty">Tidak ada toko yang dapat diakses.</div>';
             $("storeList").querySelectorAll("[data-switch-store]").forEach(button=>button.onclick=()=>switchStore(button.dataset.switchStore));
             $("destinationStore").innerHTML='<option value="">Pilih toko tujuan</option>'+stores.filter(row=>!row.is_current).map(row=>`<option value="${row.store_id}">${esc(row.store_name)} (${esc(row.store_code)})</option>`).join("");
+            renderStaffForm();
+        }
+
+        function selectedStaff(){
+            return staff.find(row=>row.user_id===$("staffUser").value)||null;
+        }
+
+        function renderStaffForm(){
+            if(currentRole()!=="owner")return;
+            const previousUser=$("staffUser").value;
+            $("staffUser").innerHTML='<option value="">Pilih karyawan</option>'+staff.map(row=>`<option value="${row.user_id}">${esc(row.display_name||row.username)} · ${esc(String(row.role).toUpperCase())} · ${esc(row.home_store_name)}</option>`).join("");
+            if(staff.some(row=>row.user_id===previousUser))$("staffUser").value=previousUser;
+
+            const employee=selectedStaff();
+            if(!employee){
+                $("staffCurrentInfo").textContent=staff.length?"Pilih karyawan untuk melihat cabang saat ini.":"Belum ada akun Admin atau Kasir aktif di jaringan toko ini.";
+                $("staffDestinationStore").innerHTML='<option value="">Pilih cabang tujuan</option>';
+                return;
+            }
+
+            $("staffCurrentInfo").innerHTML=`<strong>${esc(employee.display_name||employee.username)}</strong><span>Cabang saat ini: ${esc(employee.home_store_name)} (${esc(employee.home_store_code)}) · akses ${num(employee.active_branch_count)} cabang</span>`;
+            $("staffDestinationRole").value=employee.role==="admin"?"admin":"kasir";
+            $("staffDestinationStore").innerHTML='<option value="">Pilih cabang tujuan</option>'+stores.filter(row=>row.store_id!==employee.home_store_id).map(row=>`<option value="${row.store_id}">${esc(row.store_name)} (${esc(row.store_code)})</option>`).join("");
         }
 
         async function switchStore(storeId){
@@ -205,77 +228,52 @@
             $("transferList").querySelectorAll("[data-cancel]").forEach(btn=>btn.onclick=()=>cancelTransfer(btn.dataset.cancel));
         }
 
-        function selectedEmployee(){return employees.find(row=>row.user_id===$("employeeSelect").value)||null}
-        function renderEmployeeForm(){
-            const selected=selectedEmployee();
-            $("employeeSelect").innerHTML='<option value="">Pilih karyawan</option>'+employees.map(row=>`<option value="${row.user_id}">${esc(row.display_name||row.username)} · ${esc(row.role)} · ${esc(row.store_name)}</option>`).join("");
-            if(selected) $("employeeSelect").value=selected.user_id;
-            updateEmployeeDestination();
-        }
-        function updateEmployeeDestination(){
-            const employee=selectedEmployee();
-            if(!employee){
-                $("employeeInfo").textContent="Pilih karyawan untuk melihat cabang asal dan role.";
-                $("employeeDestination").innerHTML='<option value="">Pilih cabang tujuan</option>';
-                return;
-            }
-            $("employeeInfo").innerHTML=`<strong>${esc(employee.display_name||employee.username)}</strong><span class="ms-role-pill">${esc(employee.role)}</span><br>Employee ID: ${esc(employee.employee_id||"-")}<br>Cabang asal: <strong>${esc(employee.store_name)}</strong> (${esc(employee.store_code)})`;
-            $("employeeDestination").innerHTML='<option value="">Pilih cabang tujuan</option>'+stores.filter(row=>row.store_id!==employee.store_id).map(row=>`<option value="${row.store_id}">${esc(row.store_name)} (${esc(row.store_code)})</option>`).join("");
-        }
-        function renderEmployeeTransfers(){
-            $("employeeTransferList").innerHTML=employeeTransfers.length?employeeTransfers.map(row=>`<article class="ms-employee-move"><strong>${esc(row.display_name||row.username||"Karyawan")} <span class="ms-role-pill">${esc(row.employee_role)}</span></strong><p>${esc(row.source_store_name)} → <strong>${esc(row.destination_store_name)}</strong><br>${new Date(row.moved_at).toLocaleString("id-ID")}${row.note?` · ${esc(row.note)}`:""}<br>Dipindahkan oleh ${esc(row.moved_by_name||"Owner")}</p></article>`).join(""):'<div class="ms-empty">Belum ada riwayat pemindahan karyawan.</div>';
-        }
-        async function loadEmployees(){
-            if(currentRole()!=="owner")return;
-            try{employees=await window.LDMMultiStore.listEmployees();renderEmployeeForm()}
-            catch(error){employees=[];$("employeeSelect").innerHTML='<option value="">Gagal memuat karyawan</option>';$("employeeInfo").textContent=errorMessage(error)}
-        }
-        async function loadEmployeeTransfers(){
-            if(currentRole()!=="owner")return;
-            try{employeeTransfers=await window.LDMMultiStore.listEmployeeTransfers(100);renderEmployeeTransfers()}
-            catch(error){employeeTransfers=[];$("employeeTransferList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`}
-        }
-        async function moveEmployee(){
-            const employee=selectedEmployee();
-            const destination=$("employeeDestination").value;
-            if(!employee||!destination){alertBox("Pilih karyawan dan cabang tujuan terlebih dahulu.","bad");return}
-            const target=stores.find(row=>row.store_id===destination);
-            if(!confirm(`Pindahkan ${employee.display_name||employee.username} dari ${employee.store_name} ke ${target?target.store_name:"cabang tujuan"}?\n\nAkses cabang lama akan dihentikan dan perangkat lama perlu otorisasi ulang.`))return;
-            setLoading(true);
-            try{
-                const result=await window.LDMMultiStore.transferEmployee(employee.user_id,destination,$("employeeTransferNote").value);
-                alertBox(result.message||`Karyawan berhasil dipindahkan ke ${result.destination_store_name}.`);
-                $("employeeTransferForm").reset();
-                await Promise.all([loadEmployees(),loadEmployeeTransfers()]);
-            }catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}
-        }
-
         async function loadTransfers(){try{transfers=await window.LDMMultiStore.listTransfers(150);renderTransfers()}catch(error){$("transferList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`}}
         async function sendTransfer(id){if(!confirm("Kirim stok sekarang? Stok toko sumber akan langsung berkurang."))return;setLoading(true);try{await window.LDMMultiStore.sendTransfer(id);alertBox("Stok berhasil dikirim dan status menjadi Dalam Pengiriman.");await Promise.all([loadTransfers(),loadStores()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}}
         async function receiveTransfer(id){if(!confirm("Konfirmasi seluruh barang transfer sudah diterima?"))return;setLoading(true);try{await window.LDMMultiStore.receiveTransfer(id);alertBox("Transfer diterima dan stok toko tujuan sudah bertambah.");await Promise.all([loadTransfers(),loadStores()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}}
         async function cancelTransfer(id){const reason=prompt("Alasan pembatalan transfer:","");if(reason===null)return;setLoading(true);try{await window.LDMMultiStore.cancelTransfer(id,reason);alertBox("Draft transfer berhasil dibatalkan.");await loadTransfers()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}}
 
         async function loadStores(){stores=await window.LDMMultiStore.listStores();renderStores()}
+        async function loadStaff(){
+            if(currentRole()!=="owner"){staff=[];return}
+            try{staff=await window.LDMMultiStore.listStaff();renderStaffForm()}
+            catch(error){staff=[];renderStaffForm();throw error}
+        }
         async function boot(){
-            try{
-                context=await window.LDMCloudSession.ensureAuthenticated({registerDevice:true});
-                await loadStores();
-                await Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]);
-                await window.LDMMultiStore.startRealtime(()=>Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]));
-            }
+            try{context=await window.LDMCloudSession.ensureAuthenticated({registerDevice:true});await loadStores();await Promise.all([loadTransfers(),loadStaff()]);await window.LDMMultiStore.startRealtime(()=>loadTransfers())}
             catch(error){alertBox(errorMessage(error),"bad")}
         }
         $("destinationStore").addEventListener("change",loadCandidates);
-        $("employeeSelect").addEventListener("change",updateEmployeeDestination);
+        $("staffUser").addEventListener("change",renderStaffForm);
         $("refreshTransfers").onclick=loadTransfers;
-        $("refreshEmployees").onclick=()=>Promise.all([loadEmployees(),loadEmployeeTransfers()]);
-        $("employeeTransferForm").onsubmit=event=>{event.preventDefault();moveEmployee()};
         $("branchForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,copyProducts:$("copyProducts").checked});alertBox(`Cabang ${result.name} berhasil dibuat dengan Store ID baru.`);event.target.reset();$("copyProducts").checked=true;await loadStores()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
+        $("staffTransferForm").onsubmit=async event=>{
+            event.preventDefault();
+            const employee=selectedStaff();
+            const destination=stores.find(row=>row.store_id===$("staffDestinationStore").value);
+            const keepSource=$("staffKeepSourceAccess").checked;
+            if(!employee||!destination){alertBox("Pilih karyawan dan cabang tujuan.","bad");return}
+            const mode=keepSource?"Cabang lama tetap dapat diakses.":"Akses cabang lama dan perangkatnya akan dicabut.";
+            if(!confirm(`Pindahkan ${employee.display_name||employee.username} ke ${destination.store_name}?\n\n${mode}`))return;
+            setLoading(true);
+            try{
+                const result=await window.LDMMultiStore.transferStaff({
+                    userId:employee.user_id,
+                    destinationStoreId:destination.store_id,
+                    role:$("staffDestinationRole").value,
+                    keepSourceAccess:keepSource
+                });
+                alertBox(`${result.display_name} berhasil dipindahkan ke ${result.destination_store_name}.`);
+                event.target.reset();
+                await loadStaff();
+            }catch(error){alertBox(errorMessage(error),"bad")}
+            finally{setLoading(false)}
+        };
         $("transferForm").onsubmit=async event=>{event.preventDefault();const selected=[];$("candidateRows").querySelectorAll("[data-pick]:checked").forEach(check=>{const index=Number(check.dataset.pick);const qty=Number($("candidateRows").querySelector(`[data-qty="${index}"]`).value);if(qty>0)selected.push({source_product_id:candidates[index].source_product_id,qty})});if(!selected.length){alertBox("Pilih minimal satu barang dan isi qty transfer.","bad");return}setLoading(true);try{const result=await window.LDMMultiStore.createTransfer($("destinationStore").value,selected,$("transferNote").value);alertBox(`Draft ${result.transfer_code} berhasil dibuat.`);event.target.reset();candidates=[];renderCandidates();await loadTransfers()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         function onlineState(){const offline=navigator.onLine===false;$("offlineBanner").classList.toggle("show",offline);document.querySelectorAll("button[type=submit]").forEach(btn=>btn.disabled=offline)}
         window.addEventListener("online",onlineState);window.addEventListener("offline",onlineState);onlineState();boot();
     })();
     </script>
-    <script src="js/global-system-navigation.js?v=24.1.0"></script>
+    <script src="js/global-system-navigation.js?v=22.2"></script>
 </body>
 </html>
