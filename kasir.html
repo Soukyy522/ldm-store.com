@@ -1536,9 +1536,6 @@
     <script src="js/returns-service.js?v=10.0"></script>
     <script src="js/returns-bootstrap.js?v=10.0"></script>
 
-<script src="js/license-v2-config.js?v=24.0.0"></script>
-<script src="js/license-v2-client.js?v=24.0.0"></script>
-<script defer src="js/license-v2-guard.js?v=24.0.0"></script>
 </head>
 <body>
 
@@ -1570,7 +1567,7 @@
         <div class="main-content">
             <div class="header-app" id="headerApp">
                 <div class="header-brand-container">
-                    <button type="button" class="btn-hamburger" onclick="toggleNavMobile()" title="Buka Menu Navigasi">☰</button>
+                    <button type="button" class="btn-hamburger btn-toggle-menu" data-ldm-menu-toggle="true" onclick="toggleNavMobile()" aria-label="Buka menu navigasi" aria-expanded="false" title="Buka Menu Navigasi">☰</button>
                     
                     <img id="imgLogoToko" class="header-logo-img" alt="Logo Toko" style="display: none;">
                     <div class="header-title-box">
@@ -5979,6 +5976,6 @@ document.addEventListener(
 
 
 
-<script src="js/global-system-navigation.js?v=24.2"></script>
+<script src="js/global-system-navigation.js?v=22.2"></script>
 </body>
 </html>
