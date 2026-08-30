@@ -1,0 +1,7 @@
+project_id = "GANTI_DENGAN_PROJECT_REF_LISENSI"
+
+[functions.ldm-license-v2]
+verify_jwt = false
+
+[functions.ldm-license-admin-v2]
+verify_jwt = false
