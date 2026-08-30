@@ -1,0 +1,48 @@
+LocDailyMar - TAHAP 15
+Cloud Devices + Account Automation
+
+1) Jalankan supabase/sql/12-stage15-cloud-devices-account-automation.sql
+2) Jalankan supabase/sql/12-stage15-verify.sql
+3) Deploy Edge Function: supabase/functions/ldm-account-admin/index.ts
+   CLI: supabase functions deploy ldm-account-admin
+4) Upload/merge ZIP ke GitHub. Jangan timpa js/supabase-config.js milik project yang sudah dikonfigurasi.
+5) Login Owner. Buka Dashboard -> Perangkat Cloud.
+6) Semua device BARU, termasuk Owner/Admin/Kasir, akan PENDING. Device A yang sudah terdaftar tetap ACTIVE. Owner tekan Hubungkan dan pilih grup.
+7) Akun Cloud dapat dibuka Owner/Admin/Kasir. Owner saja yang bisa create/edit/delete.
+8) Create account memakai Edge Function agar Auth User + public.profiles dibuat otomatis.
+9) Delete account: hard delete hanya jika aman. Jika ada histori, user diblokir dan profile soft-delete agar foreign key/audit tidak rusak.
+
+PENTING: jangan pernah menaruh service_role / sb_secret di HTML atau js/supabase-config.js. Secret hanya berada di Edge Function environment.
+
+==================================================
+11. JIKA DEVICE OWNER UTAMA IKUT PENDING
+==================================================
+
+Pada upgrade normal dari Tahap 14, Device A yang sudah pernah terdaftar
+akan mempertahankan status active.
+
+Kalau instalasi benar-benar fresh dan SEMUA perangkat menjadi pending,
+Owner belum punya perangkat active untuk menyetujui Device A.
+Gunakan Supabase SQL Editor sebagai recovery satu kali:
+
+select
+    d.id as device_id,
+    d.client_device_id,
+    d.device_name,
+    d.status,
+    p.username,
+    p.role
+from public.devices d
+join public.profiles p on p.id = d.user_id
+where d.deleted_at is null
+order by d.last_seen_at desc;
+
+Pastikan UUID perangkat benar-benar milik Device A Owner.
+Lalu aktifkan HANYA perangkat tersebut:
+
+update public.devices
+set status = 'active'
+where id = 'PASTE_DEVICE_UUID_OWNER_A_DI_SINI';
+
+Sesudah itu login kembali di Device A dan lakukan approval perangkat lain
+melalui dashboard -> Perangkat Cloud.
