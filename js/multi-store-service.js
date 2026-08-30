@@ -43,6 +43,23 @@
         });
     }
 
+    async function listStaff(){
+        const data=await rpc("ldm_branch_staff_list");
+        return Array.isArray(data) ? data : [];
+    }
+
+    async function transferStaff(options={}){
+        if(navigator.onLine===false){
+            throw new Error("Pemindahan karyawan membutuhkan koneksi internet.");
+        }
+        return rpc("ldm_transfer_staff_branch",{
+            p_user_id:String(options.userId||"").trim(),
+            p_destination_store_id:String(options.destinationStoreId||"").trim(),
+            p_destination_role:String(options.role||"").trim().toLowerCase()||null,
+            p_keep_source_access:Boolean(options.keepSourceAccess)
+        });
+    }
+
     async function offlineQueueSafe(){
         if(!window.LDMOfflineQueue || typeof window.LDMOfflineQueue.stats!=="function") return true;
         const info=await window.LDMOfflineQueue.stats();
@@ -151,7 +168,7 @@
     }
 
     window.LDMMultiStore=Object.freeze({
-        listStores,createBranch,prepareStoreDevice,switchStore,offlineQueueSafe,
+        listStores,createBranch,listStaff,transferStaff,prepareStoreDevice,switchStore,offlineQueueSafe,
         transferCandidates,createTransfer,sendTransfer,receiveTransfer,cancelTransfer,
         listTransfers,startRealtime,stopRealtime,clearStoreCaches
     });
