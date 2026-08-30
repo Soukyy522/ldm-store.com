@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const NAV_VERSION="25.0";
+    const NAV_VERSION="25.1";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -283,7 +283,12 @@
             }
         });
 
-        if(unique.length)return;
+        if(unique.length){
+            document.documentElement.classList.remove("ldm-global-floating-menu");
+            document.getElementById("ldmGlobalFloatingToggle")?.remove();
+            return;
+        }
+        document.documentElement.classList.add("ldm-global-floating-menu");
         let floating=document.getElementById("ldmGlobalFloatingToggle");
         if(!floating){
             floating=document.createElement("button");
@@ -398,7 +403,7 @@
         if(document.getElementById("ldmPrimaryOwnerScript"))return;
         const script=document.createElement("script");
         script.id="ldmPrimaryOwnerScript";
-        script.src="js/primary-owner-service.js?v=25.0";
+        script.src="js/primary-owner-service.js?v=25.1";
         script.addEventListener("load",start,{once:true});
         document.head.appendChild(script);
     }
