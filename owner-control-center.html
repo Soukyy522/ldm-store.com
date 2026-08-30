@@ -15,8 +15,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script>
 <script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=16.0"></script><script src="js/cloud-session-guard.js?v=16.0"></script>
-<script src="js/license-v2-config.js?v=25.0"></script><script src="js/license-v2-client.js?v=25.0"></script><script defer src="js/license-v2-guard.js?v=25.0"></script>
-<script src="js/primary-owner-service.js?v=25.0"></script>
+<script src="js/license-v2-config.js?v=25.1.0"></script><script src="js/license-v2-client.js?v=25.1.0"></script><script defer src="js/license-v2-guard.js?v=25.1.0"></script>
+<script src="js/primary-owner-service.js?v=25.1"></script>
 </head>
 <body>
 <main class="cc-shell">
@@ -63,5 +63,5 @@ async function saveAccount(){if(!selectedAccount)return;const b=$("saveEdit");b.
 async function boot(){const now=new Date(),first=new Date(now.getFullYear(),now.getMonth(),1);$("dateFrom").value=localDate(first);$("dateTo").value=localDate(now);try{const ctx=await LDMPrimaryOwner.context(true);if(!ctx?.is_primary_owner){$("blocked").classList.add("show");return}$("networkName").textContent=ctx.network_name||ctx.network_code;$("primaryStore").textContent="Cabang pusat: "+(ctx.primary_store_name||"-")+" · "+(ctx.primary_store_code||"-");await loadReport();await loadAccounts()}catch(e){$("blockedText").textContent=e.message||String(e);$("blocked").classList.add("show")}}
 $("loadBtn").onclick=loadReport;$("reloadAccounts").onclick=loadAccounts;$("search").oninput=renderDataset;$("closeEdit").onclick=$("cancelEdit").onclick=closeAccount;$("saveEdit").onclick=saveAccount;$("editModal").onclick=e=>{if(e.target===$("editModal"))closeAccount()};renderTabs();document.addEventListener("DOMContentLoaded",boot);
 </script>
-<script src="js/global-system-navigation.js?v=25.0"></script>
+<script src="js/global-system-navigation.js?v=25.1"></script>
 </body></html>

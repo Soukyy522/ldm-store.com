@@ -9,9 +9,9 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script><script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=6.0"></script><script src="js/cloud-session-guard.js?v=15.0"></script><script src="js/account-service.js?v=15.1"></script>
-<script src="js/license-v2-config.js?v=24.0.0"></script>
-<script src="js/license-v2-client.js?v=24.0.0"></script>
-<script defer src="js/license-v2-guard.js?v=24.0.0"></script>
+<script src="js/license-v2-config.js?v=25.1.0"></script>
+<script src="js/license-v2-client.js?v=25.1.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.1.0"></script>
 </head>
 <body><div class="wrap">
 <div class="card top"><div><h1>👤 Management Akun</h1><p id="accessNote">Memuat hak akses...</p></div><div class="actions"><button onclick="refreshAll()">↻ Refresh</button><a class="btn secondary owner-only" href="device-management.html">🔗 Tautkan Perangkat</a><a class="btn secondary" href="dashboard.html">← Dashboard</a></div></div>
@@ -45,4 +45,4 @@ async function reactivateAt(i){const target=archivedAccounts[i];if(!target)retur
 async function changePassword(){const a=document.getElementById("ownPassword").value,b=document.getElementById("ownPassword2").value;if(a!==b){showMessage("❌ Konfirmasi password tidak sama.","error");return}try{await LDMAccounts.changeOwnPassword(a);document.getElementById("ownPassword").value=document.getElementById("ownPassword2").value="";showMessage("✅ Password akun sendiri berhasil diubah.")}catch(e){showMessage("❌ "+(e.message||String(e)),"error")}}
 async function boot(){await refreshAll();try{await LDMAccounts.startRealtime(async()=>refreshAll());document.getElementById("realtime").textContent="Realtime: aktif"}catch(e){document.getElementById("realtime").textContent="Realtime: gagal";console.warn(e)}}
 document.addEventListener("DOMContentLoaded",boot);
-</script><script src="js/global-system-navigation.js?v=24.2"></script></body></html>
+</script><script src="js/global-system-navigation.js?v=25.1"></script></body></html>
