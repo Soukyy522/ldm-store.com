@@ -2927,9 +2927,6 @@
                 <option value="Lainnya">Lainnya</option>
             </select>
 
-            <label>Jumlah Stok Total</label>
-            <input type="number" id="editStok">
-
             <label>Satuan Dasar / Stok / Kasir</label>
             <select id="editSatuan">
                 <option value="Pcs">Pcs / Biji</option>
@@ -4414,7 +4411,6 @@ function catatKartuStokMutasi(payload = {}) {
         document.getElementById("editBarcode").value = item.barcode || "";
         document.getElementById("editNama").value = item.nama || "";
         document.getElementById("editKategori").value = item.kategori || "Frozen Food";
-        document.getElementById("editStok").value = item.stok !== undefined ? item.stok : 0;
         document.getElementById("editSatuan").value = item.satuan || "Pcs";
         document.getElementById("editSatuanBeli").value = item.satuanBeli || item.satuan || "Pcs";
         document.getElementById("editKonversiBeli").value = Number(item.konversiBeli || 1);
@@ -4429,14 +4425,9 @@ function catatKartuStokMutasi(payload = {}) {
         let index = document.getElementById("editIndex").value;
         let data = JSON.parse(localStorage.getItem("dataBarang")) || defaultBarang;
 
-        const sebelumEditKartu = data[index]
-            ? { ...data[index] }
-            : null;
-
         data[index].barcode = document.getElementById("editBarcode").value.trim();
         data[index].nama = document.getElementById("editNama").value.trim();
         data[index].kategori = document.getElementById("editKategori").value;
-        data[index].stok = Number(document.getElementById("editStok").value) || 0;
         data[index].satuan = document.getElementById("editSatuan").value;
         data[index].satuanDasar = data[index].satuan;
         data[index].satuanBeli = document.getElementById("editSatuanBeli").value || data[index].satuan;
@@ -4447,39 +4438,6 @@ function catatKartuStokMutasi(payload = {}) {
         data[index].harga = Number(document.getElementById("editHarga").value) || 0;
 
         simpanKeStorage(data);
-
-        if (sebelumEditKartu) {
-            const stokSebelum =
-                Number(sebelumEditKartu.stok || 0);
-
-            const stokSesudah =
-                Number(data[index].stok || 0);
-
-            const delta =
-                stokSesudah -
-                stokSebelum;
-
-            if (delta !== 0) {
-                catatKartuStokMutasi({
-                    barcode:
-                        data[index].barcode
-                        || sebelumEditKartu.barcode
-                        || "",
-                    namaBarang:
-                        data[index].nama
-                        || sebelumEditKartu.nama
-                        || "",
-                    barangIndex: Number(index),
-                    jenis: "edit_stok_manual",
-                    referensi: `EDIT-${Date.now()}`,
-                    delta,
-                    stokSebelum,
-                    stokSesudah,
-                    keterangan:
-                        `Edit stok manual dari ${stokSebelum} menjadi ${stokSesudah}`
-                });
-            }
-        }
 
         tutupModal("modalEdit");
         muatBarang();
