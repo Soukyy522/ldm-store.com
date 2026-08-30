@@ -2,8 +2,8 @@
     "use strict";
     window.LDM_LICENSE_V2_CONFIG=Object.freeze({
         enabled:true,
-        serverUrl:"https://GANTI-PROJECT-REF-LISENSI.supabase.co/functions/v1/ldm-license-v2",
-        developerWhatsApp:"6281234567890",
+        serverUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-license-v2",
+        developerWhatsApp:"6283117590286",
         appVersion:"24.0.0",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
