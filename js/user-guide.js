@@ -15,7 +15,7 @@
             ["Selamat datang di LocDailyMar","Sebagai Owner, Anda memiliki akses paling luas. Mulailah dari Dashboard untuk melihat kondisi toko, lalu pastikan lisensi, Store Code, akun, dan perangkat sudah benar."],
             ["Siapkan data toko","Masukkan Barang dan Supplier lebih dahulu. Data master yang rapi membuat Kasir, stok, Purchase Order, dan laporan bekerja lebih akurat."],
             ["Jalankan operasional","Gunakan Kasir untuk penjualan, Stock Opname untuk pemeriksaan stok fisik, Retur untuk pengembalian, dan Pengeluaran untuk biaya operasional."],
-            ["Tutup dan baca hasil hari","Selesaikan Closing Shift, lalu End of Day ketika syarat closing sudah lengkap. Gunakan Laporan untuk memantau omzet, transaksi, dan performa."],
+            ["Tutup dan baca hasil hari","Selesaikan Closing Shift, lalu End of Day ketika syarat closing sudah lengkap. Jika akun Anda ditetapkan sebagai Owner Utama, gunakan Kontrol Pusat untuk laporan gabungan/per cabang dan manajemen karyawan."],
             ["Kelola pertumbuhan toko","Multi-Toko dipakai untuk cabang, transfer stok, dan pemindahan karyawan. Backup, Recovery, Aplikasi & Update, serta QA membantu menjaga sistem tetap sehat."]
         ],
         admin:[

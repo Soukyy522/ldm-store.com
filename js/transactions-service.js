@@ -428,29 +428,10 @@
         const {
             data,
             error
-        } = await supabase
-            .from("stock_movements")
-            .select(
-                [
-                    "id",
-                    "product_id",
-                    "transaction_id",
-                    "movement_type",
-                    "quantity_change",
-                    "stock_before",
-                    "stock_after",
-                    "reference_code",
-                    "occurred_at"
-                ].join(",")
-            )
-            .order(
-                "occurred_at",
-                {
-                    ascending:
-                        false
-                }
-            )
-            .limit(safeLimit);
+        } = await supabase.rpc(
+            "ldm_visible_stock_movements",
+            {p_movement_types:null,p_limit:safeLimit}
+        );
 
         if(error){
             throw error;

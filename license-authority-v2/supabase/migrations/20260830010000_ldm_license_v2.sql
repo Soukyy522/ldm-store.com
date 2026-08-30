@@ -157,12 +157,12 @@ insert into public.ldm2_plans(
 ),
 (
     'TOKO','Toko','Operasional tingkat lanjut untuk beberapa cabang.',99000,999000,null,10,5,
-    '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","advanced_promo","expenses","suppliers","purchase_order","goods_receipt","cloud_accounts","cloud_devices","recovery_center","app_update","multi_store","cloud_control","eod","qa_security"]'::jsonb,
+    '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","advanced_promo","expenses","suppliers","purchase_order","goods_receipt","cloud_accounts","cloud_devices","recovery_center","app_update","multi_store","cloud_control","central_control","eod","qa_security"]'::jsonb,
     true,30
 ),
 (
     'LIFETIME','Lifetime','Semua fitur dengan masa pakai tanpa tanggal kedaluwarsa.',null,null,3499000,15,8,
-    '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","advanced_promo","expenses","suppliers","purchase_order","goods_receipt","cloud_accounts","cloud_devices","recovery_center","app_update","multi_store","cloud_control","eod","qa_security"]'::jsonb,
+    '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","advanced_promo","expenses","suppliers","purchase_order","goods_receipt","cloud_accounts","cloud_devices","recovery_center","app_update","multi_store","cloud_control","central_control","eod","qa_security"]'::jsonb,
     true,40
 )
 on conflict (code) do update set

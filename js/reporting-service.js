@@ -420,13 +420,11 @@
                     order:{column:"transacted_at",ascending:true}
                 }
             ),
-            fetchAllRows(
-                "transaction_items",
-                "id,transaction_id,product_id,barcode_snapshot,product_name_snapshot,unit_snapshot,qty,cost_price_snapshot,normal_unit_price,unit_price,line_discount,line_subtotal",
-                {
-                    order:{column:"created_at",ascending:true}
-                }
-            ),
+            (async()=>{
+                const {data,error}=await client().rpc("ldm_visible_transaction_items");
+                if(error)throw error;
+                return Array.isArray(data)?data:[];
+            })(),
             fetchAllRows(
                 "legacy_transactions",
                 "id,legacy_source_id,transaction_code,business_date,cashier_username,shift_label,payment_method,grand_total,payload,imported_at",

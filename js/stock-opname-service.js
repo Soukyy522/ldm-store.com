@@ -140,43 +140,7 @@
         await ensureAuth();
         const supabase = client();
 
-        const {data,error} = await supabase
-            .from("stock_opname_entries")
-            .select(
-                [
-                    "id",
-                    "client_batch_id",
-                    "business_date",
-                    "product_id",
-                    "product_name_snapshot",
-                    "barcode_snapshot",
-                    "unit_snapshot",
-                    "system_stock_snapshot",
-                    "physical_stock",
-                    "difference_snapshot",
-                    "nominal_snapshot",
-                    "note",
-                    "created_username",
-                    "status",
-                    "applied_stock_before",
-                    "applied_stock_after",
-                    "stock_effect_applied",
-                    "approved_username",
-                    "approved_at",
-                    "rejected_username",
-                    "reject_reason",
-                    "cancelled_username",
-                    "cancel_reason",
-                    "legacy_imported",
-                    "version",
-                    "created_at"
-                ].join(",")
-            )
-            .order(
-                "created_at",
-                {ascending:false}
-            )
-            .limit(2000);
+        const {data,error} = await supabase.rpc("ldm_visible_stock_opname");
 
         if(error){
             throw error;

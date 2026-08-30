@@ -62,31 +62,10 @@
     }
 
     async function fetchAll(){
-        const ctx=await context();
-        if(String(ctx?.profile?.role||"").toLowerCase()!=="owner"){
-            localStorage.removeItem(CACHE_KEY);
-            localStorage.removeItem(ENABLED_KEY);
-            return [];
-        }
-
-        const supabase=client();
-        const pageSize=1000;
-        const rows=[];
-        let from=0;
-
-        while(true){
-            const {data,error}=await supabase
-                .from("purchase_price_history")
-                .select("id,product_id,purchase_price,effective_at,business_date,source")
-                .order("effective_at",{ascending:true})
-                .range(from,from+pageSize-1);
-            if(error) throw error;
-            const page=Array.isArray(data)?data:[];
-            rows.push(...page);
-            if(page.length<pageSize) break;
-            from+=pageSize;
-        }
-        return rows;
+        await context();
+        const {data,error}=await client().rpc("ldm_visible_cost_history");
+        if(error)throw error;
+        return Array.isArray(data)?data:[];
     }
 
     async function refreshCache(){
