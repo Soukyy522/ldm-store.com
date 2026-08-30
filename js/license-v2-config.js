@@ -4,11 +4,11 @@
         enabled:true,
         serverUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-license-v2",
         developerWhatsApp:"6283117590286",
-        appVersion:"24.0.0",
+        appVersion:"24.1.0",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,
-        activationPage:"license-v2.html",
+        activationPage:"license.html",
         plans:Object.freeze({
             WARUNG_KECIL:{name:"Warung Kecil",monthly:29000,yearly:299000,devices:2,stores:1},
             WARUNG_SEDERHANA:{name:"Warung Sederhana",monthly:59000,yearly:599000,devices:3,stores:1,trialDays:14},

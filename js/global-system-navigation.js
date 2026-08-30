@@ -33,7 +33,7 @@
         {page:"pwa-settings.html",icon:"📲",label:"Aplikasi & Update",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"]},
-        {page:"license-v2.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]}
+        {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]}
     ];
 
     const GROUP_ORDER=["Utama","Inventori","Supplier & Pembelian","Keuangan & Laporan","Closing & Data","Sistem"];
