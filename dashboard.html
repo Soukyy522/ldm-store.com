@@ -11283,7 +11283,8 @@ window.addEventListener(
         "backup%20%26%20restore.html":["owner","admin"],
         "backup & restore.html":["owner","admin"],
         "recovery-center.html":["owner","admin","kasir"],
-        "qa-security-performance.html":["owner"]
+        "qa-security-performance.html":["owner"],
+        "panduan.html":["owner","admin","kasir"]
     };
 
     function baseName(value){
@@ -11362,7 +11363,8 @@ window.addEventListener(
 
         {page:"pwa-settings.html", icon:"📲", label:"Aplikasi & Update", group:"Sistem", roles:["owner","admin","kasir"]},
         {page:"recovery-center.html", icon:"🛟", label:"Recovery Center", group:"Sistem", roles:["owner","admin","kasir"]},
-        {page:"qa-security-performance.html", icon:"🧪", label:"QA & Security", group:"Sistem", roles:["owner"]}
+        {page:"qa-security-performance.html", icon:"🧪", label:"QA & Security", group:"Sistem", roles:["owner"]},
+        {page:"panduan.html", icon:"📘", label:"Panduan & Bantuan", group:"Sistem", roles:["owner","admin","kasir"]}
     ];
 
     const GROUP_META={
@@ -12306,6 +12308,7 @@ window.addEventListener(
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
 </script>
-<script src="js/global-system-navigation.js?v=22.2"></script>
+<script src="js/user-guide.js?v=24.2"></script>
+<script src="js/global-system-navigation.js?v=24.2"></script>
 </body>
 </html>

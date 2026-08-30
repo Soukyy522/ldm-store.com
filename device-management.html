@@ -18,4 +18,4 @@ async function deleteGroup(id){if(!confirm("Hapus grup ini? Device tetap terdaft
 async function approve(i){try{await LDMDevices.approve(devices[i].device_id,document.getElementById(`g${i}`).value||null);show("✅ Device terhubung/diupdate.");await refreshAll()}catch(e){show("❌ "+(e.message||String(e)),true)}}
 async function revoke(i){if(devices[i].client_device_id===currentId&&!confirm("Ini device Owner yang sedang dipakai. Jika diputuskan, halaman aplikasi pada device ini akan ikut diblokir. Lanjut?"))return;if(!confirm("Putuskan hubungan device ini?"))return;try{await LDMDevices.revoke(devices[i].device_id);show("✅ Device diputuskan.");await refreshAll()}catch(e){show("❌ "+(e.message||String(e)),true)}}
 document.addEventListener("DOMContentLoaded",async()=>{await refreshAll();try{await LDMDevices.startRealtime(refreshAll);document.getElementById("rt").textContent="Realtime: aktif"}catch(e){document.getElementById("rt").textContent="Realtime: gagal"}});
-</script><script src="js/global-system-navigation.js?v=22.2"></script></body></html>
+</script><script src="js/global-system-navigation.js?v=24.2"></script></body></html>

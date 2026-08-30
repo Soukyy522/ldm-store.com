@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0F9D58">
+<title>Panduan & Bantuan - LocDailyMar</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/help-center.css?v=24.2">
+<script src="js/security-hardening.js?v=19.0"></script>
+<script defer src="js/qa-runtime.js?v=19.0"></script>
+<script src="js/license-v2-config.js?v=24.0.0"></script>
+<script src="js/license-v2-client.js?v=24.0.0"></script>
+<script defer src="js/license-v2-guard.js?v=24.0.0"></script>
+</head>
+<body>
+<div class="app-layout">
+<main class="main-content">
+<div class="help-shell">
+<section class="help-hero">
+    <span class="help-eyebrow">📘 Pusat Panduan LocDailyMar</span>
+    <h1>Mulai menggunakan aplikasi tanpa menebak-nebak.</h1>
+    <p>Panduan ini menjelaskan fungsi menu, kapan fitur digunakan, dan langkah dasarnya dengan bahasa sederhana. Hak akses tetap mengikuti role akun dan paket lisensi yang aktif.</p>
+    <div class="help-context">
+        <span class="help-chip">👤 Role: <strong id="guideRole">-</strong></span>
+        <span class="help-chip">🔑 Paket: <strong id="guidePlan">Memeriksa...</strong></span>
+    </div>
+    <div class="help-hero-actions">
+        <button class="help-btn help-btn-primary" id="guideReset" type="button">▶ Ulangi Panduan Awal</button>
+        <a class="help-btn help-btn-soft" href="dashboard.html">← Kembali ke Dashboard</a>
+    </div>
+</section>
+
+<div class="help-toolbar"><input class="help-search" id="guideSearch" type="search" placeholder="Cari panduan, misalnya: kasir, stok, EOD, lisensi, transfer karyawan..." autocomplete="off"></div>
+
+<section class="help-section">
+    <div class="help-section-head"><div><h2>Mulai dari mana?</h2><p>Urutan paling aman untuk toko yang baru mulai memakai LocDailyMar.</p></div></div>
+    <div class="help-start-grid">
+        <article class="help-start-card"><div class="help-step">1</div><h3>Aktifkan & masuk</h3><p>Pastikan lisensi aktif, Store Code benar, login dengan akun yang diberikan, lalu perangkat sudah disetujui.</p></article>
+        <article class="help-start-card"><div class="help-step">2</div><h3>Siapkan data</h3><p>Masukkan barang, stok awal, supplier, akun karyawan, dan cabang bila fitur Multi-Toko digunakan.</p></article>
+        <article class="help-start-card"><div class="help-step">3</div><h3>Jalankan toko</h3><p>Gunakan Kasir untuk transaksi, Stock Opname untuk pengecekan fisik, serta PO/Goods Receipt untuk pembelian.</p></article>
+        <article class="help-start-card"><div class="help-step">4</div><h3>Tutup & evaluasi</h3><p>Selesaikan Closing Shift, lakukan EOD saat syarat terpenuhi, lalu baca Laporan untuk mengevaluasi hasil.</p></article>
+    </div>
+</section>
+
+<section class="help-section">
+    <div class="help-section-head"><div><h2>Alur operasional harian</h2><p>Gambaran sederhana dari toko buka sampai tutup.</p></div></div>
+    <div class="help-flow"><div class="help-flow-item">📝 Absensi</div><div class="help-flow-arrow">→</div><div class="help-flow-item">💵 Transaksi Kasir</div><div class="help-flow-arrow">→</div><div class="help-flow-item">📦 Cek Stok</div><div class="help-flow-arrow">→</div><div class="help-flow-item">🔒 Closing / EOD</div></div>
+</section>
+
+<section class="help-section">
+<div class="help-section-head"><div><h2>Penjelasan fitur</h2><p>Klik sebuah fitur untuk membuka fungsi dan cara penggunaan singkat.</p></div></div>
+<div class="help-grid" id="guideCards">
+
+<details class="help-card" data-guide-card data-guide-feature="dashboard"><summary><span class="help-icon">📊</span><div><h3>Dashboard</h3><div class="help-mini">Ringkasan keadaan toko dalam satu layar.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> melihat ringkasan transaksi, penjualan, stok, dan informasi penting tanpa membuka setiap halaman satu per satu.</p><ol><li>Buka Dashboard setelah login.</li><li>Periksa kartu ringkasan dan notifikasi.</li><li>Gunakan periode laporan bila ingin membandingkan performa.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="pos"><summary><span class="help-icon">💵</span><div><h3>Kasir</h3><div class="help-mini">Mencatat penjualan dan pembayaran pelanggan.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> memasukkan barang belanjaan, menghitung promo/total, menerima pembayaran, menghitung kembalian, serta menyimpan transaksi.</p><ol><li>Cari atau scan barang.</li><li>Periksa jumlah dan harga.</li><li>Masukkan uang/metode pembayaran.</li><li>Tekan Bayar setelah semuanya benar.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="inventory"><summary><span class="help-icon">📦</span><div><h3>Barang</h3><div class="help-mini">Master produk, harga, promo, satuan, dan stok.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> menjadi sumber utama data produk yang dipakai Kasir dan inventori.</p><ol><li>Tambahkan nama/SKU/barcode.</li><li>Isi harga jual, harga beli, satuan, dan stok.</li><li>Atur promo bila diperlukan.</li><li>Hindari SKU/barcode ganda.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="stock_card"><summary><span class="help-icon">📒</span><div><h3>Kartu Stok</h3><div class="help-mini">Melihat jejak barang masuk dan keluar.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> membantu menelusuri mengapa stok berubah, misalnya karena penjualan, penerimaan, retur, atau penyesuaian.</p><ol><li>Pilih barang.</li><li>Atur rentang waktu.</li><li>Cocokkan mutasi dengan transaksi fisik.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="stock_opname"><summary><span class="help-icon">📋</span><div><h3>Stock Opname</h3><div class="help-mini">Mencocokkan stok sistem dengan stok fisik.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> menemukan selisih karena rusak, hilang, expired, salah input, atau kejadian lainnya.</p><ol><li>Hitung stok fisik.</li><li>Masukkan hasil pemeriksaan.</li><li>Pilih alasan bila ada selisih.</li><li>Simpan/ajukan sesuai hak akses.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="attendance"><summary><span class="help-icon">📝</span><div><h3>Absensi</h3><div class="help-mini">Mencatat kehadiran karyawan.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> mencatat waktu kehadiran akun dan membantu Owner memeriksa siapa yang sudah atau belum absen.</p><ol><li>Login menggunakan akun sendiri.</li><li>Buka Absensi.</li><li>Lakukan absensi sesuai prosedur toko.</li><li>Owner dapat memeriksa riwayat.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="suppliers"><summary><span class="help-icon">🏢</span><div><h3>Supplier</h3><div class="help-mini">Daftar pemasok barang toko.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> menyimpan data pemasok agar Purchase Order dan penerimaan barang memiliki sumber yang jelas.</p><ol><li>Tambahkan nama supplier.</li><li>Isi kontak dan informasi penting.</li><li>Gunakan supplier tersebut saat membuat PO.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="purchase_order"><summary><span class="help-icon">🛒</span><div><h3>Purchase Order</h3><div class="help-mini">Membuat pesanan barang ke supplier.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> mencatat barang yang dipesan sebelum barang benar-benar diterima.</p><ol><li>Pilih supplier.</li><li>Tambahkan barang dan jumlah pesanan.</li><li>Periksa nilai PO.</li><li>Simpan dan gunakan sebagai acuan Goods Receipt.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="goods_receipt"><summary><span class="help-icon">📥</span><div><h3>Goods Receipt</h3><div class="help-mini">Mencatat barang yang benar-benar diterima.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> mencocokkan barang datang dengan PO dan menambah stok berdasarkan penerimaan nyata.</p><ol><li>Pilih PO terkait.</li><li>Cocokkan barang, jumlah, dan harga beli.</li><li>Catat selisih bila ada.</li><li>Simpan penerimaan setelah fisik benar.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="returns"><summary><span class="help-icon">↩️</span><div><h3>Retur</h3><div class="help-mini">Mencatat pengembalian barang/transaksi.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> memastikan pengembalian barang tercatat dan dampaknya terhadap stok/laporan tidak hilang begitu saja.</p><ol><li>Cari transaksi atau barang terkait.</li><li>Pilih item dan jumlah retur.</li><li>Isi alasan.</li><li>Konfirmasi sesuai prosedur toko.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="expenses"><summary><span class="help-icon">💸</span><div><h3>Pengeluaran</h3><div class="help-mini">Mencatat biaya operasional toko.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> menyimpan biaya seperti kebutuhan toko, operasional, atau pengeluaran lain agar laporan lebih realistis.</p><ol><li>Pilih jenis pengeluaran.</li><li>Masukkan nominal dan keterangan.</li><li>Simpan bukti/keterangan jika diperlukan.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="reports"><summary><span class="help-icon">📑</span><div><h3>Laporan</h3><div class="help-mini">Membaca hasil transaksi dan performa toko.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> melihat omzet, jumlah transaksi, produk terjual, diskon, dan data periode tertentu.</p><ol><li>Pilih periode harian/mingguan/bulanan atau rentang tanggal.</li><li>Periksa nilai transaksi.</li><li>Gunakan laporan sebagai bahan evaluasi, bukan sekadar dekorasi angka.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="shift_closing"><summary><span class="help-icon">🔒</span><div><h3>Closing Shift</h3><div class="help-mini">Menutup operasional shift dan mencocokkan hasil kasir.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> memastikan transaksi pada satu shift selesai dan data kas dapat dicocokkan sebelum hari ditutup.</p><ol><li>Pastikan transaksi shift selesai.</li><li>Periksa kas/hasil transaksi.</li><li>Simpan Closing Shift.</li><li>EOD akan tersedia setelah syarat closing yang diwajibkan lengkap.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="eod"><summary><span class="help-icon">🌙</span><div><h3>End of Day (EOD)</h3><div class="help-mini">Penutupan keseluruhan operasional harian.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> mengunci/merangkum aktivitas satu hari setelah Closing Shift wajib lengkap.</p><ol><li>Selesaikan seluruh Closing Shift yang diwajibkan.</li><li>Tunggu menu EOD muncul.</li><li>Periksa ringkasan.</li><li>Konfirmasi EOD hanya setelah data hari itu benar.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="multi_store"><summary><span class="help-icon">⇄</span><div><h3>Multi-Toko & Transfer</h3><div class="help-mini">Mengelola cabang, transfer stok, dan karyawan antar toko.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> menghubungkan beberapa cabang dalam satu jaringan dan memindahkan sumber daya dengan jejak audit.</p><ol><li>Pilih cabang sumber dan tujuan.</li><li>Untuk stok, pilih produk dan jumlah transfer.</li><li>Untuk karyawan, Owner memilih Admin/Kasir dan cabang tujuan.</li><li>Periksa riwayat transfer setelah proses selesai.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin (sesuai tindakan)</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="cloud_accounts"><summary><span class="help-icon">👥</span><div><h3>Kelola Akun</h3><div class="help-mini">Mengatur akun Owner/Admin/Kasir sesuai izin.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> membuat dan mengatur identitas karyawan yang boleh menggunakan aplikasi.</p><ol><li>Buat akun dengan role yang tepat.</li><li>Gunakan identitas masing-masing, jangan berbagi satu akun untuk semua orang.</li><li>Nonaktifkan akses ketika karyawan tidak lagi menggunakan sistem.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="cloud_devices"><summary><span class="help-icon">💻</span><div><h3>Kelola Perangkat</h3><div class="help-mini">Menyetujui atau mencabut perangkat yang memakai aplikasi.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> mencegah akun valid dipakai bebas dari perangkat asing.</p><ol><li>Perangkat baru login dan didaftarkan.</li><li>Owner/Admin memeriksa perangkat.</li><li>Setujui bila dikenal.</li><li>Revoke perangkat yang hilang/tidak digunakan.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="backup_restore"><summary><span class="help-icon">💾</span><div><h3>Backup & Restore</h3><div class="help-mini">Membuat cadangan dan memulihkan data yang didukung.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> menyediakan lapisan pemulihan bila terjadi masalah data atau migrasi.</p><ol><li>Buat backup sebelum perubahan besar.</li><li>Simpan file di tempat aman.</li><li>Gunakan restore hanya pada backup yang benar dan dipahami dampaknya.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="recovery_center"><summary><span class="help-icon">🛟</span><div><h3>Recovery Center</h3><div class="help-mini">Menangani antrean/sinkronisasi yang bermasalah.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> membantu memeriksa masalah data offline, konflik, atau proses yang gagal tersinkron.</p><ol><li>Baca status masalah terlebih dahulu.</li><li>Retry bila kegagalan hanya jaringan.</li><li>Jangan discard data bila belum memahami transaksi yang akan dibuang.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="app_update"><summary><span class="help-icon">📲</span><div><h3>Aplikasi & Update</h3><div class="help-mini">PWA, versi aplikasi, cache, dan sinkronisasi.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> memasang LocDailyMar sebagai aplikasi dan menerapkan versi baru dengan lebih aman.</p><ol><li>Cek apakah ada antrean offline.</li><li>Tekan Cek Update.</li><li>Terapkan update hanya ketika antrean aman.</li><li>Jangan membersihkan cache saat transaksi offline belum sinkron.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner · Admin · Kasir</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+<details class="help-card" data-guide-card data-guide-feature="qa_security"><summary><span class="help-icon">🧪</span><div><h3>QA & Security</h3><div class="help-mini">Pemeriksaan teknis untuk Owner/developer.</div></div><span class="help-arrow">▼</span></summary><div class="help-card-body"><p><strong>Fungsi:</strong> memeriksa konfigurasi keamanan dan kesehatan teknis. Menu ini bukan pekerjaan harian kasir.</p><ol><li>Jalankan ketika melakukan update atau troubleshooting.</li><li>Baca PASS/WARN/FAIL.</li><li>Jangan mengubah konfigurasi keamanan tanpa memahami dampaknya.</li></ol><div class="help-meta"><span class="help-badge help-role">Owner</span><span class="help-badge help-plan-unknown" data-guide-plan>-</span></div></div></details>
+
+</div>
+<div class="help-empty" id="guideEmpty">Tidak ada panduan yang cocok dengan pencarian tersebut.</div>
+<div class="help-note"><strong>Catatan:</strong> menu yang terlihat pada aplikasi mengikuti role akun, paket lisensi, status perangkat, dan kondisi operasional. Jadi dua akun dapat melihat menu berbeda walaupun memakai aplikasi yang sama.</div>
+</section>
+</div>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/offline-queue.js?v=16.0"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=16.0"></script>
+<script src="js/cloud-session-guard.js?v=16.0"></script>
+<script src="js/user-guide.js?v=24.2"></script>
+<script src="js/global-system-navigation.js?v=24.2"></script>
+</body>
+</html>
