@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const NAV_VERSION="24.0";
+    const NAV_VERSION="24.2";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -33,7 +33,8 @@
         {page:"pwa-settings.html",icon:"📲",label:"Aplikasi & Update",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"]},
-        {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]}
+        {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},
+        {page:"panduan.html",icon:"📘",label:"Panduan & Bantuan",group:"Sistem",roles:["owner","admin","kasir"]}
     ];
 
     const GROUP_ORDER=["Utama","Inventori","Supplier & Pembelian","Keuangan & Laporan","Closing & Data","Sistem"];
