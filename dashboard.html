@@ -3251,7 +3251,7 @@ body.dark-mode
     <script src="js/supabase-client.js"></script>
     <script src="js/cloud-auth.js?v=15.0"></script>
     <script src="js/cloud-session.js?v=6.0"></script>
-    <script src="js/cloud-session-guard.js?v=15.0"></script><script src="js/license-service.js?v=23.0"></script><script src="js/license-guard.js?v=23.0"></script>
+    <script src="js/cloud-session-guard.js?v=15.0"></script>
     <!-- Live Sync Tahap 9: Cloud Absensi -->
     <script src="js/attendance-service.js?v=9.1"></script>
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
@@ -3602,6 +3602,9 @@ body.dark-mode
         .sales-assistant-drawer{width:100vw}
     }
 </style>
+<script src="js/license-v2-config.js?v=24.0.0"></script>
+<script src="js/license-v2-client.js?v=24.0.0"></script>
+<script defer src="js/license-v2-guard.js?v=24.0.0"></script>
 </head>
 <body>
 
@@ -11279,7 +11282,6 @@ window.addEventListener(
         "pengeluaran.html":["owner","admin"],
         "backup%20%26%20restore.html":["owner","admin"],
         "backup & restore.html":["owner","admin"],
-        "license.html":["owner","admin","kasir"],
         "recovery-center.html":["owner","admin","kasir"],
         "qa-security-performance.html":["owner"]
     };
@@ -11358,7 +11360,6 @@ window.addEventListener(
         {page:"eod.html", icon:"🌙", label:"End of Day", group:"Closing & Data", roles:["owner","admin"]},
         {page:"backup%20%26%20restore.html", icon:"💾", label:"Backup & Restore", group:"Closing & Data", roles:["owner","admin"]},
 
-        {page:"license.html", icon:"🔐", label:"Lisensi & Paket", group:"Sistem", roles:["owner","admin","kasir"], quick:true},
         {page:"pwa-settings.html", icon:"📲", label:"Aplikasi & Update", group:"Sistem", roles:["owner","admin","kasir"]},
         {page:"recovery-center.html", icon:"🛟", label:"Recovery Center", group:"Sistem", roles:["owner","admin","kasir"]},
         {page:"qa-security-performance.html", icon:"🧪", label:"QA & Security", group:"Sistem", roles:["owner"]}
@@ -12305,6 +12306,6 @@ window.addEventListener(
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
 </script>
-<script src="js/global-system-navigation.js?v=23.0"></script>
+<script src="js/global-system-navigation.js?v=22.2"></script>
 </body>
 </html>

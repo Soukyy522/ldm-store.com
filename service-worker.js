@@ -1,19 +1,20 @@
 "use strict";
 
-const APP_VERSION = "23.0.0";
+const APP_VERSION = "24.0.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release23-license-shell-v1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release23-license-runtime-v1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release24-license-v2-shell-v1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release24-license-v2-runtime-v1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
     "./", "./index.html", "./dashboard.html", "./kasir.html", "./barang.html", "./Purchase-Order.html", "./goods.receipt.html", "./multi-store.html", "./supabase-stage20-unit-test.html",
-    "./license.html", "./payment-gateway.html", "./pwa-settings.html", "./recovery-center.html", "./qa-security-performance.html", "./offline.html", "./manifest.json", "./icon.png",
+    "./pwa-settings.html", "./recovery-center.html", "./qa-security-performance.html", "./license-v2.html", "./developer-license-v2.html", "./offline.html", "./manifest.json", "./icon.png",
     "./assets/icons/icon-192.png", "./assets/icons/icon-512.png",
     "./assets/icons/maskable-512.png", "./style.css", "./css/global-responsive-navigation.css", "./css/multi-store-dashboard-theme.css", "./setting.js", "./employee-id.js",
     "./js/pwa-manager.js", "./js/security-hardening.js", "./js/qa-runtime.js", "./js/recovery-service.js", "./js/global-system-navigation.js",
+    "./js/license-v2-config.js", "./js/license-v2-client.js", "./js/license-v2-guard.js", "./js/license-v2-admin-config.js", "./js/license-v2-admin.js",
     "./js/offline-queue.js", "./js/supabase-config.js", "./js/supabase-client.js",
-    "./js/cloud-auth.js", "./js/cloud-session.js", "./js/cloud-session-guard.js", "./js/license-service.js", "./js/license-guard.js",
+    "./js/cloud-auth.js", "./js/cloud-session.js", "./js/cloud-session-guard.js",
     "./js/unit-conversion.js", "./js/promo-pricing.js", "./js/multi-store-service.js", "./js/products-service.js", "./js/products-bootstrap.js",
     "./js/procurement-service.js", "./js/procurement-bootstrap.js",
     "./js/transactions-service.js", "./js/attendance-service.js",
@@ -78,12 +79,29 @@ async function networkFirstNavigation(request){
     }
 }
 
+async function networkFirstAsset(request){
+    try{
+        const response=await fetch(request,{cache:"no-store"});
+        if(response.ok){
+            const cache=await caches.open(RUNTIME_CACHE);
+            await cache.put(request,response.clone());
+        }
+        return response;
+    }catch(error){
+        return (await caches.match(request,{ignoreSearch:true})) || new Response("Resource lisensi belum tersedia.",{status:503});
+    }
+}
+
 self.addEventListener("fetch", event => {
     const request = event.request;
     const url = new URL(request.url);
     if(request.method !== "GET" || isSupabaseApi(url)) return;
     if(request.mode === "navigate"){
         event.respondWith(networkFirstNavigation(request));
+        return;
+    }
+    if(url.origin === self.location.origin && /\/js\/license-v2-(config|client|guard|admin-config|admin)\.js$/i.test(url.pathname)){
+        event.respondWith(networkFirstAsset(request));
         return;
     }
     if(url.origin === self.location.origin || url.hostname === "cdn.jsdelivr.net"){

@@ -311,8 +311,3 @@ File utama:
 - `docs/TAHAP-19.md`
 
 Jalankan audit frontend dengan `node tools/qa-stage19.mjs .`. Peringatan berbeda dari kegagalan: kegagalan harus dibereskan sebelum rilis, sedangkan peringatan perlu ditinjau dan dicatat.
-
-
-## TAHAP 23 — Lisensi & Billing
-
-Menambahkan lisensi per store network, trial Warung Sederhana 14 hari, kuota device/toko, Midtrans Snap via Edge Functions, dan Developer License Center.

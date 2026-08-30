@@ -1,9 +1,1 @@
-23.0.0
-Stage: 23 - Paid License, 14-Day Trial & Midtrans Payment Gateway
-Baseline: 22.2
-License scope: Store Network
-Plans: Warung Kecil / Warung Sederhana / Toko / Lifetime
-Trial: Warung Sederhana 14 days, one-time per network and Owner user
-Lifetime quota: 15 devices / 8 stores
-Payment provider: Midtrans Snap via Supabase Edge Functions
-Server Key: Edge Secret only
+24.0.0
