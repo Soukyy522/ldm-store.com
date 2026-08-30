@@ -1,17 +1,17 @@
 "use strict";
 
-const APP_VERSION = "24.2.0";
+const APP_VERSION = "25.0.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release24-2-user-guide-shell-v1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release24-2-user-guide-runtime-v1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release25-primary-owner-shell-v1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release25-primary-owner-runtime-v1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
     "./", "./index.html", "./dashboard.html", "./kasir.html", "./barang.html", "./Purchase-Order.html", "./goods.receipt.html", "./multi-store.html", "./supabase-stage20-unit-test.html",
-    "./pwa-settings.html", "./panduan.html", "./recovery-center.html", "./qa-security-performance.html", "./license.html", "./license-v2.html", "./developer-license-v2.html", "./offline.html", "./manifest.json", "./icon.png",
+    "./pwa-settings.html", "./panduan.html", "./owner-control-center.html", "./recovery-center.html", "./qa-security-performance.html", "./license.html", "./license-v2.html", "./developer-license-v2.html", "./offline.html", "./manifest.json", "./icon.png",
     "./assets/icons/icon-192.png", "./assets/icons/icon-512.png",
     "./assets/icons/maskable-512.png", "./style.css", "./css/global-responsive-navigation.css", "./css/help-center.css", "./css/multi-store-dashboard-theme.css", "./setting.js", "./employee-id.js",
-    "./js/pwa-manager.js", "./js/user-guide.js", "./js/security-hardening.js", "./js/qa-runtime.js", "./js/recovery-service.js", "./js/global-system-navigation.js",
+    "./js/pwa-manager.js", "./js/user-guide.js", "./js/security-hardening.js", "./js/qa-runtime.js", "./js/recovery-service.js", "./js/global-system-navigation.js", "./js/primary-owner-service.js",
     "./js/license-v2-config.js", "./js/license-v2-client.js", "./js/license-v2-guard.js", "./js/license-v2-admin-config.js", "./js/license-v2-admin.js",
     "./js/offline-queue.js", "./js/supabase-config.js", "./js/supabase-client.js",
     "./js/cloud-auth.js", "./js/cloud-session.js", "./js/cloud-session-guard.js",

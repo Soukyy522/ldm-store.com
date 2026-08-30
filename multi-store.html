@@ -36,6 +36,7 @@
     <script src="js/cloud-auth.js?v=22.0"></script>
     <script src="js/cloud-session.js?v=22.0"></script>
     <script src="js/cloud-session-guard.js?v=22.0"></script>
+    <script src="js/primary-owner-service.js?v=25.0"></script>
     <script src="js/multi-store-service.js?v=24.2.2"></script>
 <script src="js/license-v2-config.js?v=24.0.0"></script>
 <script src="js/license-v2-client.js?v=24.0.0"></script>
@@ -126,7 +127,7 @@
                     <div class="ms-field"><label>Cabang Tujuan</label><select id="employeeDestination" required><option value="">Pilih cabang tujuan</option></select></div>
                     <div class="ms-field"><label>Catatan Pemindahan</label><textarea id="employeeTransferNote" maxlength="500" placeholder="Contoh: Rotasi kasir ke cabang baru"></textarea></div>
                     <button class="ms-btn ms-btn-primary" type="submit">Pindahkan Karyawan</button>
-                    <div class="ms-security-note">🔐 Hanya Owner yang dapat memindahkan karyawan. Owner tidak dapat dipindahkan dari panel ini. Setelah pindah, perangkat karyawan pada cabang lama direvoke dan perlu diotorisasi pada cabang tujuan.</div>
+                    <div class="ms-security-note">🔐 Hanya Owner Utama yang ditetapkan pada cabang pusat dapat memindahkan karyawan. Owner cabang biasa ditolak oleh server. Setelah pindah, perangkat karyawan pada cabang lama direvoke dan perlu diotorisasi pada cabang tujuan.</div>
                 </form>
                 <div>
                     <div class="ms-panel-head" style="margin-bottom:9px"><div><span class="ms-panel-kicker">🕘 Audit</span><h2>Riwayat Pemindahan</h2><p>Jejak perpindahan disimpan di database dan tidak bergantung pada browser.</p></div></div>
@@ -139,7 +140,7 @@
     <script>
     (function(){
         "use strict";
-        let stores=[];let transfers=[];let candidates=[];let employees=[];let employeeTransfers=[];let context=null;
+        let stores=[];let transfers=[];let candidates=[];let employees=[];let employeeTransfers=[];let context=null;let primaryContext=null;
         const $=id=>document.getElementById(id);
         const esc=value=>String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
         const num=value=>Number(value||0).toLocaleString("id-ID",{maximumFractionDigits:3});
@@ -148,6 +149,7 @@
         function setLoading(value){$("appRoot").classList.toggle("ms-loading",!!value)}
         function currentStore(){return stores.find(row=>row.is_current)||null}
         function currentRole(){return String(context&&context.profile&&context.profile.role||localStorage.getItem("userRole")||"").toLowerCase()}
+        function isPrimaryOwner(){return primaryContext&&primaryContext.is_primary_owner===true}
 
         function renderStores(){
             const active=currentStore();
@@ -155,7 +157,7 @@
             $("storeCount").textContent=stores.length;
             $("roleChip").textContent=`👤 ${currentRole()||"pengguna"}`;
             $("branchPanel").style.display=currentRole()==="owner"?"block":"none";
-            $("employeeTransferPanel").style.display=currentRole()==="owner"?"block":"none";
+            $("employeeTransferPanel").style.display=isPrimaryOwner()?"block":"none";
             $("storeList").innerHTML=stores.length?stores.map(store=>`
                 <div class="ms-store ${store.is_current?"current":""}">
                     <div><div class="ms-store-name">${esc(store.store_name)}</div><div class="ms-store-code">${esc(store.store_code)} · ${esc(store.member_role)}</div><div class="ms-store-meta">${num(store.product_count)} produk · total stok ${num(store.total_stock)}</div></div>
@@ -226,12 +228,12 @@
             $("employeeTransferList").innerHTML=employeeTransfers.length?employeeTransfers.map(row=>`<article class="ms-employee-move"><strong>${esc(row.display_name||row.username||"Karyawan")} <span class="ms-role-pill">${esc(row.employee_role)}</span></strong><p>${esc(row.source_store_name)} → <strong>${esc(row.destination_store_name)}</strong><br>${new Date(row.moved_at).toLocaleString("id-ID")}${row.note?` · ${esc(row.note)}`:""}<br>Dipindahkan oleh ${esc(row.moved_by_name||"Owner")}</p></article>`).join(""):'<div class="ms-empty">Belum ada riwayat pemindahan karyawan.</div>';
         }
         async function loadEmployees(){
-            if(currentRole()!=="owner")return;
+            if(!isPrimaryOwner())return;
             try{employees=await window.LDMMultiStore.listEmployees();renderEmployeeForm()}
             catch(error){employees=[];$("employeeSelect").innerHTML='<option value="">Gagal memuat karyawan</option>';$("employeeInfo").textContent=errorMessage(error)}
         }
         async function loadEmployeeTransfers(){
-            if(currentRole()!=="owner")return;
+            if(!isPrimaryOwner())return;
             try{employeeTransfers=await window.LDMMultiStore.listEmployeeTransfers(100);renderEmployeeTransfers()}
             catch(error){employeeTransfers=[];$("employeeTransferList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`}
         }
@@ -259,6 +261,7 @@
         async function boot(){
             try{
                 context=await window.LDMCloudSession.ensureAuthenticated({registerDevice:true});
+                primaryContext=await window.LDMPrimaryOwner.context(true);
                 await loadStores();
                 await Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]);
                 await window.LDMMultiStore.startRealtime(()=>Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]));
@@ -276,6 +279,6 @@
         window.addEventListener("online",onlineState);window.addEventListener("offline",onlineState);onlineState();boot();
     })();
     </script>
-    <script src="js/global-system-navigation.js?v=24.1.0"></script>
+    <script src="js/global-system-navigation.js?v=25.0"></script>
 </body>
 </html>

@@ -235,51 +235,8 @@
         const supabase =
             client();
 
-        const {
-            data,
-            error
-        } =
-            await supabase
-                .from("products")
-                .select(
-                    [
-                        "id",
-                        "store_id",
-                        "barcode",
-                        "name",
-                        "category",
-                        "unit",
-                        "purchase_unit",
-                        "purchase_unit_factor",
-                        "purchase_price",
-                        "sale_price",
-                        "legacy_stock_snapshot",
-                        "last_expiry_date",
-                        "promo_active",
-                        "promo_name",
-                        "promo_type",
-                        "promo_value",
-                        "promo_price",
-                        "promo_min_qty",
-                        "promo_start_date",
-                        "promo_end_date",
-                        "active",
-                        "version",
-                        "created_at",
-                        "updated_at"
-                    ].join(",")
-                )
-                .eq(
-                    "active",
-                    true
-                )
-                .order(
-                    "name",
-                    {
-                        ascending:
-                            true
-                    }
-                );
+        const {data,error} =
+            await supabase.rpc("ldm_visible_products");
 
         if(error){
             throw error;

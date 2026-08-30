@@ -61,8 +61,8 @@
     </div>
   </div>
 
-  <script src="js/license-v2-config.js?v=24.1.0"></script>
-  <script src="js/license-v2-client.js?v=24.1.0"></script>
+  <script src="js/license-v2-config.js?v=25.0"></script>
+  <script src="js/license-v2-client.js?v=25.0"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);
@@ -92,6 +92,7 @@
       app_update:['Aplikasi & Update','Mengelola versi PWA, cache, dan pembaruan aplikasi.'],
       multi_store:['Multi-Toko & Transfer','Mengelola cabang, pindah toko aktif, transfer stok, dan pemindahan karyawan antar cabang.'],
       cloud_control:['Cloud Control','Memantau sinkronisasi dan kontrol cloud tingkat lanjut.'],
+      central_control:['Kontrol Pusat','Laporan gabungan/per cabang, profit jaringan, dan manajemen karyawan khusus Owner Utama.'],
       eod:['End of Day','Menutup operasional harian setelah seluruh shift selesai.'],
       qa_security:['QA & Security','Menjalankan pemeriksaan kesehatan, keamanan, dan konfigurasi sistem.']
     };
@@ -104,8 +105,8 @@
     const PLAN_FEATURES={
       WARUNG_KECIL:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo'],
       WARUNG_SEDERHANA:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update'],
-      TOKO:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update','multi_store','cloud_control','eod','qa_security'],
-      LIFETIME:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update','multi_store','cloud_control','eod','qa_security']
+      TOKO:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update','multi_store','cloud_control','central_control','eod','qa_security'],
+      LIFETIME:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update','multi_store','cloud_control','central_control','eod','qa_security']
     };
     function configPlan(code){return LDM_LICENSE_V2_CONFIG.plans[code]||{}}
     function planName(code){return configPlan(code).name||code}
