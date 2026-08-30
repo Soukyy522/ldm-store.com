@@ -399,7 +399,7 @@ begin
     if exists(select 1 from public.ldm2_trial_claims where
         email_hash=decode(p_email_hash_hex,'hex') or
         identity_hash=decode(p_trial_identity_hash_hex,'hex')
-    )) then
+    ) then
         return jsonb_build_object('ok',false,'code','TRIAL_ALREADY_USED','message','Masa trial sudah pernah digunakan oleh email atau instalasi ini.');
     end if;
     select features into v_features from public.ldm2_plans where code='WARUNG_SEDERHANA' and active=true;
