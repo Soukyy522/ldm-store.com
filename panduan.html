@@ -9,12 +9,12 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="css/help-center.css?v=24.2">
+<link rel="stylesheet" href="css/help-center.css?v=26.2">
 <script src="js/security-hardening.js?v=19.0"></script>
 <script defer src="js/qa-runtime.js?v=19.0"></script>
-<script src="js/license-v2-config.js?v=25.2.0"></script>
-<script src="js/license-v2-client.js?v=25.2.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
+<script src="js/license-v2-config.js?v=26.2.0"></script>
+<script src="js/license-v2-client.js?v=26.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=26.2.0"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -44,6 +44,41 @@
         <article class="help-start-card"><div class="help-step">3</div><h3>Jalankan toko</h3><p>Gunakan Kasir untuk transaksi, Stock Opname untuk pengecekan fisik, serta PO/Goods Receipt untuk pembelian.</p></article>
         <article class="help-start-card"><div class="help-step">4</div><h3>Tutup & evaluasi</h3><p>Selesaikan Closing Shift, lakukan EOD saat syarat terpenuhi, lalu baca Laporan untuk mengevaluasi hasil.</p></article>
     </div>
+</section>
+
+<section class="help-section" id="panduanPaketLisensi">
+    <div class="help-section-head"><div><h2>Harga dan pilihan paket lisensi</h2><p>Harga disusun berdasarkan kelengkapan fitur, jumlah perangkat, dan kapasitas cabang yang dapat dikelola.</p></div></div>
+    <div class="help-price-grid">
+        <article class="help-price-card" data-guide-plan-code="WARUNG_KECIL">
+            <span class="help-price-tier">Mulai usaha</span><h3>Warung Kecil</h3>
+            <div class="help-price-main"><span data-guide-monthly>Rp69.000</span> <small>/ bulan</small></div>
+            <div class="help-price-yearly">Tahunan: <span data-guide-yearly>Rp699.000</span><span class="help-price-saving" data-guide-saving>Hemat Rp129.000</span></div>
+            <div class="help-price-quota" data-guide-quota>2 perangkat · 1 toko</div>
+            <ul><li>Kasir, barang, stok, Stock Opname, laporan, dan absensi.</li><li>Retur, Closing Shift, backup, dan promo dasar.</li><li>Cocok untuk satu warung dengan operasional inti.</li></ul>
+        </article>
+        <article class="help-price-card featured" data-guide-plan-code="WARUNG_SEDERHANA">
+            <span class="help-price-tier">Trial 14 hari</span><h3>Warung Sederhana</h3>
+            <div class="help-price-main"><span data-guide-monthly>Rp129.000</span> <small>/ bulan</small></div>
+            <div class="help-price-yearly">Tahunan: <span data-guide-yearly>Rp1.299.000</span><span class="help-price-saving" data-guide-saving>Hemat Rp249.000</span></div>
+            <div class="help-price-quota" data-guide-quota>3 perangkat · 1 toko</div>
+            <ul><li>Seluruh fitur Warung Kecil dan promo lanjutan.</li><li>Supplier, PO, Goods Receipt, serta pengeluaran.</li><li>Akun/perangkat Cloud, Recovery, dan update aplikasi.</li></ul>
+        </article>
+        <article class="help-price-card" data-guide-plan-code="TOKO">
+            <span class="help-price-tier">Multi cabang</span><h3>Toko</h3>
+            <div class="help-price-main"><span data-guide-monthly>Rp249.000</span> <small>/ bulan</small></div>
+            <div class="help-price-yearly">Tahunan: <span data-guide-yearly>Rp2.499.000</span><span class="help-price-saving" data-guide-saving>Hemat Rp489.000</span></div>
+            <div class="help-price-quota" data-guide-quota>10 perangkat · 5 toko</div>
+            <ul><li>Seluruh fitur Warung Sederhana.</li><li>Multi-Toko, transfer stok, dan pemindahan karyawan.</li><li>Kontrol Pusat, EOD, Cloud Control, QA &amp; Security.</li></ul>
+        </article>
+        <article class="help-price-card" data-guide-plan-code="LIFETIME">
+            <span class="help-price-tier">Sekali bayar</span><h3>Lifetime</h3>
+            <div class="help-price-main"><span data-guide-lifetime>Rp7.499.000</span> <small>sekali bayar</small></div>
+            <div class="help-price-yearly">Tidak memerlukan perpanjangan periodik</div>
+            <div class="help-price-quota" data-guide-quota>15 perangkat · 8 toko</div>
+            <ul><li>Seluruh fitur paket Toko tanpa fitur yang dikunci.</li><li>Kuota tertinggi untuk perangkat dan cabang.</li><li>Tidak mempunyai tanggal kedaluwarsa bulanan/tahunan.</li></ul>
+        </article>
+    </div>
+    <div class="help-price-note"><strong>Ketentuan penting:</strong> Trial Warung Sederhana berlaku gratis selama 14 hari, satu kali untuk setiap email dan instalasi. Lisensi bulanan/tahunan yang melewati masa berlaku akan ditangguhkan sementara tanpa menghapus data. Setelah developer memperpanjangnya, akses kembali aktif. Tombol pemesanan pada halaman Lisensi akan membuka WhatsApp developer.</div>
 </section>
 
 <section class="help-section">
@@ -113,7 +148,7 @@
 <script src="js/cloud-auth.js?v=15.0"></script>
 <script src="js/cloud-session.js?v=16.0"></script>
 <script src="js/cloud-session-guard.js?v=16.0"></script>
-<script src="js/user-guide.js?v=24.2"></script>
+<script src="js/user-guide.js?v=26.2"></script>
 <script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>

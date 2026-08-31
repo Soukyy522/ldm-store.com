@@ -1,9 +1,9 @@
 "use strict";
 
-const APP_VERSION = "26.0.0";
+const APP_VERSION = "26.2.1";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release26-central-catalog-shell-v1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release26-central-catalog-runtime-v1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release26-2-1-closing-cloud-accounts-shell-v1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release26-2-1-closing-cloud-accounts-runtime-v1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

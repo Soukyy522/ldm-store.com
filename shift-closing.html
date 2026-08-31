@@ -2195,71 +2195,134 @@
 }
 
         /* BUTTON KHUSUS OWNER UNTUK MEMBUAT ATAU MENGGANTI PASSWORD TUTUP SHIFT */
-        function bukaModalPassClosing() {
-
-    if (
-        !requirePermission(
-            "closing.approve"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    const selectAkunPass =
-        document.getElementById(
-            "selectAkunPass"
-        );
-
-
-    const daftarAkun =
-        JSON.parse(
-            localStorage.getItem(
-                "daftarAkun"
-            )
-        ) || [];
-
-
-    selectAkunPass.innerHTML = "";
-
-
-    daftarAkun.forEach(
-        akun => {
-
-            const opt =
-                document.createElement(
-                    "option"
-                );
-
-
-            opt.value =
-                akun.username;
-
-            opt.textContent =
-                akun.username;
-
-
-            selectAkunPass.appendChild(
-                opt
-            );
-
+        function bacaArrayAmanClosing(key) {
+            try {
+                const value = JSON.parse(localStorage.getItem(key) || "[]");
+                return Array.isArray(value) ? value : [];
+            } catch (error) {
+                return [];
+            }
         }
-    );
 
+        function normalisasiAkunClosing(rows) {
+            const unique = new Map();
 
-    document.getElementById(
-        "inputNewPassClosing"
-    ).value = "";
+            (Array.isArray(rows) ? rows : []).forEach(account => {
+                if (!account || account.active === false || account.deleted_at) return;
 
+                const username = String(account.username || "").trim();
+                if (!username) return;
 
-    document.getElementById(
-        "modalKelolaPassClosing"
-    ).style.display =
-        "flex";
+                const key = username.toLowerCase();
+                if (unique.has(key)) return;
 
-}
+                unique.set(key, {
+                    id: String(account.id || account.user_id || "").trim(),
+                    username,
+                    displayName: String(account.display_name || "").trim(),
+                    role: String(account.role || "kasir").trim().toLowerCase()
+                });
+            });
+
+            return [...unique.values()].sort((a, b) =>
+                a.username.localeCompare(b.username, "id", {sensitivity:"base"})
+            );
+        }
+
+        async function muatAkunTerdaftarClosing() {
+            let accounts = [];
+
+            /*
+             * Sumber utama adalah RPC Cloud melalui reporting-service.
+             * RPC tersebut mengikuti Store ID/session aktif sehingga akun
+             * cabang lain tidak tercampur ke dropdown Closing Shift.
+             */
+            if (
+                navigator.onLine &&
+                window.LDMReporting &&
+                typeof window.LDMReporting.refreshProfiles === "function"
+            ) {
+                try {
+                    const cloudAccounts = await window.LDMReporting.refreshProfiles();
+                    accounts = Array.isArray(cloudAccounts) ? cloudAccounts : [];
+                } catch (error) {
+                    console.warn("Muat akun Closing dari Cloud:", error);
+                }
+            }
+
+            /* Cache Cloud dipakai ketika koneksi terputus atau RPC gagal. */
+            if (!accounts.length) {
+                accounts = bacaArrayAmanClosing("ldmAttendanceProfiles");
+            }
+
+            /* Fallback terakhir untuk instalasi lama sebelum Akun Cloud. */
+            if (!accounts.length) {
+                accounts = bacaArrayAmanClosing("daftarAkun");
+            }
+
+            return normalisasiAkunClosing(accounts);
+        }
+
+        async function bukaModalPassClosing() {
+            if (!requirePermission("closing.approve")) return;
+
+            const selectAkunPass = document.getElementById("selectAkunPass");
+            const inputPassword = document.getElementById("inputNewPassClosing");
+            const modal = document.getElementById("modalKelolaPassClosing");
+            if (!selectAkunPass || !inputPassword || !modal) return;
+
+            selectAkunPass.innerHTML = "";
+            const loadingOption = document.createElement("option");
+            loadingOption.value = "";
+            loadingOption.textContent = "Memuat akun Cloud...";
+            selectAkunPass.appendChild(loadingOption);
+            selectAkunPass.disabled = true;
+            inputPassword.value = "";
+            inputPassword.disabled = true;
+            modal.style.display = "flex";
+
+            const accounts = await muatAkunTerdaftarClosing();
+            selectAkunPass.innerHTML = "";
+
+            if (!accounts.length) {
+                const emptyOption = document.createElement("option");
+                emptyOption.value = "";
+                emptyOption.textContent = navigator.onLine
+                    ? "Tidak ada akun aktif pada toko ini"
+                    : "Cache akun belum tersedia — sambungkan internet";
+                selectAkunPass.appendChild(emptyOption);
+                selectAkunPass.disabled = true;
+                inputPassword.disabled = true;
+                tampilkanAlertCustom(
+                    "Akun Tidak Ditemukan",
+                    navigator.onLine
+                        ? "Cloud tidak mengembalikan akun aktif untuk Store ID yang sedang digunakan."
+                        : "Perangkat sedang offline dan belum mempunyai cache akun Cloud.",
+                    "warning"
+                );
+                return;
+            }
+
+            accounts.forEach(account => {
+                const option = document.createElement("option");
+                option.value = account.username;
+                const name = account.displayName && account.displayName !== account.username
+                    ? `${account.displayName} (${account.username})`
+                    : account.username;
+                option.textContent = `${name} · ${account.role.toUpperCase()}`;
+                option.dataset.userId = account.id;
+                selectAkunPass.appendChild(option);
+            });
+
+            const currentOption = [...selectAkunPass.options].find(option =>
+                option.value.toLowerCase() === String(currentActiveUser || "").toLowerCase()
+            );
+            if (currentOption) selectAkunPass.value = currentOption.value;
+
+            selectAkunPass.disabled = false;
+            inputPassword.disabled = false;
+            inputPassword.focus();
+        }
 
         function tutupModalPassClosing() {
             document.getElementById("modalKelolaPassClosing").style.display = "none";
@@ -2282,6 +2345,19 @@
         document.getElementById(
             "selectAkunPass"
         ).value;
+
+
+    if (!targetUser) {
+
+        tampilkanAlertCustom(
+            "Akun Belum Dipilih",
+            "Pilih akun aktif sebelum menyimpan Password Closing Shift.",
+            "warning"
+        );
+
+        return;
+
+    }
 
 
     const newPass =
