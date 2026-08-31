@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const NAV_VERSION="25.2";
+    const NAV_VERSION="26.2.2";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -139,23 +139,54 @@
     function calculateEodReadiness(){
         const today=witaDate(new Date());
         const laporan=readArray("laporan");
-        const transactions=(laporan.length?laporan:readArray("dataLaporan")).filter(item=>recordDate(item)===today);
-        const activeAccounts=new Set(transactions.map(cashierName).filter(Boolean));
+        const transactions=(laporan.length?laporan:readArray("dataLaporan"))
+            .filter(item=>recordDate(item)===today);
 
-        if(activeAccounts.size===0){
-            return {ready:false,activeAccounts:[],pendingAccounts:[],hasShift1:false,hasShift2:false,date:today};
+        const requirements=new Map();
+        transactions.forEach(item=>{
+            const account=cashierName(item);
+            if(!account)return;
+            const shift=shiftName(item&&(
+                item.shift||item.shiftLabel||item.shift_label||""
+            ));
+            requirements.set(account+"|"+shift,{account,shift});
+        });
+
+        if(requirements.size===0){
+            return {
+                ready:false,
+                activeAccounts:[],
+                pendingAccounts:[],
+                pendingClosings:[],
+                hasShift1:false,
+                hasShift2:false,
+                date:today
+            };
         }
 
-        const closingToday=readArray("shiftClosingLog").filter(item=>String(item&&item.tanggal||"").slice(0,10)===today);
-        const closedAccounts=new Set(closingToday.map(item=>String(item&&item.kasir||"").trim().toLowerCase()).filter(Boolean));
-        const pendingAccounts=[...activeAccounts].filter(account=>!closedAccounts.has(account));
+        const closingToday=readArray("shiftClosingLog")
+            .filter(item=>String(item&&item.tanggal||"").slice(0,10)===today);
+
+        const isCovered=requirement=>closingToday.some(closing=>{
+            if(cashierName(closing)!==requirement.account)return false;
+            const closingShift=shiftName(closing&&(
+                closing.shift||closing.shiftLabel||closing.shift_label||""
+            ));
+            if(!requirement.shift)return true;
+            return closingShift===requirement.shift||closingShift==="full day";
+        });
+
+        const pendingClosings=[...requirements.values()].filter(item=>!isCovered(item));
+        const activeAccounts=[...new Set([...requirements.values()].map(item=>item.account))];
+        const pendingAccounts=[...new Set(pendingClosings.map(item=>item.account))];
         const hasShift1=closingToday.some(item=>shiftName(item&&item.shift)==="shift 1");
         const hasShift2=closingToday.some(item=>shiftName(item&&item.shift)==="shift 2");
 
         return {
-            ready:pendingAccounts.length===0 && hasShift1 && hasShift2,
-            activeAccounts:[...activeAccounts],
+            ready:pendingClosings.length===0,
+            activeAccounts,
             pendingAccounts,
+            pendingClosings,
             hasShift1,
             hasShift2,
             date:today
@@ -416,7 +447,7 @@
                 link.title="End of Day siap karena seluruh Closing Shift wajib sudah lengkap.";
             }else{
                 link.setAttribute("data-eod-waiting","true");
-                link.title="End of Day akan muncul setelah seluruh Closing Shift wajib hari ini lengkap.";
+                link.title="End of Day akan muncul setelah setiap akun dan shift yang benar-benar memiliki transaksi sudah Closing Shift.";
             }
         });
     }

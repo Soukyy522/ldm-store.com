@@ -4,7 +4,7 @@
         enabled:true,
         serverUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-license-v2",
         developerWhatsApp:"6283117590286",
-        appVersion:"26.2.1",
+        appVersion:"26.2.2",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,
