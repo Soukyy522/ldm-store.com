@@ -1,0 +1,79 @@
+LOCDAILYMAR 25.3.1
+OWNER CABANG: HARGA TERSEMBUNYI, SUBTOTAL/TOTAL TERLIHAT
+=======================================================
+
+ATURAN AKSES
+------------
+Owner Pusat  : harga beli terlihat, subtotal/total terlihat, harga dapat diubah.
+Owner Cabang : harga beli tidak terlihat, subtotal/total terlihat, harga tidak dapat diubah.
+Admin        : harga beli dan subtotal/total tidak terlihat, harga tidak dapat diubah.
+Kasir        : tidak dapat membuka Purchase Order dan Goods Receipt.
+
+Owner Cabang tetap dapat membuat PO dan GR. Sistem menghitung subtotal dan total
+secara otomatis menggunakan harga tepercaya dari Master Barang toko aktif. Untuk
+GR yang berasal dari PO, server menggunakan harga yang tersimpan pada PO.
+
+Walaupun data permintaan diubah melalui Console browser, server mengabaikan harga
+dari Owner Cabang dan menghitung ulang menggunakan harga milik server.
+
+
+LANGKAH 1 - JALANKAN SQL
+-------------------------
+1. Masuk ke Supabase Dashboard project APLIKASI.
+2. Buka SQL Editor lalu New Query.
+3. Buka file:
+
+   supabase/sql/23-stage25.3.1-branch-owner-totals-only.sql
+
+4. Salin seluruh isi file dan tekan RUN.
+5. Hasil yang benar:
+
+   procurement_products_ok          = true
+   procurement_history_ok           = true
+   procurement_endpoint_execute_ok  = true
+   value                            = 25.3.1-totals-only
+
+SQL ini dapat dijalankan setelah versi 25.2 maupun 25.3.
+
+
+LANGKAH 2 - PASANG FILE APLIKASI
+--------------------------------
+Jika menggunakan paket lengkap, unggah seluruh isinya.
+
+Jika menggunakan paket hotfix, timpa file berikut sesuai folder:
+
+Purchase-Order.html
+goods.receipt.html
+service-worker.js
+VERSION.txt
+js/products-service.js
+js/primary-owner-service.js
+js/global-system-navigation.js
+js/license-v2-config.js
+supabase/sql/23-stage25.3.1-branch-owner-totals-only.sql
+
+
+LANGKAH 3 - BERSIHKAN CACHE
+----------------------------
+1. Pastikan antrean offline sudah selesai.
+2. Tutup semua tab aplikasi.
+3. Buka kembali Aplikasi & Update.
+4. Pasang pembaruan jika tersedia.
+5. Jika tampilan lama masih muncul, hapus cache/PWA lalu login ulang.
+
+Versi yang benar: 25.3.1.
+
+
+PENGUJIAN OWNER CABANG
+-----------------------
+1. Login sebagai Owner cabang bukan pusat.
+2. Pastikan Store Code cabang yang benar sedang aktif.
+3. Buka Purchase Order dan pilih barang.
+4. Form/kolom Harga Beli tidak boleh terlihat.
+5. Masukkan Qty. Subtotal dan Total Estimasi harus tampil otomatis.
+6. Simpan PO lalu buka Goods Receipt.
+7. Harga Beli tetap tidak terlihat, tetapi Subtotal dan Total Nilai terlihat.
+8. Owner Cabang tidak memperoleh kolom untuk mengubah harga.
+
+Owner Cabang hanya melihat data procurement Store ID aktifnya. Pembatasan paket
+lisensi Purchase Order dan Goods Receipt tetap berlaku.

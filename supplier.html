@@ -114,7 +114,6 @@
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
-    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -1078,12 +1077,12 @@
     <script src="js/cloud-auth.js?v=15.0"></script>
     <script src="js/cloud-session.js?v=6.0"></script>
     <script src="js/cloud-session-guard.js?v=15.0"></script>
-    <script src="js/procurement-service.js?v=11.0"></script>
+    <script src="js/procurement-service.js?v=25.2.0"></script>
     <script src="js/procurement-bootstrap.js?v=11.0"></script>
 
-<script src="js/license-v2-config.js?v=25.1.0"></script>
-<script src="js/license-v2-client.js?v=25.1.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.1.0"></script>
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head><body><div class="app-layout"><div class="nav-overlay" id="navOverlay" onclick="tutupMenu()"></div><nav class="nav-bar" id="navSidebar"><div class="nav-header-mobile"><span>☰ Menu</span><button class="btn-close-menu" onclick="tutupMenu()">✕</button></div><a href="dashboard.html" class="nav-item"><span>📊</span> Dashboard</a><a href="absensi.html" class="nav-item"><span>📝</span> Absensi</a><a href="kasir.html" class="nav-item"><span>💵</span> Kasir</a><a href="retur.html" class="nav-item"><span>↩️</span> Retur</a><a href="barang.html" class="nav-item"><span>📦</span> Barang</a><a href="supplier.html" class="nav-item active" data-role-access="owner,admin"><span>🏢</span> Supplier</a><a href="Purchase-Order.html" class="nav-item" data-role-access="owner,admin"><span>🛒</span> Purchase Order</a><a href="goods.receipt.html" class="nav-item" data-role-access="owner,admin"><span>📥</span> Goods Receipt</a><a href="kartu-stok.html" class="nav-item"><span>📒</span> Kartu Stok</a><a href="stock-opname.html" class="nav-item"><span>📋</span> Stock Opname</a><a href="laporan.html" class="nav-item"><span>📋</span> Laporan</a><a href="shift-closing.html" class="nav-item" data-role-access="owner,admin"><span>🔒</span> Closing Shift</a><a href="eod.html" class="nav-item" data-role-access="owner,admin"><span>🌙</span> End of Day</a><a href="pengeluaran.html" class="nav-item" data-role-access="owner,admin"><span>💸</span> Pengeluaran</a><a href="backup%20%26%20restore.html" class="nav-item" data-role-access="owner,admin"><span>💾</span> Backup & Restore</a></nav><main class="main-content">
 <header class="header-app" id="headerApp"><div class="header-brand-container"><button class="btn-toggle-menu" onclick="bukaMenu()">☰</button><img id="imgLogoToko" class="header-logo-img" alt="Logo"><div><h1 id="txtJudulToko">LocDailyMar</h1><p id="txtSubJudulToko">Master Supplier</p></div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span id="txtUserLoggedIn" style="font-size:.72rem;font-weight:650;background:rgba(255,255,255,.15);padding:5px 9px;border-radius:20px">👤 -</span><button class="btn-header-action btn-header-logout" onclick="logout()">🚪 Logout</button></div></header>
 <div class="user-strip"><span>🏢 Master pemasok untuk Purchase Order & analisis pembelian</span><span id="supplierUpdateInfo">Data supplier lokal</span></div>
@@ -1218,7 +1217,7 @@ document.addEventListener('DOMContentLoaded',()=>{if(!requireOwnerAdmin())return
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin"],
+        "barang.html":["owner","admin","kasir"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -1290,7 +1289,7 @@ document.addEventListener('DOMContentLoaded',()=>{if(!requireOwnerAdmin())return
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -1826,4 +1825,4 @@ document.addEventListener('DOMContentLoaded',()=>{if(!requireOwnerAdmin())return
 
 
 <script src="js/supplier-cloud-adapter.js?v=11.0"></script>
-<script src="js/global-system-navigation.js?v=25.1"></script></body></html>
+<script src="js/global-system-navigation.js?v=25.2"></script></body></html>

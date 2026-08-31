@@ -5,9 +5,9 @@
 <title>LocDailyMar - Tahap 14 Account Test</title>
 <style>body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172033;margin:0}.wrap{width:min(900px,calc(100% - 24px));margin:24px auto}.card{background:white;border:1px solid #e4e7ec;border-radius:14px;padding:16px;margin-bottom:12px}button,a{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:9px 12px;border:0;border-radius:8px;background:#0d2240;color:white;font-weight:700;text-decoration:none;cursor:pointer;margin:3px}pre{white-space:pre-wrap;background:#101828;color:#f2f4f7;padding:12px;border-radius:10px;font-size:.74rem;overflow-wrap:anywhere}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script><script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=6.0"></script><script src="js/cloud-session-guard.js?v=15.0"></script><script src="js/account-service.js?v=15.0"></script>
-<script src="js/license-v2-config.js?v=25.1.0"></script>
-<script src="js/license-v2-client.js?v=25.1.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.1.0"></script>
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head><body><div class="wrap"><div class="card"><h1>🧪 Tahap 14 - Account Test</h1><p>Read-only smoke test untuk account authority. Tidak membuat/mengubah akun.</p><button onclick="run()">Jalankan Test</button><a href="account-management.html">Akun Cloud</a><a href="dashboard.html">Dashboard</a></div><div class="card"><pre id="out">Belum dijalankan.</pre></div></div><script>
 async function run(){const el=document.getElementById("out");try{const ctx=await LDMAccounts.ownerContext();const [rows,h]=await Promise.all([LDMAccounts.listAccounts(),LDMAccounts.health()]);el.textContent=["✅ TAHAP 14 ACCOUNT AUTHORITY OK","",`User: ${ctx.profile.username}`,`Role: ${ctx.profile.role}`,`Store: ${ctx.profile.store_code}`,`Profiles: ${rows.length}`,`Active: ${h.active_profiles}`,`Owners: ${h.active_owners}`,`Admins: ${h.active_admins}`,`Cashiers: ${h.active_cashiers}`,"",...rows.map(r=>`${r.username} | ${r.role} | ${r.active?"ACTIVE":"INACTIVE"} | ${r.email}`)].join("\n")}catch(e){el.textContent="❌ TEST GAGAL\n\n"+(e.message||String(e))}}
 document.addEventListener("DOMContentLoaded",run);

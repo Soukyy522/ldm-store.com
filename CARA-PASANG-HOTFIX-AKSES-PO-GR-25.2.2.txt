@@ -1,0 +1,57 @@
+HOTFIX LOCDAILYMAR 25.2.2 - AKSES PURCHASE ORDER & GOODS RECEIPT
+================================================================
+
+PENYEBAB
+--------
+Halaman lama mencocokkan role profile Supabase dengan daftarAkun di browser.
+Setelah role diubah menjadi Owner/Owner Pusat, daftarAkun dapat masih menyimpan
+role lama sehingga halaman mengalihkan pengguna ke Login atau Dashboard.
+
+PERBAIKAN
+---------
+- Sesi Supabase menjadi sumber role utama.
+- daftarAkun hanya diperiksa untuk login lokal lama.
+- Halaman menunggu profile cloud diperbarui sebelum memeriksa role.
+- Timer sesi legacy 30 menit tidak lagi memutus sesi Supabase yang masih aktif.
+- Pembatasan paket lisensi tetap dipertahankan.
+
+FILE YANG DIGANTI
+-----------------
+1. Purchase-Order.html
+2. goods.receipt.html
+3. service-worker.js
+4. js/license-v2-config.js
+5. VERSION.txt
+
+CARA MEMASANG
+-------------
+1. Unggah Purchase-Order.html dan goods.receipt.html ke folder utama hosting.
+2. Timpa service-worker.js dan VERSION.txt di folder utama.
+3. Unggah license-v2-config.js ke folder js.
+4. Tunggu deployment selesai.
+5. Bersihkan cache PWA satu kali.
+6. Logout, kemudian login kembali.
+
+BERSIHKAN CACHE TANPA MENGHAPUS TRANSAKSI
+------------------------------------------
+Jalankan di Console browser:
+
+(async () => {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map(item => item.unregister()));
+    const names = await caches.keys();
+    await Promise.all(
+        names.filter(name => name.startsWith("ldm-")).map(name => caches.delete(name))
+    );
+    location.reload();
+})();
+
+PAKET LISENSI
+-------------
+Purchase Order dan Goods Receipt tersedia untuk:
+- Warung Sederhana
+- Toko
+- Lifetime
+
+Paket Warung Kecil tetap mengunci kedua fitur sesuai ketentuan paket.
+
