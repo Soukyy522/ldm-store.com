@@ -24,6 +24,8 @@
         .ms-transfer{border:1px solid var(--ms-border);border-radius:12px;padding:13px;margin-bottom:10px}.ms-transfer-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.ms-transfer-code{font-weight:850;font-size:.82rem}.ms-transfer-route{font-size:.72rem;color:var(--ms-muted);margin-top:4px}.ms-status{padding:4px 7px;border-radius:99px;font-size:.61rem;font-weight:850;white-space:nowrap}.status-draft{background:#f2f4f7;color:#475467}.status-in_transit{background:#fff7e8;color:#b54708}.status-received{background:#ecfdf3;color:#087443}.status-cancelled{background:#fef3f2;color:#b42318}.ms-transfer-items{font-size:.69rem;color:#596b63;margin-top:9px}.ms-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 
         .ms-employee-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:14px}.ms-employee-info{border:1px dashed #b9cbc2;background:#f7fbf9;border-radius:11px;padding:11px;font-size:.72rem;color:#52645c;line-height:1.55}.ms-employee-history{display:grid;gap:9px;max-height:390px;overflow:auto;padding-right:2px}.ms-employee-move{border:1px solid var(--ms-border);border-radius:11px;padding:11px;background:#fbfdfc}.ms-employee-move strong{font-size:.78rem}.ms-employee-move p{margin:5px 0 0;font-size:.68rem;color:var(--ms-muted);line-height:1.5}.ms-role-pill{display:inline-flex;margin-left:6px;padding:3px 6px;border-radius:99px;background:#edf4f1;color:#176b45;font-size:.6rem;font-weight:850;text-transform:uppercase}.ms-security-note{margin-top:10px;border-left:3px solid #f4b323;background:#fffaf0;padding:9px 10px;border-radius:7px;font-size:.69rem;color:#71520a;line-height:1.55}
+
+        .ms-branch-manage-list{display:grid;gap:10px}.ms-branch-card{border:1px solid var(--ms-border);border-radius:12px;padding:12px;background:#fff}.ms-branch-card.archived{opacity:.72;background:#f8faf9}.ms-branch-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.ms-branch-state{display:inline-flex;padding:4px 7px;border-radius:99px;font-size:.61rem;font-weight:850}.branch-active{background:#ecfdf3;color:#087443}.branch-inactive{background:#fff7e8;color:#b54708}.branch-archived{background:#f2f4f7;color:#475467}.ms-branch-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.ms-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:999}.ms-modal.open{display:flex}.ms-modal-card{width:min(520px,100%);background:#fff;border-radius:16px;padding:17px;box-shadow:0 24px 70px rgba(15,23,42,.22)}
         .ms-loading{opacity:.58;pointer-events:none}.ms-offline{background:#fff4e5;color:#934f00;padding:8px 12px;text-align:center;font-size:.72rem;font-weight:800;display:none}.ms-offline.show{display:block}
         @media(max-width:820px){.ms-grid,.ms-employee-grid{grid-template-columns:1fr}.ms-summary{grid-template-columns:1fr 1fr}.ms-summary .ms-stat:last-child{grid-column:1/-1}.ms-header-inner{align-items:flex-start}.ms-form-grid{grid-template-columns:1fr}}
         @media(max-width:480px){.ms-header-inner,.ms-main{width:min(100% - 18px,1180px)}.ms-header{padding:17px 9px}.ms-title h1{font-size:1.05rem}.ms-back{padding:8px}.ms-panel{padding:14px}.ms-summary{gap:8px}.ms-stat{padding:12px}.ms-panel-head{display:block}.ms-panel-head .ms-btn{margin-top:10px;width:100%}.ms-store{grid-template-columns:1fr}.ms-store .ms-btn{width:100%}}
@@ -37,7 +39,7 @@
     <script src="js/cloud-session.js?v=22.0"></script>
     <script src="js/cloud-session-guard.js?v=22.0"></script>
     <script src="js/primary-owner-service.js?v=25.1"></script>
-    <script src="js/multi-store-service.js?v=24.2.2"></script>
+    <script src="js/multi-store-service.js?v=26.3.0"></script>
 <script src="js/license-v2-config.js?v=25.2.0"></script>
 <script src="js/license-v2-client.js?v=25.2.0"></script>
 <script defer src="js/license-v2-guard.js?v=25.2.0"></script>
@@ -91,6 +93,12 @@
                         <button class="ms-btn ms-btn-primary" type="submit">Buat Cabang Baru</button>
                     </form>
                 </section>
+
+                <section class="ms-panel" id="branchManagePanel" style="display:none">
+                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">⚙ Pengelolaan Cabang</span><h2>Edit, Nonaktifkan atau Hapus Cabang</h2><p>Hapus menggunakan arsip aman: histori transaksi dan laporan tidak dibuang.</p></div><button class="ms-btn ms-btn-light" id="refreshBranches" type="button">Muat Ulang</button></div>
+                    <div class="ms-security-note">🔐 Hanya Owner Utama/Owner Pusat yang dapat mengubah struktur cabang. Cabang pusat tidak dapat dinonaktifkan atau dihapus.</div>
+                    <div class="ms-branch-manage-list" id="branchManageList"><div class="ms-empty">Memuat cabang…</div></div>
+                </section>
             </div>
 
             <div>
@@ -137,10 +145,22 @@
         </section>
     </main>
 
+    <div class="ms-modal" id="branchEditModal">
+        <div class="ms-modal-card">
+            <div class="ms-panel-head"><div><span class="ms-panel-kicker">✏ Edit Cabang</span><h2 id="branchEditTitle">Edit Data Cabang</h2><p>Store ID tidak berubah sehingga histori tetap terhubung.</p></div><button class="ms-btn ms-btn-danger" id="closeBranchEdit" type="button">✕</button></div>
+            <form class="ms-form" id="branchEditForm">
+                <input type="hidden" id="editBranchId">
+                <div class="ms-field"><label>Kode Cabang</label><input id="editBranchCode" maxlength="30" required></div>
+                <div class="ms-field"><label>Nama Cabang</label><input id="editBranchName" maxlength="120" required></div>
+                <button class="ms-btn ms-btn-primary" type="submit">Simpan Perubahan</button>
+            </form>
+        </div>
+    </div>
+
     <script>
     (function(){
         "use strict";
-        let stores=[];let transfers=[];let candidates=[];let employees=[];let employeeTransfers=[];let context=null;let primaryContext=null;
+        let stores=[];let manageableBranches=[];let transfers=[];let candidates=[];let employees=[];let employeeTransfers=[];let context=null;let primaryContext=null;
         const $=id=>document.getElementById(id);
         const esc=value=>String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
         const num=value=>Number(value||0).toLocaleString("id-ID",{maximumFractionDigits:3});
@@ -156,7 +176,8 @@
             $("activeStoreName").textContent=active?active.store_name:"Tidak tersedia";
             $("storeCount").textContent=stores.length;
             $("roleChip").textContent=`👤 ${currentRole()||"pengguna"}`;
-            $("branchPanel").style.display=currentRole()==="owner"?"block":"none";
+            $("branchPanel").style.display=isPrimaryOwner()?"block":"none";
+            $("branchManagePanel").style.display=isPrimaryOwner()?"block":"none";
             $("employeeTransferPanel").style.display=isPrimaryOwner()?"block":"none";
             $("storeList").innerHTML=stores.length?stores.map(store=>`
                 <div class="ms-store ${store.is_current?"current":""}">
@@ -205,6 +226,58 @@
             $("transferList").querySelectorAll("[data-send]").forEach(btn=>btn.onclick=()=>sendTransfer(btn.dataset.send));
             $("transferList").querySelectorAll("[data-receive]").forEach(btn=>btn.onclick=()=>receiveTransfer(btn.dataset.receive));
             $("transferList").querySelectorAll("[data-cancel]").forEach(btn=>btn.onclick=()=>cancelTransfer(btn.dataset.cancel));
+        }
+
+
+        function branchState(row){
+            if(row.is_archived)return {label:"DIARSIPKAN",cls:"branch-archived"};
+            if(String(row.store_status).toLowerCase()!=="active"||row.network_link_active===false)return {label:"NONAKTIF",cls:"branch-inactive"};
+            return {label:"AKTIF",cls:"branch-active"};
+        }
+        function renderManageableBranches(){
+            const host=$("branchManageList");if(!host)return;
+            if(!manageableBranches.length){host.innerHTML='<div class="ms-empty">Belum ada data cabang.</div>';return}
+            host.innerHTML=manageableBranches.map(row=>{
+                const state=branchState(row);
+                let actions='';
+                if(row.is_primary){actions='<span class="ms-current-badge">CABANG PUSAT · DILINDUNGI</span>'}
+                else if(row.is_archived){actions='<span class="ms-store-meta">Arsip mempertahankan seluruh histori. Pemulihan arsip hanya melalui developer/SQL.</span>'}
+                else if(String(row.store_status).toLowerCase()==="active"&&row.network_link_active!==false){
+                    actions=`<button class="ms-btn ms-btn-light" data-edit-branch="${row.store_id}">Edit</button><button class="ms-btn ms-btn-dark" data-deactivate-branch="${row.store_id}">Nonaktifkan</button><button class="ms-btn ms-btn-danger" data-archive-branch="${row.store_id}">Hapus / Arsipkan</button>`;
+                }else{
+                    actions=`<button class="ms-btn ms-btn-light" data-edit-branch="${row.store_id}">Edit</button><button class="ms-btn ms-btn-primary" data-activate-branch="${row.store_id}">Aktifkan Kembali</button><button class="ms-btn ms-btn-danger" data-archive-branch="${row.store_id}">Hapus / Arsipkan</button>`;
+                }
+                return `<article class="ms-branch-card ${row.is_archived?"archived":""}"><div class="ms-branch-top"><div><div class="ms-store-name">${esc(row.store_name)}</div><div class="ms-store-code">${esc(row.store_code)} · Store ID ${esc(row.store_id)}</div><div class="ms-store-meta">${num(row.employee_count)} akun · ${num(row.product_count)} produk · ${num(row.transaction_count)} transaksi · ${num(row.device_count)} perangkat${Number(row.open_transfer_count)>0?` · <strong>${num(row.open_transfer_count)} transfer belum selesai</strong>`:""}</div></div><span class="ms-branch-state ${state.cls}">${state.label}</span></div><div class="ms-branch-actions">${actions}</div></article>`;
+            }).join("");
+            host.querySelectorAll("[data-edit-branch]").forEach(btn=>btn.onclick=()=>openBranchEdit(btn.dataset.editBranch));
+            host.querySelectorAll("[data-deactivate-branch]").forEach(btn=>btn.onclick=()=>changeBranchStatus(btn.dataset.deactivateBranch,"DEACTIVATE"));
+            host.querySelectorAll("[data-activate-branch]").forEach(btn=>btn.onclick=()=>changeBranchStatus(btn.dataset.activateBranch,"ACTIVATE"));
+            host.querySelectorAll("[data-archive-branch]").forEach(btn=>btn.onclick=()=>archiveBranch(btn.dataset.archiveBranch));
+        }
+        async function loadManageableBranches(){
+            if(!isPrimaryOwner())return;
+            try{manageableBranches=await window.LDMMultiStore.listManageableBranches();renderManageableBranches()}
+            catch(error){manageableBranches=[];$("branchManageList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`}
+        }
+        function openBranchEdit(storeId){
+            const row=manageableBranches.find(item=>item.store_id===storeId);if(!row||row.is_archived)return;
+            $("editBranchId").value=row.store_id;$("editBranchCode").value=row.store_code;$("editBranchName").value=row.store_name;$("branchEditTitle").textContent=`Edit ${row.store_name}`;$("branchEditModal").classList.add("open");
+        }
+        function closeBranchEdit(){$("branchEditModal").classList.remove("open");$("branchEditForm").reset()}
+        async function changeBranchStatus(storeId,action){
+            const row=manageableBranches.find(item=>item.store_id===storeId);if(!row)return;
+            const activating=action==="ACTIVATE";
+            const reason=activating?"Diaktifkan kembali oleh Owner Pusat":prompt(`Alasan menonaktifkan ${row.store_name}:`,"");
+            if(reason===null)return;
+            if(!confirm(`${activating?"Aktifkan kembali":"Nonaktifkan"} cabang ${row.store_name}?${activating?"\n\nPerangkat cabang tetap perlu disetujui ulang.":"\n\nCabang tidak dapat dipakai, tetapi seluruh histori tetap tersimpan."}`))return;
+            setLoading(true);try{const result=await window.LDMMultiStore.manageBranch(storeId,action,{reason});alertBox(result.message||"Status cabang diperbarui.");await Promise.all([loadStores(),loadManageableBranches(),loadEmployees()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}
+        }
+        async function archiveBranch(storeId){
+            const row=manageableBranches.find(item=>item.store_id===storeId);if(!row)return;
+            const typed=prompt(`Hapus cabang tidak membuang histori, tetapi mengarsipkannya dari operasional.\n\nKetik ARSIP untuk mengarsipkan ${row.store_name}:`,"");
+            if(typed!=="ARSIP"){if(typed!==null)alertBox("Pengarsipan dibatalkan karena konfirmasi tidak sesuai.","bad");return}
+            const reason=prompt("Alasan pengarsipan cabang:","");if(reason===null)return;
+            setLoading(true);try{const result=await window.LDMMultiStore.manageBranch(storeId,"ARCHIVE",{reason});alertBox(result.message||"Cabang berhasil diarsipkan.");await Promise.all([loadStores(),loadManageableBranches(),loadEmployees(),loadEmployeeTransfers()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}
         }
 
         function selectedEmployee(){return employees.find(row=>row.user_id===$("employeeSelect").value)||null}
@@ -263,8 +336,8 @@
                 context=await window.LDMCloudSession.ensureAuthenticated({registerDevice:true});
                 primaryContext=await window.LDMPrimaryOwner.context(true);
                 await loadStores();
-                await Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]);
-                await window.LDMMultiStore.startRealtime(()=>Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]));
+                await Promise.all([loadTransfers(),loadManageableBranches(),loadEmployees(),loadEmployeeTransfers()]);
+                await window.LDMMultiStore.startRealtime(()=>Promise.all([loadTransfers(),loadManageableBranches(),loadEmployees(),loadEmployeeTransfers()]));
             }
             catch(error){alertBox(errorMessage(error),"bad")}
         }
@@ -272,13 +345,17 @@
         $("employeeSelect").addEventListener("change",updateEmployeeDestination);
         $("refreshTransfers").onclick=loadTransfers;
         $("refreshEmployees").onclick=()=>Promise.all([loadEmployees(),loadEmployeeTransfers()]);
+        $("refreshBranches").onclick=loadManageableBranches;
+        $("closeBranchEdit").onclick=closeBranchEdit;
+        $("branchEditModal").addEventListener("click",event=>{if(event.target===$("branchEditModal"))closeBranchEdit()});
+        $("branchEditForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.manageBranch($("editBranchId").value,"EDIT",{code:$("editBranchCode").value,name:$("editBranchName").value,reason:"Edit data cabang dari Multi-Toko"});closeBranchEdit();alertBox(result.message||"Data cabang berhasil diperbarui.");await Promise.all([loadStores(),loadManageableBranches(),loadEmployees()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         $("employeeTransferForm").onsubmit=event=>{event.preventDefault();moveEmployee()};
-        $("branchForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,copyProducts:$("copyProducts").checked});alertBox(`Cabang ${result.name} berhasil dibuat dengan Store ID baru.`);event.target.reset();$("copyProducts").checked=true;await loadStores()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
+        $("branchForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,copyProducts:$("copyProducts").checked});alertBox(`Cabang ${result.name} berhasil dibuat dengan Store ID baru.`);event.target.reset();$("copyProducts").checked=true;await Promise.all([loadStores(),loadManageableBranches()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         $("transferForm").onsubmit=async event=>{event.preventDefault();const selected=[];$("candidateRows").querySelectorAll("[data-pick]:checked").forEach(check=>{const index=Number(check.dataset.pick);const qty=Number($("candidateRows").querySelector(`[data-qty="${index}"]`).value);if(qty>0)selected.push({source_product_id:candidates[index].source_product_id,qty})});if(!selected.length){alertBox("Pilih minimal satu barang dan isi qty transfer.","bad");return}setLoading(true);try{const result=await window.LDMMultiStore.createTransfer($("destinationStore").value,selected,$("transferNote").value);alertBox(`Draft ${result.transfer_code} berhasil dibuat.`);event.target.reset();candidates=[];renderCandidates();await loadTransfers()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         function onlineState(){const offline=navigator.onLine===false;$("offlineBanner").classList.toggle("show",offline);document.querySelectorAll("button[type=submit]").forEach(btn=>btn.disabled=offline)}
         window.addEventListener("online",onlineState);window.addEventListener("offline",onlineState);onlineState();boot();
     })();
     </script>
-    <script src="js/global-system-navigation.js?v=26.2.2"></script>
+    <script src="js/global-system-navigation.js?v=26.3.0"></script>
 </body>
 </html>
