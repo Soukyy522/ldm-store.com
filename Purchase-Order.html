@@ -908,17 +908,21 @@ input[type="color"] {
             display: none !important;
         }
 
-        body.role-owner .owner-purchase-value {
+        body.role-owner .owner-procurement-total,
+        html[data-ldm-primary-owner="true"] body.role-owner .owner-unit-cost {
             display: revert !important;
         }
 
         /* Untuk elemen form/card yang membutuhkan display normal */
-        body.role-owner div.owner-purchase-value {
+        body.role-owner div.owner-procurement-total,
+        html[data-ldm-primary-owner="true"] body.role-owner div.owner-unit-cost {
             display: block !important;
         }
 
-        body.role-owner th.owner-purchase-value,
-        body.role-owner td.owner-purchase-value {
+        body.role-owner th.owner-procurement-total,
+        body.role-owner td.owner-procurement-total,
+        html[data-ldm-primary-owner="true"] body.role-owner th.owner-unit-cost,
+        html[data-ldm-primary-owner="true"] body.role-owner td.owner-unit-cost {
             display: table-cell !important;
         }
 
@@ -1945,10 +1949,10 @@ input[type="color"] {
     <script src="js/cloud-session.js?v=6.0"></script>
     <script src="js/cloud-session-guard.js?v=15.0"></script>
     <script src="js/unit-conversion.js?v=20.0"></script>
-    <script src="js/procurement-service.js?v=25.2.0"></script>
+    <script src="js/procurement-service.js?v=25.3.1"></script>
     <script src="js/procurement-bootstrap.js?v=11.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
-    <script src="js/products-service.js?v=21.0"></script>
+    <script src="js/products-service.js?v=25.3.1"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
 
 <script src="js/license-v2-config.js?v=25.2.0"></script>
@@ -2094,12 +2098,12 @@ input[type="color"] {
                     <input type="text" id="inputKonversiPO" value="1 Pcs = 1 Pcs" readonly>
                 </div>
 
-                <div class="form-group owner-purchase-value">
+                <div class="form-group owner-purchase-value owner-unit-cost">
                     <label>Harga Beli Estimasi / Kemasan</label>
                     <input type="number" id="inputHargaBeliPO" min="0" step="1" placeholder="0" oninput="hitungPreviewPO()">
                 </div>
 
-                <div class="form-group owner-purchase-value">
+                <div class="form-group owner-purchase-value owner-procurement-total">
                     <label>Subtotal Estimasi</label>
                     <input type="text" id="inputSubtotalPO" value="Rp 0" readonly>
                 </div>
@@ -2127,8 +2131,8 @@ input[type="color"] {
                             <th>Stok Saat Ini</th>
                             <th>Qty Pesan</th>
                             <th>Sudah Diterima</th>
-                            <th class="owner-purchase-value">Harga Estimasi</th>
-                            <th class="owner-purchase-value">Subtotal</th>
+                            <th class="owner-purchase-value owner-unit-cost">Harga Estimasi</th>
+                            <th class="owner-purchase-value owner-procurement-total">Subtotal</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -2140,7 +2144,7 @@ input[type="color"] {
                 <div class="summary-box"><span>Jenis Barang</span><strong id="sumJenisPO">0</strong></div>
                 <div class="summary-box"><span>Total Qty Pesan</span><strong id="sumQtyPO">0</strong></div>
                 <div class="summary-box"><span>Total Diterima</span><strong id="sumDiterimaPO">0</strong></div>
-                <div class="summary-box owner-purchase-value"><span>Total Estimasi</span><strong id="sumNilaiPO">Rp 0</strong></div>
+                <div class="summary-box owner-purchase-value owner-procurement-total"><span>Total Estimasi</span><strong id="sumNilaiPO">Rp 0</strong></div>
             </div>
 
             <div class="action-bar">
@@ -2196,7 +2200,7 @@ input[type="color"] {
                             <th>Estimasi Tiba</th>
                             <th>Status</th>
                             <th>Item / Qty</th>
-                            <th class="owner-purchase-value">Total Estimasi</th>
+                            <th class="owner-purchase-value owner-procurement-total">Total Estimasi</th>
                             <th>Petugas</th>
                             <th>Aksi</th>
                         </tr>
@@ -3814,17 +3818,23 @@ function proteksiHalamanPO() {
 function terapkanVisibilitasNilaiPembelian() {
     const session = getSecuritySession();
     const isOwner = Boolean(session && normalizeRole(session.role) === "owner");
+    const isPrimaryOwner =
+        document.documentElement.dataset.ldmPrimaryOwner === "true"
+        || Boolean(window.LDMPrimaryOwner && window.LDMPrimaryOwner.isPrimaryOwner());
 
     document.body.classList.toggle("role-owner", isOwner);
 
     document.querySelectorAll(".owner-purchase-value").forEach(el => {
-        if (isOwner) {
+        const isTotal = el.classList.contains("owner-procurement-total");
+        if (isOwner && (isTotal || isPrimaryOwner)) {
             el.removeAttribute("aria-hidden");
         } else {
             el.setAttribute("aria-hidden", "true");
         }
     });
 }
+
+window.addEventListener("ldm-primary-owner-ready",terapkanVisibilitasNilaiPembelian);
 
 function terapkanMenuRole() {
     const session = getSecuritySession();
@@ -4168,6 +4178,30 @@ function getDataBarang() {
     return safeReadArray("dataBarang");
 }
 
+function terapkanHargaMasterPadaDraftPO(items) {
+    const products = getDataBarang();
+    return (Array.isArray(items) ? items : []).map(source => {
+        const item = { ...source };
+        const product = products.find(row =>
+            (item.productId && String(row.id || "") === String(item.productId))
+            || (item.barcode && String(row.barcode || "") === String(item.barcode))
+            || String(row.nama || "").trim().toLowerCase() === String(item.namaBarang || "").trim().toLowerCase()
+        );
+        if (!product) return item;
+
+        const factor = Math.max(
+            Number(item.faktorKonversi || product.konversiBeli || 1),
+            0.001
+        );
+        const basePrice = Math.max(Number(product.hargaBeli || 0),0);
+        const existingPackagePrice = Math.max(Number(item.hargaBeli || 0),0);
+        item.hargaBeli = existingPackagePrice || (basePrice * factor);
+        item.hargaBeliDasar = item.hargaBeli / factor;
+        item.subtotal = Number(item.qtyOrdered || 0) * item.hargaBeli;
+        return item;
+    });
+}
+
 function buatNomorPO() {
     const key = tanggalHariIni().replaceAll("-","");
     const prefix = `PO-${key}-`;
@@ -4391,8 +4425,8 @@ function renderDraftPO() {
                     <button type="button" class="btn btn-soft" style="padding:4px 7px;" onclick="ubahQtyDraft('${item.id}',1)">+</button>
                 </td>
                 <td>${formatQty(item.qtyReceived || 0)} ${escapeHTML(item.satuan || "")}</td>
-                <td class="owner-purchase-value">${formatRupiah(item.hargaBeli)}</td>
-                <td class="owner-purchase-value"><strong>${formatRupiah(item.subtotal)}</strong></td>
+                <td class="owner-purchase-value owner-unit-cost">${formatRupiah(item.hargaBeli)}</td>
+                <td class="owner-purchase-value owner-procurement-total"><strong>${formatRupiah(item.subtotal)}</strong></td>
                 <td><button type="button" class="btn btn-danger" style="padding:5px 8px;" onclick="hapusDraftItem('${item.id}')">Hapus</button></td>
             </tr>
         `).join("");
@@ -4748,7 +4782,7 @@ function renderRiwayatPO() {
                 <td>${formatTanggalIndo(po.estimasiTiba)}</td>
                 <td><span class="badge ${statusClass(po.status)}">${escapeHTML(po.status || "-")}</span></td>
                 <td>${Number(po.totalJenis || 0)} jenis / ${formatQty(po.totalQty || 0)}<br><small style="color:#94a3b8;">Diterima: ${formatQty(po.totalReceived || 0)}</small></td>
-                <td class="owner-purchase-value"><strong>${formatRupiah(po.totalNilai || 0)}</strong></td>
+                <td class="owner-purchase-value owner-procurement-total"><strong>${formatRupiah(po.totalNilai || 0)}</strong></td>
                 <td>${escapeHTML(po.petugas || "-")}</td>
                 <td>
                     <div style="display:flex;gap:5px;flex-wrap:wrap;">
@@ -4782,7 +4816,7 @@ function editDraftPO(id) {
     document.getElementById("inputKontakSupplier").value = po.kontakSupplier || "";
     document.getElementById("inputReferensiPO").value = po.referensi || "";
     document.getElementById("inputCatatanPO").value = po.catatan || "";
-    draftPO = Array.isArray(po.items) ? po.items.map(i => ({ ...i })) : [];
+    draftPO = terapkanHargaMasterPadaDraftPO(po.items);
     renderDraftPO();
 
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -4807,8 +4841,8 @@ function lihatDetailPO(id) {
                 <td>${formatQty(item.qtyOrdered || 0)}</td>
                 <td>${formatQty(item.qtyReceived || 0)}</td>
                 <td>${formatQty(sisa)}</td>
-                <td class="owner-purchase-value">${formatRupiah(item.hargaBeli || 0)}</td>
-                <td class="owner-purchase-value">${formatRupiah(item.subtotal || 0)}</td>
+                <td class="owner-purchase-value owner-unit-cost">${formatRupiah(item.hargaBeli || 0)}</td>
+                <td class="owner-purchase-value owner-procurement-total">${formatRupiah(item.subtotal || 0)}</td>
             </tr>
         `;
     }).join("");
@@ -4823,7 +4857,7 @@ function lihatDetailPO(id) {
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr><th>No</th><th>Barang</th><th>Barcode</th><th>Pesan</th><th>Diterima</th><th>Sisa</th><th class="owner-purchase-value">Harga</th><th class="owner-purchase-value">Subtotal</th></tr>
+                    <tr><th>No</th><th>Barang</th><th>Barcode</th><th>Pesan</th><th>Diterima</th><th>Sisa</th><th class="owner-purchase-value owner-unit-cost">Harga</th><th class="owner-purchase-value owner-procurement-total">Subtotal</th></tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
@@ -5035,8 +5069,8 @@ function cetakPO(id) {
             <td>${escapeHTML(item.namaBarang || "-")}</td>
             <td>${escapeHTML(item.barcode || "-")}</td>
             <td style="text-align:right;">${formatQty(item.qtyOrdered || 0)} ${escapeHTML(item.satuan || "")}</td>
-            <td class="owner-purchase-value">${formatRupiah(item.hargaBeli || 0)}</td>
-            <td class="owner-purchase-value">${formatRupiah(item.subtotal || 0)}</td>
+            <td class="owner-purchase-value owner-unit-cost">${formatRupiah(item.hargaBeli || 0)}</td>
+            <td class="owner-purchase-value owner-procurement-total">${formatRupiah(item.subtotal || 0)}</td>
         </tr>
     `).join("");
 
@@ -5060,7 +5094,7 @@ function cetakPO(id) {
 
             <table class="print-table">
                 <thead>
-                    <tr><th>No</th><th>Barang</th><th>Barcode</th><th>Qty</th><th class="owner-purchase-value">Harga Estimasi</th><th class="owner-purchase-value">Subtotal</th></tr>
+                    <tr><th>No</th><th>Barang</th><th>Barcode</th><th>Qty</th><th class="owner-purchase-value owner-unit-cost">Harga Estimasi</th><th class="owner-purchase-value owner-procurement-total">Subtotal</th></tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
@@ -5242,8 +5276,7 @@ function pulihkanAutoDraftPO() {
     document.getElementById("inputCatatanPO").value =
         draft.catatan || "";
 
-    draftPO =
-        draft.items.map(item => ({ ...item }));
+    draftPO = terapkanHargaMasterPadaDraftPO(draft.items);
 
     renderDraftPO();
 
@@ -5996,6 +6029,6 @@ window.addEventListener(
 
 
 <script src="js/purchase-order-cloud-adapter.js?v=11.0"></script>
-<script src="js/global-system-navigation.js?v=25.2"></script>
+<script src="js/global-system-navigation.js?v=25.3.1"></script>
 </body>
 </html>
