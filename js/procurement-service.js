@@ -55,6 +55,31 @@
         return safeArray(key).some(row => row && !row._cloud);
     }
 
+    function currentRole(){
+        return String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function redactPurchaseValues(key,rows){
+        if(currentRole() !== "admin") return rows;
+        if(key !== KEYS.purchaseOrders && key !== KEYS.goodsReceipts) return rows;
+
+        return (rows || []).map(row => ({
+            ...row,
+            totalNilai:0,
+            items:(Array.isArray(row.items) ? row.items : []).map(item => ({
+                ...item,
+                hargaBeli:0,
+                hargaBeliDasar:0,
+                hargaBeliSebelum:0,
+                subtotal:0
+            }))
+        }));
+    }
+
     function createUUID(){
         if(window.crypto && typeof window.crypto.randomUUID === "function"){
             return window.crypto.randomUUID();
@@ -273,12 +298,15 @@
 
     function setCache(key,flag,rows,force){
         if(!force && !isEnabled(flag) && hasLegacy(key) && rows.length === 0){
-            return safeArray(key);
+            const legacySafe = redactPurchaseValues(key,safeArray(key));
+            localStorage.setItem(key,JSON.stringify(legacySafe));
+            return legacySafe;
         }
-        localStorage.setItem(key,JSON.stringify(rows));
+        const safeRows = redactPurchaseValues(key,rows);
+        localStorage.setItem(key,JSON.stringify(safeRows));
         localStorage.setItem(flag,"true");
         localStorage.setItem(LAST_SYNC_KEY,String(Date.now()));
-        return rows;
+        return safeRows;
     }
 
     function dispatch(section,count){
@@ -404,7 +432,7 @@
         }));
 
         const supabase = client();
-        const {data,error} = await supabase.rpc("ldm_save_purchase_order",{
+        const {data,error} = await supabase.rpc("ldm_save_purchase_order_role_safe",{
             p_purchase_order_id:payload.id || null,
             p_client_po_id:payload.clientId || createUUID(),
             p_po_number:payload.poNumber,
@@ -471,7 +499,7 @@
         }));
 
         const supabase = client();
-        const {data,error} = await supabase.rpc("ldm_submit_goods_receipt",{
+        const {data,error} = await supabase.rpc("ldm_submit_goods_receipt_role_safe",{
             p_client_gr_id:payload.clientId || createUUID(),
             p_gr_number:payload.grNumber,
             p_business_date:payload.businessDate || null,

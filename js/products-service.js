@@ -231,12 +231,33 @@
         ) === "true";
     }
 
+    function currentPage(){
+        return String(
+            window.location.pathname.split("/").pop() || ""
+        ).trim().toLowerCase();
+    }
+
+    function isProcurementPage(){
+        return [
+            "purchase-order.html",
+            "goods.receipt.html"
+        ].includes(currentPage());
+    }
+
     async function fetchAll(){
         const supabase =
             client();
 
+        // Purchase Order dan Goods Receipt memakai endpoint khusus procurement.
+        // Server hanya mengirim harga beli kepada role Owner pada toko aktifnya.
+        // Admin/Kasir tetap menerima nilai 0 sehingga pembatasan tidak bergantung
+        // pada CSS atau localStorage browser.
+        const rpcName = isProcurementPage()
+            ? "ldm_visible_procurement_products"
+            : "ldm_visible_products";
+
         const {data,error} =
-            await supabase.rpc("ldm_visible_products");
+            await supabase.rpc(rpcName);
 
         if(error){
             throw error;
@@ -273,6 +294,17 @@
             });
     }
 
+    async function canManageCatalog(context=null){
+        const session=context||await getContext();
+        if(String(session?.profile?.role||"").toLowerCase()!=="owner")return false;
+        if(window.LDMPrimaryOwner?.canManageCatalog){
+            return await window.LDMPrimaryOwner.canManageCatalog();
+        }
+        const {data,error}=await client().rpc("ldm_can_manage_central_catalog");
+        if(error)throw error;
+        return data===true;
+    }
+
     async function migrateLocal(
         items = null
     ){
@@ -288,6 +320,9 @@
             throw new Error(
                 "Hanya Owner yang dapat migrasi Master Barang."
             );
+        }
+        if(!await canManageCatalog(context)){
+            throw new Error("Master barang dikendalikan Owner Utama dari cabang pusat.");
         }
 
         const source =
@@ -365,6 +400,9 @@
                 reason:
                     "owner_required"
             };
+        }
+        if(!await canManageCatalog(context)){
+            return {skipped:true,reason:"central_catalog_locked"};
         }
 
         const source =
@@ -476,6 +514,9 @@
             throw new Error(
                 "Hanya Owner yang dapat menghapus Master Barang."
             );
+        }
+        if(!await canManageCatalog(context)){
+            throw new Error("Master barang dikendalikan Owner Utama dari cabang pusat.");
         }
 
         const supabase =
@@ -608,6 +649,7 @@
             isEnabled,
             fetchAll,
             refreshCache,
+            canManageCatalog,
             migrateLocal,
             syncPresentProducts,
             scheduleSync,

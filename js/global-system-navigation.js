@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const NAV_VERSION="25.1";
+    const NAV_VERSION="25.2";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -13,7 +13,7 @@
         {page:"absensi.html",icon:"📝",label:"Absensi",group:"Utama",roles:["owner","admin","kasir"]},
         {page:"kasir.html",icon:"💵",label:"Kasir",group:"Utama",roles:["owner","admin","kasir"],quick:true},
 
-        {page:"barang.html",icon:"📦",label:"Barang",group:"Inventori",roles:["owner","admin"],badge:"navBadge"},
+        {page:"barang.html",icon:"📦",label:"Barang",group:"Inventori",roles:["owner","admin","kasir"],badge:"navBadge"},
         {page:"kartu-stok.html",icon:"📒",label:"Kartu Stok",group:"Inventori",roles:["owner","admin","kasir"]},
         {page:"stock-opname.html",icon:"📋",label:"Stock Opname",group:"Inventori",roles:["owner","admin","kasir"]},
         {page:"multi-store.html",icon:"⇄",label:"Multi-Toko & Transfer",group:"Inventori",roles:["owner","admin"],quick:true},
@@ -312,7 +312,7 @@
         const shell=document.createElement("div");
         shell.id="ldmGlobalMegaNav";
         shell.className="ldm-global-mega";
-        shell.innerHTML=`<nav class="ldm-global-mega-bar" aria-label="Navigasi utama desktop"><button type="button" class="ldm-global-mega-trigger" aria-expanded="false" aria-controls="ldmGlobalMegaPanel"><span>☷</span><span>Menu</span><span class="ldm-global-mega-arrow">▼</span></button><div class="ldm-global-mega-quick">${quick}</div><div class="ldm-global-mega-session"><span class="ldm-global-store" data-ldm-store-name>${esc(storeName())}</span><span class="ldm-global-role">👤 ${esc(role)}</span></div><div class="ldm-global-mega-panel" id="ldmGlobalMegaPanel"><div class="ldm-global-panel-head"><div><strong>Navigasi Menu</strong><p>Menu mengikuti hak akses akun dan status operasional hari ini.</p></div><button type="button" class="ldm-global-panel-close">✕ Tutup</button></div><div class="ldm-global-mega-grid">${groupedHTML(routes,"desktop")}</div></div></nav>`;
+        shell.innerHTML=`<nav class="ldm-global-mega-bar" aria-label="Navigasi utama desktop"><button type="button" class="ldm-global-mega-trigger" aria-expanded="false" aria-controls="ldmGlobalMegaPanel"><span>☷</span><span>Mega Menu</span><span class="ldm-global-mega-arrow">▼</span></button><div class="ldm-global-mega-quick">${quick}</div><div class="ldm-global-mega-session"><span class="ldm-global-store" data-ldm-store-name>${esc(storeName())}</span><span class="ldm-global-role">👤 ${esc(role)}</span></div><div class="ldm-global-mega-panel" id="ldmGlobalMegaPanel"><div class="ldm-global-panel-head"><div><strong>Navigasi LocDailyMar</strong><p>Menu mengikuti hak akses akun dan status operasional hari ini.</p></div><button type="button" class="ldm-global-panel-close">✕ Tutup</button></div><div class="ldm-global-mega-grid">${groupedHTML(routes,"desktop")}</div></div></nav>`;
 
         const app=document.querySelector(".app-layout");
         const main=app&&app.querySelector(".main-content");
@@ -403,7 +403,7 @@
         if(document.getElementById("ldmPrimaryOwnerScript"))return;
         const script=document.createElement("script");
         script.id="ldmPrimaryOwnerScript";
-        script.src="js/primary-owner-service.js?v=25.1";
+        script.src="js/primary-owner-service.js?v=26.0";
         script.addEventListener("load",start,{once:true});
         document.head.appendChild(script);
     }
