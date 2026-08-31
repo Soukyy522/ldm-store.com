@@ -585,7 +585,6 @@
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
-    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -1550,15 +1549,15 @@
     <script src="js/cloud-session.js?v=6.0"></script>
     <script src="js/cloud-session-guard.js?v=15.0"></script>
     <script src="js/unit-conversion.js?v=20.0"></script>
-    <script src="js/procurement-service.js?v=20.0"></script>
+    <script src="js/procurement-service.js?v=25.2.0"></script>
     <script src="js/procurement-bootstrap.js?v=11.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
     <script src="js/products-service.js?v=21.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
 
-<script src="js/license-v2-config.js?v=25.1.0"></script>
-<script src="js/license-v2-client.js?v=25.1.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.1.0"></script>
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head>
 
 <body>
@@ -3357,6 +3356,7 @@ function safeReadObject(key) {
 
 function getSecuritySession() {
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const isCloudSession = localStorage.getItem("ldmAuthSource") === "supabase";
 
     const username =
         localStorage.getItem("username") ||
@@ -3375,14 +3375,16 @@ function getSecuritySession() {
         return null;
     }
 
-    if (loginTimestamp && (Date.now() - loginTimestamp > SECURITY_CONFIG.SESSION_TIME)) {
+    // Masa berlaku sesi cloud dikelola Supabase, bukan timer legacy 30 menit.
+    if (!isCloudSession && loginTimestamp && (Date.now() - loginTimestamp > SECURITY_CONFIG.SESSION_TIME)) {
         return null;
     }
 
     return {
         username: String(username).trim(),
         role,
-        loginTimestamp
+        loginTimestamp,
+        isCloudSession
     };
 }
 
@@ -3422,6 +3424,10 @@ function getDatabaseAkun() {
 function validateSessionAgainstAccounts() {
     const session = getSecuritySession();
     if (!session) return false;
+
+    // Profile Supabase adalah sumber role authoritative untuk sesi cloud.
+    // daftarAkun lokal hanya dipakai oleh mode kompatibilitas lama.
+    if (session.isCloudSession) return true;
 
     const akunList = getDatabaseAkun();
 
@@ -5640,7 +5646,18 @@ document.addEventListener("click", event => {
     }
 });
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
+    try {
+        if (window.LDMCloudSession) {
+            await window.LDMCloudSession.ensureAuthenticated({
+                registerDevice: false
+            });
+        }
+    } catch (error) {
+        console.error("Akses cloud Goods Receipt gagal:", error);
+        return;
+    }
+
     if (!proteksiHalamanGoodsReceipt()) return;
 
     terapkanMenuRole();
@@ -5720,7 +5737,7 @@ window.addEventListener(
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin"],
+        "barang.html":["owner","admin","kasir"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -5792,7 +5809,7 @@ window.addEventListener(
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -6328,6 +6345,6 @@ window.addEventListener(
 
 
 <script src="js/goods-receipt-cloud-adapter.js?v=11.0"></script>
-<script src="js/global-system-navigation.js?v=25.1"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>
