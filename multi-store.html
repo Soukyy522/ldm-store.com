@@ -39,7 +39,7 @@
     <script src="js/cloud-session.js?v=22.0"></script>
     <script src="js/cloud-session-guard.js?v=22.0"></script>
     <script src="js/primary-owner-service.js?v=25.1"></script>
-    <script src="js/multi-store-service.js?v=26.3.0"></script>
+    <script src="js/multi-store-service.js?v=26.3.2"></script>
 <script src="js/license-v2-config.js?v=25.2.0"></script>
 <script src="js/license-v2-client.js?v=25.2.0"></script>
 <script defer src="js/license-v2-guard.js?v=25.2.0"></script>
@@ -170,6 +170,13 @@
         function currentStore(){return stores.find(row=>row.is_current)||null}
         function currentRole(){return String(context&&context.profile&&context.profile.role||localStorage.getItem("userRole")||"").toLowerCase()}
         function isPrimaryOwner(){return primaryContext&&primaryContext.is_primary_owner===true}
+        function employeeDestinationBranches(){
+            const networkBranches=(Array.isArray(manageableBranches)?manageableBranches:[])
+                .filter(row=>!row.is_archived&&String(row.store_status||"").toLowerCase()==="active"&&row.network_link_active!==false)
+                .map(row=>({store_id:row.store_id,store_name:row.store_name,store_code:row.store_code,is_primary:row.is_primary}));
+            if(networkBranches.length)return networkBranches;
+            return (Array.isArray(stores)?stores:[]).map(row=>({store_id:row.store_id,store_name:row.store_name,store_code:row.store_code,is_primary:row.is_primary}));
+        }
 
         function renderStores(){
             const active=currentStore();
@@ -256,8 +263,15 @@
         }
         async function loadManageableBranches(){
             if(!isPrimaryOwner())return;
-            try{manageableBranches=await window.LDMMultiStore.listManageableBranches();renderManageableBranches()}
-            catch(error){manageableBranches=[];$("branchManageList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`}
+            try{
+                manageableBranches=await window.LDMMultiStore.listManageableBranches();
+                renderManageableBranches();
+                updateEmployeeDestination();
+            }catch(error){
+                manageableBranches=[];
+                $("branchManageList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`;
+                updateEmployeeDestination();
+            }
         }
         function openBranchEdit(storeId){
             const row=manageableBranches.find(item=>item.store_id===storeId);if(!row||row.is_archived)return;
@@ -295,7 +309,10 @@
                 return;
             }
             $("employeeInfo").innerHTML=`<strong>${esc(employee.display_name||employee.username)}</strong><span class="ms-role-pill">${esc(employee.role)}</span><br>Employee ID: ${esc(employee.employee_id||"-")}<br>Cabang asal: <strong>${esc(employee.store_name)}</strong> (${esc(employee.store_code)})`;
-            $("employeeDestination").innerHTML='<option value="">Pilih cabang tujuan</option>'+stores.filter(row=>row.store_id!==employee.store_id).map(row=>`<option value="${row.store_id}">${esc(row.store_name)} (${esc(row.store_code)})</option>`).join("");
+            const destinations=employeeDestinationBranches().filter(row=>String(row.store_id)!==String(employee.store_id));
+            $("employeeDestination").innerHTML=destinations.length
+                ? '<option value="">Pilih cabang tujuan</option>'+destinations.map(row=>`<option value="${row.store_id}">${esc(row.store_name)} (${esc(row.store_code)})${row.is_primary?" · Pusat":""}</option>`).join("")
+                : '<option value="">Tidak ada cabang tujuan aktif</option>';
         }
         function renderEmployeeTransfers(){
             $("employeeTransferList").innerHTML=employeeTransfers.length?employeeTransfers.map(row=>`<article class="ms-employee-move"><strong>${esc(row.display_name||row.username||"Karyawan")} <span class="ms-role-pill">${esc(row.employee_role)}</span></strong><p>${esc(row.source_store_name)} → <strong>${esc(row.destination_store_name)}</strong><br>${new Date(row.moved_at).toLocaleString("id-ID")}${row.note?` · ${esc(row.note)}`:""}<br>Dipindahkan oleh ${esc(row.moved_by_name||"Owner")}</p></article>`).join(""):'<div class="ms-empty">Belum ada riwayat pemindahan karyawan.</div>';
@@ -314,7 +331,7 @@
             const employee=selectedEmployee();
             const destination=$("employeeDestination").value;
             if(!employee||!destination){alertBox("Pilih karyawan dan cabang tujuan terlebih dahulu.","bad");return}
-            const target=stores.find(row=>row.store_id===destination);
+            const target=employeeDestinationBranches().find(row=>String(row.store_id)===String(destination));
             if(!confirm(`Pindahkan ${employee.display_name||employee.username} dari ${employee.store_name} ke ${target?target.store_name:"cabang tujuan"}?\n\nAkses cabang lama akan dihentikan dan perangkat lama perlu otorisasi ulang.`))return;
             setLoading(true);
             try{
@@ -336,7 +353,8 @@
                 context=await window.LDMCloudSession.ensureAuthenticated({registerDevice:true});
                 primaryContext=await window.LDMPrimaryOwner.context(true);
                 await loadStores();
-                await Promise.all([loadTransfers(),loadManageableBranches(),loadEmployees(),loadEmployeeTransfers()]);
+                if(isPrimaryOwner()) await loadManageableBranches();
+                await Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]);
                 await window.LDMMultiStore.startRealtime(()=>Promise.all([loadTransfers(),loadManageableBranches(),loadEmployees(),loadEmployeeTransfers()]));
             }
             catch(error){alertBox(errorMessage(error),"bad")}
@@ -344,18 +362,18 @@
         $("destinationStore").addEventListener("change",loadCandidates);
         $("employeeSelect").addEventListener("change",updateEmployeeDestination);
         $("refreshTransfers").onclick=loadTransfers;
-        $("refreshEmployees").onclick=()=>Promise.all([loadEmployees(),loadEmployeeTransfers()]);
+        $("refreshEmployees").onclick=async()=>{if(isPrimaryOwner())await loadManageableBranches();await Promise.all([loadEmployees(),loadEmployeeTransfers()])};
         $("refreshBranches").onclick=loadManageableBranches;
         $("closeBranchEdit").onclick=closeBranchEdit;
         $("branchEditModal").addEventListener("click",event=>{if(event.target===$("branchEditModal"))closeBranchEdit()});
         $("branchEditForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.manageBranch($("editBranchId").value,"EDIT",{code:$("editBranchCode").value,name:$("editBranchName").value,reason:"Edit data cabang dari Multi-Toko"});closeBranchEdit();alertBox(result.message||"Data cabang berhasil diperbarui.");await Promise.all([loadStores(),loadManageableBranches(),loadEmployees()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         $("employeeTransferForm").onsubmit=event=>{event.preventDefault();moveEmployee()};
-        $("branchForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,copyProducts:$("copyProducts").checked});alertBox(`Cabang ${result.name} berhasil dibuat dengan Store ID baru.`);event.target.reset();$("copyProducts").checked=true;await Promise.all([loadStores(),loadManageableBranches()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
+        $("branchForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,copyProducts:$("copyProducts").checked});alertBox(`Cabang ${result.name} berhasil dibuat dengan Store ID baru.`);event.target.reset();$("copyProducts").checked=true;await Promise.all([loadStores(),loadManageableBranches(),loadEmployees()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         $("transferForm").onsubmit=async event=>{event.preventDefault();const selected=[];$("candidateRows").querySelectorAll("[data-pick]:checked").forEach(check=>{const index=Number(check.dataset.pick);const qty=Number($("candidateRows").querySelector(`[data-qty="${index}"]`).value);if(qty>0)selected.push({source_product_id:candidates[index].source_product_id,qty})});if(!selected.length){alertBox("Pilih minimal satu barang dan isi qty transfer.","bad");return}setLoading(true);try{const result=await window.LDMMultiStore.createTransfer($("destinationStore").value,selected,$("transferNote").value);alertBox(`Draft ${result.transfer_code} berhasil dibuat.`);event.target.reset();candidates=[];renderCandidates();await loadTransfers()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         function onlineState(){const offline=navigator.onLine===false;$("offlineBanner").classList.toggle("show",offline);document.querySelectorAll("button[type=submit]").forEach(btn=>btn.disabled=offline)}
         window.addEventListener("online",onlineState);window.addEventListener("offline",onlineState);onlineState();boot();
     })();
     </script>
-    <script src="js/global-system-navigation.js?v=26.3.0"></script>
+    <script src="js/global-system-navigation.js?v=26.3.2"></script>
 </body>
 </html>
