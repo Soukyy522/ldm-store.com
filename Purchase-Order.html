@@ -981,7 +981,6 @@ input[type="color"] {
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
-    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -1946,15 +1945,15 @@ input[type="color"] {
     <script src="js/cloud-session.js?v=6.0"></script>
     <script src="js/cloud-session-guard.js?v=15.0"></script>
     <script src="js/unit-conversion.js?v=20.0"></script>
-    <script src="js/procurement-service.js?v=20.0"></script>
+    <script src="js/procurement-service.js?v=25.2.0"></script>
     <script src="js/procurement-bootstrap.js?v=11.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
     <script src="js/products-service.js?v=21.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
 
-<script src="js/license-v2-config.js?v=25.1.0"></script>
-<script src="js/license-v2-client.js?v=25.1.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.1.0"></script>
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head>
 
 <body>
@@ -3722,6 +3721,7 @@ function safeReadObject(key) {
 
 function getSecuritySession() {
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const isCloudSession = localStorage.getItem("ldmAuthSource") === "supabase";
     const username =
         localStorage.getItem("username") ||
         localStorage.getItem("activeUsername") ||
@@ -3732,9 +3732,10 @@ function getSecuritySession() {
 
     if (!isLoggedIn || !username || !role) return null;
     if (!["owner","admin","kasir"].includes(role)) return null;
-    if (loginTimestamp && Date.now() - loginTimestamp > SECURITY_CONFIG.SESSION_TIME) return null;
+    // Masa berlaku sesi cloud dikelola Supabase, bukan timer legacy 30 menit.
+    if (!isCloudSession && loginTimestamp && Date.now() - loginTimestamp > SECURITY_CONFIG.SESSION_TIME) return null;
 
-    return { username: String(username).trim(), role, loginTimestamp };
+    return { username: String(username).trim(), role, loginTimestamp, isCloudSession };
 }
 
 function clearSecuritySession() {
@@ -3760,6 +3761,10 @@ function requireLogin() {
 function validateSessionAgainstAccounts() {
     const session = getSecuritySession();
     if (!session) return false;
+
+    // Untuk login Supabase, profile cloud adalah sumber role authoritative.
+    // daftarAkun hanya cache kompatibilitas dan boleh masih berisi role lama.
+    if (session.isCloudSession) return true;
 
     const akunList = safeReadArray("daftarAkun");
     if (akunList.length === 0) return true;
@@ -4818,7 +4823,7 @@ function lihatDetailPO(id) {
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr><th>No</th><th>Barang</th><th>Barcode</th><th>Pesan</th><th>Diterima</th><th>Sisa</th><th>Harga</th><th class="owner-purchase-value">Subtotal</th></tr>
+                    <tr><th>No</th><th>Barang</th><th>Barcode</th><th>Pesan</th><th>Diterima</th><th>Sisa</th><th class="owner-purchase-value">Harga</th><th class="owner-purchase-value">Subtotal</th></tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
@@ -5292,7 +5297,18 @@ document.addEventListener("click",event => {
     }
 });
 
-document.addEventListener("DOMContentLoaded",() => {
+document.addEventListener("DOMContentLoaded",async () => {
+    try {
+        if (window.LDMCloudSession) {
+            await window.LDMCloudSession.ensureAuthenticated({
+                registerDevice: false
+            });
+        }
+    } catch (error) {
+        console.error("Akses cloud Purchase Order gagal:", error);
+        return;
+    }
+
     if (!proteksiHalamanPO()) return;
 
     terapkanMenuRole();
@@ -5372,7 +5388,7 @@ window.addEventListener(
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin"],
+        "barang.html":["owner","admin","kasir"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -5444,7 +5460,7 @@ window.addEventListener(
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -5980,6 +5996,6 @@ window.addEventListener(
 
 
 <script src="js/purchase-order-cloud-adapter.js?v=11.0"></script>
-<script src="js/global-system-navigation.js?v=25.1"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>
