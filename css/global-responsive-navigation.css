@@ -311,7 +311,8 @@ html:not([data-ldm-eod-ready="true"]) a[data-ldm-route="eod.html"]{
 .ldm-global-floating-toggle{
     position:fixed;
     left:12px;
-    bottom:calc(14px + env(safe-area-inset-bottom,0px));
+    top:calc(12px + env(safe-area-inset-top,0px));
+    bottom:auto;
     z-index:1800;
     width:46px;
     height:46px;
@@ -340,6 +341,20 @@ html:not([data-ldm-eod-ready="true"]) a[data-ldm-route="eod.html"]{
     }
     html.ldm-global-nav-ready .ldm-global-floating-toggle{display:grid!important}
     html.ldm-global-nav-ready .btn-toggle-menu + .ldm-global-floating-toggle{display:none!important}
+    html.ldm-global-nav-ready.ldm-global-floating-menu .main-content{
+        padding-top:calc(70px + env(safe-area-inset-top,0px))!important;
+    }
+    html.ldm-global-nav-ready .header-app .btn-toggle-menu,
+    html.ldm-global-nav-ready .header-app [data-ldm-menu-toggle]{
+        order:-20;
+        flex:0 0 auto;
+        margin-left:0!important;
+        margin-right:9px!important;
+    }
+    body.ldm-global-menu-open .ldm-global-floating-toggle{
+        opacity:0;
+        pointer-events:none;
+    }
     body.ldm-global-menu-open{overflow:hidden}
 }
 
