@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-api-version, x-region",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -128,7 +128,22 @@ Deno.serve(async (req) => {
       if (targetError) throw targetError;
       if (!target) return json({ error: "Profile target tidak ditemukan pada store ini." }, 404);
       if (!target.deleted_at) {
-        return json({ error: "Akun ini tidak berada dalam arsip akun yang dihapus." }, 409);
+        return json({ error: "Akun ini bukan akun arsip. Untuk akun yang hanya NONAKTIF, gunakan tombol Aktifkan pada Daftar Akun." }, 409);
+      }
+
+      const { data: duplicateUsername, error: duplicateError } = await admin
+        .from("profiles")
+        .select("id,username")
+        .eq("store_id", ctx.store_id)
+        .is("deleted_at", null)
+        .ilike("username", target.username)
+        .neq("id", targetUserId)
+        .limit(1);
+      if (duplicateError) throw duplicateError;
+      if (Array.isArray(duplicateUsername) && duplicateUsername.length > 0) {
+        return json({
+          error: `Username ${target.username} sudah dipakai akun aktif lain. Ubah username akun lain terlebih dahulu.`,
+        }, 409);
       }
 
       const { data: authTarget, error: authTargetError } =
@@ -137,25 +152,11 @@ Deno.serve(async (req) => {
         return json({ error: "Auth User akun ini sudah tidak tersedia dan tidak dapat direaktivasi." }, 409);
       }
 
-      const { error: profileReactivateError } = await admin
-        .from("profiles")
-        .update({ active: true, deleted_at: null, deleted_by: null })
-        .eq("id", targetUserId)
-        .eq("store_id", ctx.store_id);
-      if (profileReactivateError) {
-        if (profileReactivateError.code === "23505") {
-          return json({
-            error: `Username ${target.username} sudah dipakai akun aktif lain. Ubah username akun lain terlebih dahulu.`,
-          }, 409);
-        }
-        throw profileReactivateError;
-      }
-
       const now = new Date().toISOString();
       const existingMeta = authTarget.user.user_metadata || {};
-      const { error: authReactivateError } = await admin.auth.admin.updateUserById(
-        targetUserId,
-        {
+      let authReactivateError = null;
+      {
+        const first = await admin.auth.admin.updateUserById(targetUserId, {
           ban_duration: "none",
           user_metadata: {
             ...existingMeta,
@@ -164,20 +165,43 @@ Deno.serve(async (req) => {
             ldm_reactivated_at: now,
             ldm_reactivated_by: actor.id,
           },
-        },
-      );
-
+        });
+        authReactivateError = first.error;
+      }
+      // Beberapa versi GoTrue menerima durasi nol, sementara versi lain menerima "none".
+      // Fallback ini menjaga kompatibilitas tanpa pernah memindahkan service_role ke browser.
       if (authReactivateError) {
-        await admin
-          .from("profiles")
-          .update({
-            active: target.active,
-            deleted_at: target.deleted_at,
-            deleted_by: target.deleted_by,
-          })
-          .eq("id", targetUserId)
-          .eq("store_id", ctx.store_id);
-        throw authReactivateError;
+        const retry = await admin.auth.admin.updateUserById(targetUserId, {
+          ban_duration: "0s",
+          user_metadata: {
+            ...existingMeta,
+            ldm_disabled: false,
+            ldm_disabled_at: null,
+            ldm_reactivated_at: now,
+            ldm_reactivated_by: actor.id,
+          },
+        });
+        authReactivateError = retry.error;
+      }
+      if (authReactivateError) throw authReactivateError;
+
+      const { error: profileReactivateError } = await admin
+        .from("profiles")
+        .update({ active: true, deleted_at: null, deleted_by: null })
+        .eq("id", targetUserId)
+        .eq("store_id", ctx.store_id);
+
+      if (profileReactivateError) {
+        // Jangan biarkan Auth terbuka jika profile gagal dipulihkan.
+        await admin.auth.admin.updateUserById(targetUserId, {
+          ban_duration: "876000h",
+          user_metadata: {
+            ...existingMeta,
+            ldm_disabled: true,
+            ldm_disabled_at: target.deleted_at || now,
+          },
+        }).catch(() => undefined);
+        throw profileReactivateError;
       }
 
       return json({
