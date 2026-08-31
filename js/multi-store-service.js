@@ -43,6 +43,22 @@
         });
     }
 
+    async function listManageableBranches(){
+        const data=await rpc("ldm_manageable_network_branches");
+        return Array.isArray(data) ? data : [];
+    }
+
+    async function manageBranch(storeId,action,options={}){
+        if(navigator.onLine===false) throw new Error("Manajemen cabang membutuhkan koneksi internet.");
+        return rpc("ldm_manage_branch",{
+            p_store_id:String(storeId||"").trim(),
+            p_action:String(action||"").trim().toUpperCase(),
+            p_code:options.code==null?null:String(options.code).trim(),
+            p_name:options.name==null?null:String(options.name).trim(),
+            p_reason:options.reason==null?null:String(options.reason).trim()
+        });
+    }
+
     async function offlineQueueSafe(){
         if(!window.LDMOfflineQueue || typeof window.LDMOfflineQueue.stats!=="function") return true;
         const info=await window.LDMOfflineQueue.stats();
@@ -174,7 +190,7 @@
     }
 
     window.LDMMultiStore=Object.freeze({
-        listStores,createBranch,prepareStoreDevice,switchStore,offlineQueueSafe,
+        listStores,createBranch,listManageableBranches,manageBranch,prepareStoreDevice,switchStore,offlineQueueSafe,
         transferCandidates,createTransfer,sendTransfer,receiveTransfer,cancelTransfer,
         listTransfers,listEmployees,transferEmployee,listEmployeeTransfers,
         startRealtime,stopRealtime,clearStoreCaches
