@@ -4,6 +4,6 @@
     supabaseUrl:"https://vplweadbeujidsoponrl.supabase.co",
     supabasePublishableKey:"sb_publishable_kYvf6j_6WElejgViScxSfQ__yG97s0M",
     adminFunctionUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-license-admin-v2",
-    requestTimeoutMs:10000
+    requestTimeoutMs:20000
   });
 })();

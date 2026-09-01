@@ -3,8 +3,9 @@
     window.LDM_LICENSE_V2_CONFIG=Object.freeze({
         enabled:true,
         serverUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-license-v2",
+        checkoutUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-public-checkout-v2",
         developerWhatsApp:"6283117590286",
-        appVersion:"27.0.0",
+        appVersion:"27.3.0",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,
