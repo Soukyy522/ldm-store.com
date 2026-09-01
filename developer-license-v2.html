@@ -1,24 +1,142 @@
-<!doctype html><html lang="id"><head>
-<script src="js/local-time.js?v=26.4.0"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Developer Center · Lisensi LocDailyMar</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>
-:root{--navy:#0d2544;--blue:#1464cc;--bg:#edf2f7;--card:#fff;--ink:#132844;--muted:#6a788c;--line:#dae3ee;--green:#07865f;--red:#b42318;--amber:#b96b00}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Poppins,system-ui,sans-serif;color:var(--ink)}button,input,select,textarea{font:inherit}.top{height:68px;background:linear-gradient(110deg,#0b203b,#174472);color:#fff;display:flex;align-items:center;padding:0 24px;justify-content:space-between}.top strong{font-size:18px}.top span{font-size:11px;color:#bfd1e7;display:block}.top button{border:1px solid #ffffff40;color:#fff;background:transparent;border-radius:9px;padding:8px 12px;cursor:pointer}.wrap{max-width:1320px;margin:auto;padding:24px}.login{max-width:430px;margin:60px auto;background:#fff;border-radius:20px;padding:28px;box-shadow:0 18px 55px #1e3d5d20}.login h1{font-size:23px;margin:0 0 7px}.login p{font-size:13px;color:var(--muted);line-height:1.6}.field{display:grid;gap:6px;margin-top:13px}.field label{font-size:12px;font-weight:700}.field input,.field select,.field textarea{border:1px solid #cbd8e6;border-radius:10px;padding:11px;outline:none}.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1464cc18}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:#fff}.soft{background:#eaf1f9;color:#183c65}.danger{background:#ffebe8;color:var(--red)}.success{background:#e6f7f0;color:var(--green)}.login .btn{width:100%;margin-top:17px}.message{font-size:12px;margin-top:12px;color:var(--red)}.app{display:none}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:13px}.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 25px #263e5910}.stat{padding:17px}.stat span{font-size:11px;color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:4px}.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:20px 0 12px}.toolbar h2{margin:0;font-size:20px}.toolbar .right{display:flex;gap:8px}.panel{overflow:hidden}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:1060px}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #e7edf4;font-size:12px;vertical-align:top}th{background:#f7f9fc;color:#627086;font-size:10px;text-transform:uppercase;letter-spacing:.04em}.badge{display:inline-block;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:700}.active{background:#e4f6ef;color:var(--green)}.suspended{background:#fff0d8;color:var(--amber)}.expired,.cancelled{background:#feeae7;color:var(--red)}.trial{background:#e6efff;color:#1559ad}.rowactions{display:flex;gap:5px;flex-wrap:wrap}.rowactions button{border:0;border-radius:7px;padding:6px 8px;font-size:10px;font-weight:700;cursor:pointer}.modal{position:fixed;inset:0;background:#091a2dc7;display:none;place-items:center;padding:15px;z-index:10}.modal.open{display:grid}.modalcard{background:#fff;width:min(620px,100%);max-height:90vh;overflow:auto;border-radius:18px;padding:23px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0;font-size:20px}.close{border:0;background:#edf2f7;border-radius:9px;padding:7px 10px;cursor:pointer}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.full{grid-column:1/-1}.result{margin-top:14px;padding:13px;border-radius:11px;background:#edf8f3;color:#096a4d;font-size:12px;word-break:break-all;display:none}.result.show{display:block}.device{padding:12px;border:1px solid var(--line);border-radius:11px;margin-top:9px;display:flex;justify-content:space-between;gap:10px}.device span{font-size:11px;color:var(--muted);display:block}.empty{text-align:center;padding:35px;color:var(--muted)}@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:14px}.top{padding:0 14px}}
-</style></head><body><header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2 · halaman privat developer</span></div><button id="logoutBtn" hidden>Keluar</button></header>
-<main class="wrap"><section class="login" id="loginBox"><h1>Login developer</h1><p>Gunakan akun Supabase Auth yang emailnya tercantum pada secret <b>LDM2_ADMIN_EMAILS</b>. Customer tidak boleh mendapat akses ke halaman ini.</p><div class="field"><label>Email developer</label><input id="email" type="email"></div><div class="field"><label>Password</label><input id="password" type="password"></div><button class="btn primary" id="loginBtn">Masuk Developer Center</button><div class="message" id="loginMessage"></div></section>
-<section class="app" id="app"><div class="stats"><div class="stat"><span>SEMUA LISENSI</span><strong id="sTotal">0</strong></div><div class="stat"><span>AKTIF</span><strong id="sActive">0</strong></div><div class="stat"><span>TRIAL AKTIF</span><strong id="sTrial">0</strong></div><div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div><div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div></div>
-<div class="toolbar"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right"><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi</button></div></div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Paket</th><th>Status</th><th>Periode</th><th>Perangkat / toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section></section></main>
-<div class="modal" id="issueModal"><div class="modalcard"><div class="modalhead"><h2>Buat License Key manual</h2><button class="close" data-close>✕</button></div><div class="formgrid"><div class="field"><label>Nama customer</label><input id="iName"></div><div class="field"><label>Email</label><input id="iEmail" type="email"></div><div class="field"><label>Nomor WhatsApp</label><input id="iPhone"></div><div class="field"><label>Paket</label><select id="iPlan"><option value="WARUNG_KECIL">Warung Kecil</option><option value="WARUNG_SEDERHANA">Warung Sederhana</option><option value="TOKO">Toko</option><option value="LIFETIME">Lifetime</option></select></div><div class="field"><label>Durasi (bulan, diabaikan Lifetime)</label><input id="iMonths" type="number" min="1" value="1"></div><div class="field full"><label>Catatan internal</label><textarea id="iNotes"></textarea></div></div><button class="btn primary" id="issueBtn" style="margin-top:15px">Generate License Key</button><div class="result" id="issueResult"></div></div></div>
-<div class="modal" id="deviceModal"><div class="modalcard"><div class="modalhead"><h2>Perangkat lisensi</h2><button class="close" data-close>✕</button></div><div id="devices"></div></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/license-v2-admin-config.js?v=24.0.0"></script><script src="js/license-v2-admin.js?v=24.0.0"></script><script>
-const $=id=>document.getElementById(id);let licenses=[];const dt=v=>v?new Date(v).toLocaleString('id-ID'):'Tidak terbatas';function showApp(on){$('loginBox').style.display=on?'none':'block';$('app').style.display=on?'block':'none';$('logoutBtn').hidden=!on}function open(id){$(id).classList.add('open')}function closeAll(){document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'))}document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeAll);document.querySelectorAll('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)closeAll()});
-async function load(){try{const d=await LDMLicenseV2Admin.call('dashboard');licenses=d.licenses||[];$('sTotal').textContent=d.summary.total;$('sActive').textContent=d.summary.active;$('sTrial').textContent=d.summary.trial;$('sSuspended').textContent=d.summary.suspended;$('sExpired').textContent=d.summary.expired;$('adminIdentity').textContent=d.admin_email;render()}catch(e){alert(e.message);if(e.status===401)showApp(false)}}
-function render(){const body=$('rows');if(!licenses.length){body.innerHTML='<tr><td colspan="7" class="empty">Belum ada customer lisensi.</td></tr>';return}body.innerHTML=licenses.map(l=>`<tr><td><b>${esc(l.customer_name)}</b><br>${esc(l.customer_email)}<br><small>${esc(l.customer_phone||'')}</small></td><td><b>${esc(l.plan_name)}</b>${l.is_trial?'<br><span class="badge trial">TRIAL</span>':''}</td><td><span class="badge ${esc(l.status)}">${esc(l.status).toUpperCase()}</span></td><td>${dt(l.starts_at)}<br><small>s/d ${dt(l.expires_at)}</small></td><td>${l.active_devices}/${l.max_devices} device<br>${l.active_stores}/${l.max_stores} toko</td><td>${esc(l.key_prefix)}…</td><td><div class="rowactions"><button class="soft" onclick="devices('${l.id}')">Perangkat</button>${l.status==='active'?`<button class="danger" onclick="statusLicense('${l.id}','suspended')">Tangguhkan</button>`:`<button class="success" onclick="statusLicense('${l.id}','active')">Aktifkan</button>`}<button class="soft" onclick="renew('${l.id}')">Perpanjang</button>${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Jadikan berbayar</button>`:''}</div></td></tr>`).join('')}
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-$('loginBtn').onclick=async()=>{try{$('loginMessage').textContent='';await LDMLicenseV2Admin.login($('email').value,$('password').value);showApp(true);await load()}catch(e){$('loginMessage').textContent=e.message}};$('logoutBtn').onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false)};$('refreshBtn').onclick=load;$('newBtn').onclick=()=>open('issueModal');
-$('issueBtn').onclick=async()=>{try{const d=await LDMLicenseV2Admin.call('issue',{customer_name:$('iName').value,customer_email:$('iEmail').value,customer_phone:$('iPhone').value,plan_code:$('iPlan').value,duration_months:Number($('iMonths').value),notes:$('iNotes').value});$('issueResult').classList.add('show');$('issueResult').innerHTML=`<b>License Key hanya ditampilkan sekarang:</b><br>${esc(d.license.license_key)}<br><br><button class="btn success" onclick="navigator.clipboard.writeText('${d.license.license_key}')">Salin License Key</button>`;await load()}catch(e){alert(e.message)}};
-async function statusLicense(id,status){const reason=prompt(status==='suspended'?'Alasan penangguhan:':'Catatan pengaktifan kembali:','');if(reason===null)return;await LDMLicenseV2Admin.call('set_status',{license_id:id,status,reason});await load()}
-async function renew(id){const months=Number(prompt('Perpanjang berapa bulan?','1'));if(!months)return;await LDMLicenseV2Admin.call('renew',{license_id:id,duration_months:months});await load()}
-async function convertTrial(id){const plan=prompt('Kode paket: WARUNG_KECIL, WARUNG_SEDERHANA, TOKO, atau LIFETIME','WARUNG_SEDERHANA');if(!plan)return;const months=plan.toUpperCase()==='LIFETIME'?1:Number(prompt('Durasi bulan:','1'));const d=await LDMLicenseV2Admin.call('convert_trial',{license_id:id,plan_code:plan,duration_months:months});alert('License Key baru (salin sekarang):\n\n'+d.license.license_key);await navigator.clipboard?.writeText(d.license.license_key);await load()}
-async function devices(id){open('deviceModal');$('devices').innerHTML='Memuat…';try{const d=await LDMLicenseV2Admin.call('devices',{license_id:id});$('devices').innerHTML=d.devices.length?d.devices.map(v=>`<div class="device"><div><b>${esc(v.device_name)}</b><span>${esc(v.store_code)} · ${esc(v.app_version||'-')}</span><span>Terakhir: ${dt(v.last_seen_at)} · ${esc(v.status)}</span></div>${v.status==='active'?`<button class="btn danger" onclick="deactivateDevice('${v.id}','${id}')">Nonaktifkan</button>`:''}</div>`).join(''):'<div class="empty">Belum ada perangkat.</div>'}catch(e){$('devices').textContent=e.message}}
-async function deactivateDevice(aid,lid){if(!confirm('Nonaktifkan perangkat ini dan kosongkan slotnya?'))return;await LDMLicenseV2Admin.call('deactivate_device',{activation_id:aid,reason:'Dinonaktifkan developer'});await devices(lid);await load()}
-(async()=>{try{if(!LDMLicenseV2Admin.configured()){$('loginMessage').textContent='Isi js/license-v2-admin-config.js terlebih dahulu.';return}const s=await LDMLicenseV2Admin.session();if(s){showApp(true);await load()}}catch(e){$('loginMessage').textContent=e.message}})();
-</script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+  <script src="js/local-time.js?v=26.4.0"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Developer Center · Lisensi LocDailyMar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#0d2544;--blue:#1464cc;--bg:#edf2f7;--ink:#132844;--muted:#6a788c;--line:#dae3ee;--green:#07865f;--red:#b42318;--amber:#b96b00}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Poppins,system-ui,sans-serif;color:var(--ink)}button,input,select,textarea{font:inherit}
+    .top{height:68px;background:linear-gradient(110deg,#0b203b,#174472);color:#fff;display:flex;align-items:center;padding:0 24px;justify-content:space-between}.top strong{font-size:18px}.top span{font-size:11px;color:#bfd1e7;display:block}.top button{border:1px solid #ffffff40;color:#fff;background:transparent;border-radius:9px;padding:8px 12px;cursor:pointer}
+    .wrap{max-width:1480px;margin:auto;padding:24px}.login{max-width:430px;margin:60px auto;background:#fff;border-radius:20px;padding:28px;box-shadow:0 18px 55px #1e3d5d20}.login h1{font-size:23px;margin:0 0 7px}.login p,.note{font-size:12px;color:var(--muted);line-height:1.65}
+    .field{display:grid;gap:6px;margin-top:13px}.field label{font-size:12px;font-weight:700}.field input,.field select,.field textarea{border:1px solid #cbd8e6;border-radius:10px;padding:11px;outline:none}.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1464cc18}
+    .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:#fff}.soft{background:#eaf1f9;color:#183c65}.danger{background:#ffebe8;color:var(--red)}.success{background:#e6f7f0;color:var(--green)}.btn:disabled{opacity:.55;cursor:wait}.login .btn{width:100%;margin-top:17px}.message{font-size:12px;margin-top:12px;color:var(--red)}
+    .app{display:none}.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:13px}.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 25px #263e5910}.stat{padding:17px}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:4px}
+    .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:20px 0 12px}.toolbar h2{margin:0;font-size:20px}.toolbar .right{display:flex;gap:8px}.panel{overflow:hidden}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:1380px}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #e7edf4;font-size:11px;vertical-align:top}th{background:#f7f9fc;color:#627086;font-size:9px;text-transform:uppercase;letter-spacing:.04em}td code{font-size:10px;word-break:break-all}
+    .badge{display:inline-block;border-radius:99px;padding:4px 8px;font-size:9px;font-weight:700}.active,.paid{background:#e4f6ef;color:var(--green)}.pending_payment,.pending,.challenge{background:#fff0d8;color:var(--amber)}.suspended{background:#fff0d8;color:var(--amber)}.expired,.cancelled,.failed{background:#feeae7;color:var(--red)}.trial{background:#e6efff;color:#1559ad}
+    .rowactions{display:flex;gap:5px;flex-wrap:wrap}.rowactions button,.rowactions a{border:0;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:700;cursor:pointer;text-decoration:none}.modal{position:fixed;inset:0;background:#091a2dc7;display:none;place-items:center;padding:15px;z-index:10}.modal.open{display:grid}.modalcard{background:#fff;width:min(720px,100%);max-height:90vh;overflow:auto;border-radius:18px;padding:23px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0;font-size:20px}.close{border:0;background:#edf2f7;border-radius:9px;padding:7px 10px;cursor:pointer}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.full{grid-column:1/-1}
+    .result{margin-top:14px;padding:14px;border-radius:11px;background:#edf8f3;color:#096a4d;font-size:12px;word-break:break-word;display:none}.result.show{display:block}.result code{display:block;background:#fff;border:1px solid #cce7da;padding:8px;border-radius:8px;margin:4px 0 9px;color:#123;word-break:break-all}.device{padding:12px;border:1px solid var(--line);border-radius:11px;margin-top:9px;display:flex;justify-content:space-between;gap:10px}.device span{font-size:11px;color:var(--muted);display:block}.empty{text-align:center;padding:35px;color:var(--muted)}
+    @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:14px}.top{padding:0 14px}}
+  </style>
+</head>
+<body>
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.1 · Midtrans otomatis</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+  <main class="wrap">
+    <section class="login" id="loginBox">
+      <h1>Login developer</h1>
+      <p>Gunakan akun Supabase Auth yang emailnya tercantum pada secret <b>LDM2_ADMIN_EMAILS</b>. Customer tidak boleh mendapat akses ke halaman ini.</p>
+      <div class="field"><label>Email developer</label><input id="email" type="email"></div>
+      <div class="field"><label>Password</label><input id="password" type="password"></div>
+      <button class="btn primary" id="loginBtn">Masuk Developer Center</button>
+      <div class="message" id="loginMessage"></div>
+    </section>
+
+    <section class="app" id="app">
+      <div class="stats">
+        <div class="stat"><span>SEMUA LISENSI</span><strong id="sTotal">0</strong></div>
+        <div class="stat"><span>AKTIF</span><strong id="sActive">0</strong></div>
+        <div class="stat"><span>TRIAL AKTIF</span><strong id="sTrial">0</strong></div>
+        <div class="stat"><span>MENUNGGU BAYAR</span><strong id="sPayment">0</strong></div>
+        <div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div>
+        <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div>
+      </div>
+      <div class="toolbar"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right"><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
+      <section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+    </section>
+  </main>
+
+  <div class="modal" id="issueModal"><div class="modalcard">
+    <div class="modalhead"><h2>Buat lisensi + Midtrans</h2><button class="close" data-close>✕</button></div>
+    <p class="note">License Key, Store ID, Network ID, dan link pembayaran dibuat bersamaan. Lisensi tetap terkunci sampai webhook Midtrans menyatakan pembayaran berhasil.</p>
+    <div class="formgrid">
+      <div class="field"><label>Nama customer</label><input id="iName"></div>
+      <div class="field"><label>Email</label><input id="iEmail" type="email"></div>
+      <div class="field"><label>Nomor WhatsApp</label><input id="iPhone"></div>
+      <div class="field"><label>Nama toko pusat</label><input id="iStoreName" placeholder="Contoh: LocDailyMar Banjarmasin"></div>
+      <div class="field"><label>Store Code</label><input id="iStoreCode" maxlength="30" placeholder="Kosongkan agar dibuat otomatis"></div>
+      <div class="field"><label>Paket</label><select id="iPlan"><option value="WARUNG_KECIL">Warung Kecil</option><option value="WARUNG_SEDERHANA">Warung Sederhana</option><option value="TOKO">Toko</option><option value="LIFETIME">Lifetime</option></select></div>
+      <div class="field"><label>Periode pembayaran</label><select id="iCycle"><option value="monthly">Bulanan</option><option value="yearly">Tahunan</option></select></div>
+      <div class="field full"><label>Catatan internal</label><textarea id="iNotes"></textarea></div>
+    </div>
+    <button class="btn primary" id="issueBtn" style="margin-top:15px">Generate & Buat Pembayaran</button>
+    <div class="result" id="issueResult"></div>
+  </div></div>
+
+  <div class="modal" id="paymentModal"><div class="modalcard"><div class="modalhead"><h2>Link pembayaran Midtrans</h2><button class="close" data-close>✕</button></div><div class="result show" id="paymentResult"></div></div></div>
+  <div class="modal" id="deviceModal"><div class="modalcard"><div class="modalhead"><h2>Perangkat lisensi</h2><button class="close" data-close>✕</button></div><div id="devices"></div></div></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/license-v2-admin-config.js?v=27.1.0"></script>
+  <script src="js/license-v2-admin.js?v=27.1.0"></script>
+  <script>
+    const $=id=>document.getElementById(id);
+    let licenses=[],lastDelivery="";
+    const dt=v=>v?new Date(v).toLocaleString("id-ID"):"Tidak terbatas";
+    const money=v=>"Rp "+Number(v||0).toLocaleString("id-ID");
+    const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    const safeUrl=v=>{try{const u=new URL(String(v||""));return u.protocol==="https:"?u.href:""}catch{return ""}};
+    function showApp(on){$("loginBox").style.display=on?"none":"block";$("app").style.display=on?"block":"none";$("logoutBtn").hidden=!on}
+    function open(id){$(id).classList.add("open")}
+    function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.classList.remove("open"))}
+    document.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeAll);
+    document.querySelectorAll(".modal").forEach(m=>m.onclick=e=>{if(e.target===m)closeAll()});
+
+    async function load(){
+      try{
+        const d=await LDMLicenseV2Admin.call("dashboard");licenses=d.licenses||[];
+        $("sTotal").textContent=d.summary.total;$("sActive").textContent=d.summary.active;$("sTrial").textContent=d.summary.trial;
+        $("sPayment").textContent=d.summary.payment_pending||0;$("sSuspended").textContent=d.summary.suspended;$("sExpired").textContent=d.summary.expired;
+        $("adminIdentity").textContent=d.admin_email;render();
+      }catch(e){alert(e.message);if(e.status===401)showApp(false)}
+    }
+    function render(){
+      const body=$("rows");
+      if(!licenses.length){body.innerHTML='<tr><td colspan="9" class="empty">Belum ada customer lisensi.</td></tr>';return}
+      body.innerHTML=licenses.map(l=>{const paymentUrl=safeUrl(l.latest_payment_url);return `<tr>
+        <td><b>${esc(l.customer_name)}</b><br>${esc(l.customer_email)}<br><small>${esc(l.customer_phone||"")}</small></td>
+        <td><b>${esc(l.primary_store_name||"-")}</b><br><code>${esc(l.primary_store_code||"-")}</code><br><small>ID: ${esc(l.primary_store_id||"-")}</small></td>
+        <td><b>${esc(l.plan_name)}</b>${l.is_trial?'<br><span class="badge trial">TRIAL</span>':""}</td>
+        <td><span class="badge ${esc(l.status)}">${esc(l.status).replaceAll("_"," ").toUpperCase()}</span></td>
+        <td><span class="badge ${esc(l.latest_payment_status||"")}">${esc(l.latest_payment_status||"-").toUpperCase()}</span><br><small>${esc(l.latest_order_id||"")}</small><br><small>${l.latest_payment_amount?money(l.latest_payment_amount):""}</small></td>
+        <td>${dt(l.starts_at)}<br><small>s/d ${dt(l.expires_at)}</small></td>
+        <td>${l.active_devices}/${l.max_devices} device<br>${l.active_stores}/${l.max_stores} toko</td>
+        <td>${esc(l.key_prefix)}…</td>
+        <td><div class="rowactions"><button class="soft" onclick="devices('${l.id}')">Perangkat</button>${l.status==="active"?`<button class="danger" onclick="statusLicense('${l.id}','suspended')">Tangguhkan</button>`:(l.status!=="pending_payment"?`<button class="success" onclick="statusLicense('${l.id}','active')">Aktifkan manual</button>`:"")}${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Ubah trial ke berbayar</button>`:(l.plan_code!=="LIFETIME"?`<button class="primary" onclick="renew('${l.id}')">Pembayaran perpanjangan</button>`:"")}${paymentUrl&&["pending","challenge"].includes(l.latest_payment_status)?`<a class="soft" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka pembayaran</a>`:""}</div></td>
+      </tr>`}).join("");
+    }
+
+    function deliveryText(d){return `LOCDailyMar - DATA LISENSI\n\nPaket: ${d.license.plan_name||d.license.plan_code}\nStore Code: ${d.license.store_code}\nStore ID: ${d.license.store_id}\nNetwork ID: ${d.license.network_id}\nLicense Key: ${d.license.license_key||"Gunakan License Key lama"}\nOrder ID: ${d.payment.order_id}\nNominal: ${money(d.payment.amount)}\nStatus: MENUNGGU PEMBAYARAN\n\nLink pembayaran Midtrans:\n${d.payment.redirect_url||"Belum tersedia"}`}
+    function showPayment(d,target="paymentResult"){
+      lastDelivery=deliveryText(d);
+      const paymentUrl=safeUrl(d.payment.redirect_url);
+      $(target).innerHTML=`<b>Store Code</b><code>${esc(d.license.store_code)}</code><b>Store ID</b><code>${esc(d.license.store_id)}</code><b>Network ID</b><code>${esc(d.license.network_id)}</code>${d.license.license_key?`<b>License Key — simpan sekarang</b><code>${esc(d.license.license_key)}</code>`:""}<b>Order ID</b><code>${esc(d.payment.order_id)}</code><b>Nominal</b><code>${money(d.payment.amount)}</code><div class="rowactions"><button class="success" onclick="navigator.clipboard.writeText(lastDelivery)">Salin semua data</button>${paymentUrl?`<a class="primary" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka Midtrans</a>`:""}</div><p>Lisensi masih terkunci. Webhook Midtrans akan mengaktifkan atau memperpanjangnya otomatis setelah pembayaran berhasil.</p>`;
+    }
+
+    $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await load()}catch(e){$("loginMessage").textContent=e.message}};
+    $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false)};
+    $("refreshBtn").onclick=load;$("newBtn").onclick=()=>open("issueModal");
+    $("iPlan").onchange=()=>{const lifetime=$("iPlan").value==="LIFETIME";$("iCycle").innerHTML=lifetime?'<option value="lifetime">Lifetime</option>':'<option value="monthly">Bulanan</option><option value="yearly">Tahunan</option>'};
+    $("issueBtn").onclick=async()=>{
+      const button=$("issueBtn");button.disabled=true;
+      try{
+        const d=await LDMLicenseV2Admin.call("issue_payment",{customer_name:$("iName").value,customer_email:$("iEmail").value,customer_phone:$("iPhone").value,store_name:$("iStoreName").value,store_code:$("iStoreCode").value,plan_code:$("iPlan").value,billing_cycle:$("iCycle").value,notes:$("iNotes").value});
+        $("issueResult").classList.add("show");showPayment(d,"issueResult");await load();
+      }catch(e){if(e.data?.license&&e.data?.payment){$("issueResult").classList.add("show");showPayment(e.data,"issueResult")}alert(e.message)}finally{button.disabled=false}
+    };
+    async function statusLicense(id,status){const reason=prompt(status==="suspended"?"Alasan penangguhan:":"Catatan pengaktifan kembali:","");if(reason===null)return;await LDMLicenseV2Admin.call("set_status",{license_id:id,status,reason});await load()}
+    async function renew(id){const answer=prompt("Periode perpanjangan: ketik monthly atau yearly","yearly");if(!answer)return;const cycle=answer.trim().toLowerCase();if(!["monthly","yearly"].includes(cycle)){alert("Gunakan monthly atau yearly.");return}try{const d=await LDMLicenseV2Admin.call("renew_payment",{license_id:id,billing_cycle:cycle});showPayment(d);open("paymentModal");await load()}catch(e){alert(e.message)}}
+    async function convertTrial(id){
+      const answer=prompt("Paket tujuan: WARUNG_KECIL, WARUNG_SEDERHANA, TOKO, atau LIFETIME","WARUNG_SEDERHANA");if(!answer)return;
+      const plan=answer.trim().toUpperCase();if(!["WARUNG_KECIL","WARUNG_SEDERHANA","TOKO","LIFETIME"].includes(plan)){alert("Kode paket tidak valid.");return}
+      let cycle=plan==="LIFETIME"?"lifetime":String(prompt("Periode: ketik monthly atau yearly","yearly")||"").trim().toLowerCase();if(!cycle)return;
+      if(plan!=="LIFETIME"&&!["monthly","yearly"].includes(cycle)){alert("Gunakan monthly atau yearly.");return}
+      try{const d=await LDMLicenseV2Admin.call("convert_trial_payment",{license_id:id,plan_code:plan,billing_cycle:cycle});showPayment(d);open("paymentModal");await load()}catch(e){if(e.data?.license&&e.data?.payment){showPayment(e.data);open("paymentModal")}alert(e.message)}
+    }
+    async function devices(id){open("deviceModal");$("devices").innerHTML="Memuat…";try{const d=await LDMLicenseV2Admin.call("devices",{license_id:id});$("devices").innerHTML=d.devices.length?d.devices.map(v=>`<div class="device"><div><b>${esc(v.device_name)}</b><span>${esc(v.store_code)} · ${esc(v.app_version||"-")}</span><span>Terakhir: ${dt(v.last_seen_at)} · ${esc(v.status)}</span></div>${v.status==="active"?`<button class="btn danger" onclick="deactivateDevice('${v.id}','${id}')">Nonaktifkan</button>`:""}</div>`).join(""):'<div class="empty">Belum ada perangkat.</div>'}catch(e){$("devices").textContent=e.message}}
+    async function deactivateDevice(aid,lid){if(!confirm("Nonaktifkan perangkat ini dan kosongkan slotnya?"))return;await LDMLicenseV2Admin.call("deactivate_device",{activation_id:aid,reason:"Dinonaktifkan developer"});await devices(lid);await load()}
+    (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Isi js/license-v2-admin-config.js terlebih dahulu.";return}const session=await LDMLicenseV2Admin.session();if(session){showApp(true);await load()}}catch(e){$("loginMessage").textContent=e.message}})();
+  </script>
+</body>
+</html>

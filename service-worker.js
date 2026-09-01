@@ -1,9 +1,9 @@
 "use strict";
 
-const APP_VERSION = "27.0.0";
+const APP_VERSION = "27.1.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-0-0-employee-nik-shell-v1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-0-0-employee-nik-runtime-v1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-1-0-midtrans-auto-shell-v1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-1-0-midtrans-auto-runtime-v1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
