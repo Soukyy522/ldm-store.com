@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { preparePaidOrder } from "../_shared/ldm-license-delivery.ts";
 
 const encoder = new TextEncoder();
 
@@ -106,7 +107,20 @@ Deno.serve(async (req) => {
       return json(data, code === "ORDER_NOT_FOUND" ? 404 : 409);
     }
 
-    return json({ ok: true, result: data });
+    // Aktivasi lisensi tidak boleh gagal hanya karena provisioning aplikasi sedang bermasalah.
+    // Webhook hanya menyiapkan akun/store. License Key tidak pernah dikembalikan ke Midtrans.
+    let delivery = null;
+    const paymentStatus = String(data?.payment_status || "").toLowerCase();
+    if (paymentStatus === "paid") {
+      try {
+        delivery = await preparePaidOrder(admin, orderId, true);
+      } catch (deliveryError) {
+        console.error("LDM_CUSTOMER_WEB_RECEIPT_PREPARE", { orderId, error: deliveryError });
+        delivery = { eligible: true, completed: false, error: (deliveryError as Error)?.message || "Provisioning receipt gagal." };
+      }
+    }
+
+    return json({ ok: true, result: data, delivery });
   } catch (error) {
     console.error("LDM_MIDTRANS_WEBHOOK", error);
     return json({ ok: false, message: (error as Error)?.message || "Webhook gagal diproses." }, 500);
