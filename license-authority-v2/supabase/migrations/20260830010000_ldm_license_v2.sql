@@ -146,22 +146,22 @@ insert into public.ldm2_plans(
     max_devices,max_stores,features,active,sort_order
 ) values
 (
-    'WARUNG_KECIL','Warung Kecil','Operasional inti untuk satu warung.',29000,299000,null,2,1,
+    'WARUNG_KECIL','Warung Kecil','Operasional inti untuk satu warung.',69000,699000,null,2,1,
     '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo"]'::jsonb,
     true,10
 ),
 (
-    'WARUNG_SEDERHANA','Warung Sederhana','Operasional lengkap, pembelian, dan Cloud dasar.',59000,599000,null,3,1,
+    'WARUNG_SEDERHANA','Warung Sederhana','Operasional lengkap, pembelian, dan Cloud dasar.',129000,1299000,null,3,1,
     '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","advanced_promo","expenses","suppliers","purchase_order","goods_receipt","cloud_accounts","cloud_devices","recovery_center","app_update"]'::jsonb,
     true,20
 ),
 (
-    'TOKO','Toko','Operasional tingkat lanjut untuk beberapa cabang.',99000,999000,null,10,5,
+    'TOKO','Toko','Operasional tingkat lanjut untuk beberapa cabang.',249000,2499000,null,10,5,
     '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","advanced_promo","expenses","suppliers","purchase_order","goods_receipt","cloud_accounts","cloud_devices","recovery_center","app_update","multi_store","cloud_control","central_control","eod","qa_security"]'::jsonb,
     true,30
 ),
 (
-    'LIFETIME','Lifetime','Semua fitur dengan masa pakai tanpa tanggal kedaluwarsa.',null,null,3499000,15,8,
+    'LIFETIME','Lifetime','Semua fitur dengan masa pakai tanpa tanggal kedaluwarsa.',null,null,7499000,15,8,
     '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","advanced_promo","expenses","suppliers","purchase_order","goods_receipt","cloud_accounts","cloud_devices","recovery_center","app_update","multi_store","cloud_control","central_control","eod","qa_security"]'::jsonb,
     true,40
 )
