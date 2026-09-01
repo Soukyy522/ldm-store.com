@@ -21,7 +21,7 @@
     @media(max-width:930px){.plans{grid-template-columns:repeat(2,1fr)}.current{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:650px){.topin{align-items:flex-start}.wrap{padding:24px 13px 45px}.plans,.grid,.feature-columns{grid-template-columns:1fr}.section{padding:18px}.current{grid-template-columns:1fr 1fr}.actions .btn{width:100%}.hero{text-align:left}.field.full{grid-column:auto}.modal-summary{grid-template-columns:1fr 1fr}.modal-head,.modal-body{padding-left:15px;padding-right:15px}.order-actions{grid-template-columns:1fr}.plan-summary{min-height:0}}
   
-    /* Checkout publik 27.3 - hasil lisensi langsung di web */
+    /* Checkout publik 27.4 - hasil lisensi langsung di web */
     .checkout-panel{margin:18px 0 24px;background:#fff;border:1px solid #cfe0f3;border-radius:20px;box-shadow:0 16px 42px #27466614;overflow:hidden}
     .checkout-panel[hidden]{display:none!important}.checkout-panel.open{animation:checkoutIn .2s ease}
     @keyframes checkoutIn{from{opacity:.4;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -36,11 +36,12 @@
     .checkout-summary{background:#f8fbff;border:1px solid #dce8f5;border-radius:15px;padding:15px;height:max-content}
     .checkout-summary span{display:block;color:var(--muted);font-size:11px}.checkout-summary strong{display:block;margin:3px 0 12px}
     .checkout-total{font-size:24px!important;color:#0f9d58}.checkout-agree{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:#536578;line-height:1.45;margin:13px 0}
-    .checkout-agree input{margin-top:2px}.checkout-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .checkout-agree input{margin-top:2px}.checkout-actions{display:flex;gap:8px;flex-wrap:wrap}.payment-manage{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:10px;border-top:1px dashed #d8e3ee}.payment-manage[hidden]{display:none!important}.btn.danger-soft{background:#fff0ef;color:#9c3028;border:1px solid #f0c3bf}.btn.warn-soft{background:#fff8e8;color:#7b5b00;border:1px solid #ead69b}
     .checkout-status{display:none;white-space:pre-wrap;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:11px;line-height:1.55}
     .checkout-status.show{display:block}.checkout-status.info{background:#eef6ff;color:#24547d}.checkout-status.success{background:#eafaf0;color:#116536}.checkout-status.error{background:#fff0ef;color:#9c3028}
     .checkout-security{font-size:10px;color:#667085;line-height:1.5;margin-top:12px}.checkout-security b{color:#344054}
     .license-receipt{margin:0 20px 20px;border:2px solid #0f9d58;border-radius:17px;background:#fbfffd;padding:18px;box-shadow:0 12px 32px #087f5b16}.license-receipt[hidden]{display:none!important}.license-receipt.show{animation:checkoutIn .25s ease}.receipt-title{display:flex;gap:10px;align-items:flex-start}.receipt-title h3{margin:0;font-size:20px;color:#087f5b}.receipt-title p{margin:4px 0 0;font-size:12px;color:#536578}.receipt-alert{margin:14px 0;background:#fff3cd;border:2px solid #e8b931;border-radius:12px;padding:13px;color:#6f5200;font-size:12px;line-height:1.6}.receipt-alert strong{font-size:13px}.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.receipt-item{background:#fff;border:1px solid #dce9e3;border-radius:11px;padding:11px}.receipt-item.full{grid-column:1/-1}.receipt-item span{display:block;color:#667085;font-size:10px}.receipt-item strong{display:block;margin-top:4px;font-size:12px;word-break:break-all}.receipt-key strong{font-size:16px;color:#0b5e43;letter-spacing:.02em}.receipt-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.receipt-provision{margin-top:12px;border-radius:10px;padding:10px 11px;font-size:11px;line-height:1.5}.receipt-provision.ok{background:#eafaf0;color:#116536}.receipt-provision.warn{background:#fff5df;color:#765700}.receipt-foot{font-size:10.5px;color:#667085;line-height:1.6;margin:12px 0 0}.receipt-link[hidden]{display:none!important}
+    .trial-compact{margin:14px 0 18px;border:1px solid #cfe0f3;border-radius:15px;background:linear-gradient(135deg,#f7fbff,#f6fff9);overflow:hidden}.trial-compact summary{list-style:none;cursor:pointer;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px}.trial-compact summary::-webkit-details-marker{display:none}.trial-compact-title{display:flex;align-items:center;gap:10px;min-width:0}.trial-compact-icon{width:36px;height:36px;border-radius:11px;background:#e8f7ef;display:grid;place-items:center;flex:0 0 auto}.trial-compact-copy strong{display:block;font-size:12px;color:#163b62}.trial-compact-copy span{display:block;font-size:10.5px;color:var(--muted);line-height:1.45}.trial-compact-cta{font-size:10px;font-weight:800;color:var(--blue);white-space:nowrap}.trial-compact-body{border-top:1px solid #e1ebf5;padding:14px 15px}.trial-compact .grid{margin:0}.trial-compact .actions{margin-top:10px}@media(max-width:600px){.trial-compact summary{align-items:flex-start}.trial-compact-cta{white-space:normal;text-align:right}}
     @media(max-width:760px){.checkout-body{grid-template-columns:1fr}.checkout-form-grid{grid-template-columns:1fr}.checkout-field.full{grid-column:auto}}@media(max-width:600px){.receipt-grid{grid-template-columns:1fr}.receipt-item.full{grid-column:auto}.license-receipt{margin-left:12px;margin-right:12px}.receipt-actions .btn{width:100%}}
 
   </style>
@@ -57,6 +58,17 @@
     </section>
 
     <section class="plans" id="plans"></section>
+
+    <details class="trial-compact" id="trialCompact">
+      <summary>
+        <div class="trial-compact-title"><span class="trial-compact-icon">🎁</span><span class="trial-compact-copy"><strong>Coba Warung Sederhana gratis 14 hari</strong><span>1 perangkat · 1 toko · satu kali per email dan instalasi. Buka hanya jika ingin mendaftar trial.</span></span></div>
+        <span class="trial-compact-cta">Buka Trial ▾</span>
+      </summary>
+      <div class="trial-compact-body">
+        <form id="trialForm" class="grid"><div class="field"><label>Nama pemilik</label><input id="trialName" required></div><div class="field"><label>Email</label><input id="trialEmail" type="email" required></div><div class="field"><label>Nomor kontak / WhatsApp</label><input id="trialPhone" inputmode="tel"></div><div class="field"><label>Store Code</label><input id="trialStore" placeholder="Contoh: TRIAL-NAMA-TOKO" required></div></form>
+        <div class="actions"><button class="btn primary" id="trialBtn" type="button">Mulai trial 14 hari</button></div><div class="status" id="trialStatus"></div>
+      </div>
+    </details>
 
     <section class="checkout-panel" id="publicCheckoutPanel" hidden>
       <div class="checkout-head">
@@ -77,6 +89,11 @@
           <div class="checkout-actions">
             <button class="btn primary" type="submit" id="checkoutPayBtn">Lanjut ke Metode Pembayaran</button>
             <button class="btn ghost" type="button" id="checkoutCheckBtn" disabled>Cek Status Pembayaran</button>
+          </div>
+          <div class="payment-manage" id="checkoutManageActions" hidden>
+            <button class="btn warn-soft" type="button" id="checkoutHideSnapBtn">Tutup / Ganti Metode</button>
+            <button class="btn ghost" type="button" id="checkoutReopenBtn">Buka Metode Lagi</button>
+            <button class="btn danger-soft" type="button" id="checkoutCancelBtn">Batalkan Order Pembayaran</button>
           </div>
           <div class="checkout-status" id="publicCheckoutStatus"></div>
           <div class="checkout-security"><b>Keamanan:</b> Server Key Midtrans, service-role Supabase, dan kunci enkripsi tidak disimpan di browser. License Key baru dikembalikan oleh server setelah pembayaran terverifikasi dan token status order cocok.</div>
@@ -121,12 +138,6 @@
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Trial Warung Sederhana</h2><p>Gratis 14 hari, hanya satu kali untuk setiap email dan instalasi. Selama trial: 1 perangkat dan 1 toko. Developer dapat melihat pendaftaran trial di Developer Center.</p></div></div>
-      <form id="trialForm" class="grid"><div class="field"><label>Nama pemilik</label><input id="trialName" required></div><div class="field"><label>Email</label><input id="trialEmail" type="email" required></div><div class="field"><label>Nomor WhatsApp</label><input id="trialPhone" inputmode="tel"></div><div class="field"><label>Store Code</label><input id="trialStore" placeholder="Contoh: TRIAL-NAMA-TOKO" required></div></form>
-      <div class="actions"><button class="btn primary" id="trialBtn">Mulai trial 14 hari</button></div><div class="status" id="trialStatus"></div>
-    </section>
-
-    <section class="section">
       <div class="section-head"><div><h2>Status perangkat ini</h2><p>Status lokal aktivasi. Tombol Periksa Ulang meminta status terbaru langsung ke server lisensi.</p></div></div>
       <div class="current" id="current"></div>
       <div class="suspension-info"><div>⏳</div><div><strong>Periode habis = akses ditangguhkan sementara</strong><span>Server lisensi menolak akses setelah <code>expires_at</code>. Customer tidak kehilangan data. Developer cukup melakukan renewal/perpanjangan dan status akan aktif kembali. Paket Lifetime tidak mempunyai expiry periodik.</span></div></div>
@@ -142,9 +153,9 @@
     </div>
   </div>
 
-  <script src="js/license-v2-config.js?v=27.3.0"></script>
-  <script src="js/license-v2-client.js?v=27.3.0"></script>
-  <script src="js/license-checkout-v2.js?v=27.3.0"></script>
+  <script src="js/license-v2-config.js?v=27.4.0"></script>
+  <script src="js/license-v2-client.js?v=27.4.0"></script>
+  <script src="js/license-checkout-v2.js?v=27.4.0"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);
@@ -179,13 +190,13 @@
       qa_security:['QA & Security','Menjalankan pemeriksaan kesehatan, keamanan, dan konfigurasi sistem.']
     };
     const PLAN_META={
-      WARUNG_KECIL:{tag:'MULAI USAHA',summary:'Operasional inti untuk warung/toko satu cabang yang membutuhkan kasir, stok, absensi, dan laporan.',functions:[['Kasir & stok','Transaksi langsung mengurangi stok dan masuk laporan.'],['Kontrol fisik','Stock Opname dan Kartu Stok membantu mengecek selisih.'],['Operasional dasar','Absensi, retur, closing, backup, dan promo dasar.']]},
+      WARUNG_KECIL:{tag:'MULAI USAHA',summary:'Operasional inti untuk warung/toko satu cabang yang membutuhkan kasir, stok, absensi, dan laporan.',functions:[['Kasir & stok','Transaksi langsung mengurangi stok dan masuk laporan.'],['Kontrol fisik','Stock Opname dan Kartu Stok membantu mengecek selisih.'],['Operasional dasar','Absensi, retur, closing, backup, dan promo dasar.'],['Akun & perangkat','Kelola akun karyawan dan hingga 2 perangkat pada satu toko.']]},
       WARUNG_SEDERHANA:{tag:'TRIAL 14 HARI',summary:'Untuk usaha yang mulai membutuhkan supplier, pembelian, biaya operasional, akun cloud, dan recovery.',functions:[['Pembelian lengkap','Supplier, Purchase Order, dan Penerimaan Barang.'],['Cloud operasional','Kelola akun dan perangkat yang boleh mengakses toko.'],['Recovery','Pemulihan dan update aplikasi untuk operasional harian.']]},
       TOKO:{tag:'MULTI CABANG',summary:'Untuk bisnis dengan beberapa cabang yang membutuhkan kontrol pusat, transfer stok/karyawan, EOD, dan security QA.',functions:[['Multi-Toko','Kelola hingga beberapa cabang dari satu jaringan toko.'],['Transfer cabang','Transfer stok dan pindahkan Admin/Kasir ke cabang lain.'],['Kontrol lanjutan','Cloud Control, EOD, QA dan Security.']]},
       LIFETIME:{tag:'SEKALI BAYAR',summary:'Semua fitur paket Toko dengan kuota tertinggi dan tanpa tanggal kedaluwarsa periodik.',functions:[['Semua fitur','Tidak ada fitur operasional paket yang dikunci.'],['Kuota tertinggi','15 perangkat dan 8 toko sesuai konfigurasi saat ini.'],['Tanpa expiry','Tidak membutuhkan perpanjangan bulanan/tahunan.']]}
     };
     const PLAN_FEATURES={
-      WARUNG_KECIL:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo'],
+      WARUNG_KECIL:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','cloud_accounts','cloud_devices'],
       WARUNG_SEDERHANA:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update'],
       TOKO:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update','multi_store','cloud_control','central_control','eod','qa_security'],
       LIFETIME:['dashboard','pos','inventory','stock_card','stock_opname','reports','attendance','returns','shift_closing','backup_restore','basic_promo','advanced_promo','expenses','suppliers','purchase_order','goods_receipt','cloud_accounts','cloud_devices','recovery_center','app_update','multi_store','cloud_control','central_control','eod','qa_security']
