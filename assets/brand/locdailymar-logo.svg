@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 190" role="img" aria-labelledby="title desc">
+  <title id="title">Logo LocDailyMar</title>
+  <desc id="desc">Monogram LDM berbentuk pertumbuhan toko dengan warna navy dan hijau.</desc>
+  <defs>
+    <linearGradient id="brandGradient" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0d2240"/>
+      <stop offset="0.55" stop-color="#0f9d58"/>
+      <stop offset="1" stop-color="#32c978"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(10 12)">
+    <rect width="166" height="166" rx="42" fill="#ffffff"/>
+    <path d="M29 126V75l40-31 28 24 31-32h-18V19h48v48h-18V48l-42 44-30-25-17 14v45z" fill="none" stroke="url(#brandGradient)" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M82 126V95l18 17 34-35v49" fill="none" stroke="#0d2240" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g font-family="Poppins,Inter,Arial,sans-serif">
+    <text x="202" y="102" font-size="66" font-weight="800" fill="#0d2240" letter-spacing="-2">LocDaily</text>
+    <text x="486" y="102" font-size="66" font-weight="800" fill="#0f9d58" letter-spacing="-2">Mar</text>
+    <text x="205" y="137" font-size="17" font-weight="700" fill="#64748b" letter-spacing="4">RETAIL OPERATING SYSTEM</text>
+  </g>
+</svg>
