@@ -38,7 +38,7 @@ function mapStatus(result: Record<string, unknown>) {
   if (result?.ok === true) return 200;
   const code = String(result?.code || "");
   if (["LICENSE_KEY_INVALID", "ACTIVATION_INVALID"].includes(code)) return 401;
-  if (["LICENSE_SUSPENDED", "LICENSE_CANCELLED", "LICENSE_EXPIRED", "PLAN_INACTIVE"].includes(code)) return 403;
+  if (["LICENSE_PENDING_PAYMENT", "LICENSE_SUSPENDED", "LICENSE_CANCELLED", "LICENSE_EXPIRED", "PLAN_INACTIVE"].includes(code)) return 403;
   if (["DEVICE_LIMIT_REACHED", "STORE_LIMIT_REACHED", "TRIAL_ALREADY_USED"].includes(code)) return 409;
   return 400;
 }

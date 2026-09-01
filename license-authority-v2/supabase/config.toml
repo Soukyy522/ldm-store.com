@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.ldm-license-admin-v2]
 verify_jwt = false
+
+[functions.ldm-midtrans-webhook]
+verify_jwt = false
