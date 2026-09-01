@@ -20,6 +20,29 @@
     .modal{position:fixed;inset:0;z-index:1000;background:#071427b8;display:none;place-items:center;padding:18px}.modal.open{display:grid}.modal-card{width:min(900px,100%);max-height:min(88vh,850px);overflow:auto;background:#fff;border-radius:22px;box-shadow:0 30px 100px #0007}.modal-head{position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid var(--line);padding:20px 22px;display:flex;justify-content:space-between;gap:12px;align-items:start}.modal-head h2{margin:3px 0 2px;font-size:23px}.modal-head p{margin:0;color:var(--muted);font-size:12px}.modal-close{width:38px;height:38px;border:0;border-radius:11px;background:#edf2f8;cursor:pointer;font-size:18px}.modal-body{padding:20px 22px 24px}.modal-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:18px}.modal-summary div{background:#f5f8fb;border-radius:12px;padding:11px}.modal-summary span{display:block;font-size:10px;color:var(--muted)}.modal-summary strong{display:block;font-size:12px;margin-top:4px}.feature-columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}.feature-box{border:1px solid var(--line);border-radius:15px;padding:14px}.feature-box h3{margin:0 0 10px;font-size:14px}.feature-list{display:grid;gap:8px}.feature-row{padding:9px;border-radius:10px;background:#f8fafc}.feature-row strong{display:block;font-size:11px}.feature-row span{display:block;font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:2px}.feature-row.on{border-left:3px solid #19a974}.feature-row.off{border-left:3px solid #d95b50;background:#fff8f7}.feature-row.off strong{color:#8d2f28}.modal-order{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
     @media(max-width:930px){.plans{grid-template-columns:repeat(2,1fr)}.current{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:650px){.topin{align-items:flex-start}.wrap{padding:24px 13px 45px}.plans,.grid,.feature-columns{grid-template-columns:1fr}.section{padding:18px}.current{grid-template-columns:1fr 1fr}.actions .btn{width:100%}.hero{text-align:left}.field.full{grid-column:auto}.modal-summary{grid-template-columns:1fr 1fr}.modal-head,.modal-body{padding-left:15px;padding-right:15px}.order-actions{grid-template-columns:1fr}.plan-summary{min-height:0}}
+  
+    /* Checkout publik 27.3 - hasil lisensi langsung di web */
+    .checkout-panel{margin:18px 0 24px;background:#fff;border:1px solid #cfe0f3;border-radius:20px;box-shadow:0 16px 42px #27466614;overflow:hidden}
+    .checkout-panel[hidden]{display:none!important}.checkout-panel.open{animation:checkoutIn .2s ease}
+    @keyframes checkoutIn{from{opacity:.4;transform:translateY(-6px)}to{opacity:1;transform:none}}
+    .checkout-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:18px 20px;background:linear-gradient(135deg,#f4f9ff,#f5fff9);border-bottom:1px solid var(--line)}
+    .checkout-head h2{margin:2px 0 5px;font-size:20px}.checkout-head p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+    .checkout-close{border:1px solid var(--line);background:#fff;border-radius:9px;width:36px;height:36px;cursor:pointer;font-weight:900}
+    .checkout-body{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(250px,.65fr);gap:18px;padding:20px}
+    .checkout-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checkout-field{display:flex;flex-direction:column;gap:6px}
+    .checkout-field.full{grid-column:1/-1}.checkout-field label{font-size:11px;font-weight:800;color:#304a67}
+    .checkout-field input,.checkout-field select{min-height:44px;border:1px solid #cfd9e5;border-radius:10px;padding:0 11px;font:inherit;font-size:13px;background:#fff}
+    .checkout-field input:focus,.checkout-field select:focus{outline:3px solid #d9ebff;border-color:#5b93d1}
+    .checkout-summary{background:#f8fbff;border:1px solid #dce8f5;border-radius:15px;padding:15px;height:max-content}
+    .checkout-summary span{display:block;color:var(--muted);font-size:11px}.checkout-summary strong{display:block;margin:3px 0 12px}
+    .checkout-total{font-size:24px!important;color:#0f9d58}.checkout-agree{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:#536578;line-height:1.45;margin:13px 0}
+    .checkout-agree input{margin-top:2px}.checkout-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .checkout-status{display:none;white-space:pre-wrap;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:11px;line-height:1.55}
+    .checkout-status.show{display:block}.checkout-status.info{background:#eef6ff;color:#24547d}.checkout-status.success{background:#eafaf0;color:#116536}.checkout-status.error{background:#fff0ef;color:#9c3028}
+    .checkout-security{font-size:10px;color:#667085;line-height:1.5;margin-top:12px}.checkout-security b{color:#344054}
+    .license-receipt{margin:0 20px 20px;border:2px solid #0f9d58;border-radius:17px;background:#fbfffd;padding:18px;box-shadow:0 12px 32px #087f5b16}.license-receipt[hidden]{display:none!important}.license-receipt.show{animation:checkoutIn .25s ease}.receipt-title{display:flex;gap:10px;align-items:flex-start}.receipt-title h3{margin:0;font-size:20px;color:#087f5b}.receipt-title p{margin:4px 0 0;font-size:12px;color:#536578}.receipt-alert{margin:14px 0;background:#fff3cd;border:2px solid #e8b931;border-radius:12px;padding:13px;color:#6f5200;font-size:12px;line-height:1.6}.receipt-alert strong{font-size:13px}.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.receipt-item{background:#fff;border:1px solid #dce9e3;border-radius:11px;padding:11px}.receipt-item.full{grid-column:1/-1}.receipt-item span{display:block;color:#667085;font-size:10px}.receipt-item strong{display:block;margin-top:4px;font-size:12px;word-break:break-all}.receipt-key strong{font-size:16px;color:#0b5e43;letter-spacing:.02em}.receipt-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.receipt-provision{margin-top:12px;border-radius:10px;padding:10px 11px;font-size:11px;line-height:1.5}.receipt-provision.ok{background:#eafaf0;color:#116536}.receipt-provision.warn{background:#fff5df;color:#765700}.receipt-foot{font-size:10.5px;color:#667085;line-height:1.6;margin:12px 0 0}.receipt-link[hidden]{display:none!important}
+    @media(max-width:760px){.checkout-body{grid-template-columns:1fr}.checkout-form-grid{grid-template-columns:1fr}.checkout-field.full{grid-column:auto}}@media(max-width:600px){.receipt-grid{grid-template-columns:1fr}.receipt-item.full{grid-column:auto}.license-receipt{margin-left:12px;margin-right:12px}.receipt-actions .btn{width:100%}}
+
   </style>
 </head>
 <body>
@@ -29,11 +52,67 @@
       <span class="eyebrow">Lisensi V2 · Paket Berbayar</span>
       <h1>Pilih paket sesuai perkembangan toko</h1>
       <p>Klik salah satu card paket untuk melihat seluruh fitur yang dibuka, fitur yang dikunci, fungsi masing-masing fitur, kuota toko/perangkat, dan pilihan harga.</p>
-      <p class="hero-note"><strong>Harga paket sudah disesuaikan dengan kapasitas fitur.</strong> Paket tahunan memberikan penghematan dibanding pembayaran bulanan selama 12 bulan. Pemesanan tetap diarahkan langsung ke WhatsApp developer.</p>
+      <p class="hero-note"><strong>Harga paket sudah disesuaikan dengan kapasitas fitur.</strong> Paket tahunan memberikan penghematan dibanding pembayaran bulanan selama 12 bulan. Pembayaran dilakukan langsung dari halaman ini melalui Midtrans; metode yang tampil mengikuti channel yang aktif pada akun merchant.</p>
       <p class="hero-note">Jika masa bulanan/tahunan berakhir, lisensi otomatis tidak dapat digunakan dan dianggap <strong>ditangguhkan sementara</strong>. Data toko tidak dihapus. Setelah developer memperpanjang periode, lisensi kembali aktif.</p>
     </section>
 
     <section class="plans" id="plans"></section>
+
+    <section class="checkout-panel" id="publicCheckoutPanel" hidden>
+      <div class="checkout-head">
+        <div><span class="tag">PEMBAYARAN AMAN</span><h2>Bayar Lisensi LocDailyMar</h2><p>Isi data customer. Setelah valid, Midtrans akan menampilkan metode pembayaran yang aktif pada akun merchant.</p></div>
+        <button type="button" class="checkout-close" id="checkoutCloseBtn" aria-label="Tutup pembayaran">✕</button>
+      </div>
+      <div class="checkout-body">
+        <form id="publicCheckoutForm">
+          <div class="checkout-form-grid">
+            <div class="checkout-field"><label>Nama pemilik / customer</label><input id="checkoutName" autocomplete="name" required placeholder="Contoh: Budi Santoso"></div>
+            <div class="checkout-field"><label>Nama toko</label><input id="checkoutStoreName" required placeholder="Contoh: Warung Budi"></div>
+            <div class="checkout-field"><label>Nomor kontak / WhatsApp</label><input id="checkoutPhone" inputmode="tel" autocomplete="tel" required placeholder="Contoh: 081234567890"></div>
+            <div class="checkout-field"><label>Email Owner</label><input id="checkoutEmail" type="email" autocomplete="email" required placeholder="owner@email.com"></div>
+            <div class="checkout-field"><label>Store Code</label><input id="checkoutStoreCode" required maxlength="30" autocomplete="off" placeholder="Contoh: TOKO-BUDI-01" style="text-transform:uppercase"></div>
+            <div class="checkout-field"><label>Periode paket</label><select id="checkoutPeriod" required></select></div>
+          </div>
+          <label class="checkout-agree"><input type="checkbox" id="checkoutAgree"> <span>Saya memastikan Email Owner, nomor kontak, dan Store Code sudah benar. Email dipakai sebagai akun Owner. Setelah pembayaran terverifikasi, License Key dan identitas toko akan ditampilkan langsung di halaman ini.</span></label>
+          <div class="checkout-actions">
+            <button class="btn primary" type="submit" id="checkoutPayBtn">Lanjut ke Metode Pembayaran</button>
+            <button class="btn ghost" type="button" id="checkoutCheckBtn" disabled>Cek Status Pembayaran</button>
+          </div>
+          <div class="checkout-status" id="publicCheckoutStatus"></div>
+          <div class="checkout-security"><b>Keamanan:</b> Server Key Midtrans, service-role Supabase, dan kunci enkripsi tidak disimpan di browser. License Key baru dikembalikan oleh server setelah pembayaran terverifikasi dan token status order cocok.</div>
+        </form>
+        <aside class="checkout-summary">
+          <span>Paket</span><strong id="checkoutPlanName">-</strong>
+          <span>Periode</span><strong id="checkoutPlanPeriod">-</strong>
+          <span>Total resmi</span><strong class="checkout-total" id="checkoutPlanAmount">Rp0</strong>
+          <span>Setelah pembayaran</span><strong style="font-size:12px;line-height:1.5">License Key + Store Code + Store UUID + Network ID tampil langsung di halaman ini setelah pembayaran terverifikasi.</strong>
+        </aside>
+      </div>
+          <section class="license-receipt" id="licenseReceipt" hidden aria-live="polite">
+        <div class="receipt-title"><div style="font-size:24px">✅</div><div><h3>Pembayaran Berhasil · Simpan Data Lisensi</h3><p>Data di bawah ini adalah identitas akses toko kamu.</p></div></div>
+        <div class="receipt-alert"><strong>⚠️ SANGAT PENTING</strong><br>Jangan menutup halaman sebelum menyimpan <b>Store Code</b> dan <b>License Key</b>. <b>Lakukan screenshot layar ini sekarang</b> dan tekan <b>Salin Semua Data</b> sebagai cadangan. Jangan bagikan License Key kepada orang yang tidak berwenang.</div>
+        <div class="receipt-grid">
+          <div class="receipt-item"><span>Order ID</span><strong id="receiptOrderId">-</strong></div>
+          <div class="receipt-item"><span>Paket</span><strong id="receiptPlan">-</strong></div>
+          <div class="receipt-item full receipt-key"><span>LICENSE KEY · SIMPAN INI</span><strong id="receiptLicenseKey">-</strong></div>
+          <div class="receipt-item"><span>STORE CODE · SIMPAN INI</span><strong id="receiptStoreCode">-</strong></div>
+          <div class="receipt-item"><span>Email Owner</span><strong id="receiptOwnerEmail">-</strong></div>
+          <div class="receipt-item"><span>Store UUID</span><strong id="receiptStoreId">-</strong></div>
+          <div class="receipt-item"><span>Network ID</span><strong id="receiptNetworkId">-</strong></div>
+          <div class="receipt-item full"><span>Masa berlaku</span><strong id="receiptExpires">-</strong></div>
+        </div>
+        <div class="receipt-provision" id="receiptProvisionNote"></div>
+        <div class="receipt-actions">
+          <button class="btn primary" type="button" id="receiptCopyAllBtn">Salin Semua Data</button>
+          <button class="btn ghost" type="button" id="receiptCopyKeyBtn">Salin License Key</button>
+          <button class="btn ghost" type="button" id="receiptActivateBtn">Gunakan untuk Aktivasi</button>
+          <a class="btn primary receipt-link" id="receiptPasswordBtn" target="_blank" rel="noopener noreferrer" hidden>Buat / Ganti Password Owner</a>
+          <a class="btn ghost receipt-link" id="receiptGuideBtn" target="_blank" rel="noopener noreferrer" hidden>Buka Panduan</a>
+        </div>
+        <p class="receipt-foot">Jika halaman ter-refresh atau tertutup, buka kembali halaman Lisensi pada browser/perangkat yang sama lalu tekan <b>Cek Status Pembayaran</b>. Sistem tidak menyimpan License Key mentah di localStorage; server menampilkannya kembali hanya untuk order yang sudah dibayar dan mempunyai token status yang cocok.</p>
+      </section>
+    </section>
+
 
     <section class="section" id="activation">
       <div class="section-head"><div><h2>Aktifkan License Key</h2><p>Isi Store Code persis seperti yang diberikan developer, lalu masukkan License Key.</p></div></div>
@@ -63,8 +142,9 @@
     </div>
   </div>
 
-  <script src="js/license-v2-config.js?v=27.0.0"></script>
-  <script src="js/license-v2-client.js?v=27.0.0"></script>
+  <script src="js/license-v2-config.js?v=27.3.0"></script>
+  <script src="js/license-v2-client.js?v=27.3.0"></script>
+  <script src="js/license-checkout-v2.js?v=27.3.0"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);
@@ -114,16 +194,15 @@
     function planName(code){return configPlan(code).name||code}
     function planPrice(code,cycle){const p=configPlan(code);return cycle==='yearly'?p.yearly:cycle==='lifetime'?p.lifetime:p.monthly}
     function annualSaving(p){return Math.max(0,Number(p.monthly||0)*12-Number(p.yearly||0))}
-    function orderMessage(code,cycle){const p=configPlan(code);const cycleLabel=cycle==='yearly'?'Tahunan':cycle==='lifetime'?'Lifetime':'Bulanan';return `Halo Developer LocDailyMar, saya ingin membeli lisensi.\n\nPaket: ${p.name||code}\nPeriode: ${cycleLabel}\nHarga: ${rupiah(planPrice(code,cycle))}\nKuota: ${p.devices||'-'} perangkat · ${p.stores||'-'} toko\n\nNama toko: \nNama pemilik: \nEmail akun Owner: \nStore Code (jika sudah ada): \n\nMohon informasi pembayaran dan proses aktivasi.`}
-    function order(code,cycle){const url=LDMLicenseV2.whatsappUrl(orderMessage(code,cycle));if(url==='#')return alert('Nomor WhatsApp developer belum diisi pada js/license-v2-config.js');window.open(url,'_blank','noopener,noreferrer')}
+    function order(code,cycle){const p=configPlan(code);if(!window.LDMCheckoutV2)return alert("Modul pembayaran belum termuat. Muat ulang aplikasi.");closePlan();window.LDMCheckoutV2.open({planCode:code,billingCycle:cycle,planName:p.name||code,amount:planPrice(code,cycle)})}
     function priceMarkup(code){const p=configPlan(code);if(code==='LIFETIME')return `<div class="prices"><div class="price">${rupiah(p.lifetime)} <small>sekali bayar</small></div><div class="annual">Tanpa biaya perpanjangan periodik</div></div>`;return `<div class="prices"><div class="price">${rupiah(p.monthly)} <small>/ bulan</small></div><div class="annual">Tahunan: ${rupiah(p.yearly)} / tahun<span class="annual-save">Hemat ${rupiah(annualSaving(p))} dibanding 12× bulanan</span></div></div>`}
     function renderPlans(){
-      $('plans').innerHTML=PLAN_ORDER.map(code=>{const p=configPlan(code),meta=PLAN_META[code];const featured=code==='WARUNG_SEDERHANA';const actions=code==='LIFETIME'?`<div class="order-actions single"><button class="btn wa" data-order="${code}" data-cycle="lifetime">Pesan Lifetime</button></div>`:`<div class="order-actions"><button class="btn wa" data-order="${code}" data-cycle="monthly">Bulanan</button><button class="btn primary" data-order="${code}" data-cycle="yearly">Tahunan</button></div>`;return `<article class="plan ${featured?'featured':''}" tabindex="0" role="button" aria-label="Lihat detail paket ${p.name}" data-plan="${code}"><span class="tag">${meta.tag}</span><h2>${p.name}</h2><div class="plan-summary">${meta.summary}</div>${priceMarkup(code)}<div class="quota">${p.devices} perangkat · ${p.stores} toko${p.trialDays?` · trial ${p.trialDays} hari`:''}</div><div class="card-functions">${meta.functions.map(x=>`<div class="card-function"><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join('')}</div><div class="details-hint">Klik card untuk melihat semua fitur →</div>${actions}</article>`}).join('');
+      $('plans').innerHTML=PLAN_ORDER.map(code=>{const p=configPlan(code),meta=PLAN_META[code];const featured=code==='WARUNG_SEDERHANA';const actions=code==='LIFETIME'?`<div class="order-actions single"><button class="btn wa" data-order="${code}" data-cycle="lifetime">Bayar Lifetime</button></div>`:`<div class="order-actions"><button class="btn wa" data-order="${code}" data-cycle="monthly">Bayar Bulanan</button><button class="btn primary" data-order="${code}" data-cycle="yearly">Bayar Tahunan</button></div>`;return `<article class="plan ${featured?'featured':''}" tabindex="0" role="button" aria-label="Lihat detail paket ${p.name}" data-plan="${code}"><span class="tag">${meta.tag}</span><h2>${p.name}</h2><div class="plan-summary">${meta.summary}</div>${priceMarkup(code)}<div class="quota">${p.devices} perangkat · ${p.stores} toko${p.trialDays?` · trial ${p.trialDays} hari`:''}</div><div class="card-functions">${meta.functions.map(x=>`<div class="card-function"><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join('')}</div><div class="details-hint">Klik card untuk melihat semua fitur →</div>${actions}</article>`}).join('');
       document.querySelectorAll('.plan').forEach(card=>{card.addEventListener('click',e=>{if(e.target.closest('[data-order]'))return;openPlan(card.dataset.plan)});card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('[data-order]')){e.preventDefault();openPlan(card.dataset.plan)}})});
       document.querySelectorAll('[data-order]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();order(btn.dataset.order,btn.dataset.cycle)}));
     }
     function featureRows(keys,on){return keys.length?keys.map(key=>{const f=FEATURE_CATALOG[key]||[key,''];return `<div class="feature-row ${on?'on':'off'}"><strong>${on?'✓':'🔒'} ${f[0]}</strong><span>${f[1]}</span></div>`}).join(''):`<div class="feature-row on"><strong>✓ Tidak ada fitur yang dikunci</strong><span>Seluruh fitur paket saat ini tersedia.</span></div>`}
-    function openPlan(code){const p=configPlan(code),meta=PLAN_META[code],on=PLAN_FEATURES[code]||[],all=Object.keys(FEATURE_CATALOG),off=all.filter(k=>!on.includes(k));$('modalTag').textContent=meta.tag;$('modalTitle').textContent=p.name;$('modalDesc').textContent=meta.summary;$('modalSummary').innerHTML=`<div><span>Bulanan</span><strong>${p.monthly?rupiah(p.monthly):'Tidak berlaku'}</strong></div><div><span>Tahunan${p.yearly?` · hemat ${rupiah(annualSaving(p))}`:''}</span><strong>${p.yearly?rupiah(p.yearly):'Tidak berlaku'}</strong></div><div><span>Perangkat</span><strong>${p.devices} device</strong></div><div><span>Toko</span><strong>${p.stores} toko</strong></div>${code==='LIFETIME'?`<div><span>Lifetime</span><strong>${rupiah(p.lifetime)}</strong></div>`:''}`;$('unlockedFeatures').innerHTML=featureRows(on,true);$('lockedFeatures').innerHTML=featureRows(off,false);$('modalOrder').innerHTML=code==='LIFETIME'?`<button class="btn wa" data-modal-order="lifetime">Pesan Lifetime ${rupiah(p.lifetime)}</button>`:`<button class="btn wa" data-modal-order="monthly">Pesan Bulanan ${rupiah(p.monthly)}</button><button class="btn primary" data-modal-order="yearly">Pesan Tahunan ${rupiah(p.yearly)}</button>`;$('modalOrder').querySelectorAll('[data-modal-order]').forEach(btn=>btn.onclick=()=>order(code,btn.dataset.modalOrder));$('planModal').classList.add('open');$('planModal').setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}
+    function openPlan(code){const p=configPlan(code),meta=PLAN_META[code],on=PLAN_FEATURES[code]||[],all=Object.keys(FEATURE_CATALOG),off=all.filter(k=>!on.includes(k));$('modalTag').textContent=meta.tag;$('modalTitle').textContent=p.name;$('modalDesc').textContent=meta.summary;$('modalSummary').innerHTML=`<div><span>Bulanan</span><strong>${p.monthly?rupiah(p.monthly):'Tidak berlaku'}</strong></div><div><span>Tahunan${p.yearly?` · hemat ${rupiah(annualSaving(p))}`:''}</span><strong>${p.yearly?rupiah(p.yearly):'Tidak berlaku'}</strong></div><div><span>Perangkat</span><strong>${p.devices} device</strong></div><div><span>Toko</span><strong>${p.stores} toko</strong></div>${code==='LIFETIME'?`<div><span>Lifetime</span><strong>${rupiah(p.lifetime)}</strong></div>`:''}`;$('unlockedFeatures').innerHTML=featureRows(on,true);$('lockedFeatures').innerHTML=featureRows(off,false);$('modalOrder').innerHTML=code==='LIFETIME'?`<button class="btn wa" data-modal-order="lifetime">Bayar Lifetime ${rupiah(p.lifetime)}</button>`:`<button class="btn wa" data-modal-order="monthly">Bayar Bulanan ${rupiah(p.monthly)}</button><button class="btn primary" data-modal-order="yearly">Bayar Tahunan ${rupiah(p.yearly)}</button>`;$('modalOrder').querySelectorAll('[data-modal-order]').forEach(btn=>btn.onclick=()=>order(code,btn.dataset.modalOrder));$('planModal').classList.add('open');$('planModal').setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}
     function closePlan(){$('planModal').classList.remove('open');$('planModal').setAttribute('aria-hidden','true');document.body.style.overflow=''}
     function message(el,text,ok=false,warn=false){el.textContent=(ok?'✅ ':warn?'⚠️ ':'❌ ')+text;el.className='status show '+(ok?'ok':warn?'warn':'err')}
     function setBusy(button,busy,label){if(!button.dataset.label)button.dataset.label=button.textContent;button.disabled=busy;button.textContent=busy?label:button.dataset.label}
