@@ -106,7 +106,6 @@
         const date = new Date(value);
         if(!Number.isFinite(date.getTime())) return "";
         return new Intl.DateTimeFormat("id-ID",{
-            timeZone:"Asia/Makassar",
             hour:"2-digit",
             minute:"2-digit",
             second:"2-digit",

@@ -7,7 +7,7 @@
     })[char]);
     const number=value=>Number(value||0).toLocaleString("id-ID");
     const date=value=>value
-        ? new Date(value).toLocaleString("id-ID",{timeZone:"Asia/Makassar"})
+        ? new Date(value).toLocaleString("id-ID",{})
         : "Belum pernah";
     let busy=false;
 

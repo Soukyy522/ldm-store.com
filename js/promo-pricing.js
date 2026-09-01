@@ -14,19 +14,10 @@
     }
 
     function businessDateWITA(value){
-        const date = value instanceof Date ? value : new Date(value || Date.now());
-        try{
-            const parts = new Intl.DateTimeFormat("en-CA",{
-                timeZone:"Asia/Makassar",
-                year:"numeric",
-                month:"2-digit",
-                day:"2-digit"
-            }).formatToParts(date);
-            const map = Object.fromEntries(parts.map(part => [part.type,part.value]));
-            return `${map.year}-${map.month}-${map.day}`;
-        }catch(_error){
-            return date.toISOString().slice(0,10);
-        }
+        if(window.LDMLocalTime) return window.LDMLocalTime.dateKey(value);
+        const date=value instanceof Date?value:new Date(value||Date.now());
+        const pad=v=>String(v).padStart(2,"0");
+        return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
     }
 
     function normalize(promo,normalPrice=0){

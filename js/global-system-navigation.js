@@ -113,10 +113,7 @@
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value==null?Date.now():value);
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return d.getUTCFullYear()+"-"+String(d.getUTCMonth()+1).padStart(2,"0")+"-"+String(d.getUTCDate()).padStart(2,"0");
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){

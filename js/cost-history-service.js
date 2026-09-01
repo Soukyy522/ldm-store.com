@@ -86,7 +86,10 @@
             const normalizedTime=/^\d{2}:\d{2}:\d{2}$/.test(time)
                 ? time
                 : (/^\d{2}:\d{2}$/.test(time)?`${time}:00`:"23:59:59");
-            const ms=Date.parse(`${date}T${normalizedTime}+08:00`);
+            const iso=window.LDMLocalTime
+                ? window.LDMLocalTime.localDateTimeToISO(date,normalizedTime)
+                : new Date(`${date}T${normalizedTime}`).toISOString();
+            const ms=iso ? Date.parse(iso) : NaN;
             if(Number.isFinite(ms)) return ms;
         }
         return Date.now();
