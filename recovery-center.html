@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id" class="secure-page-pending">
 <head>
+<script src="js/local-time.js?v=26.4.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -43,7 +44,7 @@
     let currentContext=null,localRows=[],cloudRows=[];
     const $=id=>document.getElementById(id);
     const money=value=>`Rp ${Number(value||0).toLocaleString("id-ID")}`;
-    const date=value=>{try{return new Date(value).toLocaleString("id-ID",{timeZone:"Asia/Makassar"})+" WITA";}catch{return "-";}};
+    const date=value=>{try{return new Date(value).toLocaleString("id-ID",{})+" WITA";}catch{return "-";}};
     const short=value=>String(value||"-").slice(0,12);
     function status(value){const span=document.createElement("span");span.className=`badge ${String(value||"").toLowerCase()}`;span.textContent=value||"unknown";return span;}
     function show(message,bad=false){const box=$("message");box.className=`message show ${bad?"bad":"ok"}`;box.textContent=message;}
@@ -77,12 +78,12 @@
     $("refreshBtn").onclick=refresh;
     $("statusFilter").onchange=refresh;
     $("syncBtn").onclick=async event=>{event.currentTarget.disabled=true;try{const result=await LDMOfflineQueue.syncNow({force:false});show(`Sinkronisasi selesai. Berhasil ${result.synced||0}, tersisa ${result.remaining||0}.`);await refresh();}catch(error){show(error.message||String(error),true);}finally{event.currentTarget.disabled=false;}};
-    $("exportBtn").onclick=()=>{const report={stage:17,version:"19.1.0",exported_at:new Date().toISOString(),identity:{username:currentContext?.profile?.username,role:currentContext?.profile?.role,store_id:currentContext?.profile?.store_id},local_queue:localRows,cloud_conflicts:cloudRows};const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-recovery-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);};
+    $("exportBtn").onclick=()=>{const report={stage:17,version:"19.1.0",exported_at:new Date().toISOString(),identity:{username:currentContext?.profile?.username,role:currentContext?.profile?.role,store_id:currentContext?.profile?.store_id},local_queue:localRows,cloud_conflicts:cloudRows};const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-recovery-${window.LDMLocalTime.dateKey()}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);};
     window.addEventListener("ldm-recovery-updated",()=>setTimeout(refresh,250));
     window.addEventListener("ldm-offline-queue-updated",()=>setTimeout(refresh,250));
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",refresh,{once:true});else refresh();
 })();
 </script>
-<script src="js/global-system-navigation.js?v=26.2.2"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>

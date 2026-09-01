@@ -160,7 +160,6 @@
         const parts = new Intl.DateTimeFormat(
             "en-CA",
             {
-                timeZone: "Asia/Makassar",
                 year: "numeric",
                 month: "2-digit",
                 day: "2-digit",
@@ -643,7 +642,6 @@
         const date = new Intl.DateTimeFormat(
             "en-CA",
             {
-                timeZone:"Asia/Makassar",
                 year:"numeric",
                 month:"2-digit",
                 day:"2-digit"

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Opname Harian - LocDailyMar POS</title>
@@ -1195,14 +1196,7 @@
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -1245,29 +1239,37 @@
         const transaksi=(laporan.length?laporan:readArray("dataLaporan"))
             .filter(item=>recordDate(item)===today);
 
-        const requirements=new Map();
-        transaksi.forEach(item=>{
-            const account=cashierName(item);
-            if(!account)return;
-            const shift=shiftName(item?.shift||item?.shiftLabel||item?.shift_label||"");
-            requirements.set(account+"|"+shift,{account,shift});
-        });
+        const activeAccounts=new Set(
+            transaksi
+                .map(cashierName)
+                .filter(Boolean)
+        );
 
-        if(requirements.size===0){
+        if(activeAccounts.size===0){
             return false;
         }
 
         const closingToday=readArray("shiftClosingLog")
             .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
 
-        const isCovered=requirement=>closingToday.some(closing=>{
-            if(cashierName(closing)!==requirement.account)return false;
-            const closingShift=shiftName(closing?.shift||closing?.shiftLabel||closing?.shift_label||"");
-            if(!requirement.shift)return true;
-            return closingShift===requirement.shift||closingShift==="full day";
-        });
+        const closedAccounts=new Set(
+            closingToday
+                .map(item=>String(item?.kasir||"").trim().toLowerCase())
+                .filter(Boolean)
+        );
 
-        return [...requirements.values()].every(isCovered);
+        const allClosed=
+            [...activeAccounts]
+                .every(account=>closedAccounts.has(account));
+
+        const hasShift1=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 1"
+        );
+
+        const hasShift2=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 2"
+        );
+        return allClosed && hasShift1 && hasShift2;
     }
 
     try{
@@ -1288,7 +1290,7 @@
 <style id="ldmMobileTouchAndEodStyle">
     /*
      * End of Day disembunyikan sampai seluruh akun yang transaksi
-     * sudah Closing Shift sesuai shift transaksi yang benar-benar digunakan.
+     * sudah Closing Shift dan Shift 1 + Shift 2 tersedia.
      * Berlaku untuk Mega Menu desktop dan Hamburger Menu HP.
      */
     html:not([data-ldm-eod-ready="true"]) a[href="eod.html"]{
@@ -1978,7 +1980,6 @@ function proteksiHalamanStockOpname() {
         function formatWaktuDraft(timestamp) {
             try {
                 return new Date(timestamp).toLocaleTimeString("id-ID", {
-                    timeZone: "Asia/Makassar",
                     hour: "2-digit",
                     minute: "2-digit",
                     second: "2-digit"
@@ -2307,10 +2308,7 @@ function proteksiHalamanStockOpname() {
         }
 
         function getTanggalWITA() {
-            const now = new Date();
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const wita = new Date(utc + (3600000 * 8));
-            return wita.toISOString().substring(0, 10);
+            return window.LDMLocalTime.dateKey();
         }
 
         function initStockOpname() {
@@ -5077,15 +5075,7 @@ document.addEventListener(
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -5129,56 +5119,69 @@ document.addEventListener(
 
     function calculateReadiness(){
         const today=witaDate(new Date());
+
         const laporan=readArray("laporan");
+
         const transactions=(
             laporan.length
                 ? laporan
                 : readArray("dataLaporan")
         ).filter(item=>recordDate(item)===today);
 
-        const requirements=new Map();
-        transactions.forEach(item=>{
-            const account=cashierName(item);
-            if(!account)return;
-            const shift=shiftName(item?.shift||item?.shiftLabel||item?.shift_label||"");
-            requirements.set(account+"|"+shift,{account,shift});
-        });
-
         const activeAccounts=new Set(
-            [...requirements.values()].map(item=>item.account)
+            transactions
+                .map(cashierName)
+                .filter(Boolean)
         );
 
-        if(requirements.size===0){
+        if(activeAccounts.size===0){
             return {
                 ready:false,
                 activeAccounts:[],
                 pendingAccounts:[],
-                pendingClosings:[],
                 hasShift1:false,
                 hasShift2:false
             };
         }
 
         const closingToday=readArray("shiftClosingLog")
-            .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
+            .filter(
+                item=>
+                    String(item?.tanggal||"").slice(0,10)===today
+            );
 
-        const isCovered=requirement=>closingToday.some(closing=>{
-            if(cashierName(closing)!==requirement.account)return false;
-            const closingShift=shiftName(closing?.shift||closing?.shiftLabel||closing?.shift_label||"");
-            if(!requirement.shift)return true;
-            return closingShift===requirement.shift||closingShift==="full day";
-        });
+        const closedAccounts=new Set(
+            closingToday
+                .map(
+                    item=>
+                        String(item?.kasir||"")
+                            .trim()
+                            .toLowerCase()
+                )
+                .filter(Boolean)
+        );
 
-        const pendingClosings=[...requirements.values()].filter(item=>!isCovered(item));
-        const pendingAccounts=[...new Set(pendingClosings.map(item=>item.account))];
-        const hasShift1=closingToday.some(item=>shiftName(item?.shift)==="shift 1");
-        const hasShift2=closingToday.some(item=>shiftName(item?.shift)==="shift 2");
+        const pendingAccounts=
+            [...activeAccounts]
+                .filter(account=>!closedAccounts.has(account));
+
+        const hasShift1=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 1"
+            );
+
+        const hasShift2=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 2"
+            );
 
         return {
-            ready:pendingClosings.length===0,
+            ready:
+                pendingAccounts.length===0
+                && hasShift1
+                && hasShift2,
             activeAccounts:[...activeAccounts],
             pendingAccounts,
-            pendingClosings,
             hasShift1,
             hasShift2
         };
@@ -5205,7 +5208,7 @@ document.addEventListener(
                 link.title="End of Day siap karena seluruh Closing Shift wajib sudah lengkap.";
             }else{
                 link.setAttribute("data-eod-waiting","true");
-                link.title="End of Day akan muncul setelah setiap akun dan shift yang benar-benar memiliki transaksi sudah Closing Shift.";
+                link.title="End of Day akan muncul setelah semua akun transaksi Closing Shift dan Shift 1 + Shift 2 tersedia.";
             }
         });
 
@@ -5272,6 +5275,6 @@ document.addEventListener(
 })();
 </script>
 
-<script src="js/global-system-navigation.js?v=26.2.2"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>

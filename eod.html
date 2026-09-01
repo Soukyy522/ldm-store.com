@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>End of Day - LocDailyMar POS</title>
@@ -1408,14 +1409,7 @@
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -1458,29 +1452,37 @@
         const transaksi=(laporan.length?laporan:readArray("dataLaporan"))
             .filter(item=>recordDate(item)===today);
 
-        const requirements=new Map();
-        transaksi.forEach(item=>{
-            const account=cashierName(item);
-            if(!account)return;
-            const shift=shiftName(item?.shift||item?.shiftLabel||item?.shift_label||"");
-            requirements.set(account+"|"+shift,{account,shift});
-        });
+        const activeAccounts=new Set(
+            transaksi
+                .map(cashierName)
+                .filter(Boolean)
+        );
 
-        if(requirements.size===0){
+        if(activeAccounts.size===0){
             return false;
         }
 
         const closingToday=readArray("shiftClosingLog")
             .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
 
-        const isCovered=requirement=>closingToday.some(closing=>{
-            if(cashierName(closing)!==requirement.account)return false;
-            const closingShift=shiftName(closing?.shift||closing?.shiftLabel||closing?.shift_label||"");
-            if(!requirement.shift)return true;
-            return closingShift===requirement.shift||closingShift==="full day";
-        });
+        const closedAccounts=new Set(
+            closingToday
+                .map(item=>String(item?.kasir||"").trim().toLowerCase())
+                .filter(Boolean)
+        );
 
-        return [...requirements.values()].every(isCovered);
+        const allClosed=
+            [...activeAccounts]
+                .every(account=>closedAccounts.has(account));
+
+        const hasShift1=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 1"
+        );
+
+        const hasShift2=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 2"
+        );
+        return allClosed && hasShift1 && hasShift2;
     }
 
     try{
@@ -1501,7 +1503,7 @@
 <style id="ldmMobileTouchAndEodStyle">
     /*
      * End of Day disembunyikan sampai seluruh akun yang transaksi
-     * sudah Closing Shift sesuai shift transaksi yang benar-benar digunakan.
+     * sudah Closing Shift dan Shift 1 + Shift 2 tersedia.
      * Berlaku untuk Mega Menu desktop dan Hamburger Menu HP.
      */
     html:not([data-ldm-eod-ready="true"]) a[href="eod.html"]{
@@ -2043,7 +2045,7 @@
                 </div>
 
                 <p class="eod-intro-text">
-                    Menggabungkan Closing Shift yang benar-benar digunakan untuk merekap
+                    Menggabungkan Closing Shift 1 dan Shift 2 untuk merekap
                     penjualan serta mencocokkan Tunai Sistem dengan Uang Tunai
                     Fisik. Modal Awal tetap dicatat terpisah. Mutasi Kas Masuk/Keluar dari Closing Shift ikut diperhitungkan dalam ekspektasi tunai fisik.
                 </p>
@@ -2357,7 +2359,7 @@
 
                 <section class="box-container">
                     <div class="box-title">
-                        <span>🧮 Hasil Gabungan Closing Shift Transaksi</span>
+                        <span>🧮 Hasil Gabungan Shift 1 + Shift 2</span>
                     </div>
 
                     <div class="locked" id="combinedLock">
@@ -2538,8 +2540,8 @@ function updateRunningClock(){
     }
 }
 
-function witaDate(v=new Date()){const x=new Date(v);const d=new Date((isNaN(x)?Date.now():x.getTime())+8*3600000);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
-function witaTime(){const d=new Date(Date.now()+8*3600000);return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+':'+String(d.getUTCSeconds()).padStart(2,'0')}
+function witaDate(v=new Date()){return window.LDMLocalTime.dateKey(v)}
+function witaTime(){return window.LDMLocalTime.timeKey()}
 function dateOf(x){if(!x)return'';const r=x.waktu_teks||x.tanggal||x.tgl||x.date||x.waktu||x.created_at||x.timestamp||'';if(typeof r==='string'&&/^\d{4}-\d{2}-\d{2}/.test(r))return r.slice(0,10);const d=new Date(r);return isNaN(d)?'':witaDate(d)}
 function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}function signed(n){n=Number(n||0);return n>0?'+Rp '+n.toLocaleString('id-ID'):n<0?'-Rp '+Math.abs(n).toLocaleString('id-ID'):'Rp 0'}
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
@@ -2560,17 +2562,6 @@ function calc(){
                     selectedDate
             );
 
-    const transactionAccounts =
-        new Set(
-            tx
-                .map(x => cashier(x).toLowerCase())
-                .filter(Boolean)
-        );
-
-    /*
-     * Hanya Closing Shift milik akun yang benar-benar bertransaksi
-     * pada tanggal ini yang menjadi bagian EOD.
-     */
     const ls =
         uniqueLatest(
             logs()
@@ -2582,78 +2573,7 @@ function calc(){
                         ) ===
                         selectedDate
                 )
-        )
-        .filter(
-            x =>
-                transactionAccounts.has(
-                    String(x.kasir || "")
-                        .trim()
-                        .toLowerCase()
-                )
         );
-
-    /*
-     * Syarat EOD mengikuti pasangan akun + shift yang memiliki transaksi.
-     * Tidak ada lagi kewajiban global bahwa Shift 1 DAN Shift 2 harus selalu ada.
-     * Closing Full Day dapat menutup kebutuhan shift transaksi akun yang sama.
-     */
-    const closingRequirements = new Map();
-
-    tx.forEach(item => {
-        const account = cashier(item).toLowerCase();
-        if (!account) return;
-
-        const requiredShift = shiftName(
-            item.shift ||
-            item.shiftLabel ||
-            item.shift_label ||
-            ""
-        );
-
-        closingRequirements.set(
-            account + "|" + requiredShift,
-            {
-                account,
-                name: cashier(item),
-                shift: requiredShift
-            }
-        );
-    });
-
-    const closingCovers = (closing, requirement) => {
-        const account = String(closing.kasir || "")
-            .trim()
-            .toLowerCase();
-
-        if (account !== requirement.account) return false;
-
-        const closedShift = shiftName(
-            closing.shift ||
-            closing.shiftLabel ||
-            closing.shift_label ||
-            ""
-        );
-
-        if (!requirement.shift) return true;
-
-        return (
-            closedShift === requirement.shift ||
-            closedShift === "full day"
-        );
-    };
-
-    const pendingClosings =
-        [...closingRequirements.values()]
-            .filter(
-                requirement =>
-                    !ls.some(
-                        closing =>
-                            closingCovers(
-                                closing,
-                                requirement
-                            )
-                    )
-            );
 
     const s1 =
         ls.filter(
@@ -2683,8 +2603,12 @@ function calc(){
         );
 
     /*
-     * Shift 1, Shift 2, dan Full Day hanya diwajibkan bila memang
-     * dipakai oleh transaksi akun pada hari tersebut.
+     * Full Day adalah OPSIONAL.
+     *
+     * End of Day normal tetap membutuhkan:
+     * Shift 1 tersedia + Shift 2 tersedia.
+     *
+     * Tidak adanya Full Day TIDAK menghalangi End of Day.
      */
     const has1 =
         s1.length >
@@ -2698,76 +2622,63 @@ function calc(){
         full.length >
         0;
 
-    const requires1 =
-        [...closingRequirements.values()].some(
-            item => item.shift === "shift 1"
-        );
-
-    const requires2 =
-        [...closingRequirements.values()].some(
-            item => item.shift === "shift 2"
-        );
-
-    const requiresFull =
-        [...closingRequirements.values()].some(
-            item => item.shift === "full day"
-        );
-
-    const pending1 =
-        pendingClosings.some(
-            item => item.shift === "shift 1"
-        );
-
-    const pending2 =
-        pendingClosings.some(
-            item => item.shift === "shift 2"
-        );
-
     /*
-     * Bila akun mempunyai Full Day sekaligus Shift 1/2, Full Day menjadi
-     * sumber gabungan utama untuk akun tersebut. Ini mencegah double count
-     * sekaligus membuat Full Day dapat menutup kebutuhan shift transaksi.
+     * Jika akun Full Day juga punya Closing Shift 1/2,
+     * Full Day tidak dijumlahkan ulang agar tidak double count.
      */
-    const fullAccounts =
+    const normalAccounts =
         new Set(
-            full.map(
+            [
+                ...s1,
+                ...s2
+            ]
+            .map(
                 x =>
-                    String(x.kasir || "")
-                        .trim()
-                        .toLowerCase()
+                    String(
+                        x.kasir ||
+                        ""
+                    )
+                    .trim()
+                    .toLowerCase()
             )
         );
-
-    const normalOverlap =
-        [...s1, ...s2]
-            .filter(
-                x =>
-                    fullAccounts.has(
-                        String(x.kasir || "")
-                            .trim()
-                            .toLowerCase()
-                    )
-            );
 
     const fullUse =
-        full;
+        full.filter(
+            x =>
+                !normalAccounts.has(
+                    String(
+                        x.kasir ||
+                        ""
+                    )
+                    .trim()
+                    .toLowerCase()
+                )
+        );
 
     const fullOverlap =
-        [
-            ...new Set(
-                normalOverlap.map(
-                    x => String(x.kasir || "").trim()
+        full.filter(
+            x =>
+                normalAccounts.has(
+                    String(
+                        x.kasir ||
+                        ""
+                    )
+                    .trim()
+                    .toLowerCase()
                 )
-            )
-        ];
+        )
+        .map(
+            x =>
+                String(
+                    x.kasir ||
+                    ""
+                ).trim()
+        );
 
     const agg = [
-        ...s1.filter(
-            x => !fullAccounts.has(String(x.kasir || "").trim().toLowerCase())
-        ),
-        ...s2.filter(
-            x => !fullAccounts.has(String(x.kasir || "").trim().toLowerCase())
-        ),
+        ...s1,
+        ...s2,
         ...fullUse
     ];
 
@@ -2859,13 +2770,6 @@ function calc(){
             ...logMap.keys()
         ]);
 
-    const pendingAccountKeys =
-        new Set(
-            pendingClosings.map(
-                item => item.account
-            )
-        );
-
     const accounts =
         [
             ...keys
@@ -2903,9 +2807,8 @@ function calc(){
                     logs:
                         l,
                     closed:
-                        t.count > 0
-                            ? !pendingAccountKeys.has(k)
-                            : l.length > 0
+                        l.length >
+                        0
                 };
             }
         )
@@ -2921,16 +2824,24 @@ function calc(){
         );
 
     const allClosed =
-        closingRequirements.size > 0
+        accounts.length >
+        0
         &&
-        pendingClosings.length === 0;
+        accounts.every(
+            x =>
+                x.closed
+        );
 
     /*
-     * READY bila setiap akun + shift yang memiliki transaksi
-     * sudah ditutup. Shift yang tidak dipakai tidak menjadi syarat.
+     * Full Day tidak menjadi syarat.
+     * Jika tidak ada Full Day, End of Day tetap dapat READY.
      */
     const ready =
-        allClosed;
+        allClosed
+        &&
+        has1
+        &&
+        has2;
 
     const a1 =
         sum(s1);
@@ -3006,13 +2917,6 @@ function calc(){
         has1,
         has2,
         hasFull,
-        requires1,
-        requires2,
-        requiresFull,
-        pending1,
-        pending2,
-        closingRequirements:[...closingRequirements.values()],
-        pendingClosings,
         ready,
         a1,
         a2,
@@ -3023,7 +2927,7 @@ function calc(){
     };
 }
 function money(id,n,sign=false){const el=document.getElementById(id);el.textContent=sign?signed(n):rp(n);el.classList.remove('positive','negative','warning');if(sign&&n>0)el.classList.add('warning');if(sign&&n<0)el.classList.add('negative');if(sign&&n===0)el.classList.add('positive')}
-function renderShift(p,d,hasOwnClosing,required,pending){document.getElementById(p+'Count').textContent=d.count;money(p+'Sales',d.sales);money(p+'Cash',d.cash);money(p+'CashIn',d.cashIn);money(p+'CashOut',d.cashOut);money(p+'Expected',d.expected);money(p+'Physical',d.physical);money(p+'Capital',d.capital);money(p+'NonCash',d.noncash);money(p+'Diff',d.physical-d.expected,true);const b=document.getElementById(p==='s1'?'b1':'b2');if(hasOwnClosing){b.textContent='Tersedia';b.className='badge ok'}else if(!required){b.textContent='Tidak Wajib';b.className='badge ok'}else if(!pending){b.textContent='Dicakup Full Day';b.className='badge ok'}else{b.textContent='Belum Closing';b.className='badge wait'}}
+function renderShift(p,d,ok){document.getElementById(p+'Count').textContent=d.count;money(p+'Sales',d.sales);money(p+'Cash',d.cash);money(p+'CashIn',d.cashIn);money(p+'CashOut',d.cashOut);money(p+'Expected',d.expected);money(p+'Physical',d.physical);money(p+'Capital',d.capital);money(p+'NonCash',d.noncash);money(p+'Diff',d.physical-d.expected,true);const b=document.getElementById(p==='s1'?'b1':'b2');b.textContent=ok?'Tersedia':'Belum Closing';b.className='badge '+(ok?'ok':'wait')}
 function renderFullDay(c){
     const section =
         document.getElementById(
@@ -3102,7 +3006,7 @@ function renderFullDay(c){
         );
 
     badge.textContent =
-        `${c.aFull.count} Akun • ${c.requiresFull ? "Sesuai transaksi" : "Opsional"}`;
+        `${c.aFull.count} Akun • Opsional`;
 
     badge.className =
         "badge ok";
@@ -3212,11 +3116,11 @@ function renderStatus(c){
             "Semua Closing Shift siap digabung";
 
         statusDetail.textContent =
-            `${c.accounts.filter(item => item.count > 0).length} akun transaksi sudah Closing Shift sesuai shift transaksinya`
+            `${c.accounts.length} akun aktif sudah closing. Shift 1 dan Shift 2 tersedia`
             +
             (
                 c.hasFull
-                    ? ` • Full Day: ${c.aFull.count} akun`
+                    ? ` • Full Day opsional: ${c.aFull.count} akun`
                     : ""
             )
             +
@@ -3231,18 +3135,34 @@ function renderStatus(c){
             [];
 
         const pending =
-            c.pendingClosings
-                .map(item => {
-                    const label = item.shift
-                        ? item.shift.replace(/\b\w/g, value => value.toUpperCase())
-                        : "Shift tidak tercatat";
-                    return `${item.name || item.account} (${label})`;
-                });
+            c.accounts
+                .filter(
+                    x =>
+                        !x.closed
+                )
+                .map(
+                    x =>
+                        x.name
+                );
 
         if (pending.length) {
             why.push(
-                "Belum closing sesuai transaksi: " +
-                pending.join(", ")
+                "Belum closing: " +
+                pending.join(
+                    ", "
+                )
+            );
+        }
+
+        if (!c.has1) {
+            why.push(
+                "Shift 1 belum tersedia"
+            );
+        }
+
+        if (!c.has2) {
+            why.push(
+                "Shift 2 belum tersedia"
             );
         }
 
@@ -3311,7 +3231,7 @@ function renderCombined(c){
     }
 
     /*
-     * Semua akun + shift yang benar-benar memiliki transaksi sudah closing.
+     * Semua akun sudah closing + Shift 1 & Shift 2 tersedia.
      * Baru sekarang Penjualan Sistem dibuka.
      */
     money(
@@ -3444,7 +3364,7 @@ function renderWarning(c){
                 .map(esc)
                 .join(", ")
             +
-            "</strong>. Record Full Day dipakai sebagai sumber gabungan utama untuk akun tersebut; Shift 1/2 yang tumpang tindih tidak dijumlahkan ulang."
+            "</strong>. Record Full Day tetap ditampilkan, tetapi tidak dijumlahkan lagi ke hasil gabungan agar tidak double count."
         );
     }
 
@@ -3470,17 +3390,13 @@ function loadEOD(){
     renderShift(
         "s1",
         lastCalc.a1,
-        lastCalc.has1,
-        lastCalc.requires1,
-        lastCalc.pending1
+        lastCalc.has1
     );
 
     renderShift(
         "s2",
         lastCalc.a2,
-        lastCalc.has2,
-        lastCalc.requires2,
-        lastCalc.pending2
+        lastCalc.has2
     );
 
     renderFullDay(
@@ -4076,15 +3992,7 @@ document.addEventListener('DOMContentLoaded',init);
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -4128,56 +4036,69 @@ document.addEventListener('DOMContentLoaded',init);
 
     function calculateReadiness(){
         const today=witaDate(new Date());
+
         const laporan=readArray("laporan");
+
         const transactions=(
             laporan.length
                 ? laporan
                 : readArray("dataLaporan")
         ).filter(item=>recordDate(item)===today);
 
-        const requirements=new Map();
-        transactions.forEach(item=>{
-            const account=cashierName(item);
-            if(!account)return;
-            const shift=shiftName(item?.shift||item?.shiftLabel||item?.shift_label||"");
-            requirements.set(account+"|"+shift,{account,shift});
-        });
-
         const activeAccounts=new Set(
-            [...requirements.values()].map(item=>item.account)
+            transactions
+                .map(cashierName)
+                .filter(Boolean)
         );
 
-        if(requirements.size===0){
+        if(activeAccounts.size===0){
             return {
                 ready:false,
                 activeAccounts:[],
                 pendingAccounts:[],
-                pendingClosings:[],
                 hasShift1:false,
                 hasShift2:false
             };
         }
 
         const closingToday=readArray("shiftClosingLog")
-            .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
+            .filter(
+                item=>
+                    String(item?.tanggal||"").slice(0,10)===today
+            );
 
-        const isCovered=requirement=>closingToday.some(closing=>{
-            if(cashierName(closing)!==requirement.account)return false;
-            const closingShift=shiftName(closing?.shift||closing?.shiftLabel||closing?.shift_label||"");
-            if(!requirement.shift)return true;
-            return closingShift===requirement.shift||closingShift==="full day";
-        });
+        const closedAccounts=new Set(
+            closingToday
+                .map(
+                    item=>
+                        String(item?.kasir||"")
+                            .trim()
+                            .toLowerCase()
+                )
+                .filter(Boolean)
+        );
 
-        const pendingClosings=[...requirements.values()].filter(item=>!isCovered(item));
-        const pendingAccounts=[...new Set(pendingClosings.map(item=>item.account))];
-        const hasShift1=closingToday.some(item=>shiftName(item?.shift)==="shift 1");
-        const hasShift2=closingToday.some(item=>shiftName(item?.shift)==="shift 2");
+        const pendingAccounts=
+            [...activeAccounts]
+                .filter(account=>!closedAccounts.has(account));
+
+        const hasShift1=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 1"
+            );
+
+        const hasShift2=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 2"
+            );
 
         return {
-            ready:pendingClosings.length===0,
+            ready:
+                pendingAccounts.length===0
+                && hasShift1
+                && hasShift2,
             activeAccounts:[...activeAccounts],
             pendingAccounts,
-            pendingClosings,
             hasShift1,
             hasShift2
         };
@@ -4204,7 +4125,7 @@ document.addEventListener('DOMContentLoaded',init);
                 link.title="End of Day siap karena seluruh Closing Shift wajib sudah lengkap.";
             }else{
                 link.setAttribute("data-eod-waiting","true");
-                link.title="End of Day akan muncul setelah setiap akun dan shift yang benar-benar memiliki transaksi sudah Closing Shift.";
+                link.title="End of Day akan muncul setelah semua akun transaksi Closing Shift dan Shift 1 + Shift 2 tersedia.";
             }
         });
 
@@ -4376,6 +4297,6 @@ document.addEventListener('DOMContentLoaded',init);
 })();
 </script>
 
-<script src="js/global-system-navigation.js?v=26.2.2"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>

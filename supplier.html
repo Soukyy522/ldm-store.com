@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="id" class="secure-page-pending"><head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Supplier - LocDailyMar POS</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0d2240"><link rel="stylesheet" href="style.css"><link rel="icon" type="image/png" href="icon.png"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>
+<html lang="id" class="secure-page-pending"><head>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Supplier - LocDailyMar POS</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0d2240"><link rel="stylesheet" href="style.css"><link rel="icon" type="image/png" href="icon.png"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>
         :root{
             --app-font:'Poppins',sans-serif;--brand-font:'Poppins',sans-serif;
             --bg-primary:#f4f6f9;--bg-secondary:#fff;--text-color:#334155;
@@ -559,14 +560,7 @@
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -609,29 +603,37 @@
         const transaksi=(laporan.length?laporan:readArray("dataLaporan"))
             .filter(item=>recordDate(item)===today);
 
-        const requirements=new Map();
-        transaksi.forEach(item=>{
-            const account=cashierName(item);
-            if(!account)return;
-            const shift=shiftName(item?.shift||item?.shiftLabel||item?.shift_label||"");
-            requirements.set(account+"|"+shift,{account,shift});
-        });
+        const activeAccounts=new Set(
+            transaksi
+                .map(cashierName)
+                .filter(Boolean)
+        );
 
-        if(requirements.size===0){
+        if(activeAccounts.size===0){
             return false;
         }
 
         const closingToday=readArray("shiftClosingLog")
             .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
 
-        const isCovered=requirement=>closingToday.some(closing=>{
-            if(cashierName(closing)!==requirement.account)return false;
-            const closingShift=shiftName(closing?.shift||closing?.shiftLabel||closing?.shift_label||"");
-            if(!requirement.shift)return true;
-            return closingShift===requirement.shift||closingShift==="full day";
-        });
+        const closedAccounts=new Set(
+            closingToday
+                .map(item=>String(item?.kasir||"").trim().toLowerCase())
+                .filter(Boolean)
+        );
 
-        return [...requirements.values()].every(isCovered);
+        const allClosed=
+            [...activeAccounts]
+                .every(account=>closedAccounts.has(account));
+
+        const hasShift1=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 1"
+        );
+
+        const hasShift2=closingToday.some(
+            item=>shiftName(item?.shift)==="shift 2"
+        );
+        return allClosed && hasShift1 && hasShift2;
     }
 
     try{
@@ -652,7 +654,7 @@
 <style id="ldmMobileTouchAndEodStyle">
     /*
      * End of Day disembunyikan sampai seluruh akun yang transaksi
-     * sudah Closing Shift sesuai shift transaksi yang benar-benar digunakan.
+     * sudah Closing Shift dan Shift 1 + Shift 2 tersedia.
      * Berlaku untuk Mega Menu desktop dan Hamburger Menu HP.
      */
     html:not([data-ldm-eod-ready="true"]) a[href="eod.html"]{
@@ -1101,8 +1103,8 @@ function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt
 function rupiah(n){return 'Rp '+Number(n||0).toLocaleString('id-ID')}
 function getUser(){return localStorage.getItem('activeUsername')||localStorage.getItem('loggedInUser')||localStorage.getItem('username')||localStorage.getItem('currentUser')||'-'}
 function getRole(){return String(localStorage.getItem('userRole')||localStorage.getItem('role')||'').trim().toLowerCase()}
-function getTanggalWITA(d=new Date()){const x=new Date(d);const w=new Date((isNaN(x)?Date.now():x.getTime())+8*3600000);return `${w.getUTCFullYear()}-${String(w.getUTCMonth()+1).padStart(2,'0')}-${String(w.getUTCDate()).padStart(2,'0')}`}
-function getWaktuWITA(){const w=new Date(Date.now()+8*3600000);return `${String(w.getUTCHours()).padStart(2,'0')}:${String(w.getUTCMinutes()).padStart(2,'0')}:${String(w.getUTCSeconds()).padStart(2,'0')}`}
+function getTanggalWITA(d=new Date()){return window.LDMLocalTime.dateKey(d)}
+function getWaktuWITA(){return window.LDMLocalTime.timeKey()}
 function requireOwnerAdmin(){if(localStorage.getItem('isLoggedIn')!=='true'){location.replace('index.html');return false}currentRole=getRole();currentUser=getUser();if(!['owner','admin'].includes(currentRole)){location.replace('dashboard.html');return false}document.documentElement.classList.remove('secure-page-pending');return true}
 function applyRoleMenu(){document.querySelectorAll('[data-role-access]').forEach(el=>{const roles=String(el.dataset.roleAccess||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);if(roles.length&&!roles.includes(currentRole))el.style.display='none'})}
 function bukaMenu(){document.getElementById('navSidebar')?.classList.add('active');document.getElementById('navOverlay')?.classList.add('active')}
@@ -1607,15 +1609,7 @@ document.addEventListener('DOMContentLoaded',()=>{if(!requireOwnerAdmin())return
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -1659,56 +1653,69 @@ document.addEventListener('DOMContentLoaded',()=>{if(!requireOwnerAdmin())return
 
     function calculateReadiness(){
         const today=witaDate(new Date());
+
         const laporan=readArray("laporan");
+
         const transactions=(
             laporan.length
                 ? laporan
                 : readArray("dataLaporan")
         ).filter(item=>recordDate(item)===today);
 
-        const requirements=new Map();
-        transactions.forEach(item=>{
-            const account=cashierName(item);
-            if(!account)return;
-            const shift=shiftName(item?.shift||item?.shiftLabel||item?.shift_label||"");
-            requirements.set(account+"|"+shift,{account,shift});
-        });
-
         const activeAccounts=new Set(
-            [...requirements.values()].map(item=>item.account)
+            transactions
+                .map(cashierName)
+                .filter(Boolean)
         );
 
-        if(requirements.size===0){
+        if(activeAccounts.size===0){
             return {
                 ready:false,
                 activeAccounts:[],
                 pendingAccounts:[],
-                pendingClosings:[],
                 hasShift1:false,
                 hasShift2:false
             };
         }
 
         const closingToday=readArray("shiftClosingLog")
-            .filter(item=>String(item?.tanggal||"").slice(0,10)===today);
+            .filter(
+                item=>
+                    String(item?.tanggal||"").slice(0,10)===today
+            );
 
-        const isCovered=requirement=>closingToday.some(closing=>{
-            if(cashierName(closing)!==requirement.account)return false;
-            const closingShift=shiftName(closing?.shift||closing?.shiftLabel||closing?.shift_label||"");
-            if(!requirement.shift)return true;
-            return closingShift===requirement.shift||closingShift==="full day";
-        });
+        const closedAccounts=new Set(
+            closingToday
+                .map(
+                    item=>
+                        String(item?.kasir||"")
+                            .trim()
+                            .toLowerCase()
+                )
+                .filter(Boolean)
+        );
 
-        const pendingClosings=[...requirements.values()].filter(item=>!isCovered(item));
-        const pendingAccounts=[...new Set(pendingClosings.map(item=>item.account))];
-        const hasShift1=closingToday.some(item=>shiftName(item?.shift)==="shift 1");
-        const hasShift2=closingToday.some(item=>shiftName(item?.shift)==="shift 2");
+        const pendingAccounts=
+            [...activeAccounts]
+                .filter(account=>!closedAccounts.has(account));
+
+        const hasShift1=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 1"
+            );
+
+        const hasShift2=
+            closingToday.some(
+                item=>shiftName(item?.shift)==="shift 2"
+            );
 
         return {
-            ready:pendingClosings.length===0,
+            ready:
+                pendingAccounts.length===0
+                && hasShift1
+                && hasShift2,
             activeAccounts:[...activeAccounts],
             pendingAccounts,
-            pendingClosings,
             hasShift1,
             hasShift2
         };
@@ -1735,7 +1742,7 @@ document.addEventListener('DOMContentLoaded',()=>{if(!requireOwnerAdmin())return
                 link.title="End of Day siap karena seluruh Closing Shift wajib sudah lengkap.";
             }else{
                 link.setAttribute("data-eod-waiting","true");
-                link.title="End of Day akan muncul setelah setiap akun dan shift yang benar-benar memiliki transaksi sudah Closing Shift.";
+                link.title="End of Day akan muncul setelah semua akun transaksi Closing Shift dan Shift 1 + Shift 2 tersedia.";
             }
         });
 
@@ -1804,4 +1811,4 @@ document.addEventListener('DOMContentLoaded',()=>{if(!requireOwnerAdmin())return
 
 
 <script src="js/supplier-cloud-adapter.js?v=11.0"></script>
-<script src="js/global-system-navigation.js?v=26.2.2"></script></body></html>
+<script src="js/global-system-navigation.js?v=25.2"></script></body></html>

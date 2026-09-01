@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<script src="js/local-time.js?v=26.4.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -105,11 +106,11 @@
     }
     $("runButton").addEventListener("click",run);
     $("updateButton").addEventListener("click",async()=>{const out=window.LDMPWA&&await LDMPWA.checkForUpdate();alert(out&&out.message||"Pemeriksaan update selesai.");});
-    $("exportButton").addEventListener("click",()=>{if(!lastReport){alert("Jalankan Full QA terlebih dahulu.");return;}const blob=new Blob([JSON.stringify(lastReport,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-stage19-qa-${new Date().toISOString().slice(0,10)}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);});
+    $("exportButton").addEventListener("click",()=>{if(!lastReport){alert("Jalankan Full QA terlebih dahulu.");return;}const blob=new Blob([JSON.stringify(lastReport,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-stage19-qa-${window.LDMLocalTime.dateKey()}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);});
     $("clearButton").addEventListener("click",()=>{if(confirm("Hapus riwayat metric QA lokal pada perangkat ini?")){LDMQuality&&LDMQuality.clear();alert("Riwayat QA lokal dibersihkan.");}});
     window.addEventListener("load",()=>setTimeout(run,500));
 })();
 </script>
-<script src="js/global-system-navigation.js?v=26.2.2"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>
