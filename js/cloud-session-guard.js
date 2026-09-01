@@ -1,5 +1,6 @@
 (function(){
     "use strict";
+    if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
     const root =
         document.documentElement;

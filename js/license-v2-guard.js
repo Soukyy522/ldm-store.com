@@ -1,5 +1,6 @@
 (function(){
     "use strict";
+    if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
     const PAGE_FEATURE={
         "dashboard.html":"dashboard","kasir.html":"pos","barang.html":"inventory","kartu-stok.html":"stock_card","stock-opname.html":"stock_opname",
         "laporan.html":"reports","absensi.html":"attendance","retur.html":"returns","shift-closing.html":"shift_closing","backup & restore.html":"backup_restore",

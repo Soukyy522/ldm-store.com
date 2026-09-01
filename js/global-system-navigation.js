@@ -1,7 +1,8 @@
 (function(){
     "use strict";
+    if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="25.2";
+    const NAV_VERSION="27.4";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -31,6 +32,8 @@
         {page:"eod.html",icon:"🌙",label:"End of Day",group:"Closing & Data",roles:["owner","admin"],requiresEodReady:true},
         {page:"backup%20%26%20restore.html",icon:"💾",label:"Backup & Restore",group:"Closing & Data",roles:["owner","admin"]},
 
+        {page:"account-management.html",icon:"👥",label:"Management Akun",group:"Sistem",roles:["owner"]},
+        {page:"device-management.html",icon:"💻",label:"Perangkat Cloud",group:"Sistem",roles:["owner"]},
         {page:"pwa-settings.html",icon:"📲",label:"Aplikasi & Update",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"]},

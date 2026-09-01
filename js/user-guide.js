@@ -1,6 +1,6 @@
 (function(){
     "use strict";
-    const VERSION="26.2";
+    const VERSION="27.4";
     const GUIDE_PAGE="panduan.html";
     const $=(id)=>document.getElementById(id);
     function role(){const value=String(localStorage.getItem("userRole")||localStorage.getItem("role")||"").toLowerCase();return value==="administrator"?"admin":value==="cashier"?"kasir":value||"pengguna"}
@@ -37,7 +37,40 @@
     function showOnboarding(force=false){if(location.pathname.split("/").pop().toLowerCase()!=="dashboard.html")return;if(completed()&&!force)return;const currentRole=role();const steps=tours[currentRole]||tours.kasir;let index=0;installOnboardingStyle();let modal=$("ldmUserGuideOnboarding");if(modal)modal.remove();modal=document.createElement("div");modal.id="ldmUserGuideOnboarding";modal.className="ldm-guide-onboard";document.body.appendChild(modal);const render=()=>{const [title,text]=steps[index];modal.innerHTML=`<section class="ldm-guide-box" role="dialog" aria-modal="true" aria-labelledby="ldmGuideTitle"><div class="ldm-guide-top"><div class="ldm-guide-step">Panduan awal · ${roleLabel[currentRole]||currentRole} · ${index+1}/${steps.length}</div><h2 id="ldmGuideTitle">${title}</h2></div><div class="ldm-guide-body"><p>${text}</p><div class="ldm-guide-progress">${steps.map((_,i)=>`<span class="${i<=index?"active":""}"></span>`).join("")}</div></div><div class="ldm-guide-actions"><button type="button" class="ldm-guide-btn ldm-guide-muted" data-guide-skip>Lewati</button><div>${index?'<button type="button" class="ldm-guide-btn ldm-guide-muted" data-guide-prev>Kembali</button>':''}${index===steps.length-1?`<a class="ldm-guide-btn ldm-guide-link" href="${GUIDE_PAGE}">Panduan Lengkap</a><button type="button" class="ldm-guide-btn ldm-guide-primary" data-guide-finish>Selesai</button>`:'<button type="button" class="ldm-guide-btn ldm-guide-primary" data-guide-next>Lanjut</button>'}</div></div></section>`;modal.querySelector("[data-guide-skip]")?.addEventListener("click",()=>{markDone();modal.remove()});modal.querySelector("[data-guide-prev]")?.addEventListener("click",()=>{index--;render()});modal.querySelector("[data-guide-next]")?.addEventListener("click",()=>{index++;render()});modal.querySelector("[data-guide-finish]")?.addEventListener("click",()=>{markDone();modal.remove()})};render()}
     function formatRupiah(value){return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(value||0))}
     function renderPlanPrices(){const plans=window.LDM_LICENSE_V2_CONFIG?.plans||{};document.querySelectorAll("[data-guide-plan-code]").forEach(card=>{const item=plans[card.dataset.guidePlanCode];if(!item)return;const monthly=card.querySelector("[data-guide-monthly]");const yearly=card.querySelector("[data-guide-yearly]");const lifetime=card.querySelector("[data-guide-lifetime]");const saving=card.querySelector("[data-guide-saving]");const quota=card.querySelector("[data-guide-quota]");if(monthly)monthly.textContent=formatRupiah(item.monthly);if(yearly)yearly.textContent=formatRupiah(item.yearly);if(lifetime)lifetime.textContent=formatRupiah(item.lifetime);if(saving)saving.textContent=`Hemat ${formatRupiah(Math.max(0,Number(item.monthly||0)*12-Number(item.yearly||0)))}`;if(quota)quota.textContent=`${item.devices} perangkat · ${item.stores} toko`})}
-    function initHelpPage(){if(location.pathname.split("/").pop().toLowerCase()!==GUIDE_PAGE)return;renderPlanPrices();const roleNow=role();const roleNode=$("guideRole");if(roleNode)roleNode.textContent=roleLabel[roleNow]||roleNow;const plan=$("guidePlan");const applyLicense=(data)=>{if(plan)plan.textContent=data?.plan_name||data?.plan_code||"Belum diketahui";document.querySelectorAll("[data-guide-feature]").forEach(card=>{const feature=card.dataset.guideFeature;const badge=card.querySelector("[data-guide-plan]");if(!badge)return;if(!data){badge.className="help-badge help-plan-unknown";badge.textContent="Cek paket saat lisensi siap";return}const ok=window.LDMLicenseV2?.hasFeature(feature,data)!==false;badge.className=`help-badge ${ok?"help-plan-ok":"help-plan-lock"}`;badge.textContent=ok?"Tersedia di paket Anda":"Terkunci di paket Anda"})};applyLicense(window.LDM_LICENSE_V2_STATE||null);window.addEventListener("ldm-license-v2-authorized",e=>applyLicense(e.detail));const search=$("guideSearch");const empty=$("guideEmpty");search?.addEventListener("input",()=>{const q=search.value.trim().toLowerCase();let shown=0;document.querySelectorAll(".help-card[data-guide-card]").forEach(card=>{const visible=!q||card.textContent.toLowerCase().includes(q);card.hidden=!visible;if(visible)shown++});empty?.classList.toggle("show",shown===0)});$("guideReset")?.addEventListener("click",()=>{reset();location.href="dashboard.html?showGuide=1"});document.querySelectorAll("[data-help-role]").forEach(el=>{const roles=(el.dataset.helpRole||"").split(",");if(roles[0]&& !roles.includes(roleNow))el.hidden=true})}
+    function initHelpPage(){
+        if(location.pathname.split("/").pop().toLowerCase()!==GUIDE_PAGE)return;
+        renderPlanPrices();
+        const publicMode=window.LDM_PUBLIC_GUIDE_MODE===true;
+        const roleNow=publicMode?"pengunjung":role();
+        const roleNode=$("guideRole");
+        if(roleNode)roleNode.textContent=publicMode?"Pengunjung (Panduan Publik)":(roleLabel[roleNow]||roleNow);
+        const plan=$("guidePlan");
+        const resetBtn=$("guideReset");
+        const back=$("guideBackLink");
+        const publicNotice=$("guidePublicNotice");
+        if(publicMode){
+            if(plan)plan.textContent="Lihat paket di halaman Lisensi";
+            if(resetBtn)resetBtn.hidden=true;
+            if(back){back.href="homepage.html";back.textContent="← Kembali ke Homepage"}
+            if(publicNotice)publicNotice.hidden=false;
+        }
+        const applyLicense=(data)=>{
+            if(!publicMode&&plan)plan.textContent=data?.plan_name||data?.plan_code||"Belum diketahui";
+            document.querySelectorAll("[data-guide-feature]").forEach(card=>{
+                const feature=card.dataset.guideFeature;const badge=card.querySelector("[data-guide-plan]");if(!badge)return;
+                if(publicMode){badge.className="help-badge help-plan-unknown";badge.textContent="Ketersediaan mengikuti paket";return}
+                if(!data){badge.className="help-badge help-plan-unknown";badge.textContent="Cek paket saat lisensi siap";return}
+                const ok=window.LDMLicenseV2?.hasFeature(feature,data)!==false;
+                badge.className=`help-badge ${ok?"help-plan-ok":"help-plan-lock"}`;badge.textContent=ok?"Tersedia di paket Anda":"Terkunci di paket Anda";
+            })
+        };
+        applyLicense(publicMode?null:(window.LDM_LICENSE_V2_STATE||null));
+        if(!publicMode)window.addEventListener("ldm-license-v2-authorized",e=>applyLicense(e.detail));
+        const search=$("guideSearch"),empty=$("guideEmpty");
+        search?.addEventListener("input",()=>{const q=search.value.trim().toLowerCase();let shown=0;document.querySelectorAll(".help-card[data-guide-card]").forEach(card=>{const visible=!q||card.textContent.toLowerCase().includes(q);card.hidden=!visible;if(visible)shown++});empty?.classList.toggle("show",shown===0)});
+        resetBtn?.addEventListener("click",()=>{if(publicMode)return;reset();location.href="dashboard.html?showGuide=1"});
+        if(!publicMode)document.querySelectorAll("[data-help-role]").forEach(node=>{const roles=(node.dataset.helpRole||"").split(",");if(roles[0]&&!roles.includes(roleNow))node.hidden=true});
+    }
     function tryAuto(){if(location.pathname.split("/").pop().toLowerCase()!=="dashboard.html")return;const params=new URLSearchParams(location.search);const force=params.get("showGuide")==="1";const start=()=>{if(force)reset();setTimeout(()=>showOnboarding(force),550)};if(window.LDM_LICENSE_V2_STATE||!window.LDM_LICENSE_V2_CONFIG?.enabled)start();else{let started=false;const once=()=>{if(started)return;started=true;start()};window.addEventListener("ldm-license-v2-authorized",once,{once:true});setTimeout(()=>{if(localStorage.getItem("userRole"))once()},2500)}}
     function boot(){initHelpPage();tryAuto()}
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
