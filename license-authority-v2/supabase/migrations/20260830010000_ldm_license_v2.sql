@@ -147,7 +147,7 @@ insert into public.ldm2_plans(
 ) values
 (
     'WARUNG_KECIL','Warung Kecil','Operasional inti untuk satu warung.',69000,699000,null,2,1,
-    '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo"]'::jsonb,
+    '["dashboard","pos","inventory","stock_card","stock_opname","reports","attendance","returns","shift_closing","backup_restore","basic_promo","cloud_accounts","cloud_devices"]'::jsonb,
     true,10
 ),
 (

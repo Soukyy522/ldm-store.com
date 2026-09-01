@@ -42,6 +42,28 @@ function midtransBase() {
   return env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true"
     ? "https://app.midtrans.com" : "https://app.sandbox.midtrans.com";
 }
+function midtransApiBase() {
+  return env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true"
+    ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
+}
+async function cancelMidtransTransaction(orderId: string) {
+  const serverKey = env("MIDTRANS_SERVER_KEY");
+  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
+  const response = await fetch(`${midtransApiBase()}/v2/${encodeURIComponent(orderId)}/cancel`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || String(data?.transaction_status || "").toLowerCase() !== "cancel") {
+    const message = clean(data?.status_message || data?.message || `Midtrans HTTP ${response.status}`, 500);
+    throw Object.assign(new Error(`Midtrans belum dapat membatalkan order ini: ${message}`), { status: 409, code: "MIDTRANS_CANCEL_REJECTED" });
+  }
+  return data;
+}
 async function createMidtransSnap(input: {
   orderId: string; amount: number; itemName: string;
   customerName: string; customerEmail: string; customerPhone: string;
@@ -156,6 +178,49 @@ Deno.serve(async (req) => {
         receipt,
         receipt_error: receiptError,
       });
+    }
+
+    if (action === "cancel") {
+      const order = clean(body.order_id, 120);
+      const token = clean(body.status_token, 200);
+      if (!order || !token) return json(req, { ok: false, message: "Order/token status wajib diisi." }, 400);
+
+      const { data: payment, error: pErr } = await admin.from("ldm2_payments")
+        .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,paid_at,processed_at")
+        .eq("order_id", order).maybeSingle();
+      if (pErr) throw pErr;
+      if (!payment) return json(req, { ok: false, message: "Order tidak ditemukan." }, 404);
+
+      const { data: delivery, error: dErr } = await admin.from("ldm2_checkout_deliveries")
+        .select("public_status_token_hash").eq("payment_id", payment.id).maybeSingle();
+      if (dErr) throw dErr;
+      if (!delivery) return json(req, { ok: false, message: "Status checkout tidak tersedia." }, 404);
+      if (await sha256Hex(token) !== delivery.public_status_token_hash) {
+        return json(req, { ok: false, message: "Token status tidak valid." }, 403);
+      }
+
+      if (payment.status === "cancelled") {
+        return json(req, { ok: true, order_id: order, payment_status: "cancelled", already_cancelled: true });
+      }
+      if (["paid", "refunded"].includes(payment.status) || payment.processed_at) {
+        return json(req, { ok: false, code: "PAYMENT_ALREADY_FINAL", message: "Pembayaran sudah diproses dan tidak dapat dibatalkan dari checkout. Transaksi settlement memerlukan proses refund sesuai kebijakan merchant." }, 409);
+      }
+      if (!["pending", "challenge"].includes(payment.status)) {
+        return json(req, { ok: false, code: "PAYMENT_NOT_CANCELLABLE", message: `Status pembayaran ${payment.status} tidak dapat dibatalkan.` }, 409);
+      }
+
+      const cancelled = await cancelMidtransTransaction(order);
+      const { data: applied, error: applyError } = await admin.rpc("ldm2_apply_midtrans_notification", {
+        p_order_id: order,
+        p_transaction_id: clean(cancelled?.transaction_id || "", 160),
+        p_transaction_status: "cancel",
+        p_fraud_status: clean(cancelled?.fraud_status || "", 40),
+        p_status_code: clean(cancelled?.status_code || "200", 20),
+        p_gross_amount: Number(payment.amount),
+        p_provider_detail: cancelled,
+      });
+      if (applyError) throw applyError;
+      return json(req, { ok: true, order_id: order, payment_status: "cancelled", provider_status: "cancel", result: applied });
     }
 
     if (action !== "create") return json(req, { ok: false, message: "Aksi checkout tidak dikenal." }, 400);
@@ -292,7 +357,7 @@ Deno.serve(async (req) => {
       p_store_code: storeCode,
       p_store_name: storeName,
       p_amount: amount,
-      p_notes: "PUBLIC_CHECKOUT_27_3_WEB_RECEIPT",
+      p_notes: "PUBLIC_CHECKOUT_27_4_CANCEL_GUIDE_ACCOUNT",
     });
     if (orderError) throw orderError;
 
