@@ -79,16 +79,16 @@
         const provision=el("receiptProvisionNote");if(provision){provision.textContent=r.provision_status==="ready"?(r.credentials_source==="customer_checkout"?"Akun Owner sudah aktif. Email dan password yang kamu buat saat checkout sekarang bisa digunakan untuk login aplikasi.":"Akun Owner order lama sudah disiapkan. Gunakan tombol Buat / Ganti Password Owner sebelum login."):`Lisensi sudah aktif, tetapi penyiapan akun Owner belum selesai${r.provision_error?`: ${r.provision_error}`:"."}`;provision.className="receipt-provision "+(r.provision_status==="ready"?"ok":"warn")}
         panel.hidden=false;panel.classList.add("show");panel.scrollIntoView({behavior:"smooth",block:"center"});
     }
-    async function status(orderId,statusToken,quiet=false){
-        const data=await call({action:"status",order_id:orderId,status_token:statusToken});
+    async function status(orderId,statusToken,quiet=false,syncMidtrans=false){
+        const data=await call({action:"status",order_id:orderId,status_token:statusToken,sync_midtrans:!!syncMidtrans});
         if(data.payment_status==="paid"){setPaymentManager(false);
             if(data.receipt?.license_key){renderReceipt(data.receipt);setStatus("✅ Pembayaran sudah terverifikasi. Data lisensi ditampilkan di bawah. Simpan sekarang sebelum meninggalkan halaman ini.","success")}
             else setStatus(`✅ Pembayaran sudah terverifikasi, tetapi data lisensi belum dapat ditampilkan${data.receipt_error?`: ${data.receipt_error}`:". Tekan Cek Status beberapa saat lagi."}`,"info");
-        }else {const manageable=["pending","challenge"].includes(data.payment_status);setPaymentManager(manageable);if(!quiet)setStatus(`Status pembayaran: ${data.payment_status||"pending"}${data.provider_status?` / ${data.provider_status}`:""}.`,manageable?"info":"error") }
+        }else {const manageable=["pending","challenge"].includes(data.payment_status);setPaymentManager(manageable);if(!quiet)setStatus(`Status pembayaran: ${data.payment_status||"pending"}${data.provider_status?` / ${data.provider_status}`:""}.${data.midtrans_sync_error?` Sinkronisasi Midtrans: ${data.midtrans_sync_error}`:""}`,manageable?"info":"error") }
         return data;
     }
     async function poll(orderId,statusToken){
-        for(let i=0;i<20;i++){await new Promise(r=>setTimeout(r,i===0?1800:2000));try{const data=await status(orderId,statusToken,true);if(data.payment_status==="paid"||["failed","expired","cancelled"].includes(data.payment_status)){if(data.payment_status!=="paid")setStatus(`Pembayaran ${data.payment_status}. Silakan buat order baru bila diperlukan.`,"error");return data}}catch(error){if(i===19)throw error}}
+        for(let i=0;i<20;i++){await new Promise(r=>setTimeout(r,i===0?1800:2000));try{const data=await status(orderId,statusToken,true,i===0||i%5===0);if(data.payment_status==="paid"||["failed","expired","cancelled"].includes(data.payment_status)){if(data.payment_status!=="paid")setStatus(`Pembayaran ${data.payment_status}. Silakan buat order baru bila diperlukan.`,"error");return data}}catch(error){if(i===19)throw error}}
         setStatus("Pembayaran belum terkonfirmasi. Tekan Cek Status beberapa saat lagi.","info");
     }
     async function submit(){
@@ -103,7 +103,7 @@
             if(window.snap)window.snap.pay(data.snap_token,{onSuccess:()=>{setStatus("Pembayaran selesai di Midtrans. Menunggu verifikasi webhook…","info");poll(data.order_id,data.status_token).catch(e=>setStatus(e.message,"error"))},onPending:()=>setStatus("Pembayaran masih pending. Kamu boleh menyelesaikan, mengganti metode, atau membatalkan order sebelum settlement.","info"),onError:()=>setStatus("Midtrans melaporkan pembayaran gagal. Kamu dapat mencoba kembali.","error"),onClose:()=>setStatus("Jendela metode pembayaran ditutup. Order tetap tersimpan. Gunakan Buka Metode Lagi untuk memilih metode lain, atau Batalkan Order bila tidak ingin melanjutkan.","info")});else if(data.redirect_url)location.href=data.redirect_url;
         }finally{button.disabled=false;button.textContent="Lanjut ke Metode Pembayaran"}
     }
-    async function checkLast(){const last=readLast();if(!last?.order_id||!last?.status_token)throw new Error("Belum ada order pembayaran pada perangkat ini.");return status(last.order_id,last.status_token,false)}
+    async function checkLast(){const last=readLast();if(!last?.order_id||!last?.status_token)throw new Error("Belum ada order pembayaran pada perangkat ini.");return status(last.order_id,last.status_token,false,true)}
     function init(){
         const form=el("publicCheckoutForm");if(!form)return;el("checkoutPeriod").addEventListener("change",renderSummary);el("checkoutCloseBtn").addEventListener("click",close);form.addEventListener("submit",async e=>{e.preventDefault();try{await submit()}catch(error){setStatus(`❌ ${error.message||String(error)}`,"error")}});el("checkoutCheckBtn").addEventListener("click",async()=>{try{await checkLast()}catch(error){setStatus(`❌ ${error.message||String(error)}`,"error")}});
         el("checkoutHideSnapBtn")?.addEventListener("click",hideSnap);
