@@ -1,4 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  cancelPaymentForRetry, midtransNotificationUrl, reconcilePaymentFromMidtrans,
+} from "../_shared/ldm-midtrans-operations.ts";
 
 const encoder = new TextEncoder();
 
@@ -46,29 +49,6 @@ function midtransBase() {
     ? "https://app.midtrans.com"
     : "https://app.sandbox.midtrans.com";
 }
-function midtransApiBase() {
-  return env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true"
-    ? "https://api.midtrans.com"
-    : "https://api.sandbox.midtrans.com";
-}
-async function cancelMidtransTransaction(order: string) {
-  const serverKey = env("MIDTRANS_SERVER_KEY");
-  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
-  const response = await fetch(`${midtransApiBase()}/v2/${encodeURIComponent(order)}/cancel`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-    },
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || String(data?.transaction_status || "").toLowerCase() !== "cancel") {
-    const message = clean(data?.status_message || data?.message || `Midtrans HTTP ${response.status}`, 500);
-    throw new Error(`Midtrans belum dapat membatalkan order ini: ${message}`);
-  }
-  return data;
-}
 async function createMidtransSnap(input: {
   orderId: string;
   amount: number;
@@ -95,12 +75,14 @@ async function createMidtransSnap(input: {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
+    const notificationUrl = midtransNotificationUrl();
     const response = await fetch(`${midtransBase()}/snap/v1/transactions`, {
       method: "POST",
       headers: {
         "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
         "Content-Type": "application/json",
         "Accept": "application/json",
+        ...(notificationUrl ? { "X-Override-Notification": notificationUrl } : {}),
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
@@ -401,7 +383,7 @@ Deno.serve(async (req) => {
     if (action === "cancel_pending_payment") {
       const licenseId = clean(body.license_id, 80);
       const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
-        .select("id,license_id,order_id,status,payment_type,amount,processed_at")
+        .select("id,license_id,order_id,status,payment_type,amount,snap_token,processed_at,paid_at")
         .eq("license_id", licenseId)
         .in("status", ["pending", "challenge"])
         .order("created_at", { ascending: false })
@@ -410,27 +392,123 @@ Deno.serve(async (req) => {
       if (!payment) return json(req, { ok: false, message: "Tidak ada order pembayaran pending/challenge untuk lisensi ini." }, 404);
       if (payment.processed_at) return json(req, { ok: false, message: "Pembayaran sudah diproses dan tidak dapat dibatalkan." }, 409);
 
-      const cancelled = await cancelMidtransTransaction(payment.order_id);
-      const { data: applied, error: applyError } = await admin.rpc("ldm2_apply_midtrans_notification", {
-        p_order_id: payment.order_id,
-        p_transaction_id: clean(cancelled?.transaction_id || "", 160),
-        p_transaction_status: "cancel",
-        p_fraud_status: clean(cancelled?.fraud_status || "", 40),
-        p_status_code: clean(cancelled?.status_code || "200", 20),
-        p_gross_amount: Number(payment.amount),
-        p_provider_detail: cancelled,
+      const cancelled = await cancelPaymentForRetry(
+        admin, payment, `developer:${adminEmail}`, clean(body.reason, 500) || "Developer membatalkan order agar metode pembayaran dapat diganti",
+      );
+      await audit("CANCEL_PENDING_PAYMENT", licenseId, {
+        order_id: payment.order_id,
+        payment_type: payment.payment_type,
+        license_preserved_for_retry: payment.payment_type === "purchase",
       });
-      if (applyError) throw applyError;
+      return json(req, {
+        ok: true,
+        message: "Order pembayaran berhasil dibatalkan. Lisensi dan Store Code tetap disimpan agar pembayaran baru dapat dibuat.",
+        order_id: payment.order_id,
+        result: cancelled.local,
+      });
+    }
 
-      if (payment.payment_type === "purchase") {
-        const { data: currentLicense } = await admin.from("ldm2_licenses").select("status").eq("id", licenseId).maybeSingle();
-        if (currentLicense?.status === "pending_payment") {
-          const { error: cancelLicenseError } = await admin.from("ldm2_licenses").update({ status: "cancelled" }).eq("id", licenseId);
-          if (cancelLicenseError) throw cancelLicenseError;
-        }
+    if (action === "sync_payment_status") {
+      const licenseId = clean(body.license_id, 80);
+      const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
+        .select("id,license_id,order_id,status,payment_type,amount,snap_token,processed_at,paid_at")
+        .eq("license_id", licenseId)
+        .order("created_at", { ascending: false })
+        .limit(1).maybeSingle();
+      if (paymentError) throw paymentError;
+      if (!payment) return json(req, { ok: false, message: "Order pembayaran tidak ditemukan." }, 404);
+      if (!["pending", "challenge"].includes(payment.status)) {
+        return json(req, { ok: true, order_id: payment.order_id, payment_status: payment.status, already_final: true });
       }
-      await audit("CANCEL_PENDING_PAYMENT", licenseId, { order_id: payment.order_id, payment_type: payment.payment_type });
-      return json(req, { ok: true, message: "Order pembayaran berhasil dibatalkan.", order_id: payment.order_id, result: applied });
+      const result = await reconcilePaymentFromMidtrans(admin, payment, `developer:${adminEmail}`);
+      const { data: refreshed, error: refreshError } = await admin.from("ldm2_payments")
+        .select("order_id,status,provider_status,paid_at,processed_at")
+        .eq("id", payment.id).single();
+      if (refreshError) throw refreshError;
+      await audit("SYNC_PAYMENT_STATUS", licenseId, {
+        order_id: payment.order_id,
+        remote_found: result.found,
+        payment_status: refreshed.status,
+      });
+      return json(req, {
+        ok: true,
+        order_id: payment.order_id,
+        payment_status: refreshed.status,
+        provider_status: refreshed.provider_status,
+        remote_found: result.found,
+        message: result.found
+          ? `Status Midtrans berhasil disinkronkan: ${refreshed.status}.`
+          : "Sesi Snap tersedia, tetapi transaksi Core belum dibuat karena customer belum memilih metode pembayaran.",
+      });
+    }
+
+    if (action === "retry_purchase_payment") {
+      const licenseId = clean(body.license_id, 80);
+      const billingCycle = clean(body.billing_cycle, 20).toLowerCase();
+      const { data: license, error: licenseError } = await admin.from("ldm2_admin_license_overview")
+        .select("id,plan_code,plan_name,customer_name,customer_email,customer_phone,primary_store_code,primary_store_id,primary_store_name,network_id,status,latest_payment_status")
+        .eq("id", licenseId).maybeSingle();
+      if (licenseError) throw licenseError;
+      if (!license || !["pending_payment", "cancelled"].includes(license.status)) {
+        return json(req, { ok: false, message: "Retry pembelian hanya tersedia untuk lisensi purchase yang belum aktif." }, 409);
+      }
+      if (["pending", "challenge"].includes(license.latest_payment_status)) {
+        return json(req, { ok: false, message: "Batalkan atau selesaikan order pending sebelumnya terlebih dahulu." }, 409);
+      }
+      if (license.plan_code === "LIFETIME" && billingCycle !== "lifetime") {
+        return json(req, { ok: false, message: "Paket Lifetime harus memakai periode lifetime." }, 400);
+      }
+      if (license.plan_code !== "LIFETIME" && !["monthly", "yearly"].includes(billingCycle)) {
+        return json(req, { ok: false, message: "Pilih periode monthly atau yearly." }, 400);
+      }
+      const { data: plan, error: planError } = await admin.from("ldm2_plans")
+        .select("code,name,price_monthly,price_yearly,price_lifetime,active")
+        .eq("code", license.plan_code).eq("active", true).maybeSingle();
+      if (planError) throw planError;
+      if (!plan) return json(req, { ok: false, message: "Paket lisensi tidak tersedia." }, 400);
+      const amount = Number(billingCycle === "monthly" ? plan.price_monthly : billingCycle === "yearly" ? plan.price_yearly : plan.price_lifetime);
+      if (!Number.isSafeInteger(amount) || amount <= 0) return json(req, { ok: false, message: "Harga paket belum valid." }, 500);
+
+      const newOrderId = orderId("PURCHASE");
+      const { data: order, error: orderError } = await admin.rpc("ldm2_create_retry_purchase_order", {
+        p_order_id: newOrderId,
+        p_license_id: license.id,
+        p_billing_cycle: billingCycle,
+        p_amount: amount,
+      });
+      if (orderError) throw orderError;
+      try {
+        const snap = await createMidtransSnap({
+          orderId: newOrderId,
+          amount,
+          itemName: `Lisensi LocDailyMar - ${plan.name} (${billingCycle})`,
+          customerName: license.customer_name,
+          customerEmail: license.customer_email,
+          customerPhone: license.customer_phone || "",
+        });
+        const { error: saveError } = await admin.rpc("ldm2_set_midtrans_checkout", {
+          p_order_id: newOrderId,
+          p_snap_token: snap.token,
+          p_redirect_url: snap.redirectUrl,
+        });
+        if (saveError) throw saveError;
+        await audit("RETRY_PURCHASE_PAYMENT", license.id, { order_id: newOrderId, billing_cycle: billingCycle, amount });
+        return json(req, {
+          ok: true,
+          license: {
+            ...order,
+            plan_name: plan.name,
+            store_code: license.primary_store_code,
+            store_id: license.primary_store_id,
+            network_id: license.network_id,
+          },
+          payment: { order_id: newOrderId, amount, status: "pending", redirect_url: snap.redirectUrl },
+        });
+      } catch (paymentError) {
+        const message = clean((paymentError as Error)?.message || "Midtrans gagal membuat pembayaran.", 500);
+        await admin.rpc("ldm2_mark_payment_error", { p_order_id: newOrderId, p_message: message });
+        return json(req, { ok: false, message: `Order retry tersimpan, tetapi Midtrans gagal: ${message}` }, 502);
+      }
     }
 
     if (action === "archive_license") {

@@ -1,7 +1,7 @@
 (function(){
     "use strict";
-    const STORAGE_KEY="ldmPublicCheckoutV276";
-    const PREVIOUS_STORAGE_KEY="ldmPublicCheckoutV274";
+    const STORAGE_KEY="ldmPublicCheckoutV278";
+    const PREVIOUS_STORAGE_KEY="ldmPublicCheckoutV276";
     const LEGACY_STORAGE_KEY="ldmPublicCheckoutV273";
     const LEGACY_STORAGE_KEY_2="ldmPublicCheckoutV272";
     function cfg(){
@@ -58,7 +58,8 @@
     function setPaymentManager(show){const box=el("checkoutManageActions");if(box)box.hidden=!show}
     function clearLast(){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(PREVIOUS_STORAGE_KEY);localStorage.removeItem(LEGACY_STORAGE_KEY);localStorage.removeItem(LEGACY_STORAGE_KEY_2)}
     function hideSnap(){try{window.snap?.hide?.()}catch(_ignored){}setStatus("Metode pembayaran ditutup. Order belum dibatalkan. Kamu bisa membuka metode pembayaran lagi atau membatalkan order selama transaksi belum dibayar.","info")}
-    async function reopenPayment(){if(!activePayment?.snap_token)throw new Error("Token pembayaran tidak tersedia pada sesi ini. Tekan Lanjut ke Metode Pembayaran lagi untuk membuka order pending yang sama.");await loadSnap(activePayment.client_key,activePayment.environment);window.snap.pay(activePayment.snap_token,{onSuccess:()=>{setStatus("Pembayaran selesai di Midtrans. Menunggu verifikasi webhook…","info");poll(activePayment.order_id,activePayment.status_token).catch(e=>setStatus(e.message,"error"))},onPending:()=>setStatus("Pembayaran masih pending. Selesaikan pembayaran atau batalkan order jika tidak ingin melanjutkan.","info"),onError:()=>setStatus("Midtrans melaporkan pembayaran gagal. Kamu dapat mencoba kembali.","error"),onClose:()=>setStatus("Jendela metode pembayaran ditutup. Order tetap pending sampai dibayar, kedaluwarsa, atau dibatalkan.","info")})}
+    function snapCallbacks(payment){return {onSuccess:()=>{setStatus("Pembayaran selesai di Midtrans. Sedang memverifikasi status…","info");poll(payment.order_id,payment.status_token).catch(e=>setStatus(e.message,"error"))},onPending:()=>{setStatus("Metode pembayaran sudah dibuat dan masih menunggu pembayaran. Status akan diperiksa otomatis; kamu juga dapat menekan Cek Status.","info");poll(payment.order_id,payment.status_token).catch(e=>setStatus(e.message,"error"))},onError:()=>setStatus("Midtrans melaporkan percobaan pembayaran gagal. Buka metode lagi atau batalkan order untuk membuat pembayaran baru.","error"),onClose:()=>setStatus("Jendela metode pembayaran ditutup. Order tetap tersimpan. Buka lagi untuk melanjutkan, atau batalkan order agar dapat membuat order baru dengan metode lain.","info")}}
+    async function reopenPayment(){if(!activePayment?.snap_token)throw new Error("Token pembayaran tidak tersedia pada sesi ini. Tekan Lanjut ke Metode Pembayaran lagi untuk membuka order pending yang sama.");await loadSnap(activePayment.client_key,activePayment.environment);window.snap.pay(activePayment.snap_token,snapCallbacks(activePayment))}
     async function cancelLast(){const last=readLast();if(!last?.order_id||!last?.status_token)throw new Error("Belum ada order yang dapat dibatalkan.");if(!confirm("Batalkan order pembayaran ini?\n\nGunakan ini hanya jika kamu benar-benar tidak ingin melanjutkan order tersebut. Order yang sudah settlement tidak dapat dibatalkan."))return;const btn=el("checkoutCancelBtn");if(btn){btn.disabled=true;btn.textContent="Membatalkan…"}try{const data=await call({action:"cancel",order_id:last.order_id,status_token:last.status_token});try{window.snap?.hide?.()}catch(_ignored){}activePayment=null;clearLast();setPaymentManager(false);if(el("checkoutCheckBtn"))el("checkoutCheckBtn").disabled=true;setStatus(`✅ Order ${data.order_id||last.order_id} berhasil dibatalkan. Kamu dapat memilih paket/periode dan membuat pembayaran baru.`,"success")}finally{if(btn){btn.disabled=false;btn.textContent="Batalkan Order Pembayaran"}}}
     function setText(id,value){const n=el(id);if(n)n.textContent=value??"-"}
     function setLink(id,url){const n=el(id);if(!n)return;if(url){n.href=url;n.hidden=false}else{n.removeAttribute("href");n.hidden=true}}
@@ -84,7 +85,7 @@
         if(data.payment_status==="paid"){setPaymentManager(false);
             if(data.receipt?.license_key){renderReceipt(data.receipt);setStatus("✅ Pembayaran sudah terverifikasi. Data lisensi ditampilkan di bawah. Simpan sekarang sebelum meninggalkan halaman ini.","success")}
             else setStatus(`✅ Pembayaran sudah terverifikasi, tetapi data lisensi belum dapat ditampilkan${data.receipt_error?`: ${data.receipt_error}`:". Tekan Cek Status beberapa saat lagi."}`,"info");
-        }else {const manageable=["pending","challenge"].includes(data.payment_status);setPaymentManager(manageable);if(!quiet)setStatus(`Status pembayaran: ${data.payment_status||"pending"}${data.provider_status?` / ${data.provider_status}`:""}.${data.midtrans_sync_error?` Sinkronisasi Midtrans: ${data.midtrans_sync_error}`:""}`,manageable?"info":"error") }
+        }else {const manageable=["pending","challenge"].includes(data.payment_status);setPaymentManager(manageable);if(!quiet){const notCreated=data.midtrans_sync?.transaction_status==="not_created"?" Sesi Snap sudah ada, tetapi transaksi Midtrans belum terbentuk karena metode pembayaran belum dipilih.":"";setStatus(`Status pembayaran: ${data.payment_status||"pending"}${data.provider_status?` / ${data.provider_status}`:""}.${notCreated}${data.midtrans_sync_error?` Sinkronisasi Midtrans: ${data.midtrans_sync_error}`:""}`,manageable?"info":"error")} }
         return data;
     }
     async function poll(orderId,statusToken){
@@ -100,7 +101,7 @@
         button.disabled=true;button.textContent="Menyiapkan pembayaran…";
         try{
             setStatus("Memvalidasi akun Owner dan membuat order Midtrans…","info");const data=await call(payload);el("checkoutOwnerPassword").value="";el("checkoutOwnerPasswordConfirm").value="";activePayment=data;saveLast(data);el("checkoutCheckBtn").disabled=false;setPaymentManager(true);setStatus(`Order ${data.order_id} dibuat. Total ${rupiah(data.amount)}. Membuka metode pembayaran…`,"info");await loadSnap(data.client_key,data.environment);
-            if(window.snap)window.snap.pay(data.snap_token,{onSuccess:()=>{setStatus("Pembayaran selesai di Midtrans. Menunggu verifikasi webhook…","info");poll(data.order_id,data.status_token).catch(e=>setStatus(e.message,"error"))},onPending:()=>setStatus("Pembayaran masih pending. Kamu boleh menyelesaikan, mengganti metode, atau membatalkan order sebelum settlement.","info"),onError:()=>setStatus("Midtrans melaporkan pembayaran gagal. Kamu dapat mencoba kembali.","error"),onClose:()=>setStatus("Jendela metode pembayaran ditutup. Order tetap tersimpan. Gunakan Buka Metode Lagi untuk memilih metode lain, atau Batalkan Order bila tidak ingin melanjutkan.","info")});else if(data.redirect_url)location.href=data.redirect_url;
+            if(window.snap)window.snap.pay(data.snap_token,snapCallbacks(data));else if(data.redirect_url)location.href=data.redirect_url;
         }finally{button.disabled=false;button.textContent="Lanjut ke Metode Pembayaran"}
     }
     async function checkLast(){const last=readLast();if(!last?.order_id||!last?.status_token)throw new Error("Belum ada order pembayaran pada perangkat ini.");return status(last.order_id,last.status_token,false,true)}

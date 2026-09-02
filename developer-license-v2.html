@@ -25,7 +25,7 @@
   </style>
 </head>
 <body>
-  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.5 · Midtrans otomatis · Arsip customer aman</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.8 · Sinkron status · Ganti metode pembayaran</span></div><button id="logoutBtn" hidden>Keluar</button></header>
   <main class="wrap">
     <section class="login" id="loginBox">
       <h1>Login developer</h1>
@@ -71,8 +71,8 @@
   <div class="modal" id="deviceModal"><div class="modalcard"><div class="modalhead"><h2>Perangkat lisensi</h2><button class="close" data-close>✕</button></div><div id="devices"></div></div></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/license-v2-admin-config.js?v=27.5.0"></script>
-  <script src="js/license-v2-admin.js?v=27.5.0"></script>
+  <script src="js/license-v2-admin-config.js?v=27.8.0"></script>
+  <script src="js/license-v2-admin.js?v=27.8.0"></script>
   <script>
     const $=id=>document.getElementById(id);
     let licenses=[],lastDelivery="";
@@ -110,9 +110,13 @@
       const statusAction=l.status==="active"
         ? `<button class="danger" onclick="statusLicense('${l.id}','suspended')">Tangguhkan</button>`
         : l.status==="pending_payment"
-          ? (paymentPending?`<button class="danger" onclick="cancelPendingPayment('${l.id}')">Batalkan Order</button>`:`<button class="danger" onclick="cancelPendingLicense('${l.id}')">Batalkan Lisensi</button>`)
-          : `<button class="success" onclick="statusLicense('${l.id}','active')">Aktifkan manual</button>`;
-      return `<button class="soft" onclick="devices('${l.id}')">Perangkat</button>${statusAction}${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Ubah trial ke berbayar</button>`:(l.plan_code!=="LIFETIME"&&l.status!=="pending_payment"?`<button class="primary" onclick="renew('${l.id}')">Pembayaran perpanjangan</button>`:"")}${paymentUrl&&paymentPending?`<a class="soft" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka pembayaran</a>`:""}${l.status!=="active"&&l.status!=="pending_payment"?`<button class="danger" onclick="archiveLicense('${l.id}')">Arsipkan</button>`:""}`;
+          ? (paymentPending
+              ? `<button class="soft" onclick="syncPayment('${l.id}')">Cek Status Midtrans</button><button class="danger" onclick="cancelPendingPayment('${l.id}')">Batalkan Order</button>`
+              : `<button class="primary" onclick="retryPurchase('${l.id}')">Buat Pembayaran Baru</button><button class="danger" onclick="cancelPendingLicense('${l.id}')">Batalkan Lisensi</button>`)
+          : (l.status==="cancelled"&&l.latest_payment_status==="cancelled"
+              ? `<button class="primary" onclick="retryPurchase('${l.id}')">Pulihkan & Buat Pembayaran</button>`
+              : `<button class="success" onclick="statusLicense('${l.id}','active')">Aktifkan manual</button>`);
+      return `<button class="soft" onclick="devices('${l.id}')">Perangkat</button>${statusAction}${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Ubah trial ke berbayar</button>`:(l.plan_code!=="LIFETIME"&&!['pending_payment','cancelled'].includes(l.status)?`<button class="primary" onclick="renew('${l.id}')">Pembayaran perpanjangan</button>`:"")}${paymentUrl&&paymentPending?`<a class="soft" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka pembayaran</a>`:""}${l.status!=="active"&&l.status!=="pending_payment"?`<button class="danger" onclick="archiveLicense('${l.id}')">Arsipkan</button>`:""}`;
     }
     function archivedActions(l){
       return `<button class="success" onclick="restoreLicense('${l.id}')">Pulihkan</button><button class="dangerSolid" onclick="purgeLicense('${l.id}')">Hapus Permanen</button>`;
@@ -154,8 +158,16 @@
     };
     async function statusLicense(id,status){const reason=prompt(status==="suspended"?"Alasan penangguhan:":"Catatan pengaktifan kembali:","");if(reason===null)return;try{await LDMLicenseV2Admin.call("set_status",{license_id:id,status,reason});await load()}catch(e){alert(e.message)}}
     async function cancelPendingPayment(id){
-      if(!confirm("Batalkan order pembayaran Midtrans yang masih pending/challenge? Customer tidak dapat melanjutkan order ini setelah dibatalkan."))return;
-      try{const d=await LDMLicenseV2Admin.call("cancel_pending_payment",{license_id:id});alert(d.message||"Order pembayaran dibatalkan.");await load()}catch(e){alert(e.message)}
+      if(!confirm("Batalkan order pembayaran Midtrans yang masih pending/challenge?\n\nLisensi dan Store Code tetap disimpan agar customer dapat membuat order baru dan memilih metode lain."))return;
+      try{const d=await LDMLicenseV2Admin.call("cancel_pending_payment",{license_id:id,reason:"Mengganti metode pembayaran"});alert(d.message||"Order pembayaran dibatalkan.");await load()}catch(e){alert(e.message)}
+    }
+    async function syncPayment(id){try{const d=await LDMLicenseV2Admin.call("sync_payment_status",{license_id:id});alert(d.message||`Status pembayaran: ${d.payment_status||"-"}`);await load()}catch(e){alert(e.message)}}
+    async function retryPurchase(id){
+      const l=licenses.find(x=>x.id===id);if(!l)return;
+      const defaultCycle=l.plan_code==="LIFETIME"?"lifetime":(["monthly","yearly"].includes(l.latest_billing_cycle)?l.latest_billing_cycle:"monthly");
+      const answer=prompt(l.plan_code==="LIFETIME"?"Ketik lifetime untuk membuat pembayaran baru:":"Periode pembayaran baru: ketik monthly atau yearly",defaultCycle);if(!answer)return;
+      const cycle=answer.trim().toLowerCase();if(l.plan_code==="LIFETIME"?cycle!=="lifetime":!["monthly","yearly"].includes(cycle)){alert("Periode pembayaran tidak valid.");return}
+      try{const d=await LDMLicenseV2Admin.call("retry_purchase_payment",{license_id:id,billing_cycle:cycle});showPayment(d);open("paymentModal");await load()}catch(e){alert(e.message)}
     }
     async function cancelPendingLicense(id){
       const reason=prompt("Order sudah tidak pending. Tandai lisensi pending_payment ini sebagai cancelled agar dapat diarsipkan?","Checkout tidak dilanjutkan");if(reason===null)return;

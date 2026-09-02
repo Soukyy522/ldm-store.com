@@ -4,6 +4,9 @@ import {
   clean, encryptLicenseKey, sha256Hex, normalizeWhatsApp, getPaidWebReceipt, preflightApplicationProvisioning,
   reserveApplicationOwnerCredentials, releaseApplicationOwnerReservation,
 } from "../_shared/ldm-license-delivery.ts";
+import {
+  cancelPaymentForRetry, midtransNotificationUrl, reconcilePaymentFromMidtrans,
+} from "../_shared/ldm-midtrans-operations.ts";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
 function randomHex(bytes = 8) {
@@ -43,88 +46,6 @@ function midtransBase() {
   return env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true"
     ? "https://app.midtrans.com" : "https://app.sandbox.midtrans.com";
 }
-function midtransApiBase() {
-  return env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true"
-    ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
-}
-async function cancelMidtransTransaction(orderId: string) {
-  const serverKey = env("MIDTRANS_SERVER_KEY");
-  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
-  const response = await fetch(`${midtransApiBase()}/v2/${encodeURIComponent(orderId)}/cancel`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-    },
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || String(data?.transaction_status || "").toLowerCase() !== "cancel") {
-    const message = clean(data?.status_message || data?.message || `Midtrans HTTP ${response.status}`, 500);
-    throw Object.assign(new Error(`Midtrans belum dapat membatalkan order ini: ${message}`), { status: 409, code: "MIDTRANS_CANCEL_REJECTED" });
-  }
-  return data;
-}
-
-async function getMidtransTransactionStatus(orderId: string) {
-  const serverKey = env("MIDTRANS_SERVER_KEY");
-  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-  try {
-    const response = await fetch(`${midtransApiBase()}/v2/${encodeURIComponent(orderId)}/status`, {
-      headers: {
-        "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
-        "Accept": "application/json",
-      },
-      signal: controller.signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const message = clean(data?.status_message || data?.message || `Midtrans status HTTP ${response.status}`, 500);
-      throw Object.assign(new Error(message), { status: response.status, code: "MIDTRANS_STATUS_FAILED" });
-    }
-    return data;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function syncPaymentFromMidtrans(admin: any, payment: any) {
-  const remote = await getMidtransTransactionStatus(String(payment.order_id || ""));
-  const remoteOrderId = clean(remote?.order_id, 120);
-  if (remoteOrderId !== String(payment.order_id || "")) {
-    throw Object.assign(new Error("Order ID Midtrans tidak sesuai dengan order LocDailyMar."), { status: 409, code: "MIDTRANS_ORDER_MISMATCH" });
-  }
-  const remoteAmount = Number(remote?.gross_amount);
-  if (!Number.isFinite(remoteAmount) || Math.round(remoteAmount) !== Number(payment.amount)) {
-    throw Object.assign(new Error("Nominal Midtrans tidak sesuai dengan order LocDailyMar."), { status: 409, code: "MIDTRANS_AMOUNT_MISMATCH" });
-  }
-  const { data: applied, error: applyError } = await admin.rpc("ldm2_apply_midtrans_notification", {
-    p_order_id: payment.order_id,
-    p_transaction_id: clean(remote?.transaction_id || "", 160) || null,
-    p_transaction_status: clean(remote?.transaction_status || "", 40),
-    p_fraud_status: clean(remote?.fraud_status || "", 40) || null,
-    p_status_code: clean(remote?.status_code || "", 20),
-    p_gross_amount: remoteAmount,
-    p_provider_detail: {
-      order_id: remoteOrderId,
-      transaction_id: clean(remote?.transaction_id || "", 160),
-      transaction_status: clean(remote?.transaction_status || "", 40),
-      fraud_status: clean(remote?.fraud_status || "", 40),
-      status_code: clean(remote?.status_code || "", 20),
-      gross_amount: clean(remote?.gross_amount || "", 40),
-      currency: clean(remote?.currency || "", 10),
-      payment_type: clean(remote?.payment_type || "", 60),
-      transaction_time: clean(remote?.transaction_time || "", 60),
-      settlement_time: clean(remote?.settlement_time || "", 60),
-      synced_by: "public_checkout_status",
-    },
-  });
-  if (applyError) throw applyError;
-  return { remote, applied };
-}
-
 async function createMidtransSnap(input: {
   orderId: string; amount: number; itemName: string;
   customerName: string; customerEmail: string; customerPhone: string;
@@ -142,12 +63,14 @@ async function createMidtransSnap(input: {
     },
   };
   if (finish) payload.callbacks = { finish };
+  const notificationUrl = midtransNotificationUrl();
   const response = await fetch(`${midtransBase()}/snap/v1/transactions`, {
     method: "POST",
     headers: {
       "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
       "Content-Type": "application/json",
       "Accept": "application/json",
+      ...(notificationUrl ? { "X-Override-Notification": notificationUrl } : {}),
     },
     body: JSON.stringify(payload),
   });
@@ -223,7 +146,7 @@ Deno.serve(async (req) => {
       let midtrans_sync_error: string | null = null;
       if (body.sync_midtrans === true && ["pending", "challenge"].includes(String(payment.status || "").toLowerCase())) {
         try {
-          midtrans_sync = await syncPaymentFromMidtrans(admin, payment);
+          midtrans_sync = await reconcilePaymentFromMidtrans(admin, payment, "public_checkout_status");
           const refreshed = await admin.from("ldm2_payments")
             .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,paid_at,processed_at")
             .eq("order_id", order).maybeSingle();
@@ -260,7 +183,9 @@ Deno.serve(async (req) => {
         receipt,
         receipt_error: receiptError,
         midtrans_sync: midtrans_sync ? {
-          transaction_status: clean(midtrans_sync?.remote?.transaction_status || "", 40),
+          transaction_status: midtrans_sync.found
+            ? clean(midtrans_sync?.remote?.transaction_status || "", 40)
+            : "not_created",
           fraud_status: clean(midtrans_sync?.remote?.fraud_status || "", 40) || null,
           synced: true,
         } : null,
@@ -274,7 +199,7 @@ Deno.serve(async (req) => {
       if (!order || !token) return json(req, { ok: false, message: "Order/token status wajib diisi." }, 400);
 
       const { data: payment, error: pErr } = await admin.from("ldm2_payments")
-        .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,paid_at,processed_at")
+        .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,snap_token,payment_type,paid_at,processed_at")
         .eq("order_id", order).maybeSingle();
       if (pErr) throw pErr;
       if (!payment) return json(req, { ok: false, message: "Order tidak ditemukan." }, 404);
@@ -294,23 +219,22 @@ Deno.serve(async (req) => {
       if (["paid", "refunded"].includes(payment.status) || payment.processed_at) {
         return json(req, { ok: false, code: "PAYMENT_ALREADY_FINAL", message: "Pembayaran sudah diproses dan tidak dapat dibatalkan dari checkout. Transaksi settlement memerlukan proses refund sesuai kebijakan merchant." }, 409);
       }
-      if (!["pending", "challenge"].includes(payment.status)) {
+      if (!["pending", "challenge", "failed", "expired"].includes(payment.status)) {
         return json(req, { ok: false, code: "PAYMENT_NOT_CANCELLABLE", message: `Status pembayaran ${payment.status} tidak dapat dibatalkan.` }, 409);
       }
 
-      const cancelled = await cancelMidtransTransaction(order);
-      const { data: applied, error: applyError } = await admin.rpc("ldm2_apply_midtrans_notification", {
-        p_order_id: order,
-        p_transaction_id: clean(cancelled?.transaction_id || "", 160),
-        p_transaction_status: "cancel",
-        p_fraud_status: clean(cancelled?.fraud_status || "", 40),
-        p_status_code: clean(cancelled?.status_code || "200", 20),
-        p_gross_amount: Number(payment.amount),
-        p_provider_detail: cancelled,
-      });
-      if (applyError) throw applyError;
+      const cancelled = await cancelPaymentForRetry(
+        admin, payment, "customer", "Customer membatalkan order untuk mengganti metode pembayaran",
+      );
       try { await releaseApplicationOwnerReservation(admin, order); } catch (cleanupError) { console.error("OWNER_RESERVATION_CLEANUP", order, cleanupError); }
-      return json(req, { ok: true, order_id: order, payment_status: "cancelled", provider_status: "cancel", result: applied });
+      return json(req, {
+        ok: true,
+        order_id: order,
+        payment_status: "cancelled",
+        provider_status: cancelled?.local?.provider_status || "cancelled",
+        message: "Order pembayaran dibatalkan. Kamu dapat membuat order baru dan memilih metode pembayaran lain.",
+        result: cancelled.local,
+      });
     }
 
     if (action !== "create") return json(req, { ok: false, message: "Aksi checkout tidak dikenal." }, 400);
@@ -359,7 +283,7 @@ Deno.serve(async (req) => {
       .select("id,status,customer_email,plan_code,primary_store_code")
       .eq("primary_store_code", storeCode).maybeSingle();
     if (existing) {
-      if (existing.status !== "pending_payment" || String(existing.customer_email).toLowerCase() !== customerEmail) {
+      if (!["pending_payment", "cancelled"].includes(existing.status) || String(existing.customer_email).toLowerCase() !== customerEmail) {
         return json(req, { ok: false, code: "STORE_CODE_USED", message: `Store Code ${storeCode} sudah digunakan.` }, 409);
       }
       if (existing.plan_code !== planCode) {

@@ -1,9 +1,9 @@
 "use strict";
 
-const APP_VERSION = "27.7.2";
+const APP_VERSION = "27.8.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-7-2-dashboard-reporting-shell-v1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-7-2-dashboard-reporting-runtime-v1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-8-0-midtrans-status-cancel-shell-v1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-8-0-midtrans-status-cancel-runtime-v1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

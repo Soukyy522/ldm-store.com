@@ -5,7 +5,7 @@
         serverUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-license-v2",
         checkoutUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-public-checkout-v2",
         developerWhatsApp:"6283117590286",
-        appVersion:"27.3.0",
+        appVersion:"27.8.0",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,
