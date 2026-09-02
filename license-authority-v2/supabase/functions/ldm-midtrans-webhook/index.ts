@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { preparePaidOrder } from "../_shared/ldm-license-delivery.ts";
+import { preparePaidOrder, releaseApplicationOwnerReservation } from "../_shared/ldm-license-delivery.ts";
 
 const encoder = new TextEncoder();
 
@@ -118,6 +118,9 @@ Deno.serve(async (req) => {
         console.error("LDM_CUSTOMER_WEB_RECEIPT_PREPARE", { orderId, error: deliveryError });
         delivery = { eligible: true, completed: false, error: (deliveryError as Error)?.message || "Provisioning receipt gagal." };
       }
+    } else if (["cancelled", "expired", "failed"].includes(paymentStatus)) {
+      try { await releaseApplicationOwnerReservation(admin, orderId); }
+      catch (cleanupError) { console.error("LDM_OWNER_RESERVATION_CLEANUP", { orderId, error: cleanupError }); }
     }
 
     return json({ ok: true, result: data, delivery });

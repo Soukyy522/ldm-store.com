@@ -2,6 +2,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   clean, encryptLicenseKey, sha256Hex, normalizeWhatsApp, getPaidWebReceipt, preflightApplicationProvisioning,
+  reserveApplicationOwnerCredentials, releaseApplicationOwnerReservation,
 } from "../_shared/ldm-license-delivery.ts";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
@@ -163,6 +164,8 @@ Deno.serve(async (req) => {
           console.error("WEB_RECEIPT_ERROR", order, error);
           receiptError = clean((error as Error)?.message || "Data lisensi belum dapat ditampilkan.", 500);
         }
+      } else if (["cancelled", "expired", "failed"].includes(String(payment.status || "").toLowerCase())) {
+        try { await releaseApplicationOwnerReservation(admin, order); } catch (cleanupError) { console.error("OWNER_RESERVATION_CLEANUP", order, cleanupError); }
       }
       const { data: license } = await admin.from("ldm2_licenses")
         .select("status,plan_code,primary_store_code,primary_store_id,network_id,expires_at")
@@ -200,6 +203,7 @@ Deno.serve(async (req) => {
       }
 
       if (payment.status === "cancelled") {
+        try { await releaseApplicationOwnerReservation(admin, order); } catch (cleanupError) { console.error("OWNER_RESERVATION_CLEANUP", order, cleanupError); }
         return json(req, { ok: true, order_id: order, payment_status: "cancelled", already_cancelled: true });
       }
       if (["paid", "refunded"].includes(payment.status) || payment.processed_at) {
@@ -220,6 +224,7 @@ Deno.serve(async (req) => {
         p_provider_detail: cancelled,
       });
       if (applyError) throw applyError;
+      try { await releaseApplicationOwnerReservation(admin, order); } catch (cleanupError) { console.error("OWNER_RESERVATION_CLEANUP", order, cleanupError); }
       return json(req, { ok: true, order_id: order, payment_status: "cancelled", provider_status: "cancel", result: applied });
     }
 
@@ -232,6 +237,7 @@ Deno.serve(async (req) => {
     const customerPhone = normalizeWhatsApp(clean(body.customer_phone, 40));
     const storeName = clean(body.store_name, 120);
     const storeCode = clean(body.store_code, 30).toUpperCase();
+    const ownerPassword = String(body.owner_password ?? "");
 
     if (customerName.length < 2) return json(req, { ok: false, message: "Nama customer wajib diisi." }, 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) return json(req, { ok: false, message: "Email customer tidak valid." }, 400);
@@ -240,13 +246,20 @@ Deno.serve(async (req) => {
     if (!/^[A-Z0-9][A-Z0-9-]{2,29}$/.test(storeCode)) {
       return json(req, { ok: false, message: "Store Code harus 3-30 karakter: huruf, angka, atau tanda strip." }, 400);
     }
+    if (ownerPassword.length < 8 || ownerPassword.length > 72 || /\s/.test(ownerPassword)
+        || !/[a-z]/.test(ownerPassword) || !/[A-Z]/.test(ownerPassword) || !/\d/.test(ownerPassword)) {
+      return json(req, { ok: false, message: "Password Owner harus 8-72 karakter, tanpa spasi, dan mengandung huruf besar, huruf kecil, serta angka." }, 400);
+    }
     if (!safePlanCycle(planCode, billingCycle)) return json(req, { ok: false, message: "Periode paket tidak sesuai." }, 400);
 
     const fingerprint = await checkRateLimit(admin, customerEmail, req);
 
     // Cegah customer membayar dengan Store Code / email Owner yang sudah dipakai di Cloud App.
     // Jika provisioning Cloud belum dikonfigurasi, checkout tetap dapat berjalan dan delivery akan menandainya not_configured.
-    await preflightApplicationProvisioning({ customerEmail, storeCode });
+    const appPreflight = await preflightApplicationProvisioning({ customerEmail, storeCode });
+    if (!appPreflight.configured) {
+      return json(req, { ok: false, code: "OWNER_PROVISIONING_NOT_CONFIGURED", message: "Pembuatan akun Owner belum dikonfigurasi pada server. Lengkapi LDM_APP_SUPABASE_URL dan LDM_APP_SERVICE_ROLE_KEY terlebih dahulu." }, 503);
+    }
 
     const { data: plan, error: planError } = await admin.from("ldm2_plans")
       .select("code,name,price_monthly,price_yearly,price_lifetime,active")
@@ -272,9 +285,12 @@ Deno.serve(async (req) => {
         .eq("license_id", existing.id)
         .in("status", ["pending", "challenge"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (oldPayment?.snap_token && oldPayment.billing_cycle === billingCycle && Number(oldPayment.amount) === amount) {
+        const reserved = await reserveApplicationOwnerCredentials({
+          customerName, customerEmail, ownerPassword, storeCode, orderId: oldPayment.order_id,
+        });
         const newStatusToken = statusToken();
         const { error: tErr } = await admin.from("ldm2_checkout_deliveries")
-          .update({ public_status_token_hash: await sha256Hex(newStatusToken) })
+          .update({ public_status_token_hash: await sha256Hex(newStatusToken), owner_user_id: reserved.userId, provision_status: "pending", provision_error: null })
           .eq("payment_id", oldPayment.id);
         if (tErr) throw tErr;
         await saveAttempt(admin, fingerprint, oldPayment.order_id);
@@ -316,6 +332,19 @@ Deno.serve(async (req) => {
         license_key_ciphertext: previousDelivery.license_key_ciphertext,
       });
       if (retryDeliveryError) throw retryDeliveryError;
+      let retryReserved;
+      try {
+        retryReserved = await reserveApplicationOwnerCredentials({
+          customerName, customerEmail, ownerPassword, storeCode, orderId: retryOrderId,
+        });
+      } catch (reservationError) {
+        await admin.rpc("ldm2_mark_payment_error", { p_order_id: retryOrderId, p_message: clean((reservationError as Error)?.message || "Reservasi akun Owner gagal.") });
+        throw reservationError;
+      }
+      const { error: retryOwnerError } = await admin.from("ldm2_checkout_deliveries")
+        .update({ owner_user_id: retryReserved.userId, provision_status: "pending", provision_error: null })
+        .eq("payment_id", retryOrder.payment_id);
+      if (retryOwnerError) throw retryOwnerError;
       await saveAttempt(admin, fingerprint, retryOrderId);
 
       try {
@@ -338,6 +367,7 @@ Deno.serve(async (req) => {
       } catch (retryPaymentError) {
         const message = clean((retryPaymentError as Error)?.message || "Midtrans gagal membuat pembayaran.");
         await admin.rpc("ldm2_mark_payment_error", { p_order_id: retryOrderId, p_message: message });
+        try { await releaseApplicationOwnerReservation(admin, retryOrderId); } catch (_) {}
         return json(req, { ok: false, message: `Retry tersimpan tetapi Midtrans gagal: ${message}`, order_id: retryOrderId }, 502);
       }
     }
@@ -357,7 +387,7 @@ Deno.serve(async (req) => {
       p_store_code: storeCode,
       p_store_name: storeName,
       p_amount: amount,
-      p_notes: "PUBLIC_CHECKOUT_27_4_CANCEL_GUIDE_ACCOUNT",
+      p_notes: "PUBLIC_CHECKOUT_27_6_OWNER_EMAIL_PASSWORD",
     });
     if (orderError) throw orderError;
 
@@ -370,6 +400,19 @@ Deno.serve(async (req) => {
       license_key_ciphertext: await encryptLicenseKey(rawKey),
     });
     if (deliveryInsertError) throw deliveryInsertError;
+    let reserved;
+    try {
+      reserved = await reserveApplicationOwnerCredentials({
+        customerName, customerEmail, ownerPassword, storeCode, orderId: newOrder,
+      });
+    } catch (reservationError) {
+      await admin.rpc("ldm2_mark_payment_error", { p_order_id: newOrder, p_message: clean((reservationError as Error)?.message || "Reservasi akun Owner gagal.") });
+      throw reservationError;
+    }
+    const { error: ownerReservationError } = await admin.from("ldm2_checkout_deliveries")
+      .update({ owner_user_id: reserved.userId, provision_status: "pending", provision_error: null })
+      .eq("payment_id", order.payment_id);
+    if (ownerReservationError) throw ownerReservationError;
     await saveAttempt(admin, fingerprint, newOrder);
 
     try {
@@ -392,6 +435,7 @@ Deno.serve(async (req) => {
     } catch (paymentError) {
       const message = clean((paymentError as Error)?.message || "Midtrans gagal membuat pembayaran.");
       await admin.rpc("ldm2_mark_payment_error", { p_order_id: newOrder, p_message: message });
+      try { await releaseApplicationOwnerReservation(admin, newOrder); } catch (_) {}
       return json(req, { ok: false, message: `Order tersimpan tetapi Midtrans gagal: ${message}`, order_id: newOrder }, 502);
     }
   } catch (error) {

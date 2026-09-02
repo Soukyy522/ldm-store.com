@@ -103,13 +103,118 @@ export async function preflightApplicationProvisioning(input: { customerEmail: s
       new Error("Email Owner sudah terhubung ke toko lain pada Cloud App. Gunakan email lain atau proses melalui developer."),
       { code: "OWNER_EMAIL_CLOUD_USED", status: 409 },
     );
+    const meta = existingUser.app_metadata || {};
+    if (!meta.ldm_checkout_reserved || String(meta.ldm_reserved_store_code || "") !== input.storeCode) {
+      throw Object.assign(
+        new Error("Email Owner sudah terdaftar pada Supabase Auth dan bukan reservasi checkout toko ini. Gunakan email lain atau hubungi developer."),
+        { code: "OWNER_EMAIL_AUTH_USED", status: 409 },
+      );
+    }
   }
   return { configured: true };
 }
 
+export async function reserveApplicationOwnerCredentials(input: {
+  customerName: string; customerEmail: string; ownerPassword: string; storeCode: string; orderId: string;
+}) {
+  const appSupabaseUrl = env("LDM_APP_SUPABASE_URL");
+  const appServiceKey = env("LDM_APP_SERVICE_ROLE_KEY");
+  if (!appSupabaseUrl || !appServiceKey) throw Object.assign(
+    new Error("Provisioning akun Owner belum dikonfigurasi. Isi LDM_APP_SUPABASE_URL dan LDM_APP_SERVICE_ROLE_KEY sebelum menerima pembayaran."),
+    { code: "OWNER_PROVISIONING_NOT_CONFIGURED", status: 503 },
+  );
+  const app = createClient(appSupabaseUrl, appServiceKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+
+  let user = await findAuthUserByEmail(app, input.customerEmail);
+  if (user?.id) {
+    const { data: profile, error: profileError } = await app.from("profiles")
+      .select("id,store_id,deleted_at").eq("id", user.id).maybeSingle();
+    if (profileError) throw profileError;
+    if (profile?.store_id && !profile?.deleted_at) throw Object.assign(
+      new Error("Email Owner sudah terhubung ke toko lain. Gunakan email lain."),
+      { code: "OWNER_EMAIL_CLOUD_USED", status: 409 },
+    );
+    const meta = user.app_metadata || {};
+    if (!meta.ldm_checkout_reserved || String(meta.ldm_reserved_store_code || "") !== input.storeCode) {
+      throw Object.assign(new Error("Email Owner sudah terdaftar dan tidak dapat dipakai untuk checkout baru."), {
+        code: "OWNER_EMAIL_AUTH_USED", status: 409,
+      });
+    }
+    const { data: updated, error: updateError } = await app.auth.admin.updateUserById(user.id, {
+      password: input.ownerPassword,
+      email_confirm: true,
+      user_metadata: { ...(user.user_metadata || {}), display_name: input.customerName, store_code: input.storeCode },
+      app_metadata: {
+        ...meta,
+        ldm_checkout_reserved: true,
+        ldm_reserved_store_code: input.storeCode,
+        ldm_reserved_order_id: input.orderId,
+        ldm_credentials_source: "customer_checkout",
+      },
+    });
+    if (updateError) throw updateError;
+    user = updated.user || user;
+  } else {
+    const { data, error } = await app.auth.admin.createUser({
+      email: input.customerEmail,
+      password: input.ownerPassword,
+      email_confirm: true,
+      user_metadata: { display_name: input.customerName, store_code: input.storeCode },
+      app_metadata: {
+        ldm_checkout_reserved: true,
+        ldm_reserved_store_code: input.storeCode,
+        ldm_reserved_order_id: input.orderId,
+        ldm_credentials_source: "customer_checkout",
+      },
+    });
+    if (error) throw error;
+    user = data.user;
+  }
+  if (!user?.id) throw new Error("Reservasi akun Owner gagal dibuat.");
+  return { configured: true, userId: user.id };
+}
+
+export async function releaseApplicationOwnerReservation(admin: any, orderId: string) {
+  const appSupabaseUrl = env("LDM_APP_SUPABASE_URL");
+  const appServiceKey = env("LDM_APP_SERVICE_ROLE_KEY");
+  if (!appSupabaseUrl || !appServiceKey || !orderId) return { released: false, reason: "NOT_CONFIGURED" };
+
+  const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
+    .select("id,license_id").eq("order_id", orderId).maybeSingle();
+  if (paymentError || !payment) return { released: false, reason: "ORDER_NOT_FOUND" };
+  const { data: delivery } = await admin.from("ldm2_checkout_deliveries")
+    .select("owner_user_id").eq("payment_id", payment.id).maybeSingle();
+  if (!delivery?.owner_user_id) return { released: false, reason: "NO_RESERVATION" };
+  const { data: license } = await admin.from("ldm2_licenses")
+    .select("customer_email,primary_store_code").eq("id", payment.license_id).maybeSingle();
+  if (!license?.customer_email) return { released: false, reason: "LICENSE_NOT_FOUND" };
+
+  const app = createClient(appSupabaseUrl, appServiceKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+  const user = await findAuthUserByEmail(app, license.customer_email);
+  if (!user?.id || user.id !== delivery.owner_user_id) return { released: false, reason: "USER_MISMATCH" };
+  const { data: profile } = await app.from("profiles").select("id,store_id,deleted_at").eq("id", user.id).maybeSingle();
+  if (profile?.store_id && !profile?.deleted_at) return { released: false, reason: "ALREADY_PROVISIONED" };
+  const meta = user.app_metadata || {};
+  if (!meta.ldm_checkout_reserved || String(meta.ldm_reserved_store_code || "") !== String(license.primary_store_code || "")) {
+    return { released: false, reason: "NOT_RESERVED" };
+  }
+  const { error: deleteError } = await app.auth.admin.deleteUser(user.id);
+  if (deleteError) throw deleteError;
+  await admin.from("ldm2_checkout_deliveries").update({
+    owner_user_id: null,
+    provision_status: "pending",
+    provision_error: null,
+  }).eq("payment_id", payment.id);
+  return { released: true, userId: user.id };
+}
+
 async function provisionApplicationOwner(input: {
   customerName: string; customerEmail: string; storeId: string; storeCode: string; storeName: string; networkId: string;
-}, includePasswordLink = false) {
+}, includePasswordLink = false, expectedReservedUserId: string | null = null) {
   const appSupabaseUrl = env("LDM_APP_SUPABASE_URL");
   const appServiceKey = env("LDM_APP_SERVICE_ROLE_KEY");
   const publicUrl = env("LDM_APP_PUBLIC_URL").replace(/\/+$/, "");
@@ -121,16 +226,24 @@ async function provisionApplicationOwner(input: {
   });
   let user = await findAuthUserByEmail(app, input.customerEmail);
   if (!user) {
+    if (expectedReservedUserId) {
+      throw new Error("Akun Owner yang dibuat saat checkout tidak ditemukan. Batalkan order dan buat checkout baru.");
+    }
+    // Kompatibilitas order lama sebelum 27.6: buat password sementara dan sediakan recovery link.
     const { data, error } = await app.auth.admin.createUser({
       email: input.customerEmail,
       password: randomPassword(),
       email_confirm: true,
       user_metadata: { display_name: input.customerName, store_code: input.storeCode },
+      app_metadata: { ldm_credentials_source: "legacy_random" },
     });
     if (error) throw error;
     user = data.user;
   }
   if (!user?.id) throw new Error("Auth user aplikasi gagal dibuat.");
+  if (expectedReservedUserId && user.id !== expectedReservedUserId) {
+    throw new Error("Akun Owner checkout tidak sesuai dengan reservasi pembayaran.");
+  }
 
   const { data: existingProfile, error: profileReadError } = await app.from("profiles")
     .select("id,store_id").eq("id", user.id).maybeSingle();
@@ -172,8 +285,22 @@ async function provisionApplicationOwner(input: {
   }, { onConflict: "user_id,store_id" });
   if (membershipError) throw membershipError;
 
+  const currentAppMeta = user.app_metadata || {};
+  const credentialsSource = String(currentAppMeta.ldm_credentials_source || (expectedReservedUserId ? "customer_checkout" : "legacy_random"));
+  try {
+    await app.auth.admin.updateUserById(user.id, {
+      app_metadata: {
+        ...currentAppMeta,
+        ldm_checkout_reserved: false,
+        ldm_provisioned: true,
+        ldm_provisioned_store_code: input.storeCode,
+        ldm_credentials_source: credentialsSource,
+      },
+    });
+  } catch (_) {}
+
   let passwordSetupUrl: string | null = null;
-  if (includePasswordLink) {
+  if (includePasswordLink && credentialsSource !== "customer_checkout") {
     try {
       const { data: linkData, error: linkError } = await app.auth.admin.generateLink({
         type: "recovery", email: input.customerEmail,
@@ -182,7 +309,7 @@ async function provisionApplicationOwner(input: {
       if (!linkError) passwordSetupUrl = linkData?.properties?.action_link || null;
     } catch (_) { passwordSetupUrl = null; }
   }
-  return { status: "ready", userId: user.id, passwordSetupUrl, error: null };
+  return { status: "ready", userId: user.id, passwordSetupUrl, credentialsSource, error: null };
 }
 
 async function loadPaidContext(admin: any, orderId: string) {
@@ -223,7 +350,7 @@ export async function preparePaidOrder(admin: any, orderId: string, force = fals
       customerName: license.customer_name, customerEmail: license.customer_email,
       storeId: license.primary_store_id, storeCode: license.primary_store_code,
       storeName: license.primary_store_name, networkId: license.network_id,
-    }, false);
+    }, false, delivery.owner_user_id || null);
   } catch (error) {
     provision = { status: "failed", userId: null, passwordSetupUrl: null, error: clean((error as Error)?.message || error) };
   }
@@ -264,7 +391,7 @@ export async function getPaidWebReceipt(admin: any, orderId: string) {
       customerName: license.customer_name, customerEmail: license.customer_email,
       storeId: license.primary_store_id, storeCode: license.primary_store_code,
       storeName: license.primary_store_name, networkId: license.network_id,
-    }, true);
+    }, true, delivery.owner_user_id || null);
   } catch (error) {
     provision = { status: "failed", userId: null, passwordSetupUrl: null, error: clean((error as Error)?.message || error) };
   }
@@ -298,6 +425,8 @@ export async function getPaidWebReceipt(admin: any, orderId: string) {
     app_url: appUrl || null,
     guide_url: guideUrl || null,
     password_setup_url: provision.passwordSetupUrl || null,
+    login_url: appUrl ? `${appUrl}/index.html` : null,
+    credentials_source: provision.credentialsSource || null,
     provision_status: provision.status,
     provision_error: provision.error || null,
   };
