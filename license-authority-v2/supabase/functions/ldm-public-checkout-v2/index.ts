@@ -65,6 +65,66 @@ async function cancelMidtransTransaction(orderId: string) {
   }
   return data;
 }
+
+async function getMidtransTransactionStatus(orderId: string) {
+  const serverKey = env("MIDTRANS_SERVER_KEY");
+  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`${midtransApiBase()}/v2/${encodeURIComponent(orderId)}/status`, {
+      headers: {
+        "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
+        "Accept": "application/json",
+      },
+      signal: controller.signal,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = clean(data?.status_message || data?.message || `Midtrans status HTTP ${response.status}`, 500);
+      throw Object.assign(new Error(message), { status: response.status, code: "MIDTRANS_STATUS_FAILED" });
+    }
+    return data;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function syncPaymentFromMidtrans(admin: any, payment: any) {
+  const remote = await getMidtransTransactionStatus(String(payment.order_id || ""));
+  const remoteOrderId = clean(remote?.order_id, 120);
+  if (remoteOrderId !== String(payment.order_id || "")) {
+    throw Object.assign(new Error("Order ID Midtrans tidak sesuai dengan order LocDailyMar."), { status: 409, code: "MIDTRANS_ORDER_MISMATCH" });
+  }
+  const remoteAmount = Number(remote?.gross_amount);
+  if (!Number.isFinite(remoteAmount) || Math.round(remoteAmount) !== Number(payment.amount)) {
+    throw Object.assign(new Error("Nominal Midtrans tidak sesuai dengan order LocDailyMar."), { status: 409, code: "MIDTRANS_AMOUNT_MISMATCH" });
+  }
+  const { data: applied, error: applyError } = await admin.rpc("ldm2_apply_midtrans_notification", {
+    p_order_id: payment.order_id,
+    p_transaction_id: clean(remote?.transaction_id || "", 160) || null,
+    p_transaction_status: clean(remote?.transaction_status || "", 40),
+    p_fraud_status: clean(remote?.fraud_status || "", 40) || null,
+    p_status_code: clean(remote?.status_code || "", 20),
+    p_gross_amount: remoteAmount,
+    p_provider_detail: {
+      order_id: remoteOrderId,
+      transaction_id: clean(remote?.transaction_id || "", 160),
+      transaction_status: clean(remote?.transaction_status || "", 40),
+      fraud_status: clean(remote?.fraud_status || "", 40),
+      status_code: clean(remote?.status_code || "", 20),
+      gross_amount: clean(remote?.gross_amount || "", 40),
+      currency: clean(remote?.currency || "", 10),
+      payment_type: clean(remote?.payment_type || "", 60),
+      transaction_time: clean(remote?.transaction_time || "", 60),
+      settlement_time: clean(remote?.settlement_time || "", 60),
+      synced_by: "public_checkout_status",
+    },
+  });
+  if (applyError) throw applyError;
+  return { remote, applied };
+}
+
 async function createMidtransSnap(input: {
   orderId: string; amount: number; itemName: string;
   customerName: string; customerEmail: string; customerPhone: string;
@@ -143,7 +203,7 @@ Deno.serve(async (req) => {
       const order = clean(body.order_id, 120);
       const token = clean(body.status_token, 200);
       if (!order || !token) return json(req, { ok: false, message: "Order/token status wajib diisi." }, 400);
-      const { data: payment, error: pErr } = await admin.from("ldm2_payments")
+      let { data: payment, error: pErr } = await admin.from("ldm2_payments")
         .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,paid_at,processed_at")
         .eq("order_id", order).maybeSingle();
       if (pErr) throw pErr;
@@ -155,6 +215,25 @@ Deno.serve(async (req) => {
       if (!delivery) return json(req, { ok: false, message: "Status checkout tidak tersedia." }, 404);
       const tokenHash = await sha256Hex(token);
       if (tokenHash !== delivery.public_status_token_hash) return json(req, { ok: false, message: "Token status tidak valid." }, 403);
+
+      // 27.6.1: self-healing status sync. Jika webhook terlambat/gagal,
+      // tombol Cek Status melakukan GET Status ke Midtrans lalu menerapkan
+      // status aktual ke database License Authority.
+      let midtrans_sync: any = null;
+      let midtrans_sync_error: string | null = null;
+      if (body.sync_midtrans === true && ["pending", "challenge"].includes(String(payment.status || "").toLowerCase())) {
+        try {
+          midtrans_sync = await syncPaymentFromMidtrans(admin, payment);
+          const refreshed = await admin.from("ldm2_payments")
+            .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,paid_at,processed_at")
+            .eq("order_id", order).maybeSingle();
+          if (refreshed.error) throw refreshed.error;
+          if (refreshed.data) payment = refreshed.data;
+        } catch (syncError) {
+          console.error("MIDTRANS_STATUS_SYNC", order, syncError);
+          midtrans_sync_error = clean((syncError as Error)?.message || "Status Midtrans belum dapat disinkronkan.", 500);
+        }
+      }
 
       let receipt: any = null;
       let receiptError: string | null = null;
@@ -180,6 +259,12 @@ Deno.serve(async (req) => {
         provision_status: receipt?.provision_status || delivery.provision_status,
         receipt,
         receipt_error: receiptError,
+        midtrans_sync: midtrans_sync ? {
+          transaction_status: clean(midtrans_sync?.remote?.transaction_status || "", 40),
+          fraud_status: clean(midtrans_sync?.remote?.fraud_status || "", 40) || null,
+          synced: true,
+        } : null,
+        midtrans_sync_error,
       });
     }
 
