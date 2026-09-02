@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const APP_VERSION = "19.1.0";
+    const APP_VERSION = "27.7.0";
     const SERVICE_WORKER_URL = "./service-worker.js";
     const UNSYNCED_COUNT_KEY = "ldmOfflineUnsyncedCountV16";
     const RESERVATION_KEY = "ldmOfflineStockReservationsV16";
@@ -199,7 +199,11 @@
         // App shell dipertahankan agar Kasir/fallback tetap siap offline.
         const targets = keys.filter(key => key.startsWith(CACHE_PREFIX) && key.includes("-runtime-"));
         await Promise.all(targets.map(key => caches.delete(key)));
-        return {ok:true,deleted:targets,message:`${targets.length} runtime cache dibersihkan. App shell dan data transaksi lokal tidak dihapus.`};
+        let localCompacted = false;
+        if(window.LDMStorage && typeof window.LDMStorage.reclaimSpace === "function"){
+            try{ localCompacted = window.LDMStorage.reclaimSpace() === true; }catch(error){}
+        }
+        return {ok:true,deleted:targets,localCompacted,message:`${targets.length} runtime cache dibersihkan${localCompacted?" dan cache localStorage lama diperkecil":""}. App shell, IndexedDB, dan transaksi offline tidak dihapus.`};
     }
 
     function ensureStyle(){

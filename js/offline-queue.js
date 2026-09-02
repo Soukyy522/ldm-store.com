@@ -203,6 +203,16 @@
         return String(error && (error.message || error.details || error.hint) || error || "");
     }
 
+    function isStorageQuotaError(error){
+        return !!error && (
+            error.name === "QuotaExceededError" ||
+            error.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+            error.code === 22 ||
+            error.code === 1014 ||
+            /quota|storage.*full|penyimpanan.*penuh/i.test(errorText(error))
+        );
+    }
+
     function isRetryableNetworkError(error){
         if(navigator.onLine === false){
             return true;
@@ -394,9 +404,31 @@
             throw new Error("client_transaction_id antrean offline kosong.");
         }
 
-        await put(item);
-        addReservations(item.rpc_payload.p_items || []);
-        applyLocalStockDelta(item.rpc_payload.p_items || []);
+        try{
+            await put(item);
+        }catch(error){
+            if(isStorageQuotaError(error)){
+                throw new Error("Penyimpanan offline perangkat penuh. Transaksi belum diterima. Hubungkan internet, sinkronkan antrean, atau buka Aplikasi & Update untuk mengelola storage.");
+            }
+            throw error;
+        }
+
+        try{
+            // Reservasi stok dan cache produk harus berhasil bersama queue.
+            // Jika bagian ini gagal, queue dihapus kembali agar checkout offline
+            // tidak berada dalam kondisi setengah tersimpan.
+            addReservations(item.rpc_payload.p_items || []);
+            applyLocalStockDelta(item.rpc_payload.p_items || []);
+        }catch(error){
+            try{ await remove(item.queue_id); }catch(rollbackError){
+                console.error("Rollback queue offline gagal:", rollbackError);
+            }
+            if(isStorageQuotaError(error)){
+                throw new Error("Penyimpanan perangkat penuh sehingga reservasi stok offline tidak dapat disimpan. Transaksi dibatalkan sebelum diterima. Sinkronkan data lalu coba kembali.");
+            }
+            throw error;
+        }
+
         await notifyChanged();
         requestBackgroundSync();
         return item;

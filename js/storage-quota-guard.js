@@ -3,9 +3,21 @@
 
     if (window.LDMStorageQuotaGuard) return;
 
+    const VERSION = '27.7.0';
     const nativeSetItem = Storage.prototype.setItem;
     const nativeGetItem = Storage.prototype.getItem;
     const nativeRemoveItem = Storage.prototype.removeItem;
+
+    function mirrorToIndexedDB(key, value, protectedValue) {
+        try {
+            if (window.LDMStorageDB && typeof window.LDMStorageDB.mirrorRaw === 'function') {
+                window.LDMStorageDB.mirrorRaw(String(key), String(value), {
+                    source: 'storage-quota-guard',
+                    protected: protectedValue === true
+                });
+            }
+        } catch (_) {}
+    }
 
     /*
      * Cache/history yang boleh dipangkas karena sumber utamanya sudah berada
@@ -193,6 +205,15 @@
 
     function setItemSafe(key, value) {
         const storageKey = String(key);
+
+        // Simpan payload penuh ke IndexedDB terlebih dahulu sebagai storage besar.
+        // localStorage di bawah ini hanya compatibility cache yang boleh dibatasi.
+        mirrorToIndexedDB(
+            storageKey,
+            value,
+            PROTECTED_KEYS.has(storageKey)
+        );
+
         let normalized = normalizeValue(
             storageKey,
             value,
@@ -303,6 +324,7 @@
     }
 
     window.LDMStorage = {
+        version: VERSION,
         setItem: setItemSafe,
 
         setJSON(key, value) {
@@ -335,6 +357,18 @@
         reclaimSpace,
         estimate,
         isQuotaError,
+
+        async indexedDBStats() {
+            if (!window.LDMStorageDB || typeof window.LDMStorageDB.stats !== 'function') return null;
+            return window.LDMStorageDB.stats();
+        },
+
+        async migrateToIndexedDB(options) {
+            if (!window.LDMStorageDB || typeof window.LDMStorageDB.migrateFromLocalStorage !== 'function') {
+                return { skipped: true, reason: 'storage-engine-unavailable' };
+            }
+            return window.LDMStorageDB.migrateFromLocalStorage(options || {});
+        },
 
         protectedKeys:
             Array.from(PROTECTED_KEYS),
