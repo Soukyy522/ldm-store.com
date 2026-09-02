@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="id" class="secure-page-pending"><head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Retur Penjualan - LocDailyMar POS</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0d2240"><link rel="stylesheet" href="style.css"><link rel="icon" type="image/png" href="icon.png"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>
+<html lang="id" class="secure-page-pending"><head>
+    <script src="js/storage-quota-guard.js?v=27.6.2"></script>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Retur Penjualan - LocDailyMar POS</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0d2240"><link rel="stylesheet" href="style.css"><link rel="icon" type="image/png" href="icon.png"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>
         :root{
             --app-font:'Poppins',sans-serif;--brand-font:'Poppins',sans-serif;
             --bg-primary:#f4f6f9;--bg-secondary:#fff;--text-color:#334155;
@@ -114,7 +116,6 @@
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
-    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -560,14 +561,7 @@
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -1420,12 +1414,15 @@
     <script src="js/attendance-service.js?v=9.1"></script>
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
-    <script src="js/products-service.js?v=7.0"></script>
+    <script src="js/products-service.js?v=21.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
     <!-- Live Sync Tahap 10: Cloud Retur -->
     <script src="js/returns-service.js?v=10.0"></script>
     <script src="js/returns-bootstrap.js?v=10.0"></script>
 
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head><body><div class="app-layout"><div class="nav-overlay" id="navOverlay" onclick="tutupMenu()"></div><nav class="nav-bar" id="navSidebar"><div class="nav-header-mobile"><span>☰ Menu</span><button class="btn-close-menu" onclick="tutupMenu()">✕</button></div><a href="dashboard.html" class="nav-item"><span>📊</span> Dashboard</a><a href="absensi.html" class="nav-item"><span>📝</span> Absensi</a><a href="kasir.html" class="nav-item"><span>💵</span> Kasir</a><a href="retur.html" class="nav-item active"><span>↩️</span> Retur</a><a href="barang.html" class="nav-item"><span>📦</span> Barang</a><a href="supplier.html" class="nav-item" data-role-access="owner,admin"><span>🏢</span> Supplier</a><a href="Purchase-Order.html" class="nav-item" data-role-access="owner,admin"><span>🛒</span> Purchase Order</a><a href="goods.receipt.html" class="nav-item" data-role-access="owner,admin"><span>📥</span> Goods Receipt</a><a href="kartu-stok.html" class="nav-item"><span>📒</span> Kartu Stok</a><a href="stock-opname.html" class="nav-item"><span>📋</span> Stock Opname</a><a href="laporan.html" class="nav-item"><span>📋</span> Laporan</a><a href="shift-closing.html" class="nav-item" data-role-access="owner,admin"><span>🔒</span> Closing Shift</a><a href="eod.html" class="nav-item" data-role-access="owner,admin"><span>🌙</span> End of Day</a><a href="pengeluaran.html" class="nav-item" data-role-access="owner,admin"><span>💸</span> Pengeluaran</a><a href="backup%20%26%20restore.html" class="nav-item" data-role-access="owner,admin"><span>💾</span> Backup & Restore</a></nav><main class="main-content">
 <header class="header-app" id="headerApp"><div class="header-brand-container"><button class="btn-toggle-menu" onclick="bukaMenu()">☰</button><img id="imgLogoToko" class="header-logo-img" alt="Logo"><div><h1 id="txtJudulToko">LocDailyMar</h1><p id="txtSubJudulToko">Retur Penjualan</p></div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span id="txtUserLoggedIn" style="font-size:.72rem;font-weight:650;background:rgba(255,255,255,.15);padding:5px 9px;border-radius:20px">👤 -</span><button class="btn-header-action btn-header-logout" onclick="logout()">🚪 Logout</button></div></header>
 <div class="user-strip"><span>↩️ Retur tidak menghapus transaksi asli. Refund, stok, Kartu Stok, dan kas shift dicatat sebagai histori terpisah.</span><span id="returUpdateInfo">Retur Cloud • Tahap 10</span></div>
@@ -1442,7 +1439,7 @@
 <div id="returPrintArea" style="display:none"></div>
 <script id="returPageScript">
 const DEFAULT_HEADER={judul:'LocDailyMar',subJudul:'POS & Management',warnaJudul:'#ffffff',warnaOutline:'#d99b00',warnaSubJudul:'#ffc107',warnaBgHeader:'#0d2240',fontFamily:"'Poppins', sans-serif",brandFontFamily:"'Poppins', sans-serif",bgPrimary:'#f4f6f9',bgSecondary:'#ffffff',darkMode:false,logoData:null};const RETUR_KEY='dataRetur',MUTASI_KEY='mutasiKasShift';let currentUser='',currentRole='',selectedTransactionCode='';
-function safeArray(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}function saveArray(k,v){localStorage.setItem(k,JSON.stringify(Array.isArray(v)?v:[]))}function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}function getUser(){return localStorage.getItem('activeUsername')||localStorage.getItem('loggedInUser')||localStorage.getItem('currentUser')||localStorage.getItem('username')||'-'}function getRole(){return String(localStorage.getItem('userRole')||localStorage.getItem('role')||'').trim().toLowerCase()}function dateWITA(){const d=new Date(Date.now()+8*3600000);return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`}function timeWITA(){const d=new Date(Date.now()+8*3600000);return `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}`}
+function safeArray(k){try{const v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}function saveArray(k,v){localStorage.setItem(k,JSON.stringify(Array.isArray(v)?v:[]))}function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}function getUser(){return localStorage.getItem('activeUsername')||localStorage.getItem('loggedInUser')||localStorage.getItem('currentUser')||localStorage.getItem('username')||'-'}function getRole(){return String(localStorage.getItem('userRole')||localStorage.getItem('role')||'').trim().toLowerCase()}function dateWITA(){return window.LDMLocalTime.dateKey()}function timeWITA(){return window.LDMLocalTime.timeKey()}
 function requireAccess(){if(localStorage.getItem('isLoggedIn')!=='true'){location.replace('index.html');return false}currentUser=getUser();currentRole=getRole();if(!['owner','admin','kasir'].includes(currentRole)){location.replace('dashboard.html');return false}document.documentElement.classList.remove('secure-page-pending');return true}function bukaMenu(){document.getElementById('navSidebar')?.classList.add('active');document.getElementById('navOverlay')?.classList.add('active')}function tutupMenu(){document.getElementById('navSidebar')?.classList.remove('active');document.getElementById('navOverlay')?.classList.remove('active')}async function logout(){
     const ok=await ldmDialog.confirm(
         'Keluar dari Aplikasi',
@@ -1676,7 +1673,7 @@ function selectedReturnItems(){
     }).filter(i=>i.qtyRetur>0);
 }
 function updateReturnTotal(){const total=selectedReturnItems().reduce((a,i)=>a+Number(i.nilaiRetur||0),0);document.getElementById('returTotalPreview').textContent=rp(total)}
-function hashCode(t){let h=2166136261;String(t).split('').forEach(c=>{h^=c.charCodeAt(0);h=Math.imul(h,16777619)});return(h>>>0).toString(36).toUpperCase().padStart(4,'0').slice(-4)}function makeReturnId(){const d=new Date(Date.now()+8*3600000),pad=n=>String(n).padStart(2,'0'),ymd=String(d.getUTCFullYear()).slice(-2)+pad(d.getUTCMonth()+1)+pad(d.getUTCDate()),hms=pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds());return `RTR-${ymd}-${hms}-${hashCode(Date.now()+'|'+currentUser+'|'+Math.random())}`}
+function hashCode(t){let h=2166136261;String(t).split('').forEach(c=>{h^=c.charCodeAt(0);h=Math.imul(h,16777619)});return(h>>>0).toString(36).toUpperCase().padStart(4,'0').slice(-4)}function makeReturnId(){const d=new Date(),pad=n=>String(n).padStart(2,'0'),ymd=String(d.getFullYear()).slice(-2)+pad(d.getMonth()+1)+pad(d.getDate()),hms=pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds());return `RTR-${ymd}-${hms}-${hashCode(Date.now()+'|'+currentUser+'|'+Math.random())}`}
 async function createReturn(directApprove){
     const tx=findTx(selectedTransactionCode);
 
@@ -2825,7 +2822,7 @@ document.addEventListener('click',e=>{const w=document.querySelector('.retur-sea
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin"],
+        "barang.html":["owner","admin","kasir"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -2897,7 +2894,7 @@ document.addEventListener('click',e=>{const w=document.querySelector('.retur-sea
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -3223,15 +3220,7 @@ document.addEventListener('click',e=>{const w=document.querySelector('.retur-sea
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -3431,4 +3420,4 @@ document.addEventListener('click',e=>{const w=document.querySelector('.retur-sea
 })();
 </script>
 
-<script src="js/global-system-navigation.js?v=20.1"></script></body></html>
+<script src="js/global-system-navigation.js?v=25.2"></script></body></html>

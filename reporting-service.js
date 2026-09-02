@@ -113,30 +113,11 @@
             return {date:"",time:""};
         }
 
-        const parts = new Intl.DateTimeFormat(
-            "en-CA",
-            {
-                timeZone:"Asia/Makassar",
-                year:"numeric",
-                month:"2-digit",
-                day:"2-digit",
-                hour:"2-digit",
-                minute:"2-digit",
-                second:"2-digit",
-                hour12:false
-            }
-        ).formatToParts(d);
-
-        const map = {};
-        parts.forEach(part => {
-            if(part.type !== "literal"){
-                map[part.type] = part.value;
-            }
-        });
-
+        if(window.LDMLocalTime) return window.LDMLocalTime.dateTimeParts(d);
+        const pad=value=>String(value).padStart(2,"0");
         return {
-            date:`${map.year}-${map.month}-${map.day}`,
-            time:`${map.hour}:${map.minute}:${map.second}`
+            date:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
+            time:`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
         };
     }
 
@@ -148,8 +129,11 @@
             return null;
         }
 
-        // LocDailyMar memakai WITA (+08:00).
-        return `${d}T${/^\d{2}:\d{2}:\d{2}$/.test(t) ? t : `${t}:00`}+08:00`;
+        if(window.LDMLocalTime) return window.LDMLocalTime.localDateTimeToISO(d,t);
+        const normalized=/^\d{2}:\d{2}:\d{2}$/.test(t)?t:`${t}:00`;
+        const [year,month,day]=d.split("-").map(Number);
+        const [hour,minute,second]=normalized.split(":").map(Number);
+        return new Date(year,month-1,day,hour,minute,second,0).toISOString();
     }
 
     function parseLegacyDate(row){
@@ -420,13 +404,11 @@
                     order:{column:"transacted_at",ascending:true}
                 }
             ),
-            fetchAllRows(
-                "transaction_items",
-                "id,transaction_id,product_id,barcode_snapshot,product_name_snapshot,unit_snapshot,qty,cost_price_snapshot,normal_unit_price,unit_price,line_discount,line_subtotal",
-                {
-                    order:{column:"created_at",ascending:true}
-                }
-            ),
+            (async()=>{
+                const {data,error}=await client().rpc("ldm_visible_transaction_items");
+                if(error)throw error;
+                return Array.isArray(data)?data:[];
+            })(),
             fetchAllRows(
                 "legacy_transactions",
                 "id,legacy_source_id,transaction_code,business_date,cashier_username,shift_label,payment_method,grand_total,payload,imported_at",

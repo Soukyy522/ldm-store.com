@@ -117,6 +117,17 @@
                         row.promo_price,
                         0
                     ),
+                nama:
+                    row.promo_name ||
+                    "Promo Produk",
+                type:
+                    row.promo_type ||
+                    "fixed_price",
+                value:
+                    normalizeNumber(
+                        row.promo_value,
+                        row.promo_price
+                    ),
                 minQty:
                     Math.max(
                         1,
@@ -224,48 +235,8 @@
         const supabase =
             client();
 
-        const {
-            data,
-            error
-        } =
-            await supabase
-                .from("products")
-                .select(
-                    [
-                        "id",
-                        "store_id",
-                        "barcode",
-                        "name",
-                        "category",
-                        "unit",
-                        "purchase_unit",
-                        "purchase_unit_factor",
-                        "purchase_price",
-                        "sale_price",
-                        "legacy_stock_snapshot",
-                        "last_expiry_date",
-                        "promo_active",
-                        "promo_price",
-                        "promo_min_qty",
-                        "promo_start_date",
-                        "promo_end_date",
-                        "active",
-                        "version",
-                        "created_at",
-                        "updated_at"
-                    ].join(",")
-                )
-                .eq(
-                    "active",
-                    true
-                )
-                .order(
-                    "name",
-                    {
-                        ascending:
-                            true
-                    }
-                );
+        const {data,error} =
+            await supabase.rpc("ldm_visible_products");
 
         if(error){
             throw error;
@@ -302,6 +273,17 @@
             });
     }
 
+    async function canManageCatalog(context=null){
+        const session=context||await getContext();
+        if(String(session?.profile?.role||"").toLowerCase()!=="owner")return false;
+        if(window.LDMPrimaryOwner?.canManageCatalog){
+            return await window.LDMPrimaryOwner.canManageCatalog();
+        }
+        const {data,error}=await client().rpc("ldm_can_manage_central_catalog");
+        if(error)throw error;
+        return data===true;
+    }
+
     async function migrateLocal(
         items = null
     ){
@@ -317,6 +299,9 @@
             throw new Error(
                 "Hanya Owner yang dapat migrasi Master Barang."
             );
+        }
+        if(!await canManageCatalog(context)){
+            throw new Error("Master barang dikendalikan Owner Utama dari cabang pusat.");
         }
 
         const source =
@@ -338,7 +323,7 @@
             error
         } =
             await supabase.rpc(
-                "ldm_sync_products_stage20",
+                "ldm_sync_products_stage21",
                 {
                     p_products:
                         source
@@ -395,6 +380,9 @@
                     "owner_required"
             };
         }
+        if(!await canManageCatalog(context)){
+            return {skipped:true,reason:"central_catalog_locked"};
+        }
 
         const source =
             Array.isArray(items)
@@ -409,7 +397,7 @@
             error
         } =
             await supabase.rpc(
-                "ldm_sync_products_stage20",
+                "ldm_sync_products_stage21",
                 {
                     p_products:
                         source
@@ -505,6 +493,9 @@
             throw new Error(
                 "Hanya Owner yang dapat menghapus Master Barang."
             );
+        }
+        if(!await canManageCatalog(context)){
+            throw new Error("Master barang dikendalikan Owner Utama dari cabang pusat.");
         }
 
         const supabase =
@@ -637,6 +628,7 @@
             isEnabled,
             fetchAll,
             refreshCache,
+            canManageCatalog,
             migrateLocal,
             syncPresentProducts,
             scheduleSync,

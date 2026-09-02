@@ -64,6 +64,19 @@ Jangan commit `service_role` key, password database, JWT secret, token admin, at
 - [x] Tahap 17: Sync Conflict & Recovery Center
 - [x] Tahap 18: PWA Installation & Safe Update Manager
 - [x] Tahap 19: Full QA, Security & Performance
+- [x] Tahap 20: Master Satuan dan Konversi Kemasan
+- [x] Tahap 21: Promo dan Harga Lanjutan
+- [x] Tahap 22: Multi-Toko dan Transfer Stok
+- [x] Patch 22.1: Mega Menu desktop global, hamburger HP, dan tema Multi-Toko mengikuti Dashboard
+- [x] Patch 22.2: Seluruh navigasi operasional memakai source global yang sama dengan Dashboard, responsive desktop/HP, dan EOD otomatis tersembunyi sampai Closing Shift lengkap
+
+Tahap 21 menambahkan promo harga tetap, diskon persen, minimal pembelian,
+jadwal tanggal, pratinjau margin, validasi server, dan riwayat perubahan harga.
+Petunjuk pemasangan tersedia pada `docs/TAHAP-21.md`.
+
+Tahap 22 menambahkan jaringan cabang, membership akun per toko, toko aktif per
+perangkat, serta transfer stok atomik Draft → Dalam Pengiriman → Diterima.
+Petunjuk pemasangan tersedia pada `docs/TAHAP-22.md`.
 
 Tahap 18 menambahkan manifest installable, ikon aplikasi, halaman fallback
 offline, satu Service Worker resmi, pemeriksaan update manual, serta perlindungan
@@ -298,3 +311,16 @@ File utama:
 - `docs/TAHAP-19.md`
 
 Jalankan audit frontend dengan `node tools/qa-stage19.mjs .`. Peringatan berbeda dari kegagalan: kegagalan harus dibereskan sebelum rilis, sedangkan peringatan perlu ditinjau dan dicatat.
+
+
+## Patch 27.6.2 — Global Storage Quota Hardening
+
+Baseline patch ini adalah **27.6.1 Payment Status Self-Healing**. Semua fitur payment,
+license authority, multi-store, dan self-healing 27.6.1 dipertahankan.
+
+Patch 27.6.2 menambahkan `js/storage-quota-guard.js` pada seluruh halaman, membatasi
+compatibility cache laporan, melindungi data offline/pending agar tidak dipangkas
+otomatis, dan memastikan transaksi cloud yang sudah COMMIT tidak berubah menjadi
+status gagal hanya karena `localStorage` penuh.
+
+Petunjuk lengkap: `docs/PATCH-27.6.2-STORAGE-QUOTA-HARDENING.md`.

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head>
+    <script src="js/storage-quota-guard.js?v=27.6.2"></script>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - LocDailyMar POS</title>
@@ -2267,7 +2269,6 @@ body.dark-mode
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
-    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -2734,14 +2735,7 @@ body.dark-mode
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -3256,7 +3250,7 @@ body.dark-mode
     <script src="js/attendance-service.js?v=9.1"></script>
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
-    <script src="js/products-service.js?v=7.0"></script>
+    <script src="js/products-service.js?v=21.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
     <!-- Live Sync Tahap 10: Cloud Retur compatibility -->
     <script src="js/returns-service.js?v=10.0"></script>
@@ -3267,8 +3261,8 @@ body.dark-mode
     <script src="js/stock-opname-bootstrap.js?v=10.0"></script>
 
     <!-- Live Sync Tahap 12: Final Cloud Reporting Authority -->
-    <script src="js/reporting-service.js?v=12.0"></script>
-    <script src="js/reporting-bootstrap.js?v=12.0"></script>
+    <script src="js/reporting-service.js?v=25.2.1"></script>
+    <script src="js/reporting-bootstrap.js?v=25.2.1"></script>
 <style id="ldmCompactRangeAndSalesAssistantStyle">
     /* Rentang tanggal selalu satu baris; form dipindahkan ke modal ringkas. */
     #dashboardRangeFilter{
@@ -3602,6 +3596,9 @@ body.dark-mode
         .sales-assistant-drawer{width:100vw}
     }
 </style>
+<script src="js/license-v2-config.js?v=27.4.0"></script>
+<script src="js/license-v2-client.js?v=27.4.0"></script>
+<script defer src="js/license-v2-guard.js?v=27.4.0"></script>
 </head>
 <body>
 
@@ -4963,21 +4960,21 @@ body.dark-mode
         </div>
     </div>
 
-    <!-- ASISTEN STRATEGI PENJUALAN LOKAL - OWNER -->
+    <!-- RINGKASAN STRATEGI PENJUALAN - OWNER -->
     <button type="button" class="sales-assistant-fab" id="salesAssistantFab" aria-controls="salesAssistantDrawer" aria-expanded="false">
-        <span>✨</span><span>Asisten Strategi</span>
+        <span>📈</span><span>Insight Penjualan</span>
     </button>
     <div class="sales-assistant-overlay" id="salesAssistantOverlay"></div>
     <aside class="sales-assistant-drawer" id="salesAssistantDrawer" aria-hidden="true" aria-labelledby="salesAssistantTitle">
         <div class="sales-assistant-head">
             <div class="sales-assistant-head-main">
-                <div class="sales-assistant-head-icon">✨</div>
+                <div class="sales-assistant-head-icon">📈</div>
                 <div>
-                    <strong id="salesAssistantTitle">Asisten Strategi Lokal</strong>
-                    <small>Analisis offline · khusus data penjualan toko ini</small>
+                    <strong id="salesAssistantTitle">Analisis Penjualan</strong>
+                    <small>Ringkasan berdasarkan data penjualan toko</small>
                 </div>
             </div>
-            <button type="button" class="sales-assistant-close" id="salesAssistantClose" aria-label="Tutup Asisten">✕</button>
+            <button type="button" class="sales-assistant-close" id="salesAssistantClose" aria-label="Tutup Analisis">✕</button>
         </div>
         <div class="sales-assistant-body">
             <div class="sales-assistant-period">
@@ -4992,7 +4989,7 @@ body.dark-mode
             </div>
             <div class="sales-assistant-output" id="salesAssistantOutput" aria-live="polite">
                 <div class="sales-assistant-welcome">
-                    <strong>Siap menganalisis laporan toko</strong>
+                    <strong>Ringkasan penjualan siap digunakan</strong>
                     <p>Pilih pertanyaan cepat atau ketik pertanyaan tentang omzet, produk, stok, dan promo.</p>
                 </div>
             </div>
@@ -5001,7 +4998,7 @@ body.dark-mode
             <input id="salesAssistantInput" type="text" maxlength="160" autocomplete="off" placeholder="Contoh: produk apa yang perlu dipromosikan?" aria-label="Pertanyaan strategi penjualan">
             <button type="submit" aria-label="Analisis">➤</button>
         </form>
-        <div class="sales-assistant-footnote">Rekomendasi dibuat dari aturan lokal, bukan layanan AI online. Periksa kembali sebelum menerapkan perubahan harga, stok, atau promo.</div>
+        <div class="sales-assistant-footnote">Gunakan hasil analisis sebagai bahan evaluasi sebelum mengubah harga, stok, atau promo.</div>
     </aside>
 
     <!-- Modal Alert Custom -->
@@ -5393,24 +5390,11 @@ function logout() {
 }
 
         function getTanggalWITA(dateObj = new Date()) {
-            const utcTime = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
-            const witaTime = new Date(utcTime + (3600000 * 8));
-            const year = witaTime.getFullYear();
-            const month = String(witaTime.getMonth() + 1).padStart(2, '0');
-            const day = String(witaTime.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            return window.LDMLocalTime.dateKey(dateObj);
         }
 
         function getTanggalKemarinWITA() {
-            const now = new Date();
-            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const witaTime = new Date(utcTime + (3600000 * 8));
-            witaTime.setDate(witaTime.getDate() - 1);
-            
-            const year = witaTime.getFullYear();
-            const month = String(witaTime.getMonth() + 1).padStart(2, '0');
-            const day = String(witaTime.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            return window.LDMLocalTime.previousDateKey();
         }
 
         function getTargetDateToFilter() {
@@ -5439,7 +5423,7 @@ function logout() {
             const endMs = dateKeyToUTC(end);
             if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs < startMs) return result;
             for (let value = startMs; value <= endMs; value += 86400000) {
-                result.push(new Date(value).toISOString().slice(0, 10));
+                result.push(window.LDMLocalTime.dateKey(value));
             }
             return result;
         }
@@ -6940,30 +6924,22 @@ function hapusAkun(idx) {
         }
 
         function startCountdownWITA() {
+            let activeBusinessDate = window.LDMLocalTime.dateKey();
+
             function updateTimer() {
                 const now = new Date();
-                const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
-                const witaNow = new Date(utcNow + (3600000 * 8));
+                const currentBusinessDate = window.LDMLocalTime.dateKey(now);
 
-                const witaNextReset = new Date(witaNow);
-                witaNextReset.setHours(24, 0, 0, 0);
-
-                const diffMs = witaNextReset - witaNow;
-
-                if (diffMs <= 0) {
+                if (currentBusinessDate !== activeBusinessDate) {
+                    activeBusinessDate = currentBusinessDate;
                     isModeKemarin = false;
                     selectedDateCustom = null;
                     selectedDateRange = null;
-
                     updateRentangTanggalUI();
                     muatDashboard();
-
-                    setTimeout(() => {
-                        updateTimer();
-                    }, 1000);
-
-                    return;
                 }
+
+                const diffMs = window.LDMLocalTime.millisecondsUntilNextMidnight(now);
 
                 const hours = Math.floor(diffMs / (1000 * 60 * 60));
                 const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -8727,37 +8703,7 @@ function batasiTampilanOmzetDashboard() {
                 return getTanggalWITA();
             }
 
-            const now =
-                new Date();
-
-            const utc =
-                now.getTime() +
-                (
-                    now.getTimezoneOffset() *
-                    60000
-                );
-
-            const wita =
-                new Date(
-                    utc +
-                    8 * 60 * 60 * 1000
-                );
-
-            return [
-                wita.getFullYear(),
-                String(
-                    wita.getMonth() + 1
-                ).padStart(
-                    2,
-                    "0"
-                ),
-                String(
-                    wita.getDate()
-                ).padStart(
-                    2,
-                    "0"
-                )
-            ].join("-");
+            return window.LDMLocalTime.dateKey();
         }
 
 
@@ -11266,12 +11212,13 @@ window.addEventListener(
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin"],
+        "barang.html":["owner","admin","kasir"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
         "kartu-stok.html":["owner","admin","kasir"],
         "stock-opname.html":["owner","admin","kasir"],
+        "multi-store.html":["owner","admin"],
         "laporan.html":["owner","admin","kasir"],
         "shift-closing.html":["owner","admin"],
         "eod.html":["owner","admin"],
@@ -11279,7 +11226,8 @@ window.addEventListener(
         "backup%20%26%20restore.html":["owner","admin"],
         "backup & restore.html":["owner","admin"],
         "recovery-center.html":["owner","admin","kasir"],
-        "qa-security-performance.html":["owner"]
+        "qa-security-performance.html":["owner"],
+        "panduan.html":["owner","admin","kasir"]
     };
 
     function baseName(value){
@@ -11340,9 +11288,10 @@ window.addEventListener(
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
+        {page:"multi-store.html", icon:"⇄", label:"Multi-Toko & Transfer", group:"Inventori", roles:["owner","admin"], quick:true},
 
         {page:"supplier.html", icon:"🏢", label:"Supplier", group:"Supplier & Pembelian", roles:["owner","admin"]},
         {page:"Purchase-Order.html", icon:"🛒", label:"Purchase Order", group:"Supplier & Pembelian", roles:["owner","admin"], badge:"pendingPOBadge"},
@@ -11357,7 +11306,8 @@ window.addEventListener(
 
         {page:"pwa-settings.html", icon:"📲", label:"Aplikasi & Update", group:"Sistem", roles:["owner","admin","kasir"]},
         {page:"recovery-center.html", icon:"🛟", label:"Recovery Center", group:"Sistem", roles:["owner","admin","kasir"]},
-        {page:"qa-security-performance.html", icon:"🧪", label:"QA & Security", group:"Sistem", roles:["owner"]}
+        {page:"qa-security-performance.html", icon:"🧪", label:"QA & Security", group:"Sistem", roles:["owner"]},
+        {page:"panduan.html", icon:"📘", label:"Panduan & Bantuan", group:"Sistem", roles:["owner","admin","kasir"]}
     ];
 
     const GROUP_META={
@@ -11681,15 +11631,7 @@ window.addEventListener(
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -12089,12 +12031,12 @@ window.addEventListener(
     }
 
     function isoDate(value){
-        return new Date(value).toISOString().slice(0,10);
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function activeRange(){
         if(typeof getActiveDateRange==="function")return getActiveDateRange();
-        const today=typeof getTanggalWITA==="function"?getTanggalWITA():new Date().toISOString().slice(0,10);
+        const today=typeof getTanggalWITA==="function"?getTanggalWITA():window.LDMLocalTime.dateKey();
         return{start:today,end:today,customRange:false};
     }
 
@@ -12301,6 +12243,7 @@ window.addEventListener(
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
 </script>
-<script src="js/global-system-navigation.js?v=20.1"></script>
+<script src="js/user-guide.js?v=24.2"></script>
+<script src="js/global-system-navigation.js?v=27.4"></script>
 </body>
 </html>

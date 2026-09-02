@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id" class="secure-page-pending">
-<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head>
+    <script src="js/storage-quota-guard.js?v=27.6.2"></script>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Cloud Control Center - LocDailyMar</title>
@@ -14,6 +16,9 @@
 <script src="js/cloud-session.js?v=6.0"></script>
 <script src="js/cloud-session-guard.js?v=15.0"></script>
 <script src="js/production-service.js?v=13.1"></script>
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head>
 <body>
 <div class="wrap">
@@ -58,7 +63,7 @@ function revealPage(){
   document.documentElement.classList.remove("secure-page-pending");
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
-function fmtTime(v){if(!v)return "-";try{return new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Makassar",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date(v))+" WITA"}catch{return String(v)}}
+function fmtTime(v){if(!v)return "-";try{return new Intl.DateTimeFormat("id-ID",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date(v))+" WITA"}catch{return String(v)}}
 function showError(e){const box=document.getElementById("errorBox");box.style.display="block";box.textContent="❌ "+(e&&e.message?e.message:String(e))}
 function clearError(){const box=document.getElementById("errorBox");box.style.display="none";box.textContent=""}
 function stat(label,value){return `<div class="stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`}
@@ -132,6 +137,6 @@ async function boot(){
 }
 document.addEventListener("DOMContentLoaded",boot);
 </script>
-<script src="js/global-system-navigation.js?v=20.1"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>

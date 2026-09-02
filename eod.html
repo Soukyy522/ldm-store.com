@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head>
+    <script src="js/storage-quota-guard.js?v=27.6.2"></script>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>End of Day - LocDailyMar POS</title>
@@ -963,7 +965,6 @@
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
-    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -1409,14 +1410,7 @@
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -1933,8 +1927,11 @@
     <script src="js/returns-bootstrap.js?v=10.0"></script>
 
     <!-- Live Sync Tahap 12: Final Cloud Reporting Authority -->
-    <script src="js/reporting-service.js?v=12.0"></script>
-    <script src="js/reporting-bootstrap.js?v=12.0"></script>
+    <script src="js/reporting-service.js?v=25.2.1"></script>
+    <script src="js/reporting-bootstrap.js?v=25.2.1"></script>
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head>
 
 <body>
@@ -2544,8 +2541,8 @@ function updateRunningClock(){
     }
 }
 
-function witaDate(v=new Date()){const x=new Date(v);const d=new Date((isNaN(x)?Date.now():x.getTime())+8*3600000);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
-function witaTime(){const d=new Date(Date.now()+8*3600000);return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+':'+String(d.getUTCSeconds()).padStart(2,'0')}
+function witaDate(v=new Date()){return window.LDMLocalTime.dateKey(v)}
+function witaTime(){return window.LDMLocalTime.timeKey()}
 function dateOf(x){if(!x)return'';const r=x.waktu_teks||x.tanggal||x.tgl||x.date||x.waktu||x.created_at||x.timestamp||'';if(typeof r==='string'&&/^\d{4}-\d{2}-\d{2}/.test(r))return r.slice(0,10);const d=new Date(r);return isNaN(d)?'':witaDate(d)}
 function rp(n){return'Rp '+Number(n||0).toLocaleString('id-ID')}function signed(n){n=Number(n||0);return n>0?'+Rp '+n.toLocaleString('id-ID'):n<0?'-Rp '+Math.abs(n).toLocaleString('id-ID'):'Rp 0'}
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
@@ -3598,7 +3595,7 @@ document.addEventListener('DOMContentLoaded',init);
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin"],
+        "barang.html":["owner","admin","kasir"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -3670,7 +3667,7 @@ document.addEventListener('DOMContentLoaded',init);
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -3996,15 +3993,7 @@ document.addEventListener('DOMContentLoaded',init);
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -4309,6 +4298,6 @@ document.addEventListener('DOMContentLoaded',init);
 })();
 </script>
 
-<script src="js/global-system-navigation.js?v=20.1"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head>
+    <script src="js/storage-quota-guard.js?v=27.6.2"></script>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Barang - LocDailyMar POS</title>
@@ -1499,7 +1501,6 @@
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
-    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -1945,14 +1946,7 @@
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -2456,6 +2450,28 @@
 })();
 </script>
 
+<style>
+    .promo-modal-content{max-width:560px;max-height:92vh;overflow-y:auto}
+    .promo-section{padding:14px;border:1px solid var(--border-color);border-radius:12px;background:var(--bg-primary);margin-bottom:12px}
+    .promo-section-title{font-size:.78rem;font-weight:800;color:var(--heading-color);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+    .promo-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .promo-form-grid .field-full{grid-column:1/-1}
+    .promo-field label{display:block;margin:0 0 5px;font-size:.76rem}
+    .promo-field input,.promo-field select{margin:0;width:100%}
+    .promo-preview{border:1px solid #bbf7d0;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border-radius:12px;padding:13px;color:#14532d}
+    .promo-preview-row{display:flex;justify-content:space-between;gap:12px;font-size:.78rem;margin:4px 0}
+    .promo-preview-row strong{text-align:right}
+    .promo-preview-warning{margin-top:8px;color:#b45309;font-size:.72rem;font-weight:700}
+    body.dark-mode .promo-preview{background:rgba(16,185,129,.12);border-color:rgba(52,211,153,.35);color:#bbf7d0}
+    @media(max-width:560px){
+        .promo-modal-content{width:94%;padding:16px}
+        .promo-form-grid{grid-template-columns:1fr}
+        .promo-form-grid .field-full{grid-column:auto}
+        .promo-modal-content .modal-footer{display:grid;grid-template-columns:1fr 1fr}
+        .promo-modal-content .modal-footer .btn-simpan{grid-column:1/-1;order:-1}
+    }
+</style>
+
     <!-- Live Sync Tahap 6: Supabase Auth authoritative guard -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
@@ -2468,10 +2484,49 @@
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
     <!-- Tahap 20: Master Satuan dan Konversi Kemasan -->
     <script src="js/unit-conversion.js?v=20.0"></script>
+    <!-- Tahap 21: Promo dan Harga Lanjutan -->
+    <script src="js/promo-pricing.js?v=21.0"></script>
+    <!-- Tahap 26: Otoritas katalog hanya Owner Utama di cabang pusat -->
+    <script src="js/primary-owner-service.js?v=26.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
-    <script src="js/products-service.js?v=7.0"></script>
+    <script src="js/products-service.js?v=26.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
 
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
+<style id="ldmKasirBarangReadOnlyStyle">
+    html[data-ldm-role="kasir"] #formTambahBarang,
+    body.role-kasir-readonly #formTambahBarang,
+    body.role-kasir-readonly .action-buttons {
+        display: none !important;
+    }
+
+    html[data-ldm-catalog-editor="false"] #formTambahBarang,
+    html[data-ldm-catalog-editor="false"] .action-buttons {
+        display: none !important;
+    }
+
+    #catalogAuthorityNotice {
+        display: none;
+        margin: 0 0 14px;
+        padding: 12px 14px;
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: #1e3a5f;
+        font-size: .76rem;
+        line-height: 1.55;
+    }
+
+    html[data-ldm-catalog-editor="false"] #catalogAuthorityNotice {
+        display: block;
+    }
+
+    body.role-kasir-readonly #barangGrid {
+        grid-template-columns: 1fr !important;
+    }
+</style>
 </head>
 <body>
 
@@ -2516,6 +2571,8 @@
                     <button class="btn-cetak-label" onclick="bukaModalPilihOpsiCetak()">🏷️ Cetak Label Price</button>
                 </div>
             </div>
+
+            <div id="catalogAuthorityNotice"><strong>Master barang dikendalikan dari cabang pusat.</strong><br>Nama barang, satuan, harga beli, harga jual, dan promo hanya dapat diubah Owner Utama. Stok yang terlihat tetap merupakan stok toko/cabang ini.</div>
 
             <div class="barang-grid" id="barangGrid">
                 <!-- Form Tambah (Owner) -->
@@ -2900,9 +2957,6 @@
                 <option value="Lainnya">Lainnya</option>
             </select>
 
-            <label>Jumlah Stok Total</label>
-            <input type="number" id="editStok">
-
             <label>Satuan Dasar / Stok / Kasir</label>
             <select id="editSatuan">
                 <option value="Pcs">Pcs / Biji</option>
@@ -2953,34 +3007,77 @@
 
     <!-- MODAL PENGATURAN PROMO -->
     <div class="modal" id="modalPromo">
-        <div class="modal-content">
-            <div class="modal-header" id="promoTitle">🏷️ Pengaturan Promo Diskon</div>
+        <div class="modal-content promo-modal-content">
+            <div class="modal-header" id="promoTitle">🏷️ Promo &amp; Harga Lanjutan</div>
             <input type="hidden" id="promoIndex">
 
-            <div class="toggle-row" style="margin-bottom: 10px;">
-                <span style="font-size:0.82rem; font-weight:600;">Aktifkan Promo Item Ini</span>
+            <div class="toggle-row promo-section">
+                <div>
+                    <strong style="display:block;font-size:.84rem;">Aktifkan promo produk</strong>
+                    <small style="color:var(--label-color);">Harga normal otomatis digunakan di luar periode promo.</small>
+                </div>
                 <label class="switch">
-                    <input type="checkbox" id="promoAktif">
+                    <input type="checkbox" id="promoAktif" onchange="updatePromoForm()">
                     <span class="slider"></span>
                 </label>
             </div>
 
-            <label>Harga Promo / Potongan (Rp)</label>
-            <input type="number" id="promoHarga" placeholder="Contoh: 3000 (Harga Promo)">
+            <div class="promo-section">
+                <div class="promo-section-title">Identitas dan jenis promo</div>
+                <div class="promo-form-grid">
+                    <div class="promo-field field-full">
+                        <label>Nama Program Promo</label>
+                        <input type="text" id="promoNama" maxlength="80" placeholder="Contoh: Hemat Akhir Pekan" oninput="updatePromoPreview()">
+                    </div>
+                    <div class="promo-field">
+                        <label>Jenis Promo</label>
+                        <select id="promoType" onchange="updatePromoForm()">
+                            <option value="fixed_price">Harga promo tetap</option>
+                            <option value="percentage">Diskon persen</option>
+                        </select>
+                    </div>
+                    <div class="promo-field" id="promoFixedField">
+                        <label>Harga Promo per Satuan (Rp)</label>
+                        <input type="number" id="promoHarga" min="1" step="1" placeholder="Contoh: 3000" oninput="updatePromoPreview()">
+                    </div>
+                    <div class="promo-field" id="promoPercentField" style="display:none;">
+                        <label>Diskon (%)</label>
+                        <input type="number" id="promoPersen" min="0.01" max="99.99" step="0.01" placeholder="Contoh: 10" oninput="updatePromoPreview()">
+                    </div>
+                    <div class="promo-field">
+                        <label>Minimal Pembelian</label>
+                        <input type="number" id="promoMinQty" min="1" step="0.001" value="1" oninput="updatePromoPreview()">
+                    </div>
+                </div>
+            </div>
 
-            <label>Min. Pembelian Untk Promo (Pcs/Qty)</label>
-            <input type="number" id="promoMinQty" value="1" placeholder="Contoh: 10 (Kosongkan/1 jika promo tanpa syarat qty)">
+            <div class="promo-section">
+                <div class="promo-section-title">Periode promo</div>
+                <div class="promo-form-grid">
+                    <div class="promo-field">
+                        <label>Tanggal Mulai</label>
+                        <input type="date" id="promoTglMulai" onchange="updatePromoPreview()">
+                    </div>
+                    <div class="promo-field">
+                        <label>Tanggal Selesai</label>
+                        <input type="date" id="promoTglSelesai" onchange="updatePromoPreview()">
+                    </div>
+                </div>
+                <small style="display:block;margin-top:8px;color:var(--label-color);">Kosongkan tanggal jika promo tidak memiliki batas periode.</small>
+            </div>
 
-            <label>Tanggal Mulai Promo</label>
-            <input type="date" id="promoTglMulai">
-
-            <label>Tanggal Selesai Promo</label>
-            <input type="date" id="promoTglSelesai">
+            <div class="promo-preview" id="promoPreview" aria-live="polite">
+                <div class="promo-preview-row"><span>Harga normal</span><strong id="promoPreviewNormal">Rp 0</strong></div>
+                <div class="promo-preview-row"><span>Harga setelah promo</span><strong id="promoPreviewFinal">Rp 0</strong></div>
+                <div class="promo-preview-row"><span>Potongan per satuan</span><strong id="promoPreviewDiscount">Rp 0</strong></div>
+                <div class="promo-preview-row"><span>Margin setelah promo</span><strong id="promoPreviewMargin">Rp 0</strong></div>
+                <div class="promo-preview-warning" id="promoPreviewWarning"></div>
+            </div>
 
             <div class="modal-footer">
                 <button class="btn-act btn-batal" onclick="tutupModal('modalPromo')">Batal</button>
                 <button class="btn-act btn-hapus" onclick="hapusPromoBarang()">Hapus Promo</button>
-                <button class="btn-act btn-simpan" style="width: auto;" onclick="simpanPromoBarang()">Simpan Promo</button>
+                <button class="btn-act btn-simpan" style="width:auto;" onclick="simpanPromoBarang()">Simpan Promo</button>
             </div>
         </div>
     </div>
@@ -3018,7 +3115,8 @@
     const session =
         requireRole([
             "owner",
-            "admin"
+            "admin",
+            "kasir"
         ]);
 
 
@@ -3080,12 +3178,7 @@ document.addEventListener(
 
     // FUNGSI MENDAPATKAN TANGGAL HARI INI (WITA)
     function getTanggalWITA(dateObj = new Date()) {
-        const utcTime = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
-        const witaTime = new Date(utcTime + (3600000 * 8));
-        const year = witaTime.getFullYear();
-        const month = String(witaTime.getMonth() + 1).padStart(2, '0');
-        const day = String(witaTime.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return window.LDMLocalTime.dateKey(dateObj);
     }
 
     // VERIFIKASI SEBELUM MASUK KE KASIR
@@ -3585,6 +3678,9 @@ const loggedUser =
 
     /* HELPER VERIFIKASI AKTIF PROMO (INTEGRASI KE KASIR.HTML & CETAK LABEL) */
     function CekPromoAktif(item, qtyBeli = 1) {
+        if (window.LDMPromoPricing) {
+            return window.LDMPromoPricing.resolve(item, qtyBeli).applied;
+        }
         if (!item.promo || !item.promo.aktif) return false;
         let today = getTanggalWITA();
         let tglMulai = item.promo.tglMulai || "";
@@ -3605,6 +3701,10 @@ const loggedUser =
 // Tidak memperhitungkan syarat jumlah pembelian.
 // =====================================================
 function CekPromoTersedia(item) {
+    if (window.LDMPromoPricing) {
+        const promo = window.LDMPromoPricing.normalize(item && item.promo, Number(item && item.harga) || 0);
+        return !!promo && window.LDMPromoPricing.isScheduled(promo);
+    }
     if (!item.promo || !item.promo.aktif) return false;
 
     const today = getTanggalWITA();
@@ -3634,7 +3734,10 @@ function CekPromoTersedia(item) {
 
     function muatBarang() {
         let role = (localStorage.getItem("userRole") || localStorage.getItem("role") || "admin").toLowerCase();
-        let isOwner = role === "owner";
+        let isOwner = role === "owner" && document.documentElement.dataset.ldmCatalogEditor === "true";
+        let isCashier = role === "kasir";
+
+        document.body.classList.toggle("role-kasir-readonly", isCashier);
 
         let formContainer = document.getElementById("formTambahBarang");
         let barangGrid = document.getElementById("barangGrid");
@@ -3695,9 +3798,16 @@ function CekPromoTersedia(item) {
             let ktg = item.kategori || "General";
             const satuanBeli = item.satuanBeli || stn;
             const konversiBeli = Math.max(Number(item.konversiBeli || 1),0.001);
-            const infoKonversiHTML = satuanBeli !== stn || konversiBeli !== 1
+            const infoKonversiHTML = !isCashier && (satuanBeli !== stn || konversiBeli !== 1)
                 ? `<div style="margin-top:8px;padding:7px 9px;border-radius:8px;background:var(--bg-primary);font-size:.7rem;color:var(--label-color);">📦 Beli: 1 ${satuanBeli} = ${konversiBeli} ${stn}</div>`
                 : "";
+
+            const metadataHTML = isCashier
+                ? ""
+                : `<div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#94a3b8;">
+                        <span>Barcode: <b>${bcode}</b></span>
+                        <span style="background:var(--border-color); padding:1px 6px; border-radius:4px; color:var(--text-color);">${ktg}</span>
+                   </div>`;
 
             let isWarning = stok <= BATAS_STOK_MINIMAL;
 
@@ -3708,7 +3818,9 @@ let isPromoTersedia = CekPromoTersedia(item);
 let isPromoValid = CekPromoAktif(item, 1);
 
             // KONEKSI HARGA PROMO KE PERHITUNGAN MARGIN DENGAN OTOMATIS ME-DETECT HARGA PROMO
-            let hgEfektif = (isPromoValid && item.promo.hargaPromo) ? Number(item.promo.hargaPromo) : hgJual;
+            let hgEfektif = window.LDMPromoPricing
+                ? window.LDMPromoPricing.resolve(item, 1).unitPrice
+                : ((isPromoValid && item.promo.hargaPromo) ? Number(item.promo.hargaPromo) : hgJual);
             let margin = hgEfektif - hgBeli;
 
             // =====================================================
@@ -3825,17 +3937,25 @@ else {
 }
 
             let promoInfoHTML = "";
-            if (isPromoTersedia) {
+            if (isPromoTersedia && !isCashier) {
 
     let pMin = Number(item.promo.minQty) || 1;
     let pHarga = Number(item.promo.hargaPromo) || 0;
+    let pNama = String(item.promo.nama || "Promo Produk").replace(/[&<>"']/g, char => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+    })[char]);
+    let pJenis = item.promo.type === "percentage"
+        ? `Diskon ${Number(item.promo.value || 0).toLocaleString("id-ID")}%`
+        : "Harga Khusus";
 
     promoInfoHTML = `
         <div class="promo-info-badge">
 
-            🏷️ <b>PROMO AKTIF</b>
+            🏷️ <b>${pNama}</b>
 
             <br>
+
+            <span>${pJenis}</span>
 
             <span>
                 Min. Beli ${pMin} ${stn}
@@ -3872,10 +3992,7 @@ else {
                             ${isWarning ? 'Hampir Habis: ' : 'Stok: '} ${stok} ${stn}
                         </span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#94a3b8;">
-                        <span>Barcode: <b>${bcode}</b></span>
-                        <span style="background:var(--border-color); padding:1px 6px; border-radius:4px; color:var(--text-color);">${ktg}</span>
-                    </div>
+                    ${metadataHTML}
                     ${detailHargaHTML}
 
                     ${infoKonversiHTML}
@@ -3978,9 +4095,25 @@ function catatKartuStokMutasi(payload = {}) {
     document.getElementById("satuan")?.addEventListener("change", updatePreviewKonversiBarang);
     document.getElementById("editSatuan")?.addEventListener("change", updatePreviewKonversiEdit);
 
+    function requireOwnerBarangAction() {
+        const role = String(
+            localStorage.getItem("userRole") ||
+            localStorage.getItem("role") ||
+            ""
+        ).trim().toLowerCase();
+
+        if (role === "owner" && document.documentElement.dataset.ldmCatalogEditor === "true") return true;
+
+        tampilkanNotifikasi(
+            "Katalog Dikelola Pusat",
+            "Data barang dan harga hanya dapat diubah oleh Owner Utama saat berada di cabang pusat. Stok tetap mengikuti cabang masing-masing.",
+            "🔒"
+        );
+        return false;
+    }
+
     function tambahBarang() {
-        let role = (localStorage.getItem("userRole") || localStorage.getItem("role") || "admin").toLowerCase();
-        if (role !== "owner") return tampilkanNotifikasi("Akses Ditolak", "Hanya Owner yang dapat menambah barang!", "🚫");
+        if (!requireOwnerBarangAction()) return;
 
         let inputBarcode = document.getElementById("barcode").value.trim();
         let inputNama = document.getElementById("nama").value.trim();
@@ -4159,6 +4292,8 @@ function catatKartuStokMutasi(payload = {}) {
 
     function simpanTambahStok() {
 
+    if (!requireOwnerBarangAction()) return;
+
     const stokTambah =
         Number(
             document.getElementById(
@@ -4327,7 +4462,6 @@ function catatKartuStokMutasi(payload = {}) {
         document.getElementById("editBarcode").value = item.barcode || "";
         document.getElementById("editNama").value = item.nama || "";
         document.getElementById("editKategori").value = item.kategori || "Frozen Food";
-        document.getElementById("editStok").value = item.stok !== undefined ? item.stok : 0;
         document.getElementById("editSatuan").value = item.satuan || "Pcs";
         document.getElementById("editSatuanBeli").value = item.satuanBeli || item.satuan || "Pcs";
         document.getElementById("editKonversiBeli").value = Number(item.konversiBeli || 1);
@@ -4339,17 +4473,14 @@ function catatKartuStokMutasi(payload = {}) {
     }
 
     function simpanEditBarang() {
+        if (!requireOwnerBarangAction()) return;
+
         let index = document.getElementById("editIndex").value;
         let data = JSON.parse(localStorage.getItem("dataBarang")) || defaultBarang;
-
-        const sebelumEditKartu = data[index]
-            ? { ...data[index] }
-            : null;
 
         data[index].barcode = document.getElementById("editBarcode").value.trim();
         data[index].nama = document.getElementById("editNama").value.trim();
         data[index].kategori = document.getElementById("editKategori").value;
-        data[index].stok = Number(document.getElementById("editStok").value) || 0;
         data[index].satuan = document.getElementById("editSatuan").value;
         data[index].satuanDasar = data[index].satuan;
         data[index].satuanBeli = document.getElementById("editSatuanBeli").value || data[index].satuan;
@@ -4361,39 +4492,6 @@ function catatKartuStokMutasi(payload = {}) {
 
         simpanKeStorage(data);
 
-        if (sebelumEditKartu) {
-            const stokSebelum =
-                Number(sebelumEditKartu.stok || 0);
-
-            const stokSesudah =
-                Number(data[index].stok || 0);
-
-            const delta =
-                stokSesudah -
-                stokSebelum;
-
-            if (delta !== 0) {
-                catatKartuStokMutasi({
-                    barcode:
-                        data[index].barcode
-                        || sebelumEditKartu.barcode
-                        || "",
-                    namaBarang:
-                        data[index].nama
-                        || sebelumEditKartu.nama
-                        || "",
-                    barangIndex: Number(index),
-                    jenis: "edit_stok_manual",
-                    referensi: `EDIT-${Date.now()}`,
-                    delta,
-                    stokSebelum,
-                    stokSesudah,
-                    keterangan:
-                        `Edit stok manual dari ${stokSebelum} menjadi ${stokSesudah}`
-                });
-            }
-        }
-
         tutupModal("modalEdit");
         muatBarang();
         tampilkanNotifikasi("Berhasil", "Perubahan data barang berhasil disimpan!", "✏️");
@@ -4404,48 +4502,109 @@ function catatKartuStokMutasi(payload = {}) {
         let data = JSON.parse(localStorage.getItem("dataBarang")) || defaultBarang;
         let item = data[index];
 
+        if (!item) {
+            return tampilkanNotifikasi("Barang Tidak Ditemukan", "Data barang yang dipilih tidak tersedia.", "⚠️");
+        }
+
         document.getElementById("promoIndex").value = index;
-        document.getElementById("promoTitle").innerText = "🏷️ Promo Diskon - " + item.nama;
+        document.getElementById("promoTitle").innerText = "🏷️ Promo & Harga - " + item.nama;
 
         let promo = item.promo || {};
         document.getElementById("promoAktif").checked = !!promo.aktif;
+        document.getElementById("promoNama").value = promo.nama || "Promo " + item.nama;
+        document.getElementById("promoType").value = promo.type === "percentage" ? "percentage" : "fixed_price";
         document.getElementById("promoHarga").value = promo.hargaPromo || "";
+        document.getElementById("promoPersen").value = promo.type === "percentage" ? (promo.value || promo.persen || "") : "";
         document.getElementById("promoMinQty").value = promo.minQty || 1;
         document.getElementById("promoTglMulai").value = promo.tglMulai || "";
         document.getElementById("promoTglSelesai").value = promo.tglSelesai || "";
 
+        updatePromoForm();
         document.getElementById("modalPromo").style.display = "flex";
     }
 
+    function getPromoDraftFromForm() {
+        const type = document.getElementById("promoType").value;
+        return {
+            aktif: document.getElementById("promoAktif").checked,
+            nama: document.getElementById("promoNama").value.trim() || "Promo Produk",
+            type,
+            value: type === "percentage"
+                ? Number(document.getElementById("promoPersen").value)
+                : Number(document.getElementById("promoHarga").value),
+            hargaPromo: Number(document.getElementById("promoHarga").value),
+            minQty: Math.max(1, Number(document.getElementById("promoMinQty").value) || 1),
+            tglMulai: document.getElementById("promoTglMulai").value,
+            tglSelesai: document.getElementById("promoTglSelesai").value
+        };
+    }
+
+    function updatePromoForm() {
+        const type = document.getElementById("promoType").value;
+        document.getElementById("promoFixedField").style.display = type === "fixed_price" ? "block" : "none";
+        document.getElementById("promoPercentField").style.display = type === "percentage" ? "block" : "none";
+        updatePromoPreview();
+    }
+
+    function updatePromoPreview() {
+        const index = Number(document.getElementById("promoIndex").value);
+        const data = JSON.parse(localStorage.getItem("dataBarang")) || defaultBarang;
+        const item = data[index] || {};
+        const hargaNormal = Math.max(0, Number(item.harga) || 0);
+        const hargaBeli = Math.max(0, Number(item.hargaBeli) || 0);
+        const draft = getPromoDraftFromForm();
+        const result = window.LDMPromoPricing
+            ? window.LDMPromoPricing.validate(draft, hargaNormal)
+            : { valid: true, errors: [], promo: draft };
+        const normalized = result.promo || draft;
+        const hargaFinal = Math.max(0, Number(normalized.hargaPromo) || 0);
+        const potongan = Math.max(0, hargaNormal - hargaFinal);
+        const margin = hargaFinal - hargaBeli;
+
+        document.getElementById("promoPreviewNormal").innerText = `Rp ${hargaNormal.toLocaleString("id-ID")}`;
+        document.getElementById("promoPreviewFinal").innerText = `Rp ${hargaFinal.toLocaleString("id-ID")}`;
+        document.getElementById("promoPreviewDiscount").innerText = `Rp ${potongan.toLocaleString("id-ID")}`;
+        document.getElementById("promoPreviewMargin").innerText = `${margin < 0 ? "-" : "+"}Rp ${Math.abs(margin).toLocaleString("id-ID")}`;
+
+        const warnings = [];
+        if (draft.aktif && result.errors && result.errors.length) warnings.push(...result.errors);
+        if (draft.aktif && hargaFinal > 0 && hargaFinal < hargaBeli) {
+            warnings.push("Peringatan: harga promo berada di bawah harga beli.");
+        }
+        document.getElementById("promoPreviewWarning").innerText = warnings.join(" ");
+    }
+
     function simpanPromoBarang() {
-        let index = document.getElementById("promoIndex").value;
+        if (!requireOwnerBarangAction()) return;
+
+        let index = Number(document.getElementById("promoIndex").value);
         let data = JSON.parse(localStorage.getItem("dataBarang")) || defaultBarang;
 
-        let isAktif = document.getElementById("promoAktif").checked;
-        let hargaPromo = Number(document.getElementById("promoHarga").value);
-        let minQty = Number(document.getElementById("promoMinQty").value) || 1;
-        let tglMulai = document.getElementById("promoTglMulai").value;
-        let tglSelesai = document.getElementById("promoTglSelesai").value;
-
-        if (isAktif && (!hargaPromo || hargaPromo <= 0)) {
-            return tampilkanNotifikasi("Input Salah", "Masukkan harga potongan / promo yang valid!", "⚠️");
+        if (!data[index]) {
+            return tampilkanNotifikasi("Barang Tidak Ditemukan", "Data barang yang dipilih tidak tersedia.", "⚠️");
         }
 
-        data[index].promo = {
-            aktif: isAktif,
-            hargaPromo: hargaPromo,
-            minQty: minQty,
-            tglMulai: tglMulai,
-            tglSelesai: tglSelesai
-        };
+        const draft = getPromoDraftFromForm();
+        const hargaNormal = Number(data[index].harga) || 0;
+        const result = window.LDMPromoPricing
+            ? window.LDMPromoPricing.validate(draft, hargaNormal)
+            : { valid: true, errors: [], promo: draft };
+
+        if (draft.aktif && !result.valid) {
+            return tampilkanNotifikasi("Promo Belum Valid", result.errors.join(" "), "⚠️");
+        }
+
+        data[index].promo = result.promo || draft;
 
         simpanKeStorage(data);
         tutupModal("modalPromo");
         muatBarang();
-        tampilkanNotifikasi("Berhasil", "Pengaturan promo diskon berhasil disimpan!", "🏷️");
+        tampilkanNotifikasi("Promo Tersimpan", "Promo dan harga lanjutan berhasil disimpan serta dijadwalkan untuk sinkronisasi cloud.", "🏷️");
     }
 
     function hapusPromoBarang() {
+        if (!requireOwnerBarangAction()) return;
+
         let index = document.getElementById("promoIndex").value;
         let data = JSON.parse(localStorage.getItem("dataBarang")) || defaultBarang;
 
@@ -4460,6 +4619,8 @@ function catatKartuStokMutasi(payload = {}) {
     }
 
     function hapusBarang(index) {
+        if (!requireOwnerBarangAction()) return;
+
         let data =
             JSON.parse(
                 localStorage.getItem(
@@ -4545,7 +4706,26 @@ function catatKartuStokMutasi(payload = {}) {
     }
 
     /* FUNGSI CETAK LABEL PRICE - SATU DESAIN TAMPILAN BARU */
+    function requireLabelPricePrintAccess() {
+        const role = String(
+            localStorage.getItem("userRole") ||
+            localStorage.getItem("role") ||
+            ""
+        ).trim().toLowerCase();
+
+        if (["owner", "admin", "kasir"].includes(role)) return true;
+
+        tampilkanNotifikasi(
+            "Akses Tidak Tersedia",
+            "Masuk menggunakan akun Owner, Admin, atau Kasir untuk mencetak label price.",
+            "🔒"
+        );
+        return false;
+    }
+
     function bukaModalPilihOpsiCetak() {
+        if (!requireLabelPricePrintAccess()) return;
+
         let rawData = localStorage.getItem("dataBarang");
         let data = rawData ? JSON.parse(rawData) : defaultBarang;
 
@@ -4829,6 +5009,8 @@ function catatKartuStokMutasi(payload = {}) {
 
 
     function cetakLabelPriceTerpilih() {
+        if (!requireLabelPricePrintAccess()) return;
+
         const data = getDataBarangLabelPrice();
 
         const dataTerpilih = labelPriceSelectedIndexes
@@ -5096,11 +5278,28 @@ const totalHargaPromo =
         }
     });
 
+    async function initializeCentralCatalogAuthority() {
+        document.documentElement.dataset.ldmCatalogEditor = "false";
+        const notice = document.getElementById("catalogAuthorityNotice");
+        try {
+            const allowed = await window.LDMProducts.canManageCatalog();
+            document.documentElement.dataset.ldmCatalogEditor = String(allowed === true);
+            if (notice && allowed) notice.style.display = "none";
+        } catch (error) {
+            if (notice) {
+                notice.innerHTML = "<strong>Master barang sedang dikunci.</strong><br>Pastikan SQL Tahap 26 sudah dipasang dan Cloud Session aktif. Stok cabang tetap dapat berubah melalui transaksi, Goods Receipt, transfer stok, retur, dan Stock Opname.";
+            }
+            console.warn("Otoritas katalog pusat belum tersedia:", error);
+        }
+        muatBarang();
+    }
+
     /* INITIALIZATION & EVENT LISTENERS */
     window.addEventListener("DOMContentLoaded", () => {
         populateFontSelectors();
         muatHeaderToko();
         muatBarang();
+        initializeCentralCatalogAuthority();
     });
 
     window.addEventListener('storage', (event) => {
@@ -5736,7 +5935,7 @@ document.addEventListener(
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin"],
+        "barang.html":["owner","admin","kasir"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -5808,7 +6007,7 @@ document.addEventListener(
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -6134,15 +6333,7 @@ document.addEventListener(
     }
 
     function witaDate(value){
-        const source=value instanceof Date?value:new Date(value??Date.now());
-        const time=isNaN(source)?Date.now():source.getTime();
-        const d=new Date(time+(8*60*60*1000));
-
-        return (
-            d.getUTCFullYear()+"-"+
-            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
-            String(d.getUTCDate()).padStart(2,"0")
-        );
+        return window.LDMLocalTime.dateKey(value);
     }
 
     function recordDate(item){
@@ -6357,6 +6548,6 @@ window.addEventListener(
 );
 </script>
 
-<script src="js/global-system-navigation.js?v=20.1"></script>
+<script src="js/global-system-navigation.js?v=25.2"></script>
 </body>
 </html>

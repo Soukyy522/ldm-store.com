@@ -25,34 +25,72 @@
         return clean(value).toLowerCase();
     }
 
-    function nextNumber(rows){
+    function currentStoreId(input){
+        return clean(input && input.storeId)
+            || clean(localStorage.getItem("ldmCloudStoreId"))
+            || clean(localStorage.getItem("currentStoreId"))
+            || clean(localStorage.getItem("storeId"))
+            || "LOCAL-DEFAULT";
+    }
+
+    function isEmployeeNik(value){
+        return /^\d{11}$/.test(clean(value));
+    }
+
+    function nextNumber(rows,storeId){
+        const targetStore=currentStoreId({storeId});
         return rows.reduce((max,row) => {
-            const match = String(row.employeeId || "").match(/(\d+)$/);
-            return Math.max(max, match ? Number(match[1]) : 0);
-        }, 0) + 1;
+            const rowStore=currentStoreId({storeId:row.storeId||targetStore});
+            if(rowStore!==targetStore || !isEmployeeNik(row.employeeId)) return max;
+            return Math.max(max,Number(String(row.employeeId).slice(-3))||0);
+        },0)+1;
+    }
+
+    function buildEmployeeNik(createdAt,number){
+        if(number>999) throw new Error("Batas 999 NIK Karyawan pada Store ID ini telah tercapai.");
+        const date=new Date(createdAt||Date.now());
+        const safeDate=Number.isFinite(date.getTime())?date:new Date();
+        const pad=value=>String(value).padStart(2,"0");
+        return String(safeDate.getFullYear()).slice(-2)
+            +pad(safeDate.getMonth()+1)
+            +pad(safeDate.getDate())
+            +pad(safeDate.getSeconds())
+            +String(number).padStart(3,"0");
     }
 
     function createForAccount(input){
         const username = clean(input && input.username);
         if(!username) return null;
         const rows = read();
+        const storeId=currentStoreId(input);
         const existing = rows.find(row => usernameKey(row.username) === usernameKey(username));
         if(existing){
+            if(!isEmployeeNik(existing.employeeId)){
+                existing.employeeId=buildEmployeeNik(
+                    existing.createdAt||input.createdAt,
+                    nextNumber(rows,storeId)
+                );
+                existing.nikKaryawan=existing.employeeId;
+            }
             existing.active = true;
             existing.role = clean(input && input.role).toLowerCase() || existing.role || "kasir";
+            existing.storeId=storeId;
             existing.updatedAt = new Date().toISOString();
             write(rows);
             return {...existing};
         }
-        const number = nextNumber(rows);
-        const employeeId = `LDM-${String(number).padStart(5,"0")}`;
+        const requestedDate=new Date(input&&input.createdAt||Date.now());
+        const createdAt=(Number.isFinite(requestedDate.getTime())?requestedDate:new Date()).toISOString();
+        const number = nextNumber(rows,storeId);
+        const employeeId = buildEmployeeNik(createdAt,number);
         const employee = {
             employeeId,
             nikKaryawan:employeeId,
             username,
             role:clean(input && input.role).toLowerCase() || "kasir",
+            storeId,
             active:true,
-            createdAt:new Date().toISOString(),
+            createdAt,
             updatedAt:new Date().toISOString()
         };
         rows.push(employee);
@@ -89,6 +127,7 @@
 
     function ensureMigration(){
         const rows = read();
+        const defaultStoreId=currentStoreId();
         let accounts = [];
         try{
             const parsed = JSON.parse(localStorage.getItem("daftarAkun") || "[]");
@@ -96,25 +135,44 @@
         }catch(error){
             accounts = [];
         }
+
+        rows
+            .sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0))
+            .forEach(row=>{
+                const storeId=currentStoreId({storeId:row.storeId||defaultStoreId});
+                row.storeId=storeId;
+                if(!isEmployeeNik(row.employeeId)){
+                    row.employeeId=buildEmployeeNik(
+                        row.createdAt,
+                        nextNumber(rows,storeId)
+                    );
+                }
+                row.nikKaryawan=row.employeeId;
+            });
+
         accounts.forEach(account => {
             const username = clean(account && account.username);
             if(!username) return;
+            const storeId=currentStoreId({storeId:account.storeId||defaultStoreId});
             const existing = rows.find(row => usernameKey(row.username) === usernameKey(username));
             if(existing){
                 existing.role = clean(account.role).toLowerCase() || existing.role;
-                if(account.employeeId) existing.employeeId = clean(account.employeeId);
-                if(account.nikKaryawan) existing.nikKaryawan = clean(account.nikKaryawan);
+                existing.storeId=storeId;
                 return;
             }
-            const number = nextNumber(rows);
-            const employeeId = clean(account.employeeId) || `LDM-${String(number).padStart(5,"0")}`;
+            const createdAt=account.createdAt||account.created_at||new Date().toISOString();
+            const number = nextNumber(rows,storeId);
+            const employeeId = isEmployeeNik(account.employeeId||account.nikKaryawan)
+                ? clean(account.employeeId||account.nikKaryawan)
+                : buildEmployeeNik(createdAt,number);
             rows.push({
                 employeeId,
-                nikKaryawan:clean(account.nikKaryawan) || employeeId,
+                nikKaryawan:employeeId,
                 username,
                 role:clean(account.role).toLowerCase() || "kasir",
+                storeId,
                 active:account.active !== false,
-                createdAt:new Date().toISOString(),
+                createdAt,
                 updatedAt:new Date().toISOString()
             });
         });
@@ -123,7 +181,7 @@
     }
 
     window.LDMEmployee = Object.freeze({
-        version:"19.0.0",read,ensureMigration,createForAccount,
+        version:"27.0.0",read,ensureMigration,createForAccount,
         findByUsername,updateUsername,deactivateByUsername
     });
 })();
