@@ -3,11 +3,14 @@
 
     if (window.LDMStorageDB) return;
 
-    const VERSION = '27.7.0';
+    const VERSION = '27.7.1';
     const DB_NAME = 'locdailymar-storage-v27';
-    const DB_VERSION = 1;
+    const DB_VERSION = 2;
     const SNAPSHOT_STORE = 'snapshots';
     const META_STORE = 'meta';
+    const TRANSACTION_STORE = 'transactions';
+    const TRANSACTION_ARCHIVE_MAX = 50000;
+    const TRANSACTION_RETENTION_DAYS = 365;
     const MIGRATION_KEY = 'legacy-localstorage-migration-v27';
 
     /*
@@ -76,6 +79,15 @@
 
                 if (!db.objectStoreNames.contains(META_STORE)) {
                     db.createObjectStore(META_STORE, { keyPath: 'key' });
+                }
+
+
+                if (!db.objectStoreNames.contains(TRANSACTION_STORE)) {
+                    const txStore = db.createObjectStore(TRANSACTION_STORE, { keyPath: 'key' });
+                    txStore.createIndex('business_date', 'business_date', { unique: false });
+                    txStore.createIndex('transacted_at_ms', 'transacted_at_ms', { unique: false });
+                    txStore.createIndex('updated_at_ms', 'updated_at_ms', { unique: false });
+                    txStore.createIndex('transaction_code', 'transaction_code', { unique: false });
                 }
             };
 
@@ -313,6 +325,184 @@
         return memory.size;
     }
 
+
+    function parseTransactionTime(row) {
+        const candidates = [
+            row && row.transacted_at,
+            row && row.timestamp,
+            row && row.waktu_teks,
+            row && row.tanggal
+        ];
+
+        for (const value of candidates) {
+            if (value == null || value === '') continue;
+            if (typeof value === 'number' && Number.isFinite(value)) return value;
+            const parsed = new Date(value).getTime();
+            if (Number.isFinite(parsed)) return parsed;
+        }
+        return Date.now();
+    }
+
+    function transactionArchiveKey(row, index = 0) {
+        const value = row && (
+            row.cloudId ||
+            row.cloudTransactionId ||
+            row.cloudLegacyId ||
+            row.clientTransactionId ||
+            row.client_transaction_id ||
+            row.kodeTransaksi ||
+            row.transaction_code ||
+            row.id
+        );
+        return String(value || `local-${parseTransactionTime(row)}-${index}`);
+    }
+
+    function transactionArchiveRecord(row, index = 0) {
+        const payload = clone(row || {});
+        const timeMs = parseTransactionTime(payload);
+        const date = String(
+            payload.tanggal ||
+            payload.business_date ||
+            ''
+        ).slice(0, 10);
+        const code = String(
+            payload.kodeTransaksi ||
+            payload.transaction_code ||
+            ''
+        );
+        return {
+            key: transactionArchiveKey(payload, index),
+            business_date: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : '',
+            transacted_at_ms: timeMs,
+            transaction_code: code,
+            payload,
+            updated_at_ms: Date.now()
+        };
+    }
+
+    async function putTransactions(rows, options = {}) {
+        const source = Array.isArray(rows) ? rows : [];
+        if (!source.length) return { written: 0 };
+        await ready();
+        const records = source.map(transactionArchiveRecord);
+        await transact(TRANSACTION_STORE, 'readwrite', store => {
+            records.forEach(record => store.put(record));
+        });
+        if (options.cleanup !== false) {
+            await cleanupTransactions(options).catch(error => {
+                console.warn('[LocDailyMar] Cleanup transaction archive dilewati:', error);
+            });
+        }
+        return { written: records.length };
+    }
+
+    async function replaceTransactions(rows, options = {}) {
+        const source = Array.isArray(rows) ? rows : [];
+        await ready();
+
+        const maxRecords = Math.max(
+            1000,
+            Number(options.maxRecords || TRANSACTION_ARCHIVE_MAX) || TRANSACTION_ARCHIVE_MAX
+        );
+        const retentionDays = Math.max(
+            1,
+            Number(options.retentionDays || TRANSACTION_RETENTION_DAYS) || TRANSACTION_RETENTION_DAYS
+        );
+        const cutoff = Date.now() - retentionDays * 86400000;
+
+        let kept = source.filter(row => parseTransactionTime(row) >= cutoff);
+        if (kept.length > maxRecords) {
+            kept = kept
+                .slice()
+                .sort((a, b) => parseTransactionTime(a) - parseTransactionTime(b))
+                .slice(-maxRecords);
+        }
+        const records = kept.map(transactionArchiveRecord);
+
+        await transact(TRANSACTION_STORE, 'readwrite', store => {
+            store.clear();
+            records.forEach(record => store.put(record));
+        });
+
+        await putMeta('transaction-archive-policy', {
+            version: VERSION,
+            max_records: maxRecords,
+            retention_days: retentionDays,
+            records: records.length,
+            updated_at: new Date().toISOString()
+        });
+
+        window.dispatchEvent(new CustomEvent('ldm:transaction-archive-updated', {
+            detail: { records: records.length, maxRecords, retentionDays }
+        }));
+
+        return { records: records.length, maxRecords, retentionDays };
+    }
+
+    async function getTransactions(options = {}) {
+        await ready();
+        const db = await openDatabase();
+        const tx = db.transaction(TRANSACTION_STORE, 'readonly');
+        const records = await requestResult(
+            tx.objectStore(TRANSACTION_STORE).getAll(),
+            'Arsip transaksi IndexedDB gagal dibaca.'
+        );
+
+        const fromDate = String(options.fromDate || '').slice(0, 10);
+        const toDate = String(options.toDate || '').slice(0, 10);
+        const newestFirst = options.newestFirst === true;
+        const limit = Math.max(1, Math.min(
+            Number(options.limit || TRANSACTION_ARCHIVE_MAX) || TRANSACTION_ARCHIVE_MAX,
+            TRANSACTION_ARCHIVE_MAX
+        ));
+
+        let filtered = (Array.isArray(records) ? records : []).filter(record => {
+            const date = String(record.business_date || '');
+            if (fromDate && date && date < fromDate) return false;
+            if (toDate && date && date > toDate) return false;
+            return true;
+        });
+
+        filtered.sort((a, b) => Number(a.transacted_at_ms || 0) - Number(b.transacted_at_ms || 0));
+        if (newestFirst) filtered.reverse();
+        if (filtered.length > limit) filtered = filtered.slice(0, limit);
+
+        return filtered.map(record => clone(record.payload));
+    }
+
+    async function transactionStats() {
+        await ready();
+        const db = await openDatabase();
+        const tx = db.transaction(TRANSACTION_STORE, 'readonly');
+        const rows = await requestResult(
+            tx.objectStore(TRANSACTION_STORE).getAll(),
+            'Statistik arsip transaksi gagal dibaca.'
+        );
+        const records = Array.isArray(rows) ? rows : [];
+        const times = records.map(row => Number(row.transacted_at_ms || 0)).filter(Number.isFinite);
+        let oldest = null;
+        let newest = null;
+        times.forEach(value => {
+            if (oldest == null || value < oldest) oldest = value;
+            if (newest == null || value > newest) newest = value;
+        });
+        return {
+            database: DB_NAME,
+            store: TRANSACTION_STORE,
+            count: records.length,
+            maxRecords: TRANSACTION_ARCHIVE_MAX,
+            retentionDays: TRANSACTION_RETENTION_DAYS,
+            oldestAt: oldest != null ? new Date(oldest).toISOString() : null,
+            newestAt: newest != null ? new Date(newest).toISOString() : null
+        };
+    }
+
+    async function cleanupTransactions(options = {}) {
+        await ready();
+        const rows = await getTransactions({ limit: TRANSACTION_ARCHIVE_MAX, newestFirst: false });
+        return replaceTransactions(rows, options);
+    }
+
     async function verify() {
         const token = `verify-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         const key = '__ldm_storage_verify__';
@@ -376,11 +566,18 @@
         requestPersistentStorage,
         migrateFromLocalStorage,
         verify,
-        getMeta
+        getMeta,
+        putTransactions,
+        replaceTransactions,
+        getTransactions,
+        transactionStats,
+        cleanupTransactions,
+        transactionArchiveMax: TRANSACTION_ARCHIVE_MAX,
+        transactionRetentionDays: TRANSACTION_RETENTION_DAYS
     });
 
     ready().catch(error => {
-        console.warn('[LocDailyMar] Storage Engine 27.7 tidak dapat diinisialisasi:', error);
+        console.warn('[LocDailyMar] Storage Engine 27.7.1 tidak dapat diinisialisasi:', error);
         window.dispatchEvent(new CustomEvent('ldm:indexeddb-error', {
             detail: { message: String(error && error.message || error) }
         }));

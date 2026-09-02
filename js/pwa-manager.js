@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const APP_VERSION = "27.7.0";
+    const APP_VERSION = "27.7.1";
     const SERVICE_WORKER_URL = "./service-worker.js";
     const UNSYNCED_COUNT_KEY = "ldmOfflineUnsyncedCountV16";
     const RESERVATION_KEY = "ldmOfflineStockReservationsV16";

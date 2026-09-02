@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const SERVICE_VERSION = "25.2.1";
+    const SERVICE_VERSION = "27.7.1";
     const ENABLED_KEY = "ldmReportingCloudEnabled";
     const LAST_SYNC_KEY = "ldmReportingLastSyncAt";
     const EXPENSE_BUCKET = "ldm-expense-receipts";
@@ -187,6 +187,18 @@
                 });
             }
 
+            if(options.gte){
+                Object.entries(options.gte).forEach(([column,value]) => {
+                    if(value != null && value !== "") query = query.gte(column,value);
+                });
+            }
+
+            if(options.lte){
+                Object.entries(options.lte).forEach(([column,value]) => {
+                    if(value != null && value !== "") query = query.lte(column,value);
+                });
+            }
+
             if(options.order){
                 query = query.order(
                     options.order.column,
@@ -284,6 +296,142 @@
             items:mappedItems,
             _cloudStage12:true
         };
+    }
+
+
+    async function fetchTransactionPage(options = {}){
+        await ensureAuth();
+        const pageSize = Math.max(1,Math.min(Number(options.limit || 500) || 500,1000));
+        const offset = Math.max(0,Number(options.offset || 0) || 0);
+        const params = {
+            p_offset:offset,
+            p_limit:pageSize,
+            p_from_date:options.fromDate || null,
+            p_to_date:options.toDate || null
+        };
+        const {data,error} = await client().rpc(
+            "ldm_report_transactions_page_v2771",
+            params
+        );
+        if(error) throw error;
+        const rows = Array.isArray(data) ? data : [];
+        return rows.map(row => transactionRowToLegacy(
+            row,
+            Array.isArray(row.items) ? row.items : []
+        ));
+    }
+
+    async function fetchAllTransactionPages(options = {}){
+        const pageSize = Math.max(1,Math.min(Number(options.pageSize || 500) || 500,1000));
+        const maxRows = Math.max(1,Number(options.maxRows || Number.MAX_SAFE_INTEGER) || Number.MAX_SAFE_INTEGER);
+        const rows = [];
+        let offset = 0;
+
+        while(rows.length < maxRows){
+            const page = await fetchTransactionPage({
+                offset,
+                limit:Math.min(pageSize,maxRows - rows.length),
+                fromDate:options.fromDate || null,
+                toDate:options.toDate || null
+            });
+            rows.push(...page);
+            if(typeof options.onProgress === "function"){
+                try{ options.onProgress({loaded:rows.length,lastPage:page.length,offset}); }catch(_){}
+            }
+            if(page.length < pageSize) break;
+            offset += page.length;
+        }
+
+        return rows;
+    }
+
+    async function fetchTransactionsLegacyFallback(){
+        const [transactions,items] = await Promise.all([
+            fetchAllRows(
+                "transactions",
+                "id,client_transaction_id,transaction_code,cashier_user_id,cashier_username,attendance_id,shift_label,business_date,transacted_at,payment_method,normal_subtotal,subtotal,product_discount,manual_discount,total_discount,grand_total,cash_received,cash_amount,qris_amount,change_amount,status",
+                { order:{column:"transacted_at",ascending:true} }
+            ),
+            (async()=>{
+                const {data,error}=await client().rpc("ldm_visible_transaction_items");
+                if(error)throw error;
+                return Array.isArray(data)?data:[];
+            })()
+        ]);
+
+        const itemMap = new Map();
+        items.forEach(item => {
+            if(!itemMap.has(item.transaction_id)) itemMap.set(item.transaction_id,[]);
+            itemMap.get(item.transaction_id).push(item);
+        });
+
+        return transactions
+            .filter(row => String(row.status || "").toLowerCase() === "completed")
+            .map(row => transactionRowToLegacy(row,itemMap.get(row.id) || []));
+    }
+
+    async function fetchLegacyTransactions(options = {}){
+        const queryOptions = {
+            isNull:["deleted_at"],
+            order:{column:"business_date",ascending:true}
+        };
+        if(options.fromDate) queryOptions.gte = { business_date:options.fromDate };
+        if(options.toDate) queryOptions.lte = { business_date:options.toDate };
+        const legacyRows = await fetchAllRows(
+            "legacy_transactions",
+            "id,legacy_source_id,transaction_code,business_date,cashier_username,shift_label,payment_method,grand_total,payload,imported_at",
+            queryOptions
+        );
+        return legacyRows.map(legacyTransactionRowToLegacy);
+    }
+
+    function mergeReportTransactions(cloudRows,legacyRows,localPending = []){
+        const cloud = Array.isArray(cloudRows) ? cloudRows : [];
+        const legacy = Array.isArray(legacyRows) ? legacyRows : [];
+        const pending = Array.isArray(localPending) ? localPending : [];
+        const codes = new Set(
+            cloud.map(row => String(row.kodeTransaksi || "").trim()).filter(Boolean)
+        );
+        const cloudAndImported = [
+            ...legacy.filter(row => !codes.has(String(row.kodeTransaksi || "").trim())),
+            ...cloud
+        ];
+        const knownCodes = new Set(
+            cloudAndImported.map(row => String(row.kodeTransaksi || "").trim()).filter(Boolean)
+        );
+        return [
+            ...pending.filter(row => !knownCodes.has(String(row.kodeTransaksi || "").trim())),
+            ...cloudAndImported
+        ].sort((a,b) => {
+            const left = `${a.tanggal || ""} ${a.waktu || ""}`;
+            const right = `${b.tanggal || ""} ${b.waktu || ""}`;
+            return left.localeCompare(right);
+        });
+    }
+
+    async function fetchAllReportTransactions(options = {}){
+        await ensureAuth();
+        let cloudRows;
+        try{
+            cloudRows = await fetchAllTransactionPages({
+                pageSize:options.pageSize || 500,
+                fromDate:options.fromDate || null,
+                toDate:options.toDate || null,
+                onProgress:options.onProgress
+            });
+        }catch(error){
+            console.warn("RPC laporan 27.7.1 belum tersedia, memakai fallback lama:",error);
+            cloudRows = await fetchTransactionsLegacyFallback();
+            if(options.fromDate || options.toDate){
+                cloudRows = cloudRows.filter(row => {
+                    const d=String(row.tanggal || "").slice(0,10);
+                    return (!options.fromDate || !d || d >= options.fromDate)
+                        && (!options.toDate || !d || d <= options.toDate);
+                });
+            }
+        }
+        const legacyRows = await fetchLegacyTransactions(options);
+        return mergeReportTransactions(cloudRows,legacyRows,[]);
     }
 
     function legacyTransactionRowToLegacy(row){
@@ -397,73 +545,46 @@
             ? []
             : safeArray("laporan").filter(isLocalLegacyTransaction);
 
-        const [transactions,items,legacyRows] = await Promise.all([
-            fetchAllRows(
-                "transactions",
-                "id,client_transaction_id,transaction_code,cashier_user_id,cashier_username,attendance_id,shift_label,business_date,transacted_at,payment_method,normal_subtotal,subtotal,product_discount,manual_discount,total_discount,grand_total,cash_received,cash_amount,qris_amount,change_amount,status",
-                {
-                    order:{column:"transacted_at",ascending:true}
-                }
-            ),
-            (async()=>{
-                const {data,error}=await client().rpc("ldm_visible_transaction_items");
-                if(error)throw error;
-                return Array.isArray(data)?data:[];
-            })(),
-            fetchAllRows(
-                "legacy_transactions",
-                "id,legacy_source_id,transaction_code,business_date,cashier_username,shift_label,payment_method,grand_total,payload,imported_at",
-                {
-                    isNull:["deleted_at"],
-                    order:{column:"business_date",ascending:true}
-                }
-            )
-        ]);
+        const archiveCutoff = new Date(Date.now() - 365 * 86400000)
+            .toISOString()
+            .slice(0,10);
 
-        const itemMap = new Map();
-        items.forEach(item => {
-            if(!itemMap.has(item.transaction_id)){
-                itemMap.set(item.transaction_id,[]);
+        let cloudRows;
+        try{
+            cloudRows = await fetchAllTransactionPages({
+                pageSize:500,
+                maxRows:50000,
+                fromDate:archiveCutoff
+            });
+        }catch(error){
+            console.warn(
+                "RPC laporan paginated 27.7.1 belum terpasang. Memakai fallback kompatibilitas.",
+                error
+            );
+            cloudRows = await fetchTransactionsLegacyFallback();
+        }
+
+        const legacyRows = await fetchLegacyTransactions({ fromDate:archiveCutoff });
+        const merged = mergeReportTransactions(cloudRows,legacyRows,localPending);
+
+        if(
+            window.LDMStorageDB &&
+            typeof window.LDMStorageDB.replaceTransactions === "function"
+        ){
+            try{
+                await window.LDMStorageDB.replaceTransactions(merged,{
+                    maxRecords:50000,
+                    retentionDays:365
+                });
+            }catch(error){
+                console.warn("Arsip transaksi IndexedDB gagal diperbarui:",error);
             }
-            itemMap.get(item.transaction_id).push(item);
-        });
+        }
 
-        const cloudRows = transactions
-            .filter(row => String(row.status || "").toLowerCase() === "completed")
-            .map(row => transactionRowToLegacy(row,itemMap.get(row.id) || []));
-
-        const legacy = legacyRows.map(legacyTransactionRowToLegacy);
-
-        const codes = new Set(
-            cloudRows
-                .map(row => String(row.kodeTransaksi || "").trim())
-                .filter(Boolean)
-        );
-
-        const cloudAndImported = [
-            ...legacy.filter(row => !codes.has(String(row.kodeTransaksi || "").trim())),
-            ...cloudRows
-        ];
-
-        const knownCodes = new Set(
-            cloudAndImported
-                .map(row => String(row.kodeTransaksi || "").trim())
-                .filter(Boolean)
-        );
-
-        const merged = [
-            ...localPending.filter(row =>
-                !knownCodes.has(String(row.kodeTransaksi || "").trim())
-            ),
-            ...cloudAndImported
-        ].sort((a,b) => {
-            const left = `${a.tanggal || ""} ${a.waktu || ""}`;
-            const right = `${b.tanggal || ""} ${b.waktu || ""}`;
-            return left.localeCompare(right);
-        });
-
+        // localStorage hanya compatibility cache kecil. Arsip besar berada di IndexedDB.
+        const compatibilityCache = merged.slice(-200);
         TX_KEYS.forEach(key => {
-            localStorage.setItem(key,JSON.stringify(merged));
+            localStorage.setItem(key,JSON.stringify(compatibilityCache));
         });
 
         return merged;
@@ -1425,6 +1546,9 @@
         formatWITA,
         refreshProfiles,
         refreshTransactions,
+        fetchTransactionPage,
+        fetchAllTransactionPages,
+        fetchAllReportTransactions,
         refreshClosings,
         refreshEOD,
         refreshExpenses,

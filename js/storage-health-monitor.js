@@ -3,7 +3,7 @@
 
     if (window.LDMStorageHealth) return;
 
-    const VERSION = '27.7.0';
+    const VERSION = '27.7.1';
     const WARNING_PERCENT = 80;
     const HIGH_PERCENT = 90;
     const CRITICAL_PERCENT = 97;

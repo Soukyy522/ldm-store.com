@@ -3,12 +3,19 @@
 
     if (window.LDMStorageQuotaGuard) return;
 
-    const VERSION = '27.7.0';
+    const VERSION = '27.7.1';
     const nativeSetItem = Storage.prototype.setItem;
     const nativeGetItem = Storage.prototype.getItem;
     const nativeRemoveItem = Storage.prototype.removeItem;
+    const TRANSACTION_CACHE_KEYS = new Set([
+        'laporan',
+        'dataLaporan',
+        'riwayatTransaksi',
+        'laporanHistory'
+    ]);
 
     function mirrorToIndexedDB(key, value, protectedValue) {
+        if (TRANSACTION_CACHE_KEYS.has(String(key))) return;
         try {
             if (window.LDMStorageDB && typeof window.LDMStorageDB.mirrorRaw === 'function') {
                 window.LDMStorageDB.mirrorRaw(String(key), String(value), {
