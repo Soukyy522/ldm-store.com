@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi Karyawan - LocDailyMar POS</title>
@@ -1250,6 +1249,7 @@
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
+    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -1695,7 +1695,14 @@
     }
 
     function witaDate(value){
-        return window.LDMLocalTime.dateKey(value);
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
     }
 
     function recordDate(item){
@@ -2210,12 +2217,9 @@
     <script src="js/attendance-service.js?v=9.1"></script>
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
-    <script src="js/products-service.js?v=21.0"></script>
+    <script src="js/products-service.js?v=7.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
 
-<script src="js/license-v2-config.js?v=25.2.0"></script>
-<script src="js/license-v2-client.js?v=25.2.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head>
 <body>
 
@@ -3168,17 +3172,27 @@ const loggedUser =
         }
 
         function getTanggalWITA(dateObj = new Date()) {
-            return window.LDMLocalTime.dateKey(dateObj);
+            const utcTime = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
+            const witaTime = new Date(utcTime + (3600000 * 8));
+            const year = witaTime.getFullYear();
+            const month = String(witaTime.getMonth() + 1).padStart(2, '0');
+            const day = String(witaTime.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         function startRunningClock() {
             function updateClock() {
                 const now = new Date();
-                const localTime = window.LDMLocalTime.timeKey(now);
+                const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const witaNow = new Date(utcNow + (3600000 * 8));
+
+                const hrs = String(witaNow.getHours()).padStart(2, '0');
+                const mins = String(witaNow.getMinutes()).padStart(2, '0');
+                const secs = String(witaNow.getSeconds()).padStart(2, '0');
 
                 const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                document.getElementById("txtTanggalHariIni").innerText = now.toLocaleDateString('id-ID', optionsDate);
-                document.getElementById("runningClock").innerText = `${localTime} ${window.LDMLocalTime.zoneLabel(now)}`;
+                document.getElementById("txtTanggalHariIni").innerText = witaNow.toLocaleDateString('id-ID', optionsDate);
+                document.getElementById("runningClock").innerText = `${hrs}:${mins}:${secs} WITA`;
             }
             updateClock();
             setInterval(updateClock, 1000);
@@ -5332,7 +5346,7 @@ document.addEventListener(
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin","kasir"],
+        "barang.html":["owner","admin"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -5404,7 +5418,7 @@ document.addEventListener(
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -5730,7 +5744,15 @@ document.addEventListener(
     }
 
     function witaDate(value){
-        return window.LDMLocalTime.dateKey(value);
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
     }
 
     function recordDate(item){
@@ -5975,6 +5997,6 @@ window.addEventListener(
 );
 </script>
 
-<script src="js/global-system-navigation.js?v=25.2"></script>
+<script src="js/global-system-navigation.js?v=20.1"></script>
 </body>
 </html>

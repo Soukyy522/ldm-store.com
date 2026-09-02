@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
+<head><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kasir - LocDailyMar POS</title>
@@ -555,6 +554,7 @@
     }
 
     /* Kasir: sembunyikan route yang memang tidak dapat dibuka. */
+    html[data-ldm-role="kasir"] .nav-bar a[href="barang.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="supplier.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="Purchase-Order.html"],
     html[data-ldm-role="kasir"] .nav-bar a[href="goods.receipt.html"],
@@ -1000,7 +1000,14 @@
     }
 
     function witaDate(value){
-        return window.LDMLocalTime.dateKey(value);
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
     }
 
     function recordDate(item){
@@ -1519,10 +1526,8 @@
     <!-- Live Sync Tahap 9: Cloud Absensi -->
     <script src="js/attendance-service.js?v=9.1"></script>
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
-    <!-- Tahap 21: Promo dan Harga Lanjutan -->
-    <script src="js/promo-pricing.js?v=21.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
-    <script src="js/products-service.js?v=21.0"></script>
+    <script src="js/products-service.js?v=16.0"></script>
     <script src="js/transactions-service.js?v=16.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
     <!-- Live Sync Tahap 10: Cloud Retur compatibility -->
@@ -1560,7 +1565,7 @@
         <div class="main-content">
             <div class="header-app" id="headerApp">
                 <div class="header-brand-container">
-                    <button type="button" class="btn-hamburger btn-toggle-menu" data-ldm-menu-toggle="true" onclick="toggleNavMobile()" aria-label="Buka menu navigasi" aria-expanded="false" title="Buka Menu Navigasi">☰</button>
+                    <button type="button" class="btn-hamburger" onclick="toggleNavMobile()" title="Buka Menu Navigasi">☰</button>
                     
                     <img id="imgLogoToko" class="header-logo-img" alt="Logo Toko" style="display: none;">
                     <div class="header-title-box">
@@ -2337,9 +2342,6 @@ document.addEventListener(
    ========================================================= */
 
 function getHargaEfektif(barang, qty = 1) {
-    if (window.LDMPromoPricing) {
-        return window.LDMPromoPricing.resolve(barang, qty).unitPrice;
-    }
     const hargaNormal = Number(barang?.harga) || 0;
 
     // Tidak ada promo
@@ -2354,8 +2356,16 @@ function getHargaEfektif(barang, qty = 1) {
         return hargaNormal;
     }
 
-    // Periode promo mengikuti tanggal lokal perangkat.
-    const hariIni = window.LDMLocalTime.dateKey();
+    // Cek tanggal WITA
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const wita = new Date(utc + (8 * 60 * 60 * 1000));
+
+    const tahun = wita.getFullYear();
+    const bulan = String(wita.getMonth() + 1).padStart(2, "0");
+    const hari = String(wita.getDate()).padStart(2, "0");
+
+    const hariIni = `${tahun}-${bulan}-${hari}`;
 
     // Belum masuk tanggal promo
     if (promo.tglMulai && hariIni < promo.tglMulai) {
@@ -2394,21 +2404,64 @@ function isPromoAktif(barang, qty = 1) {
     return hargaEfektif < hargaNormal;
 }
 
-function getKeputusanHarga(barang, qty = 1) {
-    if (window.LDMPromoPricing) {
-        return window.LDMPromoPricing.resolve(barang, qty);
-    }
-    const normalPrice = Number(barang?.harga) || 0;
-    const unitPrice = getHargaEfektif(barang, qty);
-    return {
-        normalPrice,
-        unitPrice,
-        applied: unitPrice < normalPrice,
-        label: barang?.promo?.nama || "Promo Produk"
-    };
-}
 
 
+        /* CACHE LAPORAN LOKAL TERBATAS
+         * Supabase tetap menjadi sumber utama histori transaksi.
+         * localStorage hanya dipakai sebagai compatibility cache agar tidak
+         * memenuhi quota browser dan tidak boleh menggagalkan checkout cloud.
+         */
+        const LDM_REPORT_CACHE_LIMIT = 200;
+        const LDM_REPORT_CACHE_FALLBACK_LIMIT = 50;
+
+        function bacaArrayLocalStorageAman(key) {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.warn(`Cache ${key} tidak dapat dibaca.`, error);
+                return [];
+            }
+        }
+
+        function simpanArrayLocalStorageAman(key, rows, maxItems = LDM_REPORT_CACHE_LIMIT) {
+            const source = Array.isArray(rows) ? rows : [];
+            const limited = source.slice(-Math.max(1, Number(maxItems) || LDM_REPORT_CACHE_LIMIT));
+
+            try {
+                localStorage.setItem(key, JSON.stringify(limited));
+                return true;
+            } catch (error) {
+                const quotaExceeded =
+                    error && (
+                        error.name === "QuotaExceededError" ||
+                        error.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+                        error.code === 22 ||
+                        error.code === 1014
+                    );
+
+                if (!quotaExceeded) {
+                    console.warn(`Cache ${key} gagal disimpan.`, error);
+                    return false;
+                }
+
+                console.warn(
+                    `Quota localStorage penuh saat menyimpan ${key}. Cache diperkecil otomatis.`
+                );
+
+                const fallback = source.slice(-LDM_REPORT_CACHE_FALLBACK_LIMIT);
+                try {
+                    localStorage.setItem(key, JSON.stringify(fallback));
+                    return true;
+                } catch (retryError) {
+                    console.warn(
+                        `Cache ${key} tetap tidak dapat disimpan setelah diperkecil. Transaksi cloud tidak dibatalkan.`,
+                        retryError
+                    );
+                    return false;
+                }
+            }
+        }
 
         /* SINKRONISASI LAPORAN AMAN (MENCEGAH RESET OTOMATIS) */
         function checkAndResetLaporan24Jam() {
@@ -2433,18 +2486,21 @@ function getKeputusanHarga(barang, qty = 1) {
                 dataLaporan = [];
             }
 
-            let historyLaporan = JSON.parse(localStorage.getItem("laporanHistory")) || [];
+            let historyLaporan = bacaArrayLocalStorageAman("laporanHistory");
 
-            // Sinkronkan seluruh transaksi ke laporanHistory agar data historis tetap tersimpan aman
+            // History lokal hanya compatibility cache. Histori lengkap berada di Supabase.
             dataLaporan.forEach(item => {
-                if (!historyLaporan.some(h => h.id === item.id)) {
+                const itemKey = item && (item.cloudId || item.clientTransactionId || item.kodeTransaksi || item.id);
+                if (!historyLaporan.some(h =>
+                    String(h && (h.cloudId || h.clientTransactionId || h.kodeTransaksi || h.id)) === String(itemKey)
+                )) {
                     historyLaporan.push(item);
                 }
             });
-            
-            localStorage.setItem("laporanHistory", JSON.stringify(historyLaporan));
-            localStorage.setItem("laporan", JSON.stringify(dataLaporan));
-            localStorage.setItem("dataLaporan", JSON.stringify(dataLaporan));
+
+            simpanArrayLocalStorageAman("laporanHistory", historyLaporan);
+            simpanArrayLocalStorageAman("laporan", dataLaporan);
+            simpanArrayLocalStorageAman("dataLaporan", dataLaporan);
         }
 
         /* LOGIKA TOGGLE MENU NAVIGASI MOBILE */
@@ -3051,10 +3107,9 @@ function tambahItem() {
     // HITUNG HARGA NORMAL DAN HARGA EFEKTIF
     // ==========================================
 
-    const keputusanHarga = getKeputusanHarga(barang, qty);
-    const hargaNormal = keputusanHarga.normalPrice;
-    const hargaEfektif = keputusanHarga.unitPrice;
-    const promoAktif = keputusanHarga.applied;
+    const hargaNormal = Number(barang.harga) || 0;
+    const hargaEfektif = getHargaEfektif(barang, qty);
+    const promoAktif = hargaEfektif < hargaNormal;
 
     // ==========================================
     // MASUKKAN KE KERANJANG
@@ -3081,8 +3136,7 @@ function tambahItem() {
         // Hitung ulang harga berdasarkan total quantity
         const qtyBaru = keranjang[existingIdx].qty;
 
-        const keputusanBaru = getKeputusanHarga(barang, qtyBaru);
-        const hargaBaru = keputusanBaru.unitPrice;
+        const hargaBaru = getHargaEfektif(barang, qtyBaru);
 
         keranjang[existingIdx].productId =
             barang.id || keranjang[existingIdx].productId || null;
@@ -3093,7 +3147,6 @@ function tambahItem() {
         keranjang[existingIdx].harga = hargaBaru;
         keranjang[existingIdx].hargaNormal = hargaNormal;
         keranjang[existingIdx].isPromo = hargaBaru < hargaNormal;
-        keranjang[existingIdx].promoLabel = keputusanBaru.label || "Promo Produk";
 
         keranjang[existingIdx].subtotal =
             qtyBaru * hargaBaru;
@@ -3115,7 +3168,6 @@ function tambahItem() {
             hargaNormal: hargaNormal,
 
             isPromo: promoAktif,
-            promoLabel: keputusanHarga.label || "Promo Produk",
 
             qty: qty,
 
@@ -3151,8 +3203,6 @@ function tambahItem() {
             subtotalBelanja = 0;
 
             keranjang.forEach((item, index) => {
-                // Pulihkan draft/keranjang memakai aturan promo terbaru.
-                hitungUlangHargaItemKeranjang(index);
                 subtotalBelanja += item.subtotal;
 
                 const row = document.createElement("div");
@@ -3224,7 +3274,7 @@ function tambahItem() {
                 if (keranjang[index].qty <= 0) {
                     keranjang.splice(index, 1);
                 } else {
-                    hitungUlangHargaItemKeranjang(index);
+                    keranjang[index].subtotal = keranjang[index].qty * keranjang[index].harga;
                 }
                 renderKeranjang();
             }
@@ -3236,31 +3286,9 @@ function tambahItem() {
                 keranjang.splice(index, 1);
             } else {
                 keranjang[index].qty = parsed;
-                hitungUlangHargaItemKeranjang(index);
+                keranjang[index].subtotal = keranjang[index].qty * keranjang[index].harga;
             }
             renderKeranjang();
-        }
-
-        function hitungUlangHargaItemKeranjang(index) {
-            const cartItem = keranjang[index];
-            if (!cartItem) return;
-
-            const products = JSON.parse(localStorage.getItem("dataBarang") || "[]");
-            const product = products.find(row =>
-                (cartItem.productId && row.id === cartItem.productId) ||
-                (cartItem.barcode && String(row.barcode || "") === String(cartItem.barcode)) ||
-                (!cartItem.productId && !cartItem.barcode && row.nama === cartItem.nama)
-            );
-
-            if (product) {
-                const decision = getKeputusanHarga(product, cartItem.qty);
-                cartItem.hargaNormal = decision.normalPrice;
-                cartItem.harga = decision.unitPrice;
-                cartItem.isPromo = decision.applied;
-                cartItem.promoLabel = decision.label || "Promo Produk";
-            }
-
-            cartItem.subtotal = cartItem.qty * cartItem.harga;
         }
 
         function hapusItemCart(index) {
@@ -3400,7 +3428,7 @@ function tambahItem() {
             const today =
                 typeof getTanggalWITA === "function"
                     ? getTanggalWITA()
-                    : window.LDMLocalTime.dateKey();
+                    : new Date().toISOString().slice(0,10);
 
             let logs = [];
             try {
@@ -3579,12 +3607,12 @@ function tambahItem() {
 
             dataLaporan.push(lastTransaksiData);
 
-            localStorage.setItem("laporan", JSON.stringify(dataLaporan));
-            localStorage.setItem("dataLaporan", JSON.stringify(dataLaporan));
+            simpanArrayLocalStorageAman("laporan", dataLaporan);
+            simpanArrayLocalStorageAman("dataLaporan", dataLaporan);
 
-            let historyLaporan = JSON.parse(localStorage.getItem("laporanHistory")) || [];
+            let historyLaporan = bacaArrayLocalStorageAman("laporanHistory");
             historyLaporan.push(lastTransaksiData);
-            localStorage.setItem("laporanHistory", JSON.stringify(historyLaporan));
+            simpanArrayLocalStorageAman("laporanHistory", historyLaporan);
 
             window.dispatchEvent(new Event('storage'));
 
@@ -3655,7 +3683,7 @@ function tambahItem() {
                 });
 
                 if (changed) {
-                    localStorage.setItem(key, JSON.stringify(rows));
+                    simpanArrayLocalStorageAman(key, rows);
                 }
             });
 
@@ -3690,7 +3718,7 @@ function tambahItem() {
                         changed = true;
                     }
                 });
-                if (changed) localStorage.setItem(key, JSON.stringify(rows));
+                if (changed) simpanArrayLocalStorageAman(key, rows);
             });
         }
 
@@ -3853,11 +3881,21 @@ function tambahItem() {
                  * Baru setelah COMMIT cloud sukses,
                  * kita tulis compatibility report lokal.
                  */
-                simpanKeLaporan(
-                    metode,
-                    detailKombinasi,
-                    cloudResult
-                );
+                try {
+                    simpanKeLaporan(
+                        metode,
+                        detailKombinasi,
+                        cloudResult
+                    );
+                } catch (localCacheError) {
+                    // Checkout cloud sudah COMMIT. Kegagalan cache lokal tidak boleh
+                    // mengubah transaksi sukses menjadi "Transaksi Gagal".
+                    console.warn(
+                        "Transaksi cloud berhasil, tetapi cache laporan lokal gagal diperbarui.",
+                        localCacheError
+                    );
+                    hapusDraftKasirOtomatis();
+                }
 
                 return cloudResult;
 
@@ -5352,7 +5390,7 @@ document.addEventListener(
         "absensi.html":["owner","admin","kasir"],
         "kasir.html":["owner","admin","kasir"],
         "retur.html":["owner","admin","kasir"],
-        "barang.html":["owner","admin","kasir"],
+        "barang.html":["owner","admin"],
         "supplier.html":["owner","admin"],
         "Purchase-Order.html":["owner","admin"],
         "goods.receipt.html":["owner","admin"],
@@ -5424,7 +5462,7 @@ document.addEventListener(
         {page:"kasir.html", icon:"💵", label:"Kasir", group:"Utama", roles:["owner","admin","kasir"], quick:true},
         {page:"retur.html", icon:"↩️", label:"Retur", group:"Keuangan & Laporan", roles:["owner","admin","kasir"]},
 
-        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin","kasir"], badge:"navBadge"},
+        {page:"barang.html", icon:"📦", label:"Barang", group:"Inventori", roles:["owner","admin"], badge:"navBadge"},
         {page:"kartu-stok.html", icon:"📒", label:"Kartu Stok", group:"Inventori", roles:["owner","admin","kasir"]},
         {page:"stock-opname.html", icon:"📋", label:"Stock Opname", group:"Inventori", roles:["owner","admin","kasir"]},
 
@@ -5750,7 +5788,15 @@ document.addEventListener(
     }
 
     function witaDate(value){
-        return window.LDMLocalTime.dateKey(value);
+        const source=value instanceof Date?value:new Date(value??Date.now());
+        const time=isNaN(source)?Date.now():source.getTime();
+        const d=new Date(time+(8*60*60*1000));
+
+        return (
+            d.getUTCFullYear()+"-"+
+            String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+            String(d.getUTCDate()).padStart(2,"0")
+        );
     }
 
     function recordDate(item){
@@ -5949,9 +5995,10 @@ document.addEventListener(
     },2000);
 })();
 </script>
-<script src="js/license-v2-config.js?v=25.2.0"></script>
-<script src="js/license-v2-client.js?v=25.2.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
-<script src="js/global-system-navigation.js?v=25.2"></script>
+
+
+
+
+<script src="js/global-system-navigation.js?v=20.1"></script>
 </body>
 </html>

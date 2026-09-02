@@ -64,19 +64,6 @@ Jangan commit `service_role` key, password database, JWT secret, token admin, at
 - [x] Tahap 17: Sync Conflict & Recovery Center
 - [x] Tahap 18: PWA Installation & Safe Update Manager
 - [x] Tahap 19: Full QA, Security & Performance
-- [x] Tahap 20: Master Satuan dan Konversi Kemasan
-- [x] Tahap 21: Promo dan Harga Lanjutan
-- [x] Tahap 22: Multi-Toko dan Transfer Stok
-- [x] Patch 22.1: Mega Menu desktop global, hamburger HP, dan tema Multi-Toko mengikuti Dashboard
-- [x] Patch 22.2: Seluruh navigasi operasional memakai source global yang sama dengan Dashboard, responsive desktop/HP, dan EOD otomatis tersembunyi sampai Closing Shift lengkap
-
-Tahap 21 menambahkan promo harga tetap, diskon persen, minimal pembelian,
-jadwal tanggal, pratinjau margin, validasi server, dan riwayat perubahan harga.
-Petunjuk pemasangan tersedia pada `docs/TAHAP-21.md`.
-
-Tahap 22 menambahkan jaringan cabang, membership akun per toko, toko aktif per
-perangkat, serta transfer stok atomik Draft → Dalam Pengiriman → Diterima.
-Petunjuk pemasangan tersedia pada `docs/TAHAP-22.md`.
 
 Tahap 18 menambahkan manifest installable, ikon aplikasi, halaman fallback
 offline, satu Service Worker resmi, pemeriksaan update manual, serta perlindungan

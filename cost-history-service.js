@@ -62,10 +62,31 @@
     }
 
     async function fetchAll(){
-        await context();
-        const {data,error}=await client().rpc("ldm_visible_cost_history");
-        if(error)throw error;
-        return Array.isArray(data)?data:[];
+        const ctx=await context();
+        if(String(ctx?.profile?.role||"").toLowerCase()!=="owner"){
+            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(ENABLED_KEY);
+            return [];
+        }
+
+        const supabase=client();
+        const pageSize=1000;
+        const rows=[];
+        let from=0;
+
+        while(true){
+            const {data,error}=await supabase
+                .from("purchase_price_history")
+                .select("id,product_id,purchase_price,effective_at,business_date,source")
+                .order("effective_at",{ascending:true})
+                .range(from,from+pageSize-1);
+            if(error) throw error;
+            const page=Array.isArray(data)?data:[];
+            rows.push(...page);
+            if(page.length<pageSize) break;
+            from+=pageSize;
+        }
+        return rows;
     }
 
     async function refreshCache(){
@@ -86,10 +107,7 @@
             const normalizedTime=/^\d{2}:\d{2}:\d{2}$/.test(time)
                 ? time
                 : (/^\d{2}:\d{2}$/.test(time)?`${time}:00`:"23:59:59");
-            const iso=window.LDMLocalTime
-                ? window.LDMLocalTime.localDateTimeToISO(date,normalizedTime)
-                : new Date(`${date}T${normalizedTime}`).toISOString();
-            const ms=iso ? Date.parse(iso) : NaN;
+            const ms=Date.parse(`${date}T${normalizedTime}+08:00`);
             if(Number.isFinite(ms)) return ms;
         }
         return Date.now();

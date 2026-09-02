@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="id" class="secure-page-pending">
 <head>
-<script src="js/local-time.js?v=26.4.0"></script>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Test TAHAP 17 - LocDailyMar</title>
     <style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#eef4f2;color:#172033;font:14px/1.5 system-ui}.wrap{max-width:900px;margin:auto}.card{background:#fff;border:1px solid #dce6e2;border-radius:15px;padding:18px;margin-bottom:14px}button,a{border:0;border-radius:9px;padding:10px 13px;font-weight:800;text-decoration:none;background:#0f9d58;color:#fff;cursor:pointer}.row{display:flex;gap:8px;flex-wrap:wrap}.badge{display:inline-block;margin:3px;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800}.pass{background:#dcfce7;color:#166534}.fail{background:#fee2e2;color:#991b1b}.warn{background:#fef3c7;color:#92400e}pre{white-space:pre-wrap;background:#0f172a;color:#d8f3e7;padding:13px;border-radius:10px;max-height:380px;overflow:auto}</style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script><script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=16.0"></script><script src="js/cloud-session-guard.js?v=16.0"></script><script src="js/offline-queue.js?v=17.0"></script><script src="js/recovery-service.js?v=17.0"></script>
-<script src="js/license-v2-config.js?v=25.2.0"></script>
-<script src="js/license-v2-client.js?v=25.2.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head>
 <body><main class="wrap"><section class="card"><h1>TAHAP 17 — Recovery Test</h1><p>Pemeriksaan ini hanya membaca konfigurasi, queue lokal, dan conflict cloud. Tidak membuat transaksi atau melakukan discard.</p><div class="row"><button id="run">Jalankan Pemeriksaan</button><a href="recovery-center.html">Recovery Center</a><a href="dashboard.html">Dashboard</a></div></section><section class="card"><h2>Hasil</h2><div id="result"><span class="badge warn">Belum diperiksa</span></div></section><section class="card"><h2>Log</h2><pre id="log">Siap.</pre></section></main>
 <script>
