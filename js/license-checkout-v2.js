@@ -1,8 +1,9 @@
 (function(){
     "use strict";
-    const STORAGE_KEY="ldmPublicCheckoutV274";
-    const PREVIOUS_STORAGE_KEY="ldmPublicCheckoutV273";
-    const LEGACY_STORAGE_KEY="ldmPublicCheckoutV272";
+    const STORAGE_KEY="ldmPublicCheckoutV276";
+    const PREVIOUS_STORAGE_KEY="ldmPublicCheckoutV274";
+    const LEGACY_STORAGE_KEY="ldmPublicCheckoutV273";
+    const LEGACY_STORAGE_KEY_2="ldmPublicCheckoutV272";
     function cfg(){
         const base=window.LDM_LICENSE_V2_CONFIG||{};
         const url=String(base.checkoutUrl||"").trim() || String(base.serverUrl||"").replace(/\/ldm-license-v2\/?$/i,"/ldm-public-checkout-v2");
@@ -49,11 +50,13 @@
             if(prev?.order_id&&prev?.status_token){localStorage.setItem(STORAGE_KEY,JSON.stringify(prev));return prev}
             const legacy=JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY)||"null");
             if(legacy?.order_id&&legacy?.status_token){localStorage.setItem(STORAGE_KEY,JSON.stringify(legacy));return legacy}
+            const legacy2=JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY_2)||"null");
+            if(legacy2?.order_id&&legacy2?.status_token){localStorage.setItem(STORAGE_KEY,JSON.stringify(legacy2));return legacy2}
             return null;
         }catch{return null}
     }
     function setPaymentManager(show){const box=el("checkoutManageActions");if(box)box.hidden=!show}
-    function clearLast(){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(PREVIOUS_STORAGE_KEY);localStorage.removeItem(LEGACY_STORAGE_KEY)}
+    function clearLast(){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(PREVIOUS_STORAGE_KEY);localStorage.removeItem(LEGACY_STORAGE_KEY);localStorage.removeItem(LEGACY_STORAGE_KEY_2)}
     function hideSnap(){try{window.snap?.hide?.()}catch(_ignored){}setStatus("Metode pembayaran ditutup. Order belum dibatalkan. Kamu bisa membuka metode pembayaran lagi atau membatalkan order selama transaksi belum dibayar.","info")}
     async function reopenPayment(){if(!activePayment?.snap_token)throw new Error("Token pembayaran tidak tersedia pada sesi ini. Tekan Lanjut ke Metode Pembayaran lagi untuk membuka order pending yang sama.");await loadSnap(activePayment.client_key,activePayment.environment);window.snap.pay(activePayment.snap_token,{onSuccess:()=>{setStatus("Pembayaran selesai di Midtrans. Menunggu verifikasi webhook…","info");poll(activePayment.order_id,activePayment.status_token).catch(e=>setStatus(e.message,"error"))},onPending:()=>setStatus("Pembayaran masih pending. Selesaikan pembayaran atau batalkan order jika tidak ingin melanjutkan.","info"),onError:()=>setStatus("Midtrans melaporkan pembayaran gagal. Kamu dapat mencoba kembali.","error"),onClose:()=>setStatus("Jendela metode pembayaran ditutup. Order tetap pending sampai dibayar, kedaluwarsa, atau dibatalkan.","info")})}
     async function cancelLast(){const last=readLast();if(!last?.order_id||!last?.status_token)throw new Error("Belum ada order yang dapat dibatalkan.");if(!confirm("Batalkan order pembayaran ini?\n\nGunakan ini hanya jika kamu benar-benar tidak ingin melanjutkan order tersebut. Order yang sudah settlement tidak dapat dibatalkan."))return;const btn=el("checkoutCancelBtn");if(btn){btn.disabled=true;btn.textContent="Membatalkan…"}try{const data=await call({action:"cancel",order_id:last.order_id,status_token:last.status_token});try{window.snap?.hide?.()}catch(_ignored){}activePayment=null;clearLast();setPaymentManager(false);if(el("checkoutCheckBtn"))el("checkoutCheckBtn").disabled=true;setStatus(`✅ Order ${data.order_id||last.order_id} berhasil dibatalkan. Kamu dapat memilih paket/periode dan membuat pembayaran baru.`,"success")}finally{if(btn){btn.disabled=false;btn.textContent="Batalkan Order Pembayaran"}}}
@@ -71,8 +74,9 @@
         currentReceipt=r;
         const panel=el("licenseReceipt");if(!panel)return;
         setText("receiptOrderId",r.order_id);setText("receiptPlan",`${r.plan_name||r.plan_code||"-"} · ${r.period_label||cycleLabel(r.billing_cycle)}`);setText("receiptLicenseKey",r.license_key);setText("receiptStoreCode",r.store_code);setText("receiptStoreId",r.store_id);setText("receiptNetworkId",r.network_id);setText("receiptOwnerEmail",r.owner_email);setText("receiptExpires",tanggal(r.expires_at));
-        setLink("receiptPasswordBtn",r.password_setup_url);setLink("receiptGuideBtn",r.guide_url);
-        const provision=el("receiptProvisionNote");if(provision){provision.textContent=r.provision_status==="ready"?"Akun Owner dan toko Cloud sudah disiapkan. Buat password Owner sebelum login.":`Lisensi sudah aktif, tetapi penyiapan akun Owner belum selesai${r.provision_error?`: ${r.provision_error}`:"."}`;provision.className="receipt-provision "+(r.provision_status==="ready"?"ok":"warn")}
+        setText("receiptPasswordState",r.credentials_source==="customer_checkout"?"Password yang kamu buat saat checkout":"Gunakan tombol reset password untuk order lama");
+        setLink("receiptLoginBtn",r.login_url);setLink("receiptPasswordBtn",r.password_setup_url);setLink("receiptGuideBtn",r.guide_url);
+        const provision=el("receiptProvisionNote");if(provision){provision.textContent=r.provision_status==="ready"?(r.credentials_source==="customer_checkout"?"Akun Owner sudah aktif. Email dan password yang kamu buat saat checkout sekarang bisa digunakan untuk login aplikasi.":"Akun Owner order lama sudah disiapkan. Gunakan tombol Buat / Ganti Password Owner sebelum login."):`Lisensi sudah aktif, tetapi penyiapan akun Owner belum selesai${r.provision_error?`: ${r.provision_error}`:"."}`;provision.className="receipt-provision "+(r.provision_status==="ready"?"ok":"warn")}
         panel.hidden=false;panel.classList.add("show");panel.scrollIntoView({behavior:"smooth",block:"center"});
     }
     async function status(orderId,statusToken,quiet=false){
@@ -89,10 +93,13 @@
     }
     async function submit(){
         if(!currentPlan)throw new Error("Pilih paket terlebih dahulu.");const button=el("checkoutPayBtn");if(!el("checkoutAgree").checked)throw new Error("Centang persetujuan data dan ketentuan pembayaran.");
-        const payload={action:"create",plan_code:currentPlan.planCode,billing_cycle:el("checkoutPeriod").value,customer_name:el("checkoutName").value.trim(),customer_email:el("checkoutEmail").value.trim(),customer_phone:el("checkoutPhone").value.trim(),store_name:el("checkoutStoreName").value.trim(),store_code:el("checkoutStoreCode").value.trim().toUpperCase()};
+        const ownerPassword=el("checkoutOwnerPassword").value;const ownerPasswordConfirm=el("checkoutOwnerPasswordConfirm").value;
+        if(ownerPassword!==ownerPasswordConfirm)throw new Error("Konfirmasi Password Owner tidak sama.");
+        if(ownerPassword.length<8||ownerPassword.length>72||/\s/.test(ownerPassword)||!/[a-z]/.test(ownerPassword)||!/[A-Z]/.test(ownerPassword)||!/\d/.test(ownerPassword))throw new Error("Password Owner harus 8-72 karakter, tanpa spasi, dan mengandung huruf besar, huruf kecil, serta angka.");
+        const payload={action:"create",plan_code:currentPlan.planCode,billing_cycle:el("checkoutPeriod").value,customer_name:el("checkoutName").value.trim(),customer_email:el("checkoutEmail").value.trim(),customer_phone:el("checkoutPhone").value.trim(),store_name:el("checkoutStoreName").value.trim(),store_code:el("checkoutStoreCode").value.trim().toUpperCase(),owner_password:ownerPassword};
         button.disabled=true;button.textContent="Menyiapkan pembayaran…";
         try{
-            setStatus("Memvalidasi data dan membuat order Midtrans…","info");const data=await call(payload);activePayment=data;saveLast(data);el("checkoutCheckBtn").disabled=false;setPaymentManager(true);setStatus(`Order ${data.order_id} dibuat. Total ${rupiah(data.amount)}. Membuka metode pembayaran…`,"info");await loadSnap(data.client_key,data.environment);
+            setStatus("Memvalidasi akun Owner dan membuat order Midtrans…","info");const data=await call(payload);el("checkoutOwnerPassword").value="";el("checkoutOwnerPasswordConfirm").value="";activePayment=data;saveLast(data);el("checkoutCheckBtn").disabled=false;setPaymentManager(true);setStatus(`Order ${data.order_id} dibuat. Total ${rupiah(data.amount)}. Membuka metode pembayaran…`,"info");await loadSnap(data.client_key,data.environment);
             if(window.snap)window.snap.pay(data.snap_token,{onSuccess:()=>{setStatus("Pembayaran selesai di Midtrans. Menunggu verifikasi webhook…","info");poll(data.order_id,data.status_token).catch(e=>setStatus(e.message,"error"))},onPending:()=>setStatus("Pembayaran masih pending. Kamu boleh menyelesaikan, mengganti metode, atau membatalkan order sebelum settlement.","info"),onError:()=>setStatus("Midtrans melaporkan pembayaran gagal. Kamu dapat mencoba kembali.","error"),onClose:()=>setStatus("Jendela metode pembayaran ditutup. Order tetap tersimpan. Gunakan Buka Metode Lagi untuk memilih metode lain, atau Batalkan Order bila tidak ingin melanjutkan.","info")});else if(data.redirect_url)location.href=data.redirect_url;
         }finally{button.disabled=false;button.textContent="Lanjut ke Metode Pembayaran"}
     }
@@ -105,6 +112,7 @@
         el("receiptCopyAllBtn")?.addEventListener("click",async()=>{if(!currentReceipt)return;try{await copyText(receiptText(currentReceipt));setStatus("✅ Semua data lisensi sudah disalin. Tetap simpan screenshot atau catatan cadangan.","success")}catch{setStatus("Gagal menyalin otomatis. Salin data lisensi secara manual.","error")}});
         el("receiptCopyKeyBtn")?.addEventListener("click",async()=>{if(!currentReceipt?.license_key)return;try{await copyText(currentReceipt.license_key);setStatus("✅ License Key sudah disalin.","success")}catch{setStatus("Gagal menyalin License Key secara otomatis.","error")}});
         el("receiptActivateBtn")?.addEventListener("click",()=>{if(!currentReceipt)return;const sc=el("storeCode"),lk=el("licenseKey");if(sc)sc.value=currentReceipt.store_code||"";if(lk)lk.value=currentReceipt.license_key||"";el("activation")?.scrollIntoView({behavior:"smooth",block:"start"});lk?.focus()});
+        document.querySelectorAll("[data-password-target]").forEach(btn=>btn.addEventListener("click",()=>{const input=el(btn.getAttribute("data-password-target"));if(!input)return;const show=input.type==="password";input.type=show?"text":"password";btn.textContent=show?"Sembunyi":"Lihat"}));
         const last=readLast();if(last?.order_id&&last?.status_token){el("checkoutCheckBtn").disabled=false;setPaymentManager(true)}
     }
     window.LDMCheckoutV2=Object.freeze({open,close,checkLast,cancelLast,hideSnap,init});if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
