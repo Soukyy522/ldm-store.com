@@ -1,9 +1,9 @@
 "use strict";
 
-const APP_VERSION = "27.7.1";
+const APP_VERSION = "27.7.2";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-7-1-transaction-archive-shell-v1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-7-1-transaction-archive-runtime-v1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-7-2-dashboard-reporting-shell-v1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-7-2-dashboard-reporting-runtime-v1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
@@ -17,7 +17,7 @@ const APP_SHELL = [
     "./js/cloud-auth.js", "./js/cloud-session.js", "./js/cloud-session-guard.js",
     "./js/unit-conversion.js", "./js/promo-pricing.js", "./js/multi-store-service.js", "./js/products-service.js", "./js/products-bootstrap.js",
     "./js/procurement-service.js", "./js/procurement-bootstrap.js",
-    "./js/transactions-service.js", "./js/reporting-service.js", "./js/attendance-service.js",
+    "./js/transactions-service.js", "./js/reporting-service.js", "./js/dashboard-report-source.js", "./js/attendance-service.js",
     "./js/attendance-bootstrap.js", SUPABASE_CDN
 ];
 

@@ -352,3 +352,7 @@ Patch ini membutuhkan SQL:
 - `supabase/sql/27-stage27.7.1-verify.sql`
 
 Dokumentasi lengkap: `docs/PATCH-27.7.1-TRANSACTION-ARCHIVE-EXPORT.md`.
+
+## Patch 27.7.2 — Dashboard Reporting Authority
+
+Dashboard Owner tidak lagi menjadikan `localStorage` 200 transaksi sebagai sumber akhir grafik. Data periode diambil dari Supabase Reporting dan fallback ke IndexedDB saat offline. Grafik rentang, ringkasan Owner, Top Selling, serta Statistik Penjualan Bulanan sekarang memakai dataset yang konsisten dengan halaman Laporan. Tidak ada SQL baru; patch memakai RPC pagination 27.7.1 yang sudah tersedia.

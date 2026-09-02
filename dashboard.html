@@ -3264,6 +3264,7 @@ body.dark-mode
 
     <!-- Live Sync Tahap 12: Final Cloud Reporting Authority -->
     <script src="js/reporting-service.js?v=27.7.1"></script>
+    <script src="js/dashboard-report-source.js?v=27.7.2"></script>
     <script src="js/reporting-bootstrap.js?v=25.2.1"></script>
 <style id="ldmCompactRangeAndSalesAssistantStyle">
     /* Rentang tanggal selalu satu baris; form dipindahkan ke modal ringkas. */
@@ -5024,6 +5025,147 @@ body.dark-mode
         let monthlyChartInstance = null;
         let tempLogoBase64 = null;
         let backupConfigBeforeEdit = null;
+
+        // Tahap 27.7.2: Dashboard Reporting Authority.
+        // localStorage hanya cache cepat; grafik authoritative memakai Cloud/IndexedDB.
+        const dashboardReportState = {
+            rangeKey: "",
+            rows: null,
+            source: "local",
+            loadedAt: 0,
+            loading: null,
+            requestId: 0
+        };
+        const dashboardMonthlyReportState = new Map();
+
+        function dashboardFastReportCache() {
+            for (const key of ["laporan", "dataLaporan", "riwayatTransaksi", "laporanHistory"]) {
+                try {
+                    const rows = JSON.parse(localStorage.getItem(key) || "[]");
+                    if (Array.isArray(rows) && rows.length) return rows;
+                } catch (_) {}
+            }
+            return [];
+        }
+
+        function dashboardRangeKey(range) {
+            return `${range?.start || ""}|${range?.end || ""}`;
+        }
+
+        function getDashboardPeriodRows() {
+            const range = getActiveDateRange();
+            const key = dashboardRangeKey(range);
+            if (dashboardReportState.rangeKey === key && Array.isArray(dashboardReportState.rows)) {
+                return dashboardReportState.rows;
+            }
+            return dashboardFastReportCache();
+        }
+
+        function getDashboardMonthlyRows(targetMonth) {
+            const state = dashboardMonthlyReportState.get(String(targetMonth || ""));
+            if (state && Array.isArray(state.rows)) return state.rows;
+            return dashboardFastReportCache();
+        }
+
+        function dashboardReportSourceLabel(source) {
+            if (source === "cloud") return "Cloud Supabase";
+            if (source === "indexeddb") return "IndexedDB offline";
+            return "cache cepat";
+        }
+
+        function invalidateDashboardReportData() {
+            dashboardReportState.rangeKey = "";
+            dashboardReportState.rows = null;
+            dashboardReportState.loadedAt = 0;
+            dashboardReportState.requestId += 1;
+            dashboardMonthlyReportState.clear();
+        }
+
+        async function refreshDashboardPeriodData(force = false) {
+            if (!window.LDMDashboardReports) return;
+            const role = String(localStorage.getItem("userRole") || "").toLowerCase();
+            if (role !== "owner") return;
+
+            const range = getActiveDateRange();
+            const key = dashboardRangeKey(range);
+            const now = Date.now();
+            if (!force && dashboardReportState.rangeKey === key && Array.isArray(dashboardReportState.rows) && (now - dashboardReportState.loadedAt) < 30000) {
+                return;
+            }
+            if (dashboardReportState.loading && dashboardReportState.loading.key === key) {
+                return dashboardReportState.loading.promise;
+            }
+
+            const requestId = ++dashboardReportState.requestId;
+            const promise = window.LDMDashboardReports.loadRange({
+                fromDate: range.start,
+                toDate: range.end,
+                preferCloud: true
+            }).then(result => {
+                if (requestId !== dashboardReportState.requestId) return;
+                dashboardReportState.rangeKey = key;
+                dashboardReportState.rows = Array.isArray(result?.rows) ? result.rows : [];
+                dashboardReportState.source = result?.source || "local";
+                dashboardReportState.loadedAt = Date.now();
+                renderOwner({ skipDataRefresh: true });
+            }).catch(error => {
+                console.warn("Dashboard gagal memuat transaksi periode:", error);
+            }).finally(() => {
+                if (dashboardReportState.loading?.promise === promise) dashboardReportState.loading = null;
+            });
+
+            dashboardReportState.loading = { key, promise };
+            return promise;
+        }
+
+        async function refreshDashboardMonthlyData(targetMonth, force = false) {
+            if (!window.LDMDashboardReports || !/^\d{4}-\d{2}$/.test(String(targetMonth || ""))) return;
+            const role = String(localStorage.getItem("userRole") || "").toLowerCase();
+            if (role !== "owner") return;
+
+            const month = String(targetMonth);
+            const current = dashboardMonthlyReportState.get(month);
+            if (!force && current?.rows && (Date.now() - Number(current.loadedAt || 0)) < 30000) return;
+            if (current?.loading) return current.loading;
+
+            const [year, monthNumber] = month.split("-").map(Number);
+            const totalDays = new Date(year, monthNumber, 0).getDate();
+            const fromDate = `${month}-01`;
+            const toDate = `${month}-${String(totalDays).padStart(2, "0")}`;
+
+            const promise = window.LDMDashboardReports.loadRange({
+                fromDate,
+                toDate,
+                preferCloud: true
+            }).then(result => {
+                dashboardMonthlyReportState.set(month, {
+                    rows: Array.isArray(result?.rows) ? result.rows : [],
+                    source: result?.source || "local",
+                    loadedAt: Date.now(),
+                    loading: null
+                });
+                const input = document.getElementById("inputBulan");
+                if (input && input.value === month) {
+                    renderStatistikBulanan({ skipDataRefresh: true });
+                }
+            }).catch(error => {
+                console.warn("Dashboard gagal memuat statistik bulanan:", error);
+                dashboardMonthlyReportState.set(month, {
+                    rows: current?.rows || null,
+                    source: current?.source || "local",
+                    loadedAt: current?.loadedAt || 0,
+                    loading: null
+                });
+            });
+
+            dashboardMonthlyReportState.set(month, {
+                rows: current?.rows || null,
+                source: current?.source || "local",
+                loadedAt: current?.loadedAt || 0,
+                loading: promise
+            });
+            return promise;
+        }
 
         // =====================================================
 // SECURITY GUARD - DASHBOARD
@@ -7876,31 +8018,7 @@ function batasiTampilanOmzetDashboard() {
 
 
         function hitungTopSellingItems() {
-            let laporanAll = [];
-
-            try {
-                laporanAll =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "laporan"
-                        )
-                    ) ||
-                    JSON.parse(
-                        localStorage.getItem(
-                            "dataLaporan"
-                        )
-                    ) ||
-                    [];
-            }
-
-            catch (error) {
-                console.error(
-                    "Gagal membaca laporan untuk item terlaris:",
-                    error
-                );
-
-                laporanAll = [];
-            }
+            const laporanAll = getDashboardPeriodRows();
 
             const mapItem =
                 new Map();
@@ -8075,31 +8193,7 @@ function batasiTampilanOmzetDashboard() {
         function hitungTopSellingItemsBulanan(
             targetMonth
         ) {
-            let laporanAll = [];
-
-            try {
-                laporanAll =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "laporan"
-                        )
-                    ) ||
-                    JSON.parse(
-                        localStorage.getItem(
-                            "dataLaporan"
-                        )
-                    ) ||
-                    [];
-            }
-
-            catch (error) {
-                console.error(
-                    "Gagal membaca laporan untuk item terlaris bulanan:",
-                    error
-                );
-
-                laporanAll = [];
-            }
+            const laporanAll = getDashboardMonthlyRows(targetMonth);
 
             const mapItem =
                 new Map();
@@ -9994,8 +10088,8 @@ function batasiTampilanOmzetDashboard() {
             }
         }
 
-        function renderOwner() {
-            const laporanAll = JSON.parse(localStorage.getItem("laporan")) || JSON.parse(localStorage.getItem("dataLaporan")) || [];
+        function renderOwner(options = {}) {
+            const laporanAll = getDashboardPeriodRows();
             const operasionalAll = JSON.parse(localStorage.getItem("operasional")) || [];
             const masterBarang = JSON.parse(localStorage.getItem("dataBarang")) || [];
 
@@ -10017,9 +10111,13 @@ function batasiTampilanOmzetDashboard() {
             if (rangeNote) {
                 const range = getActiveDateRange();
                 const days = jumlahHariInklusif(range.start, range.end) || 1;
+                const activeKey = dashboardRangeKey(range);
+                const source = dashboardReportState.rangeKey === activeKey
+                    ? dashboardReportSourceLabel(dashboardReportState.source)
+                    : "cache cepat (sedang sinkron)";
                 rangeNote.textContent = selectedDateRange
-                    ? `Menampilkan ${laporan.length} transaksi selama ${days} hari. Form biaya operasional disembunyikan saat mode agregasi agar tidak salah tanggal.`
-                    : "Maksimal 90 hari. Perhitungan menggunakan tanggal bisnis WITA dan kedua tanggal ikut dihitung.";
+                    ? `Menampilkan ${laporan.length} transaksi selama ${days} hari. Sumber: ${source}. Form biaya operasional disembunyikan saat mode agregasi agar tidak salah tanggal.`
+                    : `Maksimal 90 hari. Perhitungan menggunakan tanggal bisnis WITA. Sumber: ${source}.`;
             }
 
             const mapModalBarang = {};
@@ -10146,9 +10244,13 @@ function batasiTampilanOmzetDashboard() {
 
             document.getElementById("listOmzet").innerHTML = listOmzetHTML;
             document.getElementById("listModal").innerHTML = listModalHTML;
+
+            if (!options.skipDataRefresh) {
+                setTimeout(() => refreshDashboardPeriodData(false), 0);
+            }
         }
 
-        function renderStatistikBulanan() {
+        function renderStatistikBulanan(options = {}) {
             const inputBulan = document.getElementById("inputBulan");
             if (!inputBulan) return;
 
@@ -10161,7 +10263,7 @@ function batasiTampilanOmzetDashboard() {
             const [yearStr, monthStr] = targetMonth.split("-");
             const totalDays = new Date(Number(yearStr), Number(monthStr), 0).getDate();
 
-            const laporanAll = JSON.parse(localStorage.getItem("laporan")) || JSON.parse(localStorage.getItem("dataLaporan")) || [];
+            const laporanAll = getDashboardMonthlyRows(targetMonth);
             const operasionalAll = JSON.parse(localStorage.getItem("operasional")) || [];
             const masterBarang = JSON.parse(localStorage.getItem("dataBarang")) || [];
 
@@ -10281,6 +10383,10 @@ function batasiTampilanOmzetDashboard() {
             );
 
             renderChartBulanan(totalDays, omzetPerHari);
+
+            if (!options.skipDataRefresh) {
+                setTimeout(() => refreshDashboardMonthlyData(targetMonth, false), 0);
+            }
         }
 
         function renderChartBulanan(totalDays, omzetPerHari) {
@@ -11913,6 +12019,7 @@ window.addEventListener(
     };
 
     window.addEventListener("ldm-reporting-cache-updated",function(){
+        invalidateDashboardReportData();
         const role = String(localStorage.getItem("userRole") || "").toLowerCase();
         if(role === "owner" && typeof renderOwner === "function"){
             renderOwner();
