@@ -55,6 +55,31 @@
         return safeArray(key).some(row => row && !row._cloud);
     }
 
+    function currentRole(){
+        return String(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || ""
+        ).trim().toLowerCase();
+    }
+
+    function redactPurchaseValues(key,rows){
+        if(currentRole() !== "admin") return rows;
+        if(key !== KEYS.purchaseOrders && key !== KEYS.goodsReceipts) return rows;
+
+        return (rows || []).map(row => ({
+            ...row,
+            totalNilai:0,
+            items:(Array.isArray(row.items) ? row.items : []).map(item => ({
+                ...item,
+                hargaBeli:0,
+                hargaBeliDasar:0,
+                hargaBeliSebelum:0,
+                subtotal:0
+            }))
+        }));
+    }
+
     function createUUID(){
         if(window.crypto && typeof window.crypto.randomUUID === "function"){
             return window.crypto.randomUUID();
@@ -81,7 +106,6 @@
         const date = new Date(value);
         if(!Number.isFinite(date.getTime())) return "";
         return new Intl.DateTimeFormat("id-ID",{
-            timeZone:"Asia/Makassar",
             hour:"2-digit",
             minute:"2-digit",
             second:"2-digit",
@@ -273,12 +297,15 @@
 
     function setCache(key,flag,rows,force){
         if(!force && !isEnabled(flag) && hasLegacy(key) && rows.length === 0){
-            return safeArray(key);
+            const legacySafe = redactPurchaseValues(key,safeArray(key));
+            localStorage.setItem(key,JSON.stringify(legacySafe));
+            return legacySafe;
         }
-        localStorage.setItem(key,JSON.stringify(rows));
+        const safeRows = redactPurchaseValues(key,rows);
+        localStorage.setItem(key,JSON.stringify(safeRows));
         localStorage.setItem(flag,"true");
         localStorage.setItem(LAST_SYNC_KEY,String(Date.now()));
-        return rows;
+        return safeRows;
     }
 
     function dispatch(section,count){
@@ -304,17 +331,10 @@
     async function refreshPurchaseOrders(options={}){
         await ensureAuth();
         const supabase = client();
-        const [{data:headers,error:headerError},{data:items,error:itemError}] = await Promise.all([
-            supabase.from("purchase_orders")
-                .select("id,store_id,client_po_id,po_number,order_date,estimated_arrival,supplier_id,supplier_name_snapshot,supplier_contact_snapshot,reference,note,status,approval_status,created_username,created_role,approved_username,approved_at,total_item_types,total_qty,total_received,total_value,legacy_imported,history_only,created_at,updated_at,version")
-                .order("created_at",{ascending:false})
-                .limit(2000),
-            supabase.from("purchase_order_items")
-                .select("id,purchase_order_id,product_id,product_name_snapshot,barcode_snapshot,category_snapshot,unit_snapshot,purchase_unit_snapshot,unit_factor_snapshot,stock_snapshot,qty_ordered,qty_received,purchase_qty_ordered,purchase_qty_received,purchase_price,package_purchase_price,line_subtotal,legacy_item_id")
-                .limit(10000)
-        ]);
-        if(headerError) throw headerError;
-        if(itemError) throw itemError;
+        const {data:snapshot,error}=await supabase.rpc("ldm_visible_procurement");
+        if(error)throw error;
+        const headers=Array.isArray(snapshot?.purchase_orders)?snapshot.purchase_orders:[];
+        const items=Array.isArray(snapshot?.purchase_order_items)?snapshot.purchase_order_items:[];
         const grouped = new Map();
         (items || []).forEach(item => {
             const list = grouped.get(item.purchase_order_id) || [];
@@ -330,17 +350,10 @@
     async function refreshGoodsReceipts(options={}){
         await ensureAuth();
         const supabase = client();
-        const [{data:headers,error:headerError},{data:items,error:itemError}] = await Promise.all([
-            supabase.from("goods_receipts")
-                .select("id,store_id,client_gr_id,gr_number,business_date,received_at,supplier_id,supplier_name_snapshot,delivery_note_number,purchase_order_id,purchase_order_number_snapshot,note,status,approval_status,created_username,created_role,approved_username,approved_at,cancelled_username,cancelled_at,total_item_types,total_qty,total_value,stock_effect_applied,stock_effect_reversed,legacy_imported,history_only,created_at,updated_at,version")
-                .order("created_at",{ascending:false})
-                .limit(2000),
-            supabase.from("goods_receipt_items")
-                .select("id,goods_receipt_id,product_id,purchase_order_item_id,product_name_snapshot,barcode_snapshot,category_snapshot,unit_snapshot,purchase_unit_snapshot,unit_factor_snapshot,qty_received,purchase_qty_received,purchase_price_before,purchase_price,package_purchase_price,line_subtotal,expiry_date,stock_before,stock_after,stock_effect_applied,legacy_item_id")
-                .limit(10000)
-        ]);
-        if(headerError) throw headerError;
-        if(itemError) throw itemError;
+        const {data:snapshot,error}=await supabase.rpc("ldm_visible_procurement");
+        if(error)throw error;
+        const headers=Array.isArray(snapshot?.goods_receipts)?snapshot.goods_receipts:[];
+        const items=Array.isArray(snapshot?.goods_receipt_items)?snapshot.goods_receipt_items:[];
         const grouped = new Map();
         (items || []).forEach(item => {
             const list = grouped.get(item.goods_receipt_id) || [];
@@ -418,7 +431,7 @@
         }));
 
         const supabase = client();
-        const {data,error} = await supabase.rpc("ldm_save_purchase_order",{
+        const {data,error} = await supabase.rpc("ldm_save_purchase_order_role_safe",{
             p_purchase_order_id:payload.id || null,
             p_client_po_id:payload.clientId || createUUID(),
             p_po_number:payload.poNumber,
@@ -485,7 +498,7 @@
         }));
 
         const supabase = client();
-        const {data,error} = await supabase.rpc("ldm_submit_goods_receipt",{
+        const {data,error} = await supabase.rpc("ldm_submit_goods_receipt_role_safe",{
             p_client_gr_id:payload.clientId || createUUID(),
             p_gr_number:payload.grNumber,
             p_business_date:payload.businessDate || null,
