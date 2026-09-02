@@ -3383,7 +3383,7 @@ function simpanLaporanKeStorage(dataArray) {
 
                 updateTransactionArchiveStatus(
                     `Arsip lokal: ${(stats?.count ?? archiveRows.length).toLocaleString("id-ID")} transaksi ` +
-                    `• batas 50.000 • retensi sampai 365 hari • histori penuh tetap di Supabase.`
+                    `• batas 50.000 • retensi sampai 365 hari sebelum dihapus otomatis • Backup Data menggunakan CSV.`
                 );
             } catch (error) {
                 console.warn("Arsip transaksi IndexedDB gagal dimuat:", error);
