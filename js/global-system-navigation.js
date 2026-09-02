@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.4";
+    const NAV_VERSION="27.9.0";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -10,33 +10,33 @@
      * Every authenticated operational page is rendered from this list.
      */
     const ROUTES=[
-        {page:"dashboard.html",icon:"📊",label:"Dashboard",group:"Utama",roles:["owner","admin","kasir"],quick:true},
-        {page:"absensi.html",icon:"📝",label:"Absensi",group:"Utama",roles:["owner","admin","kasir"]},
-        {page:"kasir.html",icon:"💵",label:"Kasir",group:"Utama",roles:["owner","admin","kasir"],quick:true},
+        {page:"dashboard.html",icon:"📊",label:"Dashboard",group:"Utama",roles:["owner","admin","kasir"],feature:"dashboard",quick:true},
+        {page:"absensi.html",icon:"📝",label:"Absensi",group:"Utama",roles:["owner","admin","kasir"],feature:"attendance"},
+        {page:"kasir.html",icon:"💵",label:"Kasir",group:"Utama",roles:["owner","admin","kasir"],feature:"pos",quick:true},
 
-        {page:"barang.html",icon:"📦",label:"Barang",group:"Inventori",roles:["owner","admin","kasir"],badge:"navBadge"},
-        {page:"kartu-stok.html",icon:"📒",label:"Kartu Stok",group:"Inventori",roles:["owner","admin","kasir"]},
-        {page:"stock-opname.html",icon:"📋",label:"Stock Opname",group:"Inventori",roles:["owner","admin","kasir"]},
-        {page:"multi-store.html",icon:"⇄",label:"Multi-Toko & Transfer",group:"Inventori",roles:["owner","admin"],quick:true},
+        {page:"barang.html",icon:"📦",label:"Barang",group:"Inventori",roles:["owner","admin","kasir"],feature:"inventory",badge:"navBadge"},
+        {page:"kartu-stok.html",icon:"📒",label:"Kartu Stok",group:"Inventori",roles:["owner","admin","kasir"],feature:"stock_card"},
+        {page:"stock-opname.html",icon:"📋",label:"Stock Opname",group:"Inventori",roles:["owner","admin","kasir"],feature:"stock_opname"},
+        {page:"multi-store.html",icon:"⇄",label:"Multi-Toko & Transfer",group:"Inventori",roles:["owner","admin"],feature:"multi_store",quick:true},
 
-        {page:"supplier.html",icon:"🏢",label:"Supplier",group:"Supplier & Pembelian",roles:["owner","admin"]},
-        {page:"Purchase-Order.html",icon:"🛒",label:"Purchase Order",group:"Supplier & Pembelian",roles:["owner","admin"],badge:"pendingPOBadge"},
-        {page:"goods.receipt.html",icon:"📥",label:"Goods Receipt",group:"Supplier & Pembelian",roles:["owner","admin"],badge:"pendingGRBadge"},
+        {page:"supplier.html",icon:"🏢",label:"Supplier",group:"Supplier & Pembelian",roles:["owner","admin"],feature:"suppliers"},
+        {page:"Purchase-Order.html",icon:"🛒",label:"Purchase Order",group:"Supplier & Pembelian",roles:["owner","admin"],feature:"purchase_order",badge:"pendingPOBadge"},
+        {page:"goods.receipt.html",icon:"📥",label:"Goods Receipt",group:"Supplier & Pembelian",roles:["owner","admin"],feature:"goods_receipt",badge:"pendingGRBadge"},
 
-        {page:"retur.html",icon:"↩️",label:"Retur",group:"Keuangan & Laporan",roles:["owner","admin","kasir"]},
-        {page:"laporan.html",icon:"📑",label:"Laporan",group:"Keuangan & Laporan",roles:["owner","admin","kasir"],quick:true},
-        {page:"owner-control-center.html",icon:"🏛️",label:"Kontrol Pusat",group:"Keuangan & Laporan",roles:["owner"],primaryOwnerOnly:true},
-        {page:"pengeluaran.html",icon:"💸",label:"Pengeluaran",group:"Keuangan & Laporan",roles:["owner","admin"]},
+        {page:"retur.html",icon:"↩️",label:"Retur",group:"Keuangan & Laporan",roles:["owner","admin","kasir"],feature:"returns"},
+        {page:"laporan.html",icon:"📑",label:"Laporan",group:"Keuangan & Laporan",roles:["owner","admin","kasir"],feature:"reports",quick:true},
+        {page:"owner-control-center.html",icon:"🏛️",label:"Kontrol Pusat",group:"Keuangan & Laporan",roles:["owner"],feature:"central_control",primaryOwnerOnly:true},
+        {page:"pengeluaran.html",icon:"💸",label:"Pengeluaran",group:"Keuangan & Laporan",roles:["owner","admin"],feature:"expenses"},
 
-        {page:"shift-closing.html",icon:"🔒",label:"Closing Shift",group:"Closing & Data",roles:["owner","admin"]},
-        {page:"eod.html",icon:"🌙",label:"End of Day",group:"Closing & Data",roles:["owner","admin"],requiresEodReady:true},
-        {page:"backup%20%26%20restore.html",icon:"💾",label:"Backup & Restore",group:"Closing & Data",roles:["owner","admin"]},
+        {page:"shift-closing.html",icon:"🔒",label:"Closing Shift",group:"Closing & Data",roles:["owner","admin"],feature:"shift_closing"},
+        {page:"eod.html",icon:"🌙",label:"End of Day",group:"Closing & Data",roles:["owner","admin"],feature:"eod",requiresEodReady:true},
+        {page:"backup%20%26%20restore.html",icon:"💾",label:"Backup & Restore",group:"Closing & Data",roles:["owner","admin"],feature:"backup_restore"},
 
-        {page:"account-management.html",icon:"👥",label:"Management Akun",group:"Sistem",roles:["owner"]},
-        {page:"device-management.html",icon:"💻",label:"Perangkat Cloud",group:"Sistem",roles:["owner"]},
-        {page:"pwa-settings.html",icon:"📲",label:"Aplikasi & Update",group:"Sistem",roles:["owner","admin","kasir"]},
-        {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"]},
-        {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"]},
+        {page:"account-management.html",icon:"👥",label:"Management Akun",group:"Sistem",roles:["owner"],feature:"cloud_accounts"},
+        {page:"device-management.html",icon:"💻",label:"Perangkat Cloud",group:"Sistem",roles:["owner"],feature:"cloud_devices"},
+        {page:"pwa-settings.html",icon:"📲",label:"Aplikasi & Update",group:"Sistem",roles:["owner","admin","kasir"],feature:"app_update"},
+        {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"],feature:"recovery_center"},
+        {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"],feature:"qa_security"},
         {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"panduan.html",icon:"📘",label:"Panduan & Bantuan",group:"Sistem",roles:["owner","admin","kasir"]}
     ];
@@ -162,8 +162,16 @@
         };
     }
 
+    function licenseFeatureAllowed(feature){
+        if(!feature)return true;
+        if(window.LDM_LICENSE_V2_CONFIG?.enabled===false)return true;
+        const license=window.LDM_LICENSE_V2_STATE;
+        return Boolean(license&&window.LDMLicenseV2?.hasFeature(feature,license));
+    }
+
     function routeAllowed(route,role,eodReady){
         if(!route.roles.includes(role))return false;
+        if(!licenseFeatureAllowed(route.feature))return false;
         if(route.requiresEodReady && !eodReady)return false;
         return true;
     }
@@ -488,7 +496,10 @@
     document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncEodAvailability(false)});
     window.addEventListener("ldm-cloud-session-ready",()=>{render();syncEodAvailability(false)});
     window.addEventListener("ldm-primary-owner-ready",event=>applyPrimaryOwnerRoutes(event.detail));
-    window.addEventListener("ldm-license-v2-authorized",()=>applyPrimaryOwnerRoutes(window.LDM_PRIMARY_OWNER_CONTEXT));
+    window.addEventListener("ldm-license-v2-authorized",()=>{
+        render();
+        applyPrimaryOwnerRoutes(window.LDM_PRIMARY_OWNER_CONTEXT);
+    });
 
     window.LDMGlobalNavigation={
         version:NAV_VERSION,
@@ -496,6 +507,7 @@
         render,
         applySharedTheme,
         refreshContext,
+        getVisibleRoutes:(role,eodReady)=>visibleRoutes(normalizeRole(role),Boolean(eodReady)).map(route=>({...route})),
         checkEodAvailability:syncEodAvailability,
         calculateEodReadiness,
         openMobileDrawer,

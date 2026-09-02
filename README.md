@@ -389,4 +389,29 @@ agar ketidaksamaan antara halaman Developer Center dan Edge Function mudah didia
 Tidak ada SQL baru. Deploy ulang Edge Function `ldm-license-admin-v2` dari paket 27.8.1,
 kemudian unggah frontend dan muat ulang aplikasi agar cache 27.8.0 diganti.
 
+Deployment harus mempertahankan `supabase/functions/_shared/ldm-midtrans-operations.ts`.
+Jika hanya `ldm-license-admin-v2/index.ts` yang disalin, Supabase bundler akan gagal
+dengan HTTP 400 `Module not found`.
+
 Panduan lengkap: `PANDUAN-PERBAIKAN-ADMIN-SYNC-27.8.1.txt`.
+
+## Patch 27.9.0 — Navigasi Mengikuti Paket Lisensi
+
+Navigasi desktop dan hamburger HP sekarang disaring sebelum dirender berdasarkan
+fitur pada paket lisensi aktif. Warung Kecil tidak lagi menampilkan menu paket
+Warung Sederhana/Toko, dan Warung Sederhana tidak lagi menampilkan menu khusus
+Toko/Lifetime. Selama pemeriksaan lisensi belum selesai, menu berfitur berada
+dalam keadaan fail-closed dan baru dibuat setelah event otorisasi lisensi.
+
+Perubahan utama berada pada `js/global-system-navigation.js` dan
+`js/license-v2-guard.js`. `barang.html` menggunakan cache-buster 27.9.0, sementara
+Service Worker 27.9.0 mengambil file navigasi secara network-first agar revisi
+navigasi tidak tertahan cache lama. Tidak ada perubahan tabel, RPC, atau SQL.
+
+Pengujian khusus dapat dijalankan dengan:
+
+```bash
+node tools/qa-stage27.9-plan-navigation.mjs
+```
+
+Panduan lengkap: `PANDUAN-PERBAIKAN-NAVIGASI-PAKET-27.9.0.txt`.
