@@ -2033,6 +2033,11 @@ input[type="color"] {
                 </div>
 
                 <div class="form-group">
+                    <label>Nama Perusahaan di Pesan WhatsApp</label>
+                    <input type="text" id="inputNamaPerusahaanWhatsAppPO" maxlength="80" placeholder="Contoh: Toko Maju Jaya">
+                </div>
+
+                <div class="form-group">
                     <label>Referensi / Sales</label>
                     <input type="text" id="inputReferensiPO" maxlength="60" placeholder="Nama sales / referensi (opsional)">
                 </div>
@@ -4659,9 +4664,58 @@ function satuanPesanWhatsAppPO(item) {
     ).trim() || "Pcs";
 }
 
-function buatPesanWhatsAppPO(po) {
+const PO_WHATSAPP_COMPANY_NAME_KEY = "ldmPOWhatsAppCompanyName";
+
+function namaPerusahaanDefaultWhatsAppPO() {
     const config = { ...DEFAULT_HEADER_CONFIG, ...safeReadObject("headerConfig") };
-    const namaToko = String(config.judul || "LocDailyMar").trim() || "LocDailyMar";
+    return String(config.judul || "LocDailyMar").trim() || "LocDailyMar";
+}
+
+function bacaNamaPerusahaanWhatsAppPO() {
+    const input = document.getElementById("inputNamaPerusahaanWhatsAppPO");
+    const dariInput = cleanText(input?.value || "",80);
+
+    if (dariInput) {
+        return dariInput;
+    }
+
+    const tersimpan = cleanText(
+        localStorage.getItem(PO_WHATSAPP_COMPANY_NAME_KEY) || "",
+        80
+    );
+
+    return tersimpan || namaPerusahaanDefaultWhatsAppPO();
+}
+
+function simpanNamaPerusahaanWhatsAppPO() {
+    const input = document.getElementById("inputNamaPerusahaanWhatsAppPO");
+    if (!input) return;
+
+    const namaPerusahaan = cleanText(input.value,80);
+
+    if (namaPerusahaan) {
+        localStorage.setItem(PO_WHATSAPP_COMPANY_NAME_KEY,namaPerusahaan);
+        input.value = namaPerusahaan;
+    } else {
+        localStorage.removeItem(PO_WHATSAPP_COMPANY_NAME_KEY);
+        input.value = namaPerusahaanDefaultWhatsAppPO();
+    }
+}
+
+function muatNamaPerusahaanWhatsAppPO() {
+    const input = document.getElementById("inputNamaPerusahaanWhatsAppPO");
+    if (!input) return;
+
+    const tersimpan = cleanText(
+        localStorage.getItem(PO_WHATSAPP_COMPANY_NAME_KEY) || "",
+        80
+    );
+
+    input.value = tersimpan || namaPerusahaanDefaultWhatsAppPO();
+}
+
+function buatPesanWhatsAppPO(po) {
+    const namaPerusahaan = bacaNamaPerusahaanWhatsAppPO();
     const supplier = String(po?.supplier || "Supplier").trim() || "Supplier";
     const items = Array.isArray(po?.items) ? po.items : [];
 
@@ -4673,7 +4727,7 @@ function buatPesanWhatsAppPO(po) {
     }).join("\n");
 
     const bagianPesan = [
-        `Halo Kak ${supplier}, kami dari ${namaToko} ingin melakukan pemesanan.`,
+        `Halo Tim ${supplier}, kami dari ${namaPerusahaan} ingin melakukan pemesanan.`,
         "",
         "*PURCHASE ORDER*",
         `No. PO: ${po?.nomorPO || "-"}`,
@@ -4724,6 +4778,7 @@ function kirimPOKeWhatsApp(id) {
         return;
     }
 
+    simpanNamaPerusahaanWhatsAppPO();
     const pesan = buatPesanWhatsAppPO(po);
     const tautan = `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
     const link = document.createElement("a");
@@ -5316,7 +5371,18 @@ window.addEventListener("storage",event => {
         }
     }
 
-    if (event.key === "headerConfig") muatHeaderToko();
+    if (event.key === "headerConfig") {
+        muatHeaderToko();
+
+        if (!localStorage.getItem(PO_WHATSAPP_COMPANY_NAME_KEY)) {
+            muatNamaPerusahaanWhatsAppPO();
+        }
+    }
+
+    if (event.key === PO_WHATSAPP_COMPANY_NAME_KEY) {
+        muatNamaPerusahaanWhatsAppPO();
+    }
+
     if (event.key === "dataPurchaseOrder") renderRiwayatPO();
 });
 
@@ -5344,6 +5410,7 @@ document.addEventListener("DOMContentLoaded",async () => {
     terapkanMenuRole();
     terapkanVisibilitasNilaiPembelian();
     muatHeaderToko();
+    muatNamaPerusahaanWhatsAppPO();
     populateFontSelectors();
 
     const session = getSecuritySession();
@@ -5363,6 +5430,20 @@ document.addEventListener("DOMContentLoaded",async () => {
 
     if (submitBtn && sessionRole === "admin") {
         submitBtn.textContent = "📤 Ajukan ke Owner";
+    }
+
+    const inputNamaPerusahaanWhatsApp =
+        document.getElementById("inputNamaPerusahaanWhatsAppPO");
+
+    if (inputNamaPerusahaanWhatsApp) {
+        inputNamaPerusahaanWhatsApp.addEventListener(
+            "change",
+            simpanNamaPerusahaanWhatsAppPO
+        );
+        inputNamaPerusahaanWhatsApp.addEventListener(
+            "blur",
+            simpanNamaPerusahaanWhatsAppPO
+        );
     }
 
     document.addEventListener("input", jadwalkanAutoDraftPO);
