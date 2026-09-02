@@ -1,3 +1,1 @@
-27.7.0
-IndexedDB & Persistent Storage
-Baseline: LocDailyMar 27.6.2 Storage Quota Hardening
+27.7.1

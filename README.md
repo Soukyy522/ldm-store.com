@@ -334,3 +334,21 @@ benar-benar habis. Offline Queue Tahap 16 tetap memakai IndexedDB aslinya dan ti
 
 Patch ini tidak membutuhkan SQL Supabase baru. Petunjuk lengkap tersedia di
 `docs/PATCH-27.7.0-INDEXEDDB-PERSISTENT-STORAGE.md`.
+
+## Patch 27.7.1 — Transaction Archive Scaling & Full Report Export
+
+Patch 27.7.1 memindahkan arsip laporan besar ke object store IndexedDB khusus `transactions`.
+`localStorage` tetap menjadi compatibility cache maksimal 200 transaksi, sedangkan IndexedDB
+menyimpan sampai **50.000 transaksi / 365 hari**. Refresh cloud memakai RPC pagination baru
+sehingga aplikasi tidak perlu mengambil seluruh umur database setiap kali reporting refresh.
+
+`laporan.html` sekarang memiliki tombol **Download Semua Laporan** yang mengambil seluruh
+histori transaksi Supabase secara batch dan menghasilkan CSV UTF-8 yang dapat dibuka di
+Excel atau Google Sheets. Histori cloud tidak dibatasi 50.000; angka tersebut hanya batas
+arsip lokal per perangkat.
+
+Patch ini membutuhkan SQL:
+- `supabase/sql/27-stage27.7.1-report-archive-pagination.sql`
+- `supabase/sql/27-stage27.7.1-verify.sql`
+
+Dokumentasi lengkap: `docs/PATCH-27.7.1-TRANSACTION-ARCHIVE-EXPORT.md`.

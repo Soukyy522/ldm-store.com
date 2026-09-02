@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <script src="js/storage-engine.js?v=27.7.0"></script>
-    <script src="js/storage-quota-guard.js?v=27.7.0"></script>
-    <script defer src="js/storage-health-monitor.js?v=27.7.0"></script>
+    <script src="js/storage-engine.js?v=27.7.1"></script>
+    <script src="js/storage-quota-guard.js?v=27.7.1"></script>
+    <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
 <script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2056,7 +2056,7 @@
 
 
     <!-- Live Sync Tahap 12: Final Cloud Reporting Authority -->
-    <script src="js/reporting-service.js?v=25.2.1"></script>
+    <script src="js/reporting-service.js?v=27.7.1"></script>
     <script src="js/reporting-bootstrap.js?v=25.2.1"></script>
 <script src="js/license-v2-config.js?v=25.2.0"></script>
 <script src="js/license-v2-client.js?v=25.2.0"></script>
@@ -2130,8 +2130,9 @@
             <div class="box-card">
                 <div class="action-header">
                     <h3 style="font-size: 0.88rem; color:var(--text-color);">Riwayat Transaksi</h3>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn-export" onclick="exportDataCSV()">📥 Export CSV</button>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                        <button class="btn-export" onclick="exportDataCSV()">📥 Export Tampilan CSV</button>
+                        <button id="btnDownloadAllReports" class="btn-export" onclick="downloadSemuaLaporanCloud()">☁️ Download Semua Laporan</button>
                         <button id="btnResetLaporan" class="btn-reset" onclick="bukaModalPasswordReset()">Reset Laporan</button>
                     </div>
                 </div>
@@ -2148,6 +2149,10 @@
                 </div>
 
                 <input type="text" id="inputSearch" class="search-box" placeholder="🔍 Cari ID transaksi, tanggal, barang, kasir..." oninput="onSearchInput()">
+
+                <div id="transactionArchiveStatus" style="margin:8px 0 4px;padding:8px 10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-secondary);font-size:.68rem;color:var(--label-color);">
+                    Arsip transaksi lokal: memuat…
+                </div>
 
                 <div class="mobile-table-hint" style="display:none">
                         ↔ Geser tabel ke kiri/kanan untuk melihat semua kolom
@@ -3319,21 +3324,73 @@ function simpanLaporanKeStorage(dataArray) {
             );
         }
 
-        function loadLaporan() {
-            dataLaporan = JSON.parse(localStorage.getItem("laporan")) || 
-                          JSON.parse(localStorage.getItem("dataLaporan")) || 
-                          JSON.parse(localStorage.getItem("riwayatTransaksi")) || [];
-
-            dataLaporan =
-                migrasikanKodeTransaksiLama(
-                    dataLaporan
-                );
-            dataLaporan =
-    filterDataLaporanBerdasarkanRole(
-        dataLaporan
-    );
-            dataLaporan = dataLaporan.map((item, idx) => ({ ...item, realIndex: idx }));
+        function applyLaporanRows(rows, options = {}) {
+            let source = Array.isArray(rows) ? rows : [];
+            if (options.migrateLegacy === true) {
+                source = migrasikanKodeTransaksiLama(source);
+            }
+            source = filterDataLaporanBerdasarkanRole(source);
+            dataLaporan = source.map((item, idx) => ({ ...item, realIndex: idx }));
+            currentPage = 1;
             onSearchInput();
+        }
+
+        function updateTransactionArchiveStatus(message) {
+            const el = document.getElementById("transactionArchiveStatus");
+            if (el) el.textContent = message;
+        }
+
+        async function loadLaporan() {
+            let localRows = [];
+            try {
+                localRows = JSON.parse(localStorage.getItem("laporan")) ||
+                            JSON.parse(localStorage.getItem("dataLaporan")) ||
+                            JSON.parse(localStorage.getItem("riwayatTransaksi")) || [];
+            } catch (error) {
+                console.warn("Cache laporan lokal gagal dibaca:", error);
+                localRows = [];
+            }
+
+            applyLaporanRows(localRows, { migrateLegacy: true });
+            updateTransactionArchiveStatus(
+                `Cache cepat: ${localRows.length.toLocaleString("id-ID")} transaksi. Memuat arsip IndexedDB…`
+            );
+
+            if (
+                !window.LDMStorageDB ||
+                typeof window.LDMStorageDB.getTransactions !== "function"
+            ) {
+                updateTransactionArchiveStatus(
+                    `Cache cepat: ${localRows.length.toLocaleString("id-ID")} transaksi. IndexedDB arsip belum tersedia.`
+                );
+                return;
+            }
+
+            try {
+                await window.LDMStorageDB.ready();
+                const archiveRows = await window.LDMStorageDB.getTransactions({
+                    limit: 50000,
+                    newestFirst: false
+                });
+
+                if (archiveRows.length) {
+                    applyLaporanRows(archiveRows, { migrateLegacy: false });
+                }
+
+                const stats = typeof window.LDMStorageDB.transactionStats === "function"
+                    ? await window.LDMStorageDB.transactionStats()
+                    : null;
+
+                updateTransactionArchiveStatus(
+                    `Arsip lokal: ${(stats?.count ?? archiveRows.length).toLocaleString("id-ID")} transaksi ` +
+                    `• batas 50.000 • retensi sampai 365 hari • histori penuh tetap di Supabase.`
+                );
+            } catch (error) {
+                console.warn("Arsip transaksi IndexedDB gagal dimuat:", error);
+                updateTransactionArchiveStatus(
+                    `Arsip IndexedDB gagal dimuat. Menampilkan cache cepat ${localRows.length.toLocaleString("id-ID")} transaksi.`
+                );
+            }
         }
 
         function onSearchInput() {
@@ -4381,6 +4438,144 @@ function simpanLaporanKeStorage(dataArray) {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+
+        function csvEscape(value) {
+            const text = String(value == null ? "" : value);
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        function downloadBlobFile(parts, fileName, type) {
+            const blob = new Blob(parts, { type: type || "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+        }
+
+        async function downloadSemuaLaporanCloud() {
+            if (!requirePermission("laporan.view")) return;
+
+            if (
+                !window.LDMReporting ||
+                typeof window.LDMReporting.fetchAllReportTransactions !== "function"
+            ) {
+                return tampilkanNotifikasi(
+                    "Download Gagal",
+                    "Reporting Service 27.7.1 belum tersedia.",
+                    "⚠️"
+                );
+            }
+
+            const button = document.getElementById("btnDownloadAllReports");
+            const originalText = button ? button.textContent : "";
+            if (button) {
+                button.disabled = true;
+                button.textContent = "⏳ Mengambil data cloud…";
+            }
+
+            try {
+                const rows = await window.LDMReporting.fetchAllReportTransactions({
+                    pageSize: 500,
+                    onProgress: info => {
+                        if (button) {
+                            button.textContent = `⏳ ${Number(info.loaded || 0).toLocaleString("id-ID")} transaksi…`;
+                        }
+                    }
+                });
+
+                const visibleRows = filterDataLaporanBerdasarkanRole(rows);
+
+                if (!visibleRows.length) {
+                    return tampilkanNotifikasi(
+                        "Tidak Ada Data",
+                        "Tidak ada transaksi cloud yang dapat diunduh.",
+                        "ℹ️"
+                    );
+                }
+
+                const header = [
+                    "Kode Transaksi","Tanggal","Waktu","Kasir","Shift","Metode","Status",
+                    "Nama Barang","Barcode","Satuan","Qty","Harga Beli/HPP","Harga Normal","Harga Jual",
+                    "Diskon Item","Subtotal Item","Subtotal Transaksi","Diskon Total","Total Transaksi",
+                    "Kas Diterima","Tunai","Non Tunai","Kembalian"
+                ];
+
+                const parts = ["\ufeff" + header.map(csvEscape).join(",") + "\r\n"];
+                let itemRows = 0;
+
+                visibleRows.forEach(transaction => {
+                    const items = Array.isArray(transaction.keranjang) && transaction.keranjang.length
+                        ? transaction.keranjang
+                        : [null];
+                    const waktuTeks = String(transaction.waktu_teks || "");
+                    const date = String(transaction.tanggal || waktuTeks.slice(0,10) || "");
+                    const time = String(transaction.waktu || (waktuTeks.includes(" ") ? waktuTeks.split(" ").slice(1).join(" ") : ""));
+
+                    items.forEach(item => {
+                        const row = [
+                            getKodeTransaksi(transaction),
+                            date,
+                            time,
+                            transaction.kasir || transaction.operator || "",
+                            transaction.shift || "",
+                            transaction.metode || transaction.metodePembayaran || "Tunai",
+                            transaction.status || transaction.cloudStatus || "completed",
+                            item ? (item.nama || item.namaBarang || "") : "",
+                            item ? (item.barcode || "") : "",
+                            item ? (item.satuan || "Pcs") : "",
+                            item ? Number(item.qty || item.jumlah || 0) : "",
+                            item ? Number(item.hargaBeli || 0) : "",
+                            item ? Number(item.hargaNormal || item.hargaAwal || item.harga || 0) : "",
+                            item ? Number(item.harga || 0) : "",
+                            item ? Number(item.diskon || item.lineDiscount || 0) : "",
+                            item ? Number(item.subtotal || 0) : "",
+                            Number(transaction.subtotal || 0),
+                            Number(transaction.totalDiskon || transaction.diskon || 0),
+                            Number(transaction.total || transaction.grandTotal || 0),
+                            Number(transaction.bayar || transaction.cashReceived || 0),
+                            Number(transaction.cash || transaction.bayarCash || 0),
+                            Number(transaction.qris || transaction.bayarQris || transaction.nonTunai || 0),
+                            Number(transaction.kembali || transaction.kembalian || 0)
+                        ];
+                        parts.push(row.map(csvEscape).join(",") + "\r\n");
+                        itemRows += 1;
+                    });
+                });
+
+                const now = new Date();
+                const dateKey = window.LDMLocalTime
+                    ? window.LDMLocalTime.dateKey(now)
+                    : now.toISOString().slice(0,10);
+                downloadBlobFile(
+                    parts,
+                    `LocDailyMar-semua-laporan-${dateKey}.csv`,
+                    "text/csv;charset=utf-8"
+                );
+
+                tampilkanNotifikasi(
+                    "Download Selesai",
+                    `${visibleRows.length.toLocaleString("id-ID")} transaksi (${itemRows.toLocaleString("id-ID")} baris item) berhasil disiapkan. File CSV dapat dibuka di Excel atau Google Sheets.`,
+                    "✅"
+                );
+            } catch (error) {
+                console.error("Download semua laporan gagal:", error);
+                tampilkanNotifikasi(
+                    "Download Gagal",
+                    `${error && error.message ? error.message : error}\n\nJika RPC 27.7.1 belum dipasang, jalankan SQL 27-stage27.7.1-report-archive-pagination.sql di Supabase SQL Editor.`,
+                    "⚠️"
+                );
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = originalText || "☁️ Download Semua Laporan";
+                }
+            }
         }
 
         function bukaModalPasswordReset() {

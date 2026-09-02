@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <script src="js/storage-engine.js?v=27.7.0"></script>
-    <script src="js/storage-quota-guard.js?v=27.7.0"></script>
-    <script defer src="js/storage-health-monitor.js?v=27.7.0"></script>
+    <script src="js/storage-engine.js?v=27.7.1"></script>
+    <script src="js/storage-quota-guard.js?v=27.7.1"></script>
+    <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
 <script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -54,6 +54,8 @@
                 <div class="row"><span>Penyimpanan persisten</span><span class="value" id="persistStatus">-</span></div>
                 <div class="row"><span>IndexedDB Storage Engine</span><span class="value" id="idbStatus">-</span></div>
                 <div class="row"><span>Snapshot IndexedDB</span><span class="value" id="idbSnapshots">-</span></div>
+                <div class="row"><span>Arsip transaksi lokal</span><span class="value" id="idbTransactions">-</span></div>
+                <div class="row"><span>Batas arsip transaksi</span><span class="value" id="idbTransactionLimit">50.000 / 365 hari</span></div>
                 <div class="row"><span>Data snapshot</span><span class="value" id="idbBytes">-</span></div>
                 <div class="row"><span>Status kapasitas</span><span class="value" id="storageHealth">-</span></div>
                 <div class="buttons"><button class="btn navy" id="persistBtn">Aktifkan Storage Persisten</button><button class="btn primary" id="migrateStorageBtn">Migrasikan ke IndexedDB</button><button class="btn light" id="verifyStorageBtn">Verifikasi IndexedDB</button><button class="btn danger" id="clearBtn">Bersihkan Cache Aman</button></div>
@@ -88,6 +90,7 @@
             const risk=await window.LDMPWA.getQueueRisk();
             const storage=await window.LDMPWA.getStorageInfo().catch(()=>({usage:0,quota:0,persisted:null}));
             const idbStats=window.LDMStorageDB?await LDMStorageDB.stats().catch(()=>null):null;
+            const txStats=window.LDMStorageDB&&typeof LDMStorageDB.transactionStats==="function"?await LDMStorageDB.transactionStats().catch(()=>null):null;
             const health=window.LDMStorageHealth?await LDMStorageHealth.check({render:false}).catch(()=>null):null;
             byId("appVersion").textContent=window.LDMPWA.version;
             byId("installStatus").textContent=state.installed?"Terpasang (standalone)":state.installAvailable?"Siap dipasang":"Dibuka di browser";
@@ -107,6 +110,8 @@
             byId("idbStatus").textContent=window.LDMStorageDB?`Aktif · v${LDMStorageDB.version}`:"Tidak tersedia";
             byId("idbStatus").className=`value ${window.LDMStorageDB?"good":"bad"}`;
             byId("idbSnapshots").textContent=idbStats?String(idbStats.snapshots):"-";
+            byId("idbTransactions").textContent=txStats?Number(txStats.count||0).toLocaleString("id-ID"):"-";
+            byId("idbTransactionLimit").textContent=txStats?`${Number(txStats.maxRecords||50000).toLocaleString("id-ID")} / ${Number(txStats.retentionDays||365)} hari`:"50.000 / 365 hari";
             byId("idbBytes").textContent=idbStats?bytes(idbStats.bytes):"-";
             const level=health?.level||"unknown";
             byId("storageHealth").textContent=level==="normal"?"Normal":level==="warning"?"Mulai tinggi":level==="high"?"Hampir penuh":level==="critical"?"KRITIS":"Tidak diketahui";
