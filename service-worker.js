@@ -1,6 +1,6 @@
 "use strict";
 
-const APP_VERSION = "27.6.0";
+const APP_VERSION = "27.6.1";
 const CACHE_PREFIX = "ldm-";
 const SHELL_CACHE = `${CACHE_PREFIX}release27-6-0-owner-credentials-shell-v1`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}release27-6-0-owner-credentials-runtime-v1`;
