@@ -46,6 +46,29 @@ function midtransBase() {
     ? "https://app.midtrans.com"
     : "https://app.sandbox.midtrans.com";
 }
+function midtransApiBase() {
+  return env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true"
+    ? "https://api.midtrans.com"
+    : "https://api.sandbox.midtrans.com";
+}
+async function cancelMidtransTransaction(order: string) {
+  const serverKey = env("MIDTRANS_SERVER_KEY");
+  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
+  const response = await fetch(`${midtransApiBase()}/v2/${encodeURIComponent(order)}/cancel`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || String(data?.transaction_status || "").toLowerCase() !== "cancel") {
+    const message = clean(data?.status_message || data?.message || `Midtrans HTTP ${response.status}`, 500);
+    throw new Error(`Midtrans belum dapat membatalkan order ini: ${message}`);
+  }
+  return data;
+}
 async function createMidtransSnap(input: {
   orderId: string;
   amount: number;
@@ -133,8 +156,11 @@ Deno.serve(async (req) => {
       const { error: expiryError } = await admin.from("ldm2_licenses").update({ status: "expired" })
         .eq("status", "active").not("expires_at", "is", null).lte("expires_at", nowIso);
       if (expiryError) throw expiryError;
-      const { data: rows, error } = await admin.from("ldm2_admin_license_overview").select("*")
+      const includeArchived = body.include_archived === true;
+      let dashboardQuery = admin.from("ldm2_admin_license_overview").select("*")
         .order("created_at", { ascending: false }).limit(1000);
+      if (!includeArchived) dashboardQuery = dashboardQuery.is("archived_at", null);
+      const { data: rows, error } = await dashboardQuery;
       if (error) throw error;
       const list = rows || [];
       const now = Date.now();
@@ -143,11 +169,12 @@ Deno.serve(async (req) => {
         admin_email: adminEmail,
         summary: {
           total: list.length,
-          active: list.filter((v) => v.status === "active" && (!v.expires_at || new Date(v.expires_at).getTime() > now)).length,
-          trial: list.filter((v) => v.is_trial && v.status === "active" && new Date(v.expires_at).getTime() > now).length,
-          suspended: list.filter((v) => v.status === "suspended").length,
-          expired: list.filter((v) => v.status === "expired" || (v.expires_at && new Date(v.expires_at).getTime() <= now)).length,
-          payment_pending: list.filter((v) => ["pending", "challenge"].includes(v.latest_payment_status)).length,
+          archived: list.filter((v) => Boolean(v.archived_at)).length,
+          active: list.filter((v) => !v.archived_at && v.status === "active" && (!v.expires_at || new Date(v.expires_at).getTime() > now)).length,
+          trial: list.filter((v) => !v.archived_at && v.is_trial && v.status === "active" && new Date(v.expires_at).getTime() > now).length,
+          suspended: list.filter((v) => !v.archived_at && v.status === "suspended").length,
+          expired: list.filter((v) => !v.archived_at && (v.status === "expired" || (v.expires_at && new Date(v.expires_at).getTime() <= now))).length,
+          payment_pending: list.filter((v) => !v.archived_at && ["pending", "challenge"].includes(v.latest_payment_status)).length,
         },
         licenses: list,
       });
@@ -368,6 +395,77 @@ Deno.serve(async (req) => {
       const { data, error } = await admin.rpc("ldm2_set_license_status", { p_license_id: licenseId, p_status: status, p_reason: reason || null });
       if (error) throw error;
       await audit("SET_LICENSE_STATUS", licenseId, { status, reason });
+      return json(req, data);
+    }
+
+    if (action === "cancel_pending_payment") {
+      const licenseId = clean(body.license_id, 80);
+      const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
+        .select("id,license_id,order_id,status,payment_type,amount,processed_at")
+        .eq("license_id", licenseId)
+        .in("status", ["pending", "challenge"])
+        .order("created_at", { ascending: false })
+        .limit(1).maybeSingle();
+      if (paymentError) throw paymentError;
+      if (!payment) return json(req, { ok: false, message: "Tidak ada order pembayaran pending/challenge untuk lisensi ini." }, 404);
+      if (payment.processed_at) return json(req, { ok: false, message: "Pembayaran sudah diproses dan tidak dapat dibatalkan." }, 409);
+
+      const cancelled = await cancelMidtransTransaction(payment.order_id);
+      const { data: applied, error: applyError } = await admin.rpc("ldm2_apply_midtrans_notification", {
+        p_order_id: payment.order_id,
+        p_transaction_id: clean(cancelled?.transaction_id || "", 160),
+        p_transaction_status: "cancel",
+        p_fraud_status: clean(cancelled?.fraud_status || "", 40),
+        p_status_code: clean(cancelled?.status_code || "200", 20),
+        p_gross_amount: Number(payment.amount),
+        p_provider_detail: cancelled,
+      });
+      if (applyError) throw applyError;
+
+      if (payment.payment_type === "purchase") {
+        const { data: currentLicense } = await admin.from("ldm2_licenses").select("status").eq("id", licenseId).maybeSingle();
+        if (currentLicense?.status === "pending_payment") {
+          const { error: cancelLicenseError } = await admin.from("ldm2_licenses").update({ status: "cancelled" }).eq("id", licenseId);
+          if (cancelLicenseError) throw cancelLicenseError;
+        }
+      }
+      await audit("CANCEL_PENDING_PAYMENT", licenseId, { order_id: payment.order_id, payment_type: payment.payment_type });
+      return json(req, { ok: true, message: "Order pembayaran berhasil dibatalkan.", order_id: payment.order_id, result: applied });
+    }
+
+    if (action === "archive_license") {
+      const licenseId = clean(body.license_id, 80);
+      const reason = clean(body.reason, 500) || "Tidak digunakan lagi";
+      const { data, error } = await admin.rpc("ldm2_archive_license", {
+        p_license_id: licenseId,
+        p_admin_email: adminEmail,
+        p_reason: reason,
+      });
+      if (error) throw error;
+      await audit("ARCHIVE_LICENSE", licenseId, { reason });
+      return json(req, data);
+    }
+
+    if (action === "restore_license") {
+      const licenseId = clean(body.license_id, 80);
+      const { data, error } = await admin.rpc("ldm2_restore_archived_license", {
+        p_license_id: licenseId,
+        p_admin_email: adminEmail,
+      });
+      if (error) throw error;
+      await audit("RESTORE_ARCHIVED_LICENSE", licenseId, {});
+      return json(req, data);
+    }
+
+    if (action === "purge_unused_license") {
+      const licenseId = clean(body.license_id, 80);
+      const confirmation = clean(body.confirmation, 20).toUpperCase();
+      const { data, error } = await admin.rpc("ldm2_purge_unused_license", {
+        p_license_id: licenseId,
+        p_admin_email: adminEmail,
+        p_confirmation: confirmation,
+      });
+      if (error) throw error;
       return json(req, data);
     }
 
