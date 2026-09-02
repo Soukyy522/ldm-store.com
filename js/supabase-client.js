@@ -15,22 +15,6 @@
         );
     }
 
-    function getOrCreateDeviceHeaderId(){
-        const key = "ldmCloudDeviceId";
-        let value = localStorage.getItem(key);
-        if(value) return value;
-
-        if(window.crypto && typeof window.crypto.randomUUID === "function"){
-            value = window.crypto.randomUUID();
-        }else{
-            const bytes = new Uint8Array(16);
-            window.crypto.getRandomValues(bytes);
-            value = Array.from(bytes).map(byte => byte.toString(16).padStart(2,"0")).join("");
-        }
-        localStorage.setItem(key,value);
-        return value;
-    }
-
     function createLdmSupabaseClient(){
         if(!isConfigured()){
             throw new Error(
@@ -58,11 +42,6 @@
                     persistSession: true,
                     autoRefreshToken: true,
                     detectSessionInUrl: true
-                },
-                global: {
-                    headers: {
-                        "x-ldm-device-id": getOrCreateDeviceHeaderId()
-                    }
                 }
             }
         );
@@ -73,7 +52,6 @@
     window.LDMSupabase = Object.freeze({
         getConfig,
         isConfigured,
-        getOrCreateDeviceHeaderId,
         createClient: createLdmSupabaseClient
     });
 })();

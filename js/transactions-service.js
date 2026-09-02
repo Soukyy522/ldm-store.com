@@ -158,10 +158,25 @@
     }
 
     function businessDate(value){
-        if(window.LDMLocalTime) return window.LDMLocalTime.dateKey(value);
-        const date=value instanceof Date?value:new Date(value||Date.now());
-        const pad=v=>String(v).padStart(2,"0");
-        return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+        const date = value instanceof Date
+            ? value
+            : new Date(value || Date.now());
+
+        try{
+            const parts = new Intl.DateTimeFormat(
+                "en-CA",
+                {
+                    timeZone:"Asia/Makassar",
+                    year:"numeric",
+                    month:"2-digit",
+                    day:"2-digit"
+                }
+            ).formatToParts(date);
+            const map = Object.fromEntries(parts.map(part => [part.type,part.value]));
+            return `${map.year}-${map.month}-${map.day}`;
+        }catch(error){
+            return date.toISOString().slice(0,10);
+        }
     }
 
     function displaySnapshot(options, clientTransactionId, queuedAt){
@@ -413,10 +428,29 @@
         const {
             data,
             error
-        } = await supabase.rpc(
-            "ldm_visible_stock_movements",
-            {p_movement_types:null,p_limit:safeLimit}
-        );
+        } = await supabase
+            .from("stock_movements")
+            .select(
+                [
+                    "id",
+                    "product_id",
+                    "transaction_id",
+                    "movement_type",
+                    "quantity_change",
+                    "stock_before",
+                    "stock_after",
+                    "reference_code",
+                    "occurred_at"
+                ].join(",")
+            )
+            .order(
+                "occurred_at",
+                {
+                    ascending:
+                        false
+                }
+            )
+            .limit(safeLimit);
 
         if(error){
             throw error;

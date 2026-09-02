@@ -80,11 +80,30 @@
             return {date:"",time:""};
         }
 
-        if(window.LDMLocalTime) return window.LDMLocalTime.dateTimeParts(d);
-        const pad=value=>String(value).padStart(2,"0");
+        const parts = new Intl.DateTimeFormat(
+            "en-CA",
+            {
+                timeZone:"Asia/Makassar",
+                year:"numeric",
+                month:"2-digit",
+                day:"2-digit",
+                hour:"2-digit",
+                minute:"2-digit",
+                second:"2-digit",
+                hour12:false
+            }
+        ).formatToParts(d);
+
+        const map = {};
+        parts.forEach(part => {
+            if(part.type !== "literal"){
+                map[part.type] = part.value;
+            }
+        });
+
         return {
-            date:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
-            time:`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+            date:`${map.year}-${map.month}-${map.day}`,
+            time:`${map.hour}:${map.minute}:${map.second}`
         };
     }
 
@@ -287,10 +306,32 @@
     async function syncReturnStockMovements(){
         const supabase = client();
 
-        const {data,error} = await supabase.rpc(
-            "ldm_visible_stock_movements",
-            {p_movement_types:["return","return_cancel"],p_limit:1000}
-        );
+        const {data,error} = await supabase
+            .from("stock_movements")
+            .select(
+                [
+                    "id",
+                    "product_id",
+                    "movement_type",
+                    "quantity_change",
+                    "stock_before",
+                    "stock_after",
+                    "source_type",
+                    "source_id",
+                    "reference_code",
+                    "note",
+                    "occurred_at"
+                ].join(",")
+            )
+            .in(
+                "movement_type",
+                ["return","return_cancel"]
+            )
+            .order(
+                "occurred_at",
+                {ascending:false}
+            )
+            .limit(1000);
 
         if(error){
             throw error;
