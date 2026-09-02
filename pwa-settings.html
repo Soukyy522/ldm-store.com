@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <script src="js/storage-quota-guard.js?v=27.6.2"></script>
+    <script src="js/storage-engine.js?v=27.7.0"></script>
+    <script src="js/storage-quota-guard.js?v=27.7.0"></script>
+    <script defer src="js/storage-health-monitor.js?v=27.7.0"></script>
 <script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script><script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -50,7 +52,11 @@
                 <div class="row"><span>Kuota browser</span><span class="value" id="storageQuota">-</span></div>
                 <div class="bar"><span id="storageBar"></span></div>
                 <div class="row"><span>Penyimpanan persisten</span><span class="value" id="persistStatus">-</span></div>
-                <div class="buttons"><button class="btn navy" id="persistBtn">Minta Penyimpanan Persisten</button><button class="btn danger" id="clearBtn">Bersihkan Cache Aman</button></div>
+                <div class="row"><span>IndexedDB Storage Engine</span><span class="value" id="idbStatus">-</span></div>
+                <div class="row"><span>Snapshot IndexedDB</span><span class="value" id="idbSnapshots">-</span></div>
+                <div class="row"><span>Data snapshot</span><span class="value" id="idbBytes">-</span></div>
+                <div class="row"><span>Status kapasitas</span><span class="value" id="storageHealth">-</span></div>
+                <div class="buttons"><button class="btn navy" id="persistBtn">Aktifkan Storage Persisten</button><button class="btn primary" id="migrateStorageBtn">Migrasikan ke IndexedDB</button><button class="btn light" id="verifyStorageBtn">Verifikasi IndexedDB</button><button class="btn danger" id="clearBtn">Bersihkan Cache Aman</button></div>
             </section>
         </div>
         <div class="log" id="activityLog" role="status">Menyiapkan diagnostik Tahap 18…</div>
@@ -81,6 +87,8 @@
             const state=window.LDMPWA.getState();
             const risk=await window.LDMPWA.getQueueRisk();
             const storage=await window.LDMPWA.getStorageInfo().catch(()=>({usage:0,quota:0,persisted:null}));
+            const idbStats=window.LDMStorageDB?await LDMStorageDB.stats().catch(()=>null):null;
+            const health=window.LDMStorageHealth?await LDMStorageHealth.check({render:false}).catch(()=>null):null;
             byId("appVersion").textContent=window.LDMPWA.version;
             byId("installStatus").textContent=state.installed?"Terpasang (standalone)":state.installAvailable?"Siap dipasang":"Dibuka di browser";
             byId("workerStatus").textContent=state.supported?(state.updateAvailable?"Update menunggu":"Aktif"):"Tidak didukung";
@@ -96,6 +104,13 @@
             byId("storageQuota").textContent=bytes(storage.quota);
             byId("storageBar").style.width=`${storage.quota?Math.min(100,storage.usage/storage.quota*100):0}%`;
             byId("persistStatus").textContent=storage.persisted===true?"Aktif":storage.persisted===false?"Belum aktif":"Tidak tersedia";
+            byId("idbStatus").textContent=window.LDMStorageDB?`Aktif · v${LDMStorageDB.version}`:"Tidak tersedia";
+            byId("idbStatus").className=`value ${window.LDMStorageDB?"good":"bad"}`;
+            byId("idbSnapshots").textContent=idbStats?String(idbStats.snapshots):"-";
+            byId("idbBytes").textContent=idbStats?bytes(idbStats.bytes):"-";
+            const level=health?.level||"unknown";
+            byId("storageHealth").textContent=level==="normal"?"Normal":level==="warning"?"Mulai tinggi":level==="high"?"Hampir penuh":level==="critical"?"KRITIS":"Tidak diketahui";
+            byId("storageHealth").className=`value ${level==="normal"?"good":level==="warning"||level==="high"?"warn":level==="critical"?"bad":""}`;
             byId("applyBtn").disabled=!state.updateAvailable;
             if(state.message) log(state.message);
         }
@@ -103,7 +118,9 @@
         byId("installBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.install();log(result.message||`Pilihan instalasi: ${result.outcome||"selesai"}`);await refresh();});
         byId("checkBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.checkForUpdate();log(result.message);await refresh();});
         byId("applyBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.applyUpdate();log(result.message);if(!result.ok)alert(result.message);await refresh();});
-        byId("persistBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.requestPersistentStorage();log(result.message);await refresh();});
+        byId("persistBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=window.LDMStorageDB?await LDMStorageDB.requestPersistentStorage():await LDMPWA.requestPersistentStorage();log(result.message);await refresh();});
+        byId("migrateStorageBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!window.LDMStorageDB)throw new Error("Storage Engine belum tersedia.");const result=await LDMStorageDB.migrateFromLocalStorage({force:true});log(`Migrasi IndexedDB selesai. ${result.migrated.length} key · ${bytes(result.bytes)} · gagal ${result.failed.length}.`);await refresh();});
+        byId("verifyStorageBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!window.LDMStorageDB)throw new Error("Storage Engine belum tersedia.");const result=await LDMStorageDB.verify();log(result.message);if(!result.ok)alert(result.message);await refresh();});
         byId("clearBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!confirm("Bersihkan hanya cache aplikasi? Data transaksi lokal tidak dihapus."))return;const result=await LDMPWA.clearCachesSafely();log(result.message);if(!result.ok)alert(result.message);await refresh();});
         byId("syncBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!window.LDMOfflineQueue)throw new Error("Offline Queue belum tersedia.");const result=await LDMOfflineQueue.syncNow({force:true});log(`Sinkronisasi selesai. Sisa antrean: ${result.remaining}.`);await refresh();});
         addEventListener("ldm-pwa-state-changed",refresh);addEventListener("ldm-offline-queue-updated",refresh);addEventListener("online",refresh);addEventListener("offline",refresh);

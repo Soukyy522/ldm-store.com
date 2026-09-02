@@ -324,3 +324,13 @@ otomatis, dan memastikan transaksi cloud yang sudah COMMIT tidak berubah menjadi
 status gagal hanya karena `localStorage` penuh.
 
 Petunjuk lengkap: `docs/PATCH-27.6.2-STORAGE-QUOTA-HARDENING.md`.
+
+## Patch 27.7.0 — IndexedDB & Persistent Storage
+
+Patch 27.7.0 menambahkan Storage Engine berbasis IndexedDB (`locdailymar-storage-v27`),
+migrasi otomatis snapshot data besar dari localStorage, Storage Health Monitor, verifikasi
+IndexedDB, integrasi Persistent Storage, dan hardening transaksi offline ketika quota storage
+benar-benar habis. Offline Queue Tahap 16 tetap memakai IndexedDB aslinya dan tidak diganti.
+
+Patch ini tidak membutuhkan SQL Supabase baru. Petunjuk lengkap tersedia di
+`docs/PATCH-27.7.0-INDEXEDDB-PERSISTENT-STORAGE.md`.
