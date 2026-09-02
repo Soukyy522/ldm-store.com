@@ -13,16 +13,16 @@
     .wrap{max-width:1480px;margin:auto;padding:24px}.login{max-width:430px;margin:60px auto;background:#fff;border-radius:20px;padding:28px;box-shadow:0 18px 55px #1e3d5d20}.login h1{font-size:23px;margin:0 0 7px}.login p,.note{font-size:12px;color:var(--muted);line-height:1.65}
     .field{display:grid;gap:6px;margin-top:13px}.field label{font-size:12px;font-weight:700}.field input,.field select,.field textarea{border:1px solid #cbd8e6;border-radius:10px;padding:11px;outline:none}.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1464cc18}
     .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:#fff}.soft{background:#eaf1f9;color:#183c65}.danger{background:#ffebe8;color:var(--red)}.success{background:#e6f7f0;color:var(--green)}.btn:disabled{opacity:.55;cursor:wait}.login .btn{width:100%;margin-top:17px}.message{font-size:12px;margin-top:12px;color:var(--red)}
-    .app{display:none}.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:13px}.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 25px #263e5910}.stat{padding:17px}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:4px}
+    .app{display:none}.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:13px}.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 25px #263e5910}.stat{padding:17px}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:4px}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:20px 0 12px}.toolbar h2{margin:0;font-size:20px}.toolbar .right{display:flex;gap:8px}.panel{overflow:hidden}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:1380px}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #e7edf4;font-size:11px;vertical-align:top}th{background:#f7f9fc;color:#627086;font-size:9px;text-transform:uppercase;letter-spacing:.04em}td code{font-size:10px;word-break:break-all}
     .badge{display:inline-block;border-radius:99px;padding:4px 8px;font-size:9px;font-weight:700}.active,.paid{background:#e4f6ef;color:var(--green)}.pending_payment,.pending,.challenge{background:#fff0d8;color:var(--amber)}.suspended{background:#fff0d8;color:var(--amber)}.expired,.cancelled,.failed{background:#feeae7;color:var(--red)}.trial{background:#e6efff;color:#1559ad}
     .rowactions{display:flex;gap:5px;flex-wrap:wrap}.rowactions button,.rowactions a{border:0;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:700;cursor:pointer;text-decoration:none}.modal{position:fixed;inset:0;background:#091a2dc7;display:none;place-items:center;padding:15px;z-index:10}.modal.open{display:grid}.modalcard{background:#fff;width:min(720px,100%);max-height:90vh;overflow:auto;border-radius:18px;padding:23px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0;font-size:20px}.close{border:0;background:#edf2f7;border-radius:9px;padding:7px 10px;cursor:pointer}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.full{grid-column:1/-1}
-    .result{margin-top:14px;padding:14px;border-radius:11px;background:#edf8f3;color:#096a4d;font-size:12px;word-break:break-word;display:none}.result.show{display:block}.result code{display:block;background:#fff;border:1px solid #cce7da;padding:8px;border-radius:8px;margin:4px 0 9px;color:#123;word-break:break-all}.device{padding:12px;border:1px solid var(--line);border-radius:11px;margin-top:9px;display:flex;justify-content:space-between;gap:10px}.device span{font-size:11px;color:var(--muted);display:block}.empty{text-align:center;padding:35px;color:var(--muted)}
+    .result{margin-top:14px;padding:14px;border-radius:11px;background:#edf8f3;color:#096a4d;font-size:12px;word-break:break-word;display:none}.result.show{display:block}.result code{display:block;background:#fff;border:1px solid #cce7da;padding:8px;border-radius:8px;margin:4px 0 9px;color:#123;word-break:break-all}.device{padding:12px;border:1px solid var(--line);border-radius:11px;margin-top:9px;display:flex;justify-content:space-between;gap:10px}.device span{font-size:11px;color:var(--muted);display:block}.empty{text-align:center;padding:35px;color:var(--muted)}.archivedRow{opacity:.72;background:#f8fafc}.archiveBadge{background:#e9edf3;color:#536174}.filters{display:flex;gap:8px;flex-wrap:wrap}.filters input,.filters select{border:1px solid #cbd8e6;border-radius:9px;padding:8px 10px;background:#fff;color:var(--ink);font-size:11px}.dangerSolid{background:#b42318!important;color:#fff!important}.warningBox{background:#fff7e8;border:1px solid #f4d49b;color:#7a4a00;padding:12px;border-radius:11px;font-size:11px;line-height:1.6;margin-bottom:12px}
     @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:14px}.top{padding:0 14px}}
   </style>
 </head>
 <body>
-  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.1 · Midtrans otomatis</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.5 · Midtrans otomatis · Arsip customer aman</span></div><button id="logoutBtn" hidden>Keluar</button></header>
   <main class="wrap">
     <section class="login" id="loginBox">
       <h1>Login developer</h1>
@@ -40,10 +40,10 @@
         <div class="stat"><span>TRIAL AKTIF</span><strong id="sTrial">0</strong></div>
         <div class="stat"><span>MENUNGGU BAYAR</span><strong id="sPayment">0</strong></div>
         <div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div>
-        <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div>
+        <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div><div class="stat"><span>DIARSIPKAN</span><strong id="sArchived">0</strong></div>
       </div>
-      <div class="toolbar"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right"><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
-      <section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+      <div class="toolbar"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
+      <div class="warningBox"><b>Penghapusan aman:</b> gunakan <b>Arsipkan</b> untuk customer/lisensi yang sudah tidak digunakan. <b>Hapus Permanen</b> hanya diizinkan untuk lisensi yang benar-benar belum pernah dipakai, tidak pernah dibayar/refund, tidak pernah klaim trial, tidak pernah diaktivasi perangkat, dan belum diprovision ke Cloud Data Toko.</div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
     </section>
   </main>
 
@@ -68,8 +68,8 @@
   <div class="modal" id="deviceModal"><div class="modalcard"><div class="modalhead"><h2>Perangkat lisensi</h2><button class="close" data-close>✕</button></div><div id="devices"></div></div></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/license-v2-admin-config.js?v=27.1.0"></script>
-  <script src="js/license-v2-admin.js?v=27.1.0"></script>
+  <script src="js/license-v2-admin-config.js?v=27.5.0"></script>
+  <script src="js/license-v2-admin.js?v=27.5.0"></script>
   <script>
     const $=id=>document.getElementById(id);
     let licenses=[],lastDelivery="";
@@ -85,25 +85,48 @@
 
     async function load(){
       try{
-        const d=await LDMLicenseV2Admin.call("dashboard");licenses=d.licenses||[];
-        $("sTotal").textContent=d.summary.total;$("sActive").textContent=d.summary.active;$("sTrial").textContent=d.summary.trial;
-        $("sPayment").textContent=d.summary.payment_pending||0;$("sSuspended").textContent=d.summary.suspended;$("sExpired").textContent=d.summary.expired;
+        const d=await LDMLicenseV2Admin.call("dashboard",{include_archived:true});licenses=d.licenses||[];
+        $("sTotal").textContent=d.summary.total??0;$("sActive").textContent=d.summary.active??0;$("sTrial").textContent=d.summary.trial??0;
+        $("sPayment").textContent=d.summary.payment_pending||0;$("sSuspended").textContent=d.summary.suspended??0;$("sExpired").textContent=d.summary.expired??0;$("sArchived").textContent=d.summary.archived??0;
         $("adminIdentity").textContent=d.admin_email;render();
       }catch(e){alert(e.message);if(e.status===401)showApp(false)}
     }
+    function filteredLicenses(){
+      const scope=$("scopeFilter")?.value||"normal";
+      const q=String($("searchBox")?.value||"").trim().toLowerCase();
+      return licenses.filter(l=>{
+        const archived=Boolean(l.archived_at);
+        if(scope==="normal"&&archived)return false;
+        if(scope==="archived"&&!archived)return false;
+        if(!q)return true;
+        return [l.customer_name,l.customer_email,l.customer_phone,l.primary_store_name,l.primary_store_code,l.key_prefix,l.plan_name,l.network_id].some(v=>String(v||"").toLowerCase().includes(q));
+      });
+    }
+    function normalActions(l,paymentUrl){
+      const paymentPending=["pending","challenge"].includes(l.latest_payment_status);
+      const statusAction=l.status==="active"
+        ? `<button class="danger" onclick="statusLicense('${l.id}','suspended')">Tangguhkan</button>`
+        : l.status==="pending_payment"
+          ? (paymentPending?`<button class="danger" onclick="cancelPendingPayment('${l.id}')">Batalkan Order</button>`:`<button class="danger" onclick="cancelPendingLicense('${l.id}')">Batalkan Lisensi</button>`)
+          : `<button class="success" onclick="statusLicense('${l.id}','active')">Aktifkan manual</button>`;
+      return `<button class="soft" onclick="devices('${l.id}')">Perangkat</button>${statusAction}${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Ubah trial ke berbayar</button>`:(l.plan_code!=="LIFETIME"&&l.status!=="pending_payment"?`<button class="primary" onclick="renew('${l.id}')">Pembayaran perpanjangan</button>`:"")}${paymentUrl&&paymentPending?`<a class="soft" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka pembayaran</a>`:""}${l.status!=="active"&&l.status!=="pending_payment"?`<button class="danger" onclick="archiveLicense('${l.id}')">Arsipkan</button>`:""}`;
+    }
+    function archivedActions(l){
+      return `<button class="success" onclick="restoreLicense('${l.id}')">Pulihkan</button><button class="dangerSolid" onclick="purgeLicense('${l.id}')">Hapus Permanen</button>`;
+    }
     function render(){
-      const body=$("rows");
-      if(!licenses.length){body.innerHTML='<tr><td colspan="9" class="empty">Belum ada customer lisensi.</td></tr>';return}
-      body.innerHTML=licenses.map(l=>{const paymentUrl=safeUrl(l.latest_payment_url);return `<tr>
-        <td><b>${esc(l.customer_name)}</b><br>${esc(l.customer_email)}<br><small>${esc(l.customer_phone||"")}</small></td>
+      const body=$("rows"),list=filteredLicenses();
+      if(!list.length){body.innerHTML='<tr><td colspan="9" class="empty">Tidak ada customer/lisensi pada filter ini.</td></tr>';return}
+      body.innerHTML=list.map(l=>{const paymentUrl=safeUrl(l.latest_payment_url),archived=Boolean(l.archived_at);return `<tr class="${archived?'archivedRow':''}">
+        <td><b>${esc(l.customer_name)}</b><br>${esc(l.customer_email)}<br><small>${esc(l.customer_phone||"")}</small>${archived?`<br><span class="badge archiveBadge">DIARSIPKAN</span>`:""}</td>
         <td><b>${esc(l.primary_store_name||"-")}</b><br><code>${esc(l.primary_store_code||"-")}</code><br><small>ID: ${esc(l.primary_store_id||"-")}</small></td>
         <td><b>${esc(l.plan_name)}</b>${l.is_trial?'<br><span class="badge trial">TRIAL</span>':""}</td>
-        <td><span class="badge ${esc(l.status)}">${esc(l.status).replaceAll("_"," ").toUpperCase()}</span></td>
+        <td><span class="badge ${esc(l.status)}">${esc(l.status).replaceAll("_"," ").toUpperCase()}</span>${archived?`<br><small>Arsip: ${dt(l.archived_at)}<br>${esc(l.archived_reason||"")}</small>`:""}</td>
         <td><span class="badge ${esc(l.latest_payment_status||"")}">${esc(l.latest_payment_status||"-").toUpperCase()}</span><br><small>${esc(l.latest_order_id||"")}</small><br><small>${l.latest_payment_amount?money(l.latest_payment_amount):""}</small></td>
         <td>${dt(l.starts_at)}<br><small>s/d ${dt(l.expires_at)}</small></td>
         <td>${l.active_devices}/${l.max_devices} device<br>${l.active_stores}/${l.max_stores} toko</td>
         <td>${esc(l.key_prefix)}…</td>
-        <td><div class="rowactions"><button class="soft" onclick="devices('${l.id}')">Perangkat</button>${l.status==="active"?`<button class="danger" onclick="statusLicense('${l.id}','suspended')">Tangguhkan</button>`:(l.status!=="pending_payment"?`<button class="success" onclick="statusLicense('${l.id}','active')">Aktifkan manual</button>`:"")}${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Ubah trial ke berbayar</button>`:(l.plan_code!=="LIFETIME"?`<button class="primary" onclick="renew('${l.id}')">Pembayaran perpanjangan</button>`:"")}${paymentUrl&&["pending","challenge"].includes(l.latest_payment_status)?`<a class="soft" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka pembayaran</a>`:""}</div></td>
+        <td><div class="rowactions">${archived?archivedActions(l):normalActions(l,paymentUrl)}</div></td>
       </tr>`}).join("");
     }
 
@@ -117,6 +140,7 @@
     $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await load()}catch(e){$("loginMessage").textContent=e.message}};
     $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false)};
     $("refreshBtn").onclick=load;$("newBtn").onclick=()=>open("issueModal");
+    $("searchBox").addEventListener("input",render);$("scopeFilter").addEventListener("change",render);
     $("iPlan").onchange=()=>{const lifetime=$("iPlan").value==="LIFETIME";$("iCycle").innerHTML=lifetime?'<option value="lifetime">Lifetime</option>':'<option value="monthly">Bulanan</option><option value="yearly">Tahunan</option>'};
     $("issueBtn").onclick=async()=>{
       const button=$("issueBtn");button.disabled=true;
@@ -125,7 +149,32 @@
         $("issueResult").classList.add("show");showPayment(d,"issueResult");await load();
       }catch(e){if(e.data?.license&&e.data?.payment){$("issueResult").classList.add("show");showPayment(e.data,"issueResult")}alert(e.message)}finally{button.disabled=false}
     };
-    async function statusLicense(id,status){const reason=prompt(status==="suspended"?"Alasan penangguhan:":"Catatan pengaktifan kembali:","");if(reason===null)return;await LDMLicenseV2Admin.call("set_status",{license_id:id,status,reason});await load()}
+    async function statusLicense(id,status){const reason=prompt(status==="suspended"?"Alasan penangguhan:":"Catatan pengaktifan kembali:","");if(reason===null)return;try{await LDMLicenseV2Admin.call("set_status",{license_id:id,status,reason});await load()}catch(e){alert(e.message)}}
+    async function cancelPendingPayment(id){
+      if(!confirm("Batalkan order pembayaran Midtrans yang masih pending/challenge? Customer tidak dapat melanjutkan order ini setelah dibatalkan."))return;
+      try{const d=await LDMLicenseV2Admin.call("cancel_pending_payment",{license_id:id});alert(d.message||"Order pembayaran dibatalkan.");await load()}catch(e){alert(e.message)}
+    }
+    async function cancelPendingLicense(id){
+      const reason=prompt("Order sudah tidak pending. Tandai lisensi pending_payment ini sebagai cancelled agar dapat diarsipkan?","Checkout tidak dilanjutkan");if(reason===null)return;
+      try{await LDMLicenseV2Admin.call("set_status",{license_id:id,status:"cancelled",reason});await load()}catch(e){alert(e.message)}
+    }
+    async function archiveLicense(id){
+      const l=licenses.find(x=>x.id===id);if(!l)return;
+      const reason=prompt(`Arsipkan customer ${l.customer_name}?\n\nData tetap disimpan untuk audit dan dapat dipulihkan.`,"Sudah tidak digunakan");if(reason===null)return;
+      if(!confirm("Lanjutkan mengarsipkan lisensi/customer ini? Lisensi aktif harus ditangguhkan lebih dulu dan pembayaran pending harus diselesaikan/dibatalkan."))return;
+      try{const d=await LDMLicenseV2Admin.call("archive_license",{license_id:id,reason});alert(d.message||"Berhasil diarsipkan.");await load()}catch(e){alert(e.message)}
+    }
+    async function restoreLicense(id){
+      if(!confirm("Pulihkan customer/lisensi ini dari arsip? Status lisensinya tidak diubah otomatis."))return;
+      try{const d=await LDMLicenseV2Admin.call("restore_license",{license_id:id});alert(d.message||"Berhasil dipulihkan.");await load()}catch(e){alert(e.message)}
+    }
+    async function purgeLicense(id){
+      const l=licenses.find(x=>x.id===id);if(!l)return;
+      if(!confirm(`HAPUS PERMANEN ${l.customer_name}?\n\nAksi ini hanya akan berhasil bila lisensi benar-benar belum pernah dipakai dan tidak memiliki riwayat pembayaran yang wajib dipertahankan.`))return;
+      const confirmation=prompt("Ketik HAPUS untuk konfirmasi. Aksi ini tidak dapat dibatalkan.","");if(confirmation===null)return;
+      if(confirmation.trim().toUpperCase()!=="HAPUS"){alert("Konfirmasi salah. Penghapusan dibatalkan.");return}
+      try{const d=await LDMLicenseV2Admin.call("purge_unused_license",{license_id:id,confirmation:"HAPUS"});alert(d.message||"Data berhasil dihapus permanen.");await load()}catch(e){alert("Tidak dapat dihapus permanen:\n"+e.message+"\n\nGunakan Arsipkan bila data memiliki riwayat.")}
+    }
     async function renew(id){const answer=prompt("Periode perpanjangan: ketik monthly atau yearly","yearly");if(!answer)return;const cycle=answer.trim().toLowerCase();if(!["monthly","yearly"].includes(cycle)){alert("Gunakan monthly atau yearly.");return}try{const d=await LDMLicenseV2Admin.call("renew_payment",{license_id:id,billing_cycle:cycle});showPayment(d);open("paymentModal");await load()}catch(e){alert(e.message)}}
     async function convertTrial(id){
       const answer=prompt("Paket tujuan: WARUNG_KECIL, WARUNG_SEDERHANA, TOKO, atau LIFETIME","WARUNG_SEDERHANA");if(!answer)return;

@@ -33,6 +33,7 @@
     .checkout-field.full{grid-column:1/-1}.checkout-field label{font-size:11px;font-weight:800;color:#304a67}
     .checkout-field input,.checkout-field select{min-height:44px;border:1px solid #cfd9e5;border-radius:10px;padding:0 11px;font:inherit;font-size:13px;background:#fff}
     .checkout-field input:focus,.checkout-field select:focus{outline:3px solid #d9ebff;border-color:#5b93d1}
+    .password-wrap{position:relative}.password-wrap input{width:100%;padding-right:78px}.password-toggle{position:absolute;right:7px;top:50%;transform:translateY(-50%);border:0;background:#eef4f8;color:#304a67;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:800;cursor:pointer}.password-help{font-size:10px;line-height:1.5;color:#667085;margin-top:4px}
     .checkout-summary{background:#f8fbff;border:1px solid #dce8f5;border-radius:15px;padding:15px;height:max-content}
     .checkout-summary span{display:block;color:var(--muted);font-size:11px}.checkout-summary strong{display:block;margin:3px 0 12px}
     .checkout-total{font-size:24px!important;color:#0f9d58}.checkout-agree{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:#536578;line-height:1.45;margin:13px 0}
@@ -82,10 +83,12 @@
             <div class="checkout-field"><label>Nama toko</label><input id="checkoutStoreName" required placeholder="Contoh: Warung Budi"></div>
             <div class="checkout-field"><label>Nomor kontak / WhatsApp</label><input id="checkoutPhone" inputmode="tel" autocomplete="tel" required placeholder="Contoh: 081234567890"></div>
             <div class="checkout-field"><label>Email Owner</label><input id="checkoutEmail" type="email" autocomplete="email" required placeholder="owner@email.com"></div>
+            <div class="checkout-field"><label>Password Owner</label><div class="password-wrap"><input id="checkoutOwnerPassword" type="password" autocomplete="new-password" required minlength="8" maxlength="72" placeholder="Buat password untuk login"><button class="password-toggle" type="button" data-password-target="checkoutOwnerPassword">Lihat</button></div><div class="password-help">8-72 karakter, tanpa spasi, gunakan huruf besar, huruf kecil, dan angka.</div></div>
+            <div class="checkout-field"><label>Konfirmasi Password Owner</label><div class="password-wrap"><input id="checkoutOwnerPasswordConfirm" type="password" autocomplete="new-password" required minlength="8" maxlength="72" placeholder="Ulangi password"><button class="password-toggle" type="button" data-password-target="checkoutOwnerPasswordConfirm">Lihat</button></div><div class="password-help">Password tidak disimpan di License Authority atau localStorage. Gunakan password manager untuk menyimpannya.</div></div>
             <div class="checkout-field"><label>Store Code</label><input id="checkoutStoreCode" required maxlength="30" autocomplete="off" placeholder="Contoh: TOKO-BUDI-01" style="text-transform:uppercase"></div>
             <div class="checkout-field"><label>Periode paket</label><select id="checkoutPeriod" required></select></div>
           </div>
-          <label class="checkout-agree"><input type="checkbox" id="checkoutAgree"> <span>Saya memastikan Email Owner, nomor kontak, dan Store Code sudah benar. Email dipakai sebagai akun Owner. Setelah pembayaran terverifikasi, License Key dan identitas toko akan ditampilkan langsung di halaman ini.</span></label>
+          <label class="checkout-agree"><input type="checkbox" id="checkoutAgree"> <span>Saya memastikan Email Owner, Password Owner, nomor kontak, dan Store Code sudah benar. Email + password ini akan menjadi akun Owner setelah pembayaran terverifikasi. Password tidak ditampilkan kembali oleh LocDailyMar.</span></label>
           <div class="checkout-actions">
             <button class="btn primary" type="submit" id="checkoutPayBtn">Lanjut ke Metode Pembayaran</button>
             <button class="btn ghost" type="button" id="checkoutCheckBtn" disabled>Cek Status Pembayaran</button>
@@ -96,24 +99,25 @@
             <button class="btn danger-soft" type="button" id="checkoutCancelBtn">Batalkan Order Pembayaran</button>
           </div>
           <div class="checkout-status" id="publicCheckoutStatus"></div>
-          <div class="checkout-security"><b>Keamanan:</b> Server Key Midtrans, service-role Supabase, dan kunci enkripsi tidak disimpan di browser. License Key baru dikembalikan oleh server setelah pembayaran terverifikasi dan token status order cocok.</div>
+          <div class="checkout-security"><b>Keamanan:</b> Password Owner dikirim melalui HTTPS langsung ke backend Cloud untuk membuat reservasi akun Auth dan tidak disimpan di database License Authority/localStorage. Profile, Store, dan hak Owner baru dibuat setelah pembayaran terverifikasi. License Key baru dikembalikan setelah status order sah.</div>
         </form>
         <aside class="checkout-summary">
           <span>Paket</span><strong id="checkoutPlanName">-</strong>
           <span>Periode</span><strong id="checkoutPlanPeriod">-</strong>
           <span>Total resmi</span><strong class="checkout-total" id="checkoutPlanAmount">Rp0</strong>
-          <span>Setelah pembayaran</span><strong style="font-size:12px;line-height:1.5">License Key + Store Code + Store UUID + Network ID tampil langsung di halaman ini setelah pembayaran terverifikasi.</strong>
+          <span>Setelah pembayaran</span><strong style="font-size:12px;line-height:1.5">Email + Password Owner langsung bisa dipakai login. License Key + Store Code + Store UUID + Network ID juga tampil di halaman ini.</strong>
         </aside>
       </div>
           <section class="license-receipt" id="licenseReceipt" hidden aria-live="polite">
         <div class="receipt-title"><div style="font-size:24px">✅</div><div><h3>Pembayaran Berhasil · Simpan Data Lisensi</h3><p>Data di bawah ini adalah identitas akses toko kamu.</p></div></div>
-        <div class="receipt-alert"><strong>⚠️ SANGAT PENTING</strong><br>Jangan menutup halaman sebelum menyimpan <b>Store Code</b> dan <b>License Key</b>. <b>Lakukan screenshot layar ini sekarang</b> dan tekan <b>Salin Semua Data</b> sebagai cadangan. Jangan bagikan License Key kepada orang yang tidak berwenang.</div>
+        <div class="receipt-alert"><strong>⚠️ SANGAT PENTING</strong><br>Jangan menutup halaman sebelum menyimpan <b>Store Code</b> dan <b>License Key</b>. <b>Lakukan screenshot layar ini sekarang</b> dan tekan <b>Salin Semua Data</b>. Untuk password Owner, simpan di password manager atau catatan aman; LocDailyMar sengaja tidak menampilkan password kembali.</div>
         <div class="receipt-grid">
           <div class="receipt-item"><span>Order ID</span><strong id="receiptOrderId">-</strong></div>
           <div class="receipt-item"><span>Paket</span><strong id="receiptPlan">-</strong></div>
           <div class="receipt-item full receipt-key"><span>LICENSE KEY · SIMPAN INI</span><strong id="receiptLicenseKey">-</strong></div>
           <div class="receipt-item"><span>STORE CODE · SIMPAN INI</span><strong id="receiptStoreCode">-</strong></div>
           <div class="receipt-item"><span>Email Owner</span><strong id="receiptOwnerEmail">-</strong></div>
+          <div class="receipt-item"><span>Password Owner</span><strong id="receiptPasswordState">Password yang kamu buat saat checkout</strong></div>
           <div class="receipt-item"><span>Store UUID</span><strong id="receiptStoreId">-</strong></div>
           <div class="receipt-item"><span>Network ID</span><strong id="receiptNetworkId">-</strong></div>
           <div class="receipt-item full"><span>Masa berlaku</span><strong id="receiptExpires">-</strong></div>
@@ -123,10 +127,11 @@
           <button class="btn primary" type="button" id="receiptCopyAllBtn">Salin Semua Data</button>
           <button class="btn ghost" type="button" id="receiptCopyKeyBtn">Salin License Key</button>
           <button class="btn ghost" type="button" id="receiptActivateBtn">Gunakan untuk Aktivasi</button>
-          <a class="btn primary receipt-link" id="receiptPasswordBtn" target="_blank" rel="noopener noreferrer" hidden>Buat / Ganti Password Owner</a>
+          <a class="btn primary receipt-link" id="receiptLoginBtn" target="_blank" rel="noopener noreferrer" hidden>Masuk Aplikasi sebagai Owner</a>
+          <a class="btn ghost receipt-link" id="receiptPasswordBtn" target="_blank" rel="noopener noreferrer" hidden>Buat / Ganti Password Owner (Order Lama)</a>
           <a class="btn ghost receipt-link" id="receiptGuideBtn" target="_blank" rel="noopener noreferrer" hidden>Buka Panduan</a>
         </div>
-        <p class="receipt-foot">Jika halaman ter-refresh atau tertutup, buka kembali halaman Lisensi pada browser/perangkat yang sama lalu tekan <b>Cek Status Pembayaran</b>. Sistem tidak menyimpan License Key mentah di localStorage; server menampilkannya kembali hanya untuk order yang sudah dibayar dan mempunyai token status yang cocok.</p>
+        <p class="receipt-foot">Gunakan <b>Email Owner + Password Owner yang kamu buat saat checkout</b> untuk login setelah provisioning berstatus siap. Jika halaman ter-refresh, tekan <b>Cek Status Pembayaran</b> pada browser/perangkat yang sama untuk menampilkan kembali data lisensi. Password Owner tidak dapat ditampilkan kembali oleh halaman ini.</p>
       </section>
     </section>
 
@@ -153,9 +158,9 @@
     </div>
   </div>
 
-  <script src="js/license-v2-config.js?v=27.4.0"></script>
-  <script src="js/license-v2-client.js?v=27.4.0"></script>
-  <script src="js/license-checkout-v2.js?v=27.4.0"></script>
+  <script src="js/license-v2-config.js?v=27.6.0"></script>
+  <script src="js/license-v2-client.js?v=27.6.0"></script>
+  <script src="js/license-checkout-v2.js?v=27.6.0"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);

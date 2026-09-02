@@ -1,14 +1,14 @@
 "use strict";
 
-const APP_VERSION = "27.4.0";
+const APP_VERSION = "27.6.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-4-0-payment-guide-account-shell-v1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-4-0-payment-guide-account-runtime-v1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-6-0-owner-credentials-shell-v1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-6-0-owner-credentials-runtime-v1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
     "./", "./homepage.html", "./index.html", "./dashboard.html", "./kasir.html", "./barang.html", "./Purchase-Order.html", "./goods.receipt.html", "./multi-store.html", "./supabase-stage20-unit-test.html",
-    "./pwa-settings.html", "./account-management.html", "./device-management.html", "./panduan.html", "./owner-control-center.html", "./recovery-center.html", "./qa-security-performance.html", "./license.html", "./license-v2.html", "./developer-license-v2.html", "./offline.html", "./manifest.json", "./icon.png",
+    "./pwa-settings.html", "./account-management.html", "./device-management.html", "./panduan.html", "./owner-control-center.html", "./recovery-center.html", "./qa-security-performance.html", "./license.html", "./license-v2.html", "./developer-license.html", "./developer-license-v2.html", "./offline.html", "./manifest.json", "./icon.png",
     "./assets/icons/icon-192.png", "./assets/icons/icon-512.png", "./assets/brand/locdailymar-logo.png",
     "./assets/icons/maskable-512.png", "./style.css", "./css/global-responsive-navigation.css", "./css/help-center.css", "./css/multi-store-dashboard-theme.css", "./css/central-catalog-control.css", "./setting.js", "./employee-id.js",
     "./js/pwa-manager.js", "./js/local-time.js", "./js/user-guide.js", "./js/security-hardening.js", "./js/qa-runtime.js", "./js/recovery-service.js", "./js/global-system-navigation.js", "./js/primary-owner-service.js", "./js/central-catalog-control.js",
