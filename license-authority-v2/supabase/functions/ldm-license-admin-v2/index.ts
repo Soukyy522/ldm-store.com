@@ -4,6 +4,7 @@ import {
 } from "../_shared/ldm-midtrans-operations.ts";
 
 const encoder = new TextEncoder();
+const ADMIN_API_VERSION = "27.8.1";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
 function clean(value: unknown, max = 200) { return String(value || "").trim().slice(0, max); }
@@ -39,9 +40,17 @@ function cors(req: Request) {
   };
 }
 function json(req: Request, data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
+  const payload = data && typeof data === "object" && !Array.isArray(data)
+    ? { ...(data as Record<string, unknown>), admin_api_version: ADMIN_API_VERSION }
+    : data;
+  return new Response(JSON.stringify(payload), {
     status,
-    headers: { ...cors(req), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+    headers: {
+      ...cors(req),
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-LDM-Admin-Version": ADMIN_API_VERSION,
+    },
   });
 }
 function midtransBase() {
@@ -122,7 +131,14 @@ Deno.serve(async (req) => {
     if (!admins.includes(adminEmail)) return json(req, { ok: false, message: "Akun ini bukan developer yang diizinkan." }, 403);
 
     const body = await req.json().catch(() => ({}));
-    const action = clean(body.action, 40).toLowerCase();
+    const requestedAction = clean(body.action, 40).toLowerCase();
+    const actionAliases: Record<string, string> = {
+      sync_payment: "sync_payment_status",
+      sync_midtrans_status: "sync_payment_status",
+      check_payment_status: "sync_payment_status",
+      reconcile_payment: "sync_payment_status",
+    };
+    const action = actionAliases[requestedAction] || requestedAction;
     const audit = async (name: string, target: string | null, detail: Record<string, unknown> = {}) => {
       await admin.from("ldm2_admin_audit").insert({
         admin_user_id: authData.user.id,
@@ -556,7 +572,12 @@ Deno.serve(async (req) => {
       return json(req, data);
     }
 
-    return json(req, { ok: false, message: "Action admin tidak dikenal." }, 400);
+    return json(req, {
+      ok: false,
+      code: "ADMIN_ACTION_UNKNOWN",
+      message: `Action admin tidak dikenal: ${requestedAction || "(kosong)"}. Pastikan Developer Center dan Edge Function memakai versi yang sama.`,
+      requested_action: requestedAction || null,
+    }, 400);
   } catch (error) {
     console.error("LDM_LICENSE_ADMIN_V2", error);
     return json(req, { ok: false, message: (error as Error)?.message || "Server Developer Center gagal memproses permintaan." }, 500);

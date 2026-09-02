@@ -13,7 +13,7 @@ const required = [
   "js/license-checkout-v2.js",
   "js/license-v2-config.js",
   "service-worker.js",
-  "PANDUAN-PERBAIKAN-MIDTRANS-27.8.0.txt",
+  "PANDUAN-PERBAIKAN-ADMIN-SYNC-27.8.1.txt",
   "VERSION.txt",
 ];
 
@@ -71,9 +71,12 @@ if (!failures.length) {
   }
 
   requireText(required[2], [
+    'ADMIN_API_VERSION = "27.8.1"',
     "midtransNotificationUrl",
     '"X-Override-Notification"',
     'action === "sync_payment_status"',
+    'sync_midtrans_status: "sync_payment_status"',
+    'code: "ADMIN_ACTION_UNKNOWN"',
     'action === "retry_purchase_payment"',
     "cancelPaymentForRetry",
   ]);
@@ -86,12 +89,12 @@ if (!failures.length) {
   ]);
   requireText(required[4], ["SHA-512", "/status", "ldm2_apply_midtrans_notification"]);
   requireText(required[5], ["[functions.ldm-midtrans-webhook]", "verify_jwt = false"]);
-  requireText(required[6], ["Cek Status Midtrans", "Buat Pembayaran Baru", "retry_purchase_payment", "sync_payment_status"]);
-  requireText(required[7], ["license-checkout-v2.js?v=27.8.0"]);
+  requireText(required[6], ["V2.8.1", "Cek Status Midtrans", "Buat Pembayaran Baru", "retry_purchase_payment", "sync_payment_status"]);
+  requireText(required[7], ["license-checkout-v2.js?v=27.8.1"]);
   requireText(required[8], ["ldmPublicCheckoutV278", "snapCallbacks", "onPending", "poll(payment.order_id"]);
-  requireText(required[9], ['appVersion:"27.8.0"']);
-  requireText(required[10], ['APP_VERSION = "27.8.0"', "release27-8-0-midtrans-status-cancel"]);
-  if (fs.readFileSync(required[12], "utf8").trim() !== "27.8.0") failures.push("VERSION.txt bukan 27.8.0.");
+  requireText(required[9], ['appVersion:"27.8.1"']);
+  requireText(required[10], ['APP_VERSION = "27.8.1"', "release27-8-1-admin-sync-action"]);
+  if (fs.readFileSync(required[12], "utf8").trim() !== "27.8.1") failures.push("VERSION.txt bukan 27.8.1.");
 
   checkJavaScript(required[8]);
   checkJavaScript(required[9]);
@@ -106,4 +109,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("QA MIDTRANS 27.8 LULUS: status reconciliation, webhook override, Core/Snap cancel, retry payment, SQL, UI, dan cache version valid.");
+console.log("QA MIDTRANS 27.8.1 LULUS: action admin sync kompatibel, status reconciliation, webhook override, Core/Snap cancel, retry payment, SQL, UI, dan cache version valid.");

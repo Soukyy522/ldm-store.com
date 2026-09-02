@@ -378,3 +378,15 @@ Deploy ulang Edge Functions:
 - `ldm-midtrans-webhook`
 
 Panduan lengkap: `PANDUAN-PERBAIKAN-MIDTRANS-27.8.0.txt`.
+
+## Patch 27.8.1 — Developer Cek Status Midtrans
+
+Patch ini memperbaiki pesan `Action admin tidak dikenal` saat developer menekan
+`Cek Status Midtrans`. Backend menerima action kanonis `sync_payment_status` dan alias
+kompatibilitas untuk deployment/frontend lama. Respons admin sekarang membawa versi API
+agar ketidaksamaan antara halaman Developer Center dan Edge Function mudah didiagnosis.
+
+Tidak ada SQL baru. Deploy ulang Edge Function `ldm-license-admin-v2` dari paket 27.8.1,
+kemudian unggah frontend dan muat ulang aplikasi agar cache 27.8.0 diganti.
+
+Panduan lengkap: `PANDUAN-PERBAIKAN-ADMIN-SYNC-27.8.1.txt`.
