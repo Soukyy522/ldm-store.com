@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.9.0";
+    const NAV_VERSION="27.9.0-simlocal-adaptive-nav-v3";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -35,6 +35,7 @@
         {page:"account-management.html",icon:"👥",label:"Management Akun",group:"Sistem",roles:["owner"],feature:"cloud_accounts"},
         {page:"device-management.html",icon:"💻",label:"Perangkat Cloud",group:"Sistem",roles:["owner"],feature:"cloud_devices"},
         {page:"pwa-settings.html",icon:"📲",label:"Aplikasi & Update",group:"Sistem",roles:["owner","admin","kasir"],feature:"app_update"},
+        {page:"penyimpanan.html",icon:"🗄️",label:"Penyimpanan & Retensi",group:"Sistem",roles:["owner","admin"],feature:"app_update"},
         {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"],feature:"recovery_center"},
         {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"],feature:"qa_security"},
         {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},
@@ -48,8 +49,80 @@
         "Supplier & Pembelian":"🏢",
         "Keuangan & Laporan":"📑",
         "Closing & Data":"🔐",
-        "Sistem":"⚙️"
+        "Sistem":"⚙️",
+        "Menu & Cabang":"☕",
+        "Bahan & Pembelian":"🥛",
+        "Barang":"🍜",
+        "Belanja & Supplier":"🧺",
+        "Operasional Harian":"🕒",
+        "Pengaturan":"⚙️"
     };
+
+    /*
+     * Navigasi adaptif per Mode Operasional.
+     * Ini hanya menyederhanakan menu. Halaman/fitur tidak dihapus dan
+     * hak akses role + lisensi tetap menjadi lapisan izin utama.
+     */
+    const MODE_NAV_PROFILES=Object.freeze({
+        retail:Object.freeze({
+            id:"retail",icon:"🛒",label:"Toko Ritel",
+            tagline:"Navigasi lengkap untuk stok, pembelian, audit, dan operasional toko.",
+            hidden:Object.freeze([]),
+            labels:Object.freeze({}),
+            quick:Object.freeze({}),
+            groups:Object.freeze({})
+        }),
+        cafe:Object.freeze({
+            id:"cafe",icon:"☕",label:"Kafe",
+            tagline:"Fokus pada kasir, menu, pembelian bahan, laporan, dan operasional harian.",
+            hidden:Object.freeze([
+                "kartu-stok.html","stock-opname.html","retur.html",
+                "backup & restore.html","recovery-center.html","qa-security-performance.html"
+            ]),
+            labels:Object.freeze({
+                "barang.html":"Menu & Produk",
+                "multi-store.html":"Cabang & Transfer",
+                "supplier.html":"Supplier Bahan",
+                "purchase-order.html":"Pesanan Bahan",
+                "goods.receipt.html":"Penerimaan Bahan",
+                "laporan.html":"Laporan Penjualan",
+                "shift-closing.html":"Tutup Shift",
+                "eod.html":"Tutup Hari"
+            }),
+            quick:Object.freeze({"barang.html":true,"multi-store.html":false}),
+            groups:Object.freeze({
+                "Inventori":"Menu & Cabang",
+                "Supplier & Pembelian":"Bahan & Pembelian",
+                "Closing & Data":"Operasional Harian",
+                "Sistem":"Pengaturan"
+            })
+        }),
+        warung:Object.freeze({
+            id:"warung",icon:"🍜",label:"Warung",
+            tagline:"Navigasi ringkas untuk jualan cepat, barang/menu, belanja, dan tutup operasional.",
+            hidden:Object.freeze([
+                "kartu-stok.html","stock-opname.html","retur.html",
+                "multi-store.html","owner-control-center.html",
+                "backup & restore.html","recovery-center.html","qa-security-performance.html"
+            ]),
+            labels:Object.freeze({
+                "barang.html":"Barang & Menu",
+                "supplier.html":"Supplier",
+                "purchase-order.html":"Belanja / PO",
+                "goods.receipt.html":"Barang Masuk",
+                "laporan.html":"Laporan Penjualan",
+                "shift-closing.html":"Tutup Shift",
+                "eod.html":"Tutup Hari"
+            }),
+            quick:Object.freeze({"barang.html":true,"multi-store.html":false}),
+            groups:Object.freeze({
+                "Inventori":"Barang",
+                "Supplier & Pembelian":"Belanja & Supplier",
+                "Closing & Data":"Operasional Harian",
+                "Sistem":"Pengaturan"
+            })
+        })
+    });
 
     let lastEodState=null;
     let eodPollTimer=0;
@@ -169,15 +242,46 @@
         return Boolean(license&&window.LDMLicenseV2?.hasFeature(feature,license));
     }
 
+    function currentStoreMode(){
+        const apiMode=window.LDMStoreMode&&typeof window.LDMStoreMode.getMode==="function"
+            ? window.LDMStoreMode.getMode()
+            : "";
+        const value=String(apiMode||localStorage.getItem("ldmStoreOperationalMode")||"retail").trim().toLowerCase();
+        return Object.prototype.hasOwnProperty.call(MODE_NAV_PROFILES,value)?value:"retail";
+    }
+
+    function modeProfile(){return MODE_NAV_PROFILES[currentStoreMode()]||MODE_NAV_PROFILES.retail}
+
+    function modeRouteKey(route){return normalizedPage(route&&route.page)}
+
     function routeAllowed(route,role,eodReady){
         if(!route.roles.includes(role))return false;
         if(!licenseFeatureAllowed(route.feature))return false;
         if(route.requiresEodReady && !eodReady)return false;
+        const profile=modeProfile();
+        if(profile.hidden.includes(modeRouteKey(route)))return false;
         return true;
     }
 
+    function routeForMode(route){
+        const profile=modeProfile();
+        const key=modeRouteKey(route);
+        const copy={...route};
+        if(profile.labels[key])copy.label=profile.labels[key];
+        if(Object.prototype.hasOwnProperty.call(profile.quick,key))copy.quick=profile.quick[key];
+        copy.group=profile.groups[route.group]||route.group;
+        copy.originalGroup=route.group;
+        return copy;
+    }
+
     function visibleRoutes(role,eodReady){
-        return ROUTES.filter(route=>routeAllowed(route,role,eodReady));
+        return ROUTES.filter(route=>routeAllowed(route,role,eodReady)).map(routeForMode);
+    }
+
+    function modeGroupOrder(){
+        const profile=modeProfile();
+        const mapped=GROUP_ORDER.map(group=>profile.groups[group]||group);
+        return [...new Set(mapped)];
     }
 
     function isActive(route){return currentPage()===normalizedPage(route.page)}
@@ -191,6 +295,28 @@
             document.head.appendChild(link);
         }
         link.href=`css/global-responsive-navigation.css?v=${NAV_VERSION}`;
+
+        let modeLink=document.getElementById("ldmStoreModesGlobalCSS");
+        if(!modeLink){
+            modeLink=document.createElement("link");
+            modeLink.id="ldmStoreModesGlobalCSS";
+            modeLink.rel="stylesheet";
+            document.head.appendChild(modeLink);
+        }
+        modeLink.href=`css/store-modes.css?v=${NAV_VERSION}`;
+    }
+
+    function applyModeContext(){
+        const mode=currentStoreMode();
+        const profile=MODE_NAV_PROFILES[mode]||MODE_NAV_PROFILES.retail;
+        document.documentElement.dataset.ldmStoreMode=mode;
+        document.documentElement.dataset.ldmModeLabel=profile.label;
+        document.documentElement.dataset.ldmCurrentPage=currentPage();
+        if(document.body){
+            document.body.dataset.ldmStoreMode=mode;
+            document.body.dataset.ldmModeLabel=profile.label;
+        }
+        return profile;
     }
 
     function parseTheme(){
@@ -241,7 +367,7 @@
             if(!grouped[route.group])grouped[route.group]=[];
             grouped[route.group].push(route);
         });
-        return GROUP_ORDER.filter(group=>grouped[group]&&grouped[group].length).map(group=>{
+        return modeGroupOrder().filter(group=>grouped[group]&&grouped[group].length).map(group=>{
             const items=grouped[group];
             if(mode==="mobile"){
                 return `<section class="ldm-global-mobile-group"><div class="ldm-global-mobile-label"><span>${GROUP_META[group]||"•"}</span><span>${esc(group)}</span></div>${items.map(item=>routeLink(item,"mobile")).join("")}</section>`;
@@ -317,10 +443,11 @@
         const routes=visibleRoutes(role,eodReady);
         if(!routes.length)return false;
         const quick=routes.filter(route=>route.quick).map(route=>`<a href="${route.page}" class="${isActive(route)?"active":""}"${isActive(route)?' aria-current="page"':''}><span>${route.icon}</span><span>${esc(route.label)}</span></a>`).join("");
+        const profile=modeProfile();
         const shell=document.createElement("div");
         shell.id="ldmGlobalMegaNav";
         shell.className="ldm-global-mega";
-        shell.innerHTML=`<nav class="ldm-global-mega-bar" aria-label="Navigasi utama desktop"><button type="button" class="ldm-global-mega-trigger" aria-expanded="false" aria-controls="ldmGlobalMegaPanel"><span>☷</span><span>Menu</span><span class="ldm-global-mega-arrow">▼</span></button><div class="ldm-global-mega-quick">${quick}</div><div class="ldm-global-mega-session"><span class="ldm-global-store" data-ldm-store-name>${esc(storeName())}</span><span class="ldm-global-role">👤 ${esc(role)}</span></div><div class="ldm-global-mega-panel" id="ldmGlobalMegaPanel"><div class="ldm-global-panel-head"><div><strong>Navigasi Menu</strong><p>Menu mengikuti hak akses akun dan status operasional hari ini.</p></div><button type="button" class="ldm-global-panel-close">✕ Tutup</button></div><div class="ldm-global-mega-grid">${groupedHTML(routes,"desktop")}</div></div></nav>`;
+        shell.innerHTML=`<nav class="ldm-global-mega-bar" aria-label="Navigasi utama desktop"><button type="button" class="ldm-global-mega-trigger" aria-expanded="false" aria-controls="ldmGlobalMegaPanel"><span>☷</span><span>Menu</span><span class="ldm-global-mega-arrow">▼</span></button><div class="ldm-global-mega-quick">${quick}</div><div class="ldm-global-mega-session"><span class="ldm-global-mode-chip">${profile.icon} ${esc(profile.label)}</span><span class="ldm-global-store" data-ldm-store-name>${esc(storeName())}</span><span class="ldm-global-role">👤 ${esc(role)}</span></div><div class="ldm-global-mega-panel" id="ldmGlobalMegaPanel"><div class="ldm-global-panel-head"><div><strong>Navigasi ${profile.label}</strong><p>${esc(profile.tagline)} Menu tetap mengikuti role dan paket lisensi.</p></div><button type="button" class="ldm-global-panel-close">✕ Tutup</button></div><div class="ldm-global-mega-grid">${groupedHTML(routes,"desktop")}</div></div></nav>`;
 
         const app=document.querySelector(".app-layout");
         const main=app&&app.querySelector(".main-content");
@@ -361,7 +488,8 @@
         drawer.id="ldmGlobalMobileDrawer";
         drawer.className="ldm-global-mobile-drawer";
         drawer.setAttribute("aria-label","Menu navigasi HP");
-        drawer.innerHTML=`<div class="ldm-global-mobile-head"><strong>☰ Menu LocDailyMar</strong><button type="button" class="ldm-global-mobile-close" aria-label="Tutup menu">✕</button></div><div class="ldm-global-mobile-context"><strong>${esc(sessionName())} · ${esc(role)}</strong><span data-ldm-store-name>${esc(storeName())}</span></div>${groupedHTML(routes,"mobile")}`;
+        const profile=modeProfile();
+        drawer.innerHTML=`<div class="ldm-global-mobile-head"><strong>☰ Menu LocDailyMar</strong><button type="button" class="ldm-global-mobile-close" aria-label="Tutup menu">✕</button></div><div class="ldm-global-mobile-context"><strong>${esc(sessionName())} · ${esc(role)}</strong><span data-ldm-store-name>${esc(storeName())}</span><span class="ldm-global-mobile-mode">${profile.icon} ${esc(profile.label)}</span></div>${groupedHTML(routes,"mobile")}`;
         document.body.append(overlay,drawer);
 
         drawer.querySelector(".ldm-global-mobile-close").addEventListener("click",closeMobileDrawer);
@@ -378,7 +506,14 @@
     }
 
     function syncBadges(){
+        const mode=String(localStorage.getItem("ldmStoreOperationalMode")||"retail").toLowerCase();
+        const softStock=mode==="cafe"||mode==="warung";
         document.querySelectorAll(".ldm-global-badge[data-source-badge]").forEach(target=>{
+            if(softStock && target.dataset.sourceBadge==="navBadge"){
+                target.hidden=true;
+                target.textContent="";
+                return;
+            }
             const source=document.getElementById(target.dataset.sourceBadge);
             const text=String(source&&source.textContent||"").trim();
             const visible=Boolean(text&&text!=="0"&&text!=="!");
@@ -431,6 +566,7 @@
 
     function render(){
         addStylesheet();
+        applyModeContext();
         applySharedTheme();
         const role=currentRole();
         document.documentElement.dataset.ldmRole=role;
@@ -489,12 +625,13 @@
 
     document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMobileDrawer()});
     window.addEventListener("storage",event=>{
-        if(["headerConfig","userRole","role","ldmCloudStoreName"].includes(event.key))render();
+        if(["headerConfig","userRole","role","ldmCloudStoreName","ldmStoreOperationalMode"].includes(event.key))render();
         if(EOD_KEYS.includes(event.key))syncEodAvailability(false);
     });
     window.addEventListener("focus",()=>syncEodAvailability(false));
     document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncEodAvailability(false)});
     window.addEventListener("ldm-cloud-session-ready",()=>{render();syncEodAvailability(false)});
+    window.addEventListener("ldm-store-mode-change",()=>{render();syncBadges();});
     window.addEventListener("ldm-primary-owner-ready",event=>applyPrimaryOwnerRoutes(event.detail));
     window.addEventListener("ldm-license-v2-authorized",()=>{
         render();
@@ -504,6 +641,8 @@
     window.LDMGlobalNavigation={
         version:NAV_VERSION,
         routes:ROUTES.slice(),
+        modeProfiles:MODE_NAV_PROFILES,
+        currentStoreMode,
         render,
         applySharedTheme,
         refreshContext,

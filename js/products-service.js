@@ -84,6 +84,10 @@
                 ),
             expiredTerakhir:
                 row.last_expiry_date || "",
+            imagePath:
+                row.image_path || "",
+            image_path:
+                row.image_path || "",
             _cloud: {
                 version:
                     normalizeNumber(
@@ -91,7 +95,9 @@
                         1
                     ),
                 updatedAt:
-                    row.updated_at || null
+                    row.updated_at || null,
+                imagePath:
+                    row.image_path || ""
             }
         };
 

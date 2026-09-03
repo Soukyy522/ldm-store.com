@@ -1,0 +1,235 @@
+/* LocDailyMar - Mode Operasional Kafe / Warung / Retail */
+html[data-ldm-store-mode="cafe"] body:not(.dark-mode){background:#fbf7f1;}
+html[data-ldm-store-mode="warung"] body:not(.dark-mode){background:#f4f8f2;}
+html[data-ldm-store-mode="cafe"] body:not(.dark-mode) .header-app{background:linear-gradient(135deg,#3f3026,#0f6f4d);}
+html[data-ldm-store-mode="warung"] body:not(.dark-mode) .header-app{background:linear-gradient(135deg,#173d2a,#0f9d58);}
+html[data-ldm-store-mode="retail"] body:not(.dark-mode) .header-app{background:#0d2240;}
+
+.ldm-mode-control{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:9px 11px;
+    margin:0 0 12px;
+    border:1px solid var(--border-color,#e2e8f0);
+    border-radius:11px;
+    background:var(--bg-secondary,#fff);
+    box-shadow:0 4px 14px rgba(15,23,42,.035);
+}
+.ldm-mode-control-main{display:flex;align-items:center;gap:9px;min-width:0;}
+.ldm-mode-control-icon{font-size:1.05rem;flex:0 0 auto;}
+.ldm-mode-control-text{min-width:0;}
+.ldm-mode-control-text strong{display:block;color:var(--heading-color,#0d2240);font-size:.72rem;line-height:1.25;}
+.ldm-mode-control-text span{display:block;margin-top:2px;color:#64748b;font-size:.58rem;line-height:1.35;white-space:normal;}
+body.dark-mode .ldm-mode-control-text span{color:#94a3b8;}
+.ldm-mode-select{
+    flex:0 0 auto;
+    min-width:165px;
+    min-height:36px;
+    padding:6px 30px 6px 9px;
+    border:1px solid var(--border-color,#cbd5e1);
+    border-radius:8px;
+    background:var(--input-bg,#fff);
+    color:var(--text-color,#334155);
+    font-size:.68rem;
+    font-weight:700;
+    cursor:pointer;
+}
+.ldm-mode-select:disabled{opacity:.7;cursor:not-allowed;}
+.ldm-mode-saving{opacity:.65;pointer-events:none;}
+
+.ldm-product-visual{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    margin:0 0 10px;
+    overflow:hidden;
+    border:1px solid var(--border-color,#e2e8f0);
+    border-radius:10px;
+    background:linear-gradient(135deg,#f8fafc,#eef2f7);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#94a3b8;
+    font-size:.68rem;
+    font-weight:700;
+}
+.ldm-product-visual img{width:100%;height:100%;object-fit:cover;display:block;}
+body.dark-mode .ldm-product-visual{background:#0f172a;}
+.ldm-product-visual-button{background:#0ea5e9 !important;color:#fff !important;}
+.ldm-product-visual-remove{background:#64748b !important;color:#fff !important;}
+
+@media(max-width:680px){
+    .ldm-mode-control{align-items:stretch;flex-direction:column;gap:7px;}
+    .ldm-mode-select{width:100%;min-width:0;}
+}
+
+
+/* =========================================================
+   MODE UI V3 — tema, tata letak, dan navigasi adaptif
+   Build simulasi lokal; tidak membutuhkan SQL.
+   ========================================================= */
+:root{
+    --ldm-mode-accent:#0f9d58;
+    --ldm-mode-soft:#eef8f2;
+    --ldm-mode-border:#d9e7df;
+    --ldm-mode-surface:#ffffff;
+}
+html[data-ldm-store-mode="cafe"]{
+    --ldm-mode-accent:#8a5a3b;
+    --ldm-mode-soft:#fff6eb;
+    --ldm-mode-border:#ead9c7;
+    --ldm-mode-surface:#fffdfa;
+}
+html[data-ldm-store-mode="warung"]{
+    --ldm-mode-accent:#15803d;
+    --ldm-mode-soft:#f3f8e9;
+    --ldm-mode-border:#dbe8c7;
+    --ldm-mode-surface:#fffef9;
+}
+html[data-ldm-store-mode="retail"]{
+    --ldm-mode-accent:#0f9d58;
+    --ldm-mode-soft:#eef8f2;
+    --ldm-mode-border:#dbe6e0;
+    --ldm-mode-surface:#ffffff;
+}
+
+/* Tema global per mode, tetap menghormati dark mode pengguna. */
+html[data-ldm-store-mode="cafe"] body:not(.dark-mode){
+    background:
+        radial-gradient(circle at 8% 4%,rgba(183,132,86,.10),transparent 24rem),
+        linear-gradient(180deg,#fbf5ec 0,#f8faf7 44%,#f4f7f5 100%);
+}
+html[data-ldm-store-mode="warung"] body:not(.dark-mode){
+    background:
+        radial-gradient(circle at 92% 0,rgba(245,158,11,.08),transparent 24rem),
+        linear-gradient(180deg,#f5f8ed 0,#f6faf5 46%,#f3f7f5 100%);
+}
+html[data-ldm-store-mode="cafe"] body:not(.dark-mode) .header-app{
+    background:linear-gradient(135deg,#3f2d24 0%,#684531 46%,#176b4d 100%) !important;
+}
+html[data-ldm-store-mode="warung"] body:not(.dark-mode) .header-app{
+    background:linear-gradient(135deg,#173a29 0%,#15803d 58%,#b7791f 130%) !important;
+}
+html[data-ldm-store-mode="cafe"] body.dark-mode .header-app{background:linear-gradient(135deg,#241b17,#3d2b23,#0d4936)!important;}
+html[data-ldm-store-mode="warung"] body.dark-mode .header-app{background:linear-gradient(135deg,#0d241a,#14532d,#5c4416)!important;}
+
+/* Dropdown mode tetap kecil, tetapi lebih jelas mode aktifnya. */
+.ldm-mode-control{
+    border-color:var(--ldm-mode-border);
+    background:color-mix(in srgb,var(--ldm-mode-surface) 96%,var(--ldm-mode-soft));
+    box-shadow:0 7px 20px rgba(15,23,42,.045);
+}
+html[data-ldm-store-mode="cafe"] .ldm-mode-control{border-left:4px solid #8a5a3b;}
+html[data-ldm-store-mode="warung"] .ldm-mode-control{border-left:4px solid #15803d;}
+html[data-ldm-store-mode="retail"] .ldm-mode-control{border-left:4px solid #0d2240;}
+.ldm-mode-select{border-color:var(--ldm-mode-border);background:var(--ldm-mode-surface);}
+.ldm-mode-select:focus{outline:2px solid color-mix(in srgb,var(--ldm-mode-accent) 24%,transparent);border-color:var(--ldm-mode-accent);}
+
+/* Navigasi global menampilkan konteks mode secara ringkas. */
+.ldm-global-mode-chip,
+.ldm-global-mobile-mode{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    width:max-content;
+    max-width:180px;
+    padding:4px 8px;
+    border-radius:999px;
+    font-size:.58rem;
+    font-weight:800;
+    white-space:nowrap;
+}
+.ldm-global-mode-chip{background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.17);}
+.ldm-global-mobile-mode{margin-top:4px;background:var(--ldm-mode-soft);color:var(--ldm-mode-accent);border:1px solid var(--ldm-mode-border);}
+html[data-ldm-store-mode="cafe"] body:not(.dark-mode) .ldm-global-mega-bar{background:linear-gradient(90deg,#3f2d24,#5b3e2d 48%,#176b4d)!important;}
+html[data-ldm-store-mode="warung"] body:not(.dark-mode) .ldm-global-mega-bar{background:linear-gradient(90deg,#173a29,#15803d 65%,#87651b)!important;}
+html[data-ldm-store-mode="cafe"] body:not(.dark-mode) .ldm-global-mega-panel,
+html[data-ldm-store-mode="cafe"] body:not(.dark-mode) .ldm-global-mobile-drawer{background:#fffdf9;}
+html[data-ldm-store-mode="warung"] body:not(.dark-mode) .ldm-global-mega-panel,
+html[data-ldm-store-mode="warung"] body:not(.dark-mode) .ldm-global-mobile-drawer{background:#fffef9;}
+
+/* Dashboard Kafe: lebih visual dan lega. */
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .grid-cards{gap:12px;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));}
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .card,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .detail-section,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .dashboard-ops-board,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .dashboard-mini-board,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .quick-access-container{
+    border:1px solid #eadfd3;
+    border-radius:17px;
+    box-shadow:0 8px 24px rgba(92,61,43,.055);
+}
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .quick-access-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .quick-access-item-icon{background:#fff1df;color:#7c4d31;}
+
+/* Dashboard Warung: lebih padat, cepat dibaca, tidak terasa seperti dashboard enterprise. */
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .grid-cards{gap:9px;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));}
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .card,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .detail-section,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .dashboard-ops-board,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .dashboard-mini-board,
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .quick-access-container{
+    border:1px solid #dfe8d1;
+    border-radius:13px;
+    box-shadow:0 5px 16px rgba(21,128,61,.045);
+}
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .quick-access-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .quick-access-item{min-height:64px;padding:9px;}
+html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .quick-access-item-icon{background:#eef7dc;color:#166534;}
+
+/* Kasir: Kafe memakai kartu menu lebih editorial; Warung berupa kartu horizontal padat. */
+html[data-ldm-store-mode="cafe"] .ldm-visual-menu-panel{background:#fffdfa;border-color:#ead9c7;border-radius:17px;box-shadow:0 8px 24px rgba(92,61,43,.055);}
+html[data-ldm-store-mode="cafe"] .ldm-visual-menu-grid{grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px;}
+html[data-ldm-store-mode="cafe"] .ldm-visual-menu-item{border-radius:14px;border-color:#ead9c7;background:#fff;overflow:hidden;}
+html[data-ldm-store-mode="cafe"] .ldm-visual-menu-image{aspect-ratio:4/3;background:linear-gradient(135deg,#f8ead9,#f0f7ef);}
+html[data-ldm-store-mode="cafe"] .ldm-visual-menu-price{color:#7c4d31;}
+html[data-ldm-store-mode="warung"] .ldm-visual-menu-panel{background:#fffef9;border-color:#dbe8c7;border-radius:13px;box-shadow:0 5px 16px rgba(21,128,61,.045);}
+html[data-ldm-store-mode="warung"] .ldm-visual-menu-item{border-radius:10px;border-color:#dbe8c7;background:#fff;}
+html[data-ldm-store-mode="warung"] .ldm-visual-menu-price{color:#15803d;}
+
+/* Barang/Menu Kafe & Warung: fokus produk aktif dan visual, tanpa mengubah data. */
+html[data-ldm-current-page="barang.html"][data-ldm-store-mode="cafe"] .item-card{border-radius:17px;border-color:#ead9c7;box-shadow:0 7px 20px rgba(92,61,43,.05);}
+html[data-ldm-current-page="barang.html"][data-ldm-store-mode="cafe"] .ldm-product-visual{aspect-ratio:4/3;border-radius:13px;background:linear-gradient(135deg,#f8ead9,#f0f7ef);}
+html[data-ldm-current-page="barang.html"][data-ldm-store-mode="warung"] .item-card{border-radius:12px;border-color:#dbe8c7;box-shadow:0 5px 15px rgba(21,128,61,.04);}
+html[data-ldm-current-page="barang.html"][data-ldm-store-mode="warung"] .ldm-product-visual{aspect-ratio:16/10;border-radius:9px;background:linear-gradient(135deg,#f4f8e9,#fff7e7);}
+
+/* Fallback: sembunyikan link menu lama juga, bukan hanya mega navigation baru. */
+html[data-ldm-store-mode="cafe"] .nav-bar a[href="kartu-stok.html"],
+html[data-ldm-store-mode="cafe"] .nav-bar a[href="stock-opname.html"],
+html[data-ldm-store-mode="cafe"] .nav-bar a[href="retur.html"],
+html[data-ldm-store-mode="cafe"] .nav-bar a[href="backup%20%26%20restore.html"],
+html[data-ldm-store-mode="cafe"] .nav-bar a[href="recovery-center.html"],
+html[data-ldm-store-mode="cafe"] .nav-bar a[href="qa-security-performance.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="kartu-stok.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="stock-opname.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="retur.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="multi-store.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="owner-control-center.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="backup%20%26%20restore.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="recovery-center.html"],
+html[data-ldm-store-mode="warung"] .nav-bar a[href="qa-security-performance.html"]{display:none!important;}
+
+/* Pintasan Dashboard mengikuti menu mode yang sama. */
+html[data-ldm-store-mode="cafe"] .quick-access-item[onclick*="kartu-stok.html"],
+html[data-ldm-store-mode="cafe"] .quick-access-item[onclick*="stock-opname.html"],
+html[data-ldm-store-mode="cafe"] .quick-access-item[onclick*="retur.html"],
+html[data-ldm-store-mode="cafe"] .quick-access-item[onclick*="recovery-center.html"],
+html[data-ldm-store-mode="warung"] .quick-access-item[onclick*="kartu-stok.html"],
+html[data-ldm-store-mode="warung"] .quick-access-item[onclick*="stock-opname.html"],
+html[data-ldm-store-mode="warung"] .quick-access-item[onclick*="retur.html"],
+html[data-ldm-store-mode="warung"] .quick-access-item[onclick*="multi-store.html"],
+html[data-ldm-store-mode="warung"] .quick-access-item[onclick*="owner-control-center.html"],
+html[data-ldm-store-mode="warung"] .quick-access-item[onclick*="recovery-center.html"]{display:none!important;}
+
+@media(max-width:900px){
+    html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .quick-access-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .quick-access-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:560px){
+    html[data-ldm-current-page="dashboard.html"] .grid-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+    html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="cafe"] .quick-access-grid,
+    html[data-ldm-current-page="dashboard.html"][data-ldm-store-mode="warung"] .quick-access-grid{grid-template-columns:1fr;}
+    .ldm-global-mode-chip{display:none;}
+}

@@ -31,14 +31,21 @@
     }
 
     async function listStores(){
-        const data=await rpc("ldm_my_network_stores");
-        return Array.isArray(data) ? data : [];
+        try{
+            const data=await rpc("ldm_my_network_stores_v2");
+            return Array.isArray(data) ? data : [];
+        }catch(error){
+            console.warn("Multi-Store V2 belum tersedia, memakai RPC lama:",error);
+            const data=await rpc("ldm_my_network_stores");
+            return Array.isArray(data) ? data : [];
+        }
     }
 
     async function createBranch(options={}){
-        return rpc("ldm_create_branch_store",{
+        return rpc("ldm_create_branch_store_v2",{
             p_code:String(options.code||"").trim(),
             p_name:String(options.name||"").trim(),
+            p_operational_mode:String(options.operationalMode||"retail").trim().toLowerCase(),
             p_copy_products:options.copyProducts!==false
         });
     }
@@ -101,6 +108,14 @@
     async function transferCandidates(destinationStoreId){
         const data=await rpc("ldm_transfer_product_candidates",{p_destination_store_id:destinationStoreId});
         return Array.isArray(data) ? data : [];
+    }
+
+    async function copyProductToStore(sourceProductId,destinationStoreId){
+        if(navigator.onLine===false) throw new Error("Penambahan produk ke cabang membutuhkan koneksi internet.");
+        return rpc("ldm_copy_product_to_store",{
+            p_source_product_id:String(sourceProductId||"").trim(),
+            p_destination_store_id:String(destinationStoreId||"").trim()
+        });
     }
 
     async function createTransfer(destinationStoreId,items,note=""){
@@ -175,7 +190,7 @@
 
     window.LDMMultiStore=Object.freeze({
         listStores,createBranch,prepareStoreDevice,switchStore,offlineQueueSafe,
-        transferCandidates,createTransfer,sendTransfer,receiveTransfer,cancelTransfer,
+        transferCandidates,copyProductToStore,createTransfer,sendTransfer,receiveTransfer,cancelTransfer,
         listTransfers,listEmployees,transferEmployee,listEmployeeTransfers,
         startRealtime,stopRealtime,clearStoreCaches
     });

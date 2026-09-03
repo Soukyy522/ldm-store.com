@@ -327,12 +327,21 @@
         writeReservations(reservations);
     }
 
+    function softStockModeEnabled(){
+        if(window.LDMStoreMode && typeof window.LDMStoreMode.isSoftStock === "function"){
+            return window.LDMStoreMode.isSoftStock();
+        }
+        const mode=String(localStorage.getItem("ldmStoreOperationalMode")||"retail").toLowerCase();
+        return mode==="cafe" || mode==="warung";
+    }
+
     function applyReservationsToProducts(products){
         const reservations = readReservations();
         return (Array.isArray(products) ? products : []).map(product => {
             const qty = Math.max(0,Number(reservations[String(product.id || "")]) || 0);
             if(qty > 0){
-                product.stok = Math.max(0,(Number(product.stok) || 0) - qty);
+                const after=(Number(product.stok) || 0) - qty;
+                product.stok = softStockModeEnabled() ? after : Math.max(0,after);
                 product._offlineReservedQty = qty;
             }else{
                 delete product._offlineReservedQty;
@@ -359,7 +368,8 @@
                 return;
             }
             const qty = Math.max(0, Number(item.qty) || 0);
-            product.stok = Math.max(0, (Number(product.stok) || 0) - qty);
+            const after=(Number(product.stok) || 0) - qty;
+            product.stok = softStockModeEnabled() ? after : Math.max(0,after);
             product._offlineReservedQty = (Number(product._offlineReservedQty) || 0) + qty;
         });
 
