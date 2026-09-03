@@ -2,8 +2,8 @@
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-demo-pages-report-date-shell-v3`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-demo-pages-report-date-runtime-v3`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-cafe-warung-ui-v4-shell-v4`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-cafe-warung-ui-v4-runtime-v4`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

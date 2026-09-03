@@ -1,1 +1,299 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta http-equiv="Cache-Control" content="no-store"><title>Multi-Store Demo · Sandbox LocDailyMar</title><link rel="stylesheet" href="demo.css"></head><body><header class="top"><div class="brand"><img src="../assets/brand/locdailymar-logo.png" alt="LocDailyMar"><span>LocDailyMar</span><span class="demo-badge">SANDBOX DEMO</span></div><a class="backhome" href="../homepage.html">← Homepage</a></header><div class="layout"><aside class="side"><div class="modebox"><label>MODE DEMO</label><select id="demoMode"><option value="cafe">☕ Kafe</option><option value="warung">🍜 Warung</option><option value="retail">🛒 Toko Ritel</option></select></div><nav class="nav" id="demoNav"></nav></aside><main class="main"><div class="notice">🔒 Sandbox publik: tanpa akun, tanpa License Key, tanpa Supabase write, tanpa localStorage/IndexedDB. Tidak ada transaksi, stok, laporan, atau perubahan data yang disimpan.</div><div class="head"><div><h1>Multi-Store Demo</h1><p>Preview cabang dengan mode dan katalog berbeda tanpa membuat store baru.</p></div><div><b data-mode-title></b><div style="font-size:10px;color:#708296;margin-top:4px" data-mode-desc></div></div></div><section class="panel"><h2>Jaringan Cabang Demo</h2><div class="grid"><div class="card"><small>Toko Pusat</small><strong style="font-size:15px">🛒 LocDailyMar Mart</strong><p style="font-size:10px;color:var(--muted)">Retail · katalog retail sendiri</p></div><div class="card"><small>Cabang A</small><strong style="font-size:15px">☕ LocDailyMar Coffee</strong><p style="font-size:10px;color:var(--muted)">Kafe · sabun/deterjen tidak otomatis ikut</p></div><div class="card"><small>Cabang B</small><strong style="font-size:15px">🍜 Warung LocDaily</strong><p style="font-size:10px;color:var(--muted)">Warung · katalog sendiri</p></div></div></section><section class="panel"><h2>Aturan katalog lintas mode</h2><div class="readonly">Copy katalog otomatis hanya cocok untuk cabang dengan mode yang sama. Produk universal seperti Aqua dapat ditambahkan Owner secara sengaja. Tombol membuat cabang, copy katalog, transfer stok, dan transfer karyawan dinonaktifkan di sandbox.</div></section><p class="footer-note">Semua angka dan data pada halaman ini adalah contoh. Refresh atau berpindah halaman memulai state visual baru; tidak ada data operasional yang disimpan.</p></main></div><script src="demo.js"></script><script>LDMDemo.initShell();</script></body></html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="js/storage-engine.js?v=27.7.1"></script>
+    <script src="js/storage-quota-guard.js?v=27.7.1"></script>
+    <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
+<script src="js/local-time.js?v=26.4.0"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0f9d58">
+    <title>Multi-Toko, Transfer Stok & Karyawan - LocDailyMar</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--ms-green:#0f9d58;--ms-dark:#2c3e50;--ms-bg:#f4f7f6;--ms-card:#fff;--ms-border:#dfe7e3;--ms-muted:#667085;--ms-danger:#d92d20;--ms-warning:#b54708}
+        *{box-sizing:border-box}body{margin:0;background:var(--ms-bg);color:var(--ms-dark);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+        .ms-header{background:linear-gradient(135deg,#203342,#2c3e50);color:#fff;padding:22px 18px;box-shadow:0 8px 24px rgba(31,48,60,.14)}
+        .ms-header-inner,.ms-main{width:min(1180px,calc(100% - 28px));margin:auto}.ms-header-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+        .ms-title h1{font-size:1.35rem;margin:0 0 4px}.ms-title p{margin:0;color:#cbd5df;font-size:.82rem}.ms-back{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:9px 12px;font-weight:700;font-size:.78rem}
+        .ms-main{padding:22px 0 48px}.ms-alert{display:none;margin-bottom:14px;border-radius:11px;padding:11px 13px;font-size:.8rem;font-weight:700}.ms-alert.show{display:block}.ms-alert.good{background:#ecfdf3;color:#087443;border:1px solid #abefc6}.ms-alert.bad{background:#fef3f2;color:#b42318;border:1px solid #fecdca}
+        .ms-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}.ms-stat,.ms-panel{background:var(--ms-card);border:1px solid var(--ms-border);border-radius:15px;box-shadow:0 6px 18px rgba(43,62,80,.055)}
+        .ms-stat{padding:15px}.ms-stat span{display:block;color:var(--ms-muted);font-size:.72rem;font-weight:700}.ms-stat strong{display:block;margin-top:6px;font-size:1.12rem}
+        .ms-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:16px}.ms-panel{padding:18px;margin-bottom:16px}.ms-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.ms-panel h2{font-size:1rem;margin:0}.ms-panel-head p{font-size:.75rem;color:var(--ms-muted);margin:4px 0 0}
+        .ms-btn{border:0;border-radius:9px;padding:9px 12px;font-size:.75rem;font-weight:800;cursor:pointer}.ms-btn:disabled{opacity:.45;cursor:not-allowed}.ms-btn-primary{background:var(--ms-green);color:#fff}.ms-btn-light{background:#edf4f1;color:#176b45}.ms-btn-dark{background:var(--ms-dark);color:#fff}.ms-btn-danger{background:#fff0ef;color:var(--ms-danger)}
+        .ms-store-list{display:grid;gap:9px}.ms-store{border:1px solid var(--ms-border);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.ms-store.current{border-color:#75d3a3;background:#f1fcf6}.ms-store-name{font-size:.83rem;font-weight:850}.ms-store-code{font-size:.68rem;color:var(--ms-muted);margin-top:3px}.ms-store-meta{font-size:.68rem;color:var(--ms-muted);margin-top:7px}.ms-current-badge{display:inline-flex;background:#dff8ea;color:#087443;padding:4px 7px;border-radius:99px;font-size:.62rem;font-weight:850}
+        .ms-form{display:grid;gap:10px}.ms-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ms-field label{display:block;font-size:.7rem;font-weight:800;margin-bottom:5px}.ms-field input,.ms-field select,.ms-field textarea{width:100%;border:1px solid #ced8d3;border-radius:9px;padding:10px;background:#fff;color:#253746;font:inherit;font-size:.78rem}.ms-field textarea{resize:vertical;min-height:68px}.ms-check{display:flex;align-items:center;gap:8px;font-size:.73rem;color:var(--ms-muted)}
+        .ms-table-wrap{overflow:auto;border:1px solid var(--ms-border);border-radius:11px}.ms-table{width:100%;border-collapse:collapse;min-width:620px}.ms-table th,.ms-table td{padding:9px 10px;border-bottom:1px solid #edf1ef;text-align:left;font-size:.72rem}.ms-table th{background:#f7faf8;color:#53645d;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em}.ms-table input[type=number]{width:88px;border:1px solid #ccd8d1;border-radius:7px;padding:7px}.ms-not-ready{color:var(--ms-danger);font-size:.65rem;font-weight:750}.ms-empty{text-align:center;padding:22px;color:var(--ms-muted);font-size:.77rem}
+        .ms-transfer{border:1px solid var(--ms-border);border-radius:12px;padding:13px;margin-bottom:10px}.ms-transfer-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.ms-transfer-code{font-weight:850;font-size:.82rem}.ms-transfer-route{font-size:.72rem;color:var(--ms-muted);margin-top:4px}.ms-status{padding:4px 7px;border-radius:99px;font-size:.61rem;font-weight:850;white-space:nowrap}.status-draft{background:#f2f4f7;color:#475467}.status-in_transit{background:#fff7e8;color:#b54708}.status-received{background:#ecfdf3;color:#087443}.status-cancelled{background:#fef3f2;color:#b42318}.ms-transfer-items{font-size:.69rem;color:#596b63;margin-top:9px}.ms-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+
+        .ms-employee-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:14px}.ms-employee-info{border:1px dashed #b9cbc2;background:#f7fbf9;border-radius:11px;padding:11px;font-size:.72rem;color:#52645c;line-height:1.55}.ms-employee-history{display:grid;gap:9px;max-height:390px;overflow:auto;padding-right:2px}.ms-employee-move{border:1px solid var(--ms-border);border-radius:11px;padding:11px;background:#fbfdfc}.ms-employee-move strong{font-size:.78rem}.ms-employee-move p{margin:5px 0 0;font-size:.68rem;color:var(--ms-muted);line-height:1.5}.ms-role-pill{display:inline-flex;margin-left:6px;padding:3px 6px;border-radius:99px;background:#edf4f1;color:#176b45;font-size:.6rem;font-weight:850;text-transform:uppercase}.ms-security-note{margin-top:10px;border-left:3px solid #f4b323;background:#fffaf0;padding:9px 10px;border-radius:7px;font-size:.69rem;color:#71520a;line-height:1.55}
+        .ms-loading{opacity:.58;pointer-events:none}.ms-offline{background:#fff4e5;color:#934f00;padding:8px 12px;text-align:center;font-size:.72rem;font-weight:800;display:none}.ms-offline.show{display:block}
+        @media(max-width:820px){.ms-grid,.ms-employee-grid{grid-template-columns:1fr}.ms-summary{grid-template-columns:1fr 1fr}.ms-summary .ms-stat:last-child{grid-column:1/-1}.ms-header-inner{align-items:flex-start}.ms-form-grid{grid-template-columns:1fr}}
+        @media(max-width:480px){.ms-header-inner,.ms-main{width:min(100% - 18px,1180px)}.ms-header{padding:17px 9px}.ms-title h1{font-size:1.05rem}.ms-back{padding:8px}.ms-panel{padding:14px}.ms-summary{gap:8px}.ms-stat{padding:12px}.ms-panel-head{display:block}.ms-panel-head .ms-btn{margin-top:10px;width:100%}.ms-store{grid-template-columns:1fr}.ms-store .ms-btn{width:100%}}
+    </style>
+    <link rel="stylesheet" href="css/multi-store-dashboard-theme.css?v=22.1">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js?v=22.0"></script>
+    <script src="js/offline-queue.js?v=16.0"></script>
+    <script src="js/cloud-auth.js?v=22.0"></script>
+    <script src="js/cloud-session.js?v=22.0"></script>
+    <script src="js/cloud-session-guard.js?v=22.0"></script>
+    <script src="js/primary-owner-service.js?v=25.1"></script>
+    <script src="js/multi-store-service.js?v=24.2.2"></script>
+<script src="js/license-v2-config.js?v=25.2.0"></script>
+<script src="js/license-v2-client.js?v=25.2.0"></script>
+<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
+</head>
+<body>
+    <div class="ms-offline" id="offlineBanner">Mode offline — pergantian toko dan transfer stok dinonaktifkan.</div>
+    <header class="ms-header">
+        <div class="ms-header-inner">
+            <div class="ms-brand">
+                <button class="ms-menu-toggle" type="button" data-ldm-menu-toggle aria-label="Buka menu navigasi" aria-expanded="false">☰</button>
+                <img class="ms-brand-logo" data-ldm-brand-logo alt="Logo toko">
+                <div class="ms-title"><h1 data-ldm-brand-title>LocDailyMar</h1><p data-ldm-brand-subtitle>Multi-Toko, Transfer Stok & Karyawan</p></div>
+            </div>
+            <div class="ms-header-actions">
+                <span class="ms-role-chip" id="roleChip">👤 Memuat</span>
+                <a class="ms-back" href="dashboard.html">← Dashboard</a>
+            </div>
+        </div>
+    </header>
+    <main class="ms-main" id="appRoot">
+        <section class="ms-page-intro">
+            <div class="ms-page-intro-copy">
+                <span class="ms-page-eyebrow">Operasional Cabang</span>
+                <h1>Multi-Toko, Transfer Stok & Karyawan</h1>
+                <p>Kelola toko aktif, cabang usaha, perpindahan persediaan, serta penempatan karyawan antar cabang dari satu halaman.</p>
+            </div>
+            <div class="ms-page-state"><span></span> Terhubung ke Cloud</div>
+        </section>
+        <div class="ms-alert" id="alertBox"></div>
+        <section class="ms-summary">
+            <div class="ms-stat"><span>Toko aktif perangkat</span><strong id="activeStoreName">Memuat…</strong></div>
+            <div class="ms-stat"><span>Jumlah toko yang dapat diakses</span><strong id="storeCount">0</strong></div>
+            <div class="ms-stat"><span>Transfer dalam pengiriman</span><strong id="transitCount">0</strong></div>
+        </section>
+
+        <div class="ms-grid">
+            <div>
+                <section class="ms-panel">
+                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">🏪 Jaringan Toko</span><h2>Daftar Toko</h2><p>Toko aktif berlaku hanya pada perangkat ini.</p></div></div>
+                    <div class="ms-store-list" id="storeList"><div class="ms-empty">Memuat toko…</div></div>
+                </section>
+
+                <section class="ms-panel" id="branchPanel">
+                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">＋ Pengembangan</span><h2>Tambah Cabang</h2><p>Cabang mendapatkan Store ID baru dan stok awal nol.</p></div></div>
+                    <form class="ms-form" id="branchForm">
+                        <div class="ms-form-grid">
+                            <div class="ms-field"><label>Kode Cabang</label><input id="branchCode" maxlength="30" placeholder="LDM-CABANG-02" required></div>
+                            <div class="ms-field"><label>Nama Cabang</label><input id="branchName" maxlength="120" placeholder="LocDailyMar Cabang 2" required></div>
+                            <div class="ms-field"><label>Mode Operasional Cabang</label><select id="branchMode" required><option value="retail">🛒 Toko Ritel</option><option value="cafe">☕ Kafe</option><option value="warung">🍜 Warung</option></select></div>
+                        </div>
+                        <label class="ms-check"><input type="checkbox" id="copyProducts" checked> Salin katalog hanya bila mode toko aktif dan cabang baru sama. Jika berbeda mode, cabang dimulai tanpa produk agar katalog tidak tercampur.</label>
+                        <button class="ms-btn ms-btn-primary" type="submit">Buat Cabang Baru</button>
+                    </form>
+                </section>
+            </div>
+
+            <div>
+                <section class="ms-panel">
+                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">⇄ Perpindahan Barang</span><h2>Buat Transfer Stok</h2><p>Barang lintas mode tidak ditambahkan otomatis. Jika barang belum ada di tujuan, Owner dapat menambahkannya secara sengaja sebelum transfer.</p></div></div>
+                    <form class="ms-form" id="transferForm">
+                        <div class="ms-field"><label>Toko Tujuan</label><select id="destinationStore" required><option value="">Pilih toko tujuan</option></select></div>
+                        <div class="ms-table-wrap"><table class="ms-table"><thead><tr><th>Pilih</th><th>Barang</th><th>Stok Sumber</th><th>Stok Tujuan</th><th>Qty Transfer</th></tr></thead><tbody id="candidateRows"><tr><td colspan="5" class="ms-empty">Pilih toko tujuan terlebih dahulu.</td></tr></tbody></table></div>
+                        <div class="ms-field"><label>Catatan Transfer</label><textarea id="transferNote" maxlength="500" placeholder="Opsional: kebutuhan restock cabang"></textarea></div>
+                        <button class="ms-btn ms-btn-primary" type="submit">Simpan sebagai Draft</button>
+                    </form>
+                </section>
+
+                <section class="ms-panel">
+                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">🕘 Aktivitas</span><h2>Riwayat Transfer</h2><p>Stok sumber berkurang saat dikirim dan tujuan bertambah saat diterima.</p></div><button class="ms-btn ms-btn-light" id="refreshTransfers" type="button">Muat Ulang</button></div>
+                    <div id="transferList"><div class="ms-empty">Memuat transfer…</div></div>
+                </section>
+            </div>
+        </div>
+
+        <section class="ms-panel" id="employeeTransferPanel" style="display:none">
+            <div class="ms-panel-head">
+                <div>
+                    <span class="ms-panel-kicker">👥 Penempatan Karyawan</span>
+                    <h2>Pindahkan Karyawan Antar Cabang</h2>
+                    <p>Akun, Employee ID, dan role tetap sama. Akses cabang lama dihentikan setelah pemindahan.</p>
+                </div>
+                <button class="ms-btn ms-btn-light" id="refreshEmployees" type="button">Muat Ulang</button>
+            </div>
+            <div class="ms-employee-grid">
+                <form class="ms-form" id="employeeTransferForm">
+                    <div class="ms-field"><label>Karyawan</label><select id="employeeSelect" required><option value="">Pilih karyawan</option></select></div>
+                    <div class="ms-employee-info" id="employeeInfo">Pilih karyawan untuk melihat cabang asal dan role.</div>
+                    <div class="ms-field"><label>Cabang Tujuan</label><select id="employeeDestination" required><option value="">Pilih cabang tujuan</option></select></div>
+                    <div class="ms-field"><label>Catatan Pemindahan</label><textarea id="employeeTransferNote" maxlength="500" placeholder="Contoh: Rotasi kasir ke cabang baru"></textarea></div>
+                    <button class="ms-btn ms-btn-primary" type="submit">Pindahkan Karyawan</button>
+                    <div class="ms-security-note">🔐 Hanya Owner Utama yang ditetapkan pada cabang pusat dapat memindahkan karyawan. Owner cabang biasa ditolak oleh server. Setelah pindah, perangkat karyawan pada cabang lama direvoke dan perlu diotorisasi pada cabang tujuan.</div>
+                </form>
+                <div>
+                    <div class="ms-panel-head" style="margin-bottom:9px"><div><span class="ms-panel-kicker">🕘 Audit</span><h2>Riwayat Pemindahan</h2><p>Jejak perpindahan disimpan di database dan tidak bergantung pada browser.</p></div></div>
+                    <div class="ms-employee-history" id="employeeTransferList"><div class="ms-empty">Memuat riwayat…</div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    (function(){
+        "use strict";
+        let stores=[];let transfers=[];let candidates=[];let employees=[];let employeeTransfers=[];let context=null;let primaryContext=null;
+        const $=id=>document.getElementById(id);
+        const esc=value=>String(value==null?"":value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+        const num=value=>Number(value||0).toLocaleString("id-ID",{maximumFractionDigits:3});
+        function alertBox(message,type="good"){$("alertBox").className=`ms-alert show ${type}`;$('alertBox').textContent=message;window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>$("alertBox").classList.remove("show"),5000)}
+        function errorMessage(error){return error&&error.message?error.message:String(error||"Terjadi kesalahan.")}
+        function setLoading(value){$("appRoot").classList.toggle("ms-loading",!!value)}
+        function currentStore(){return stores.find(row=>row.is_current)||null}
+        function currentRole(){return String(context&&context.profile&&context.profile.role||localStorage.getItem("userRole")||"").toLowerCase()}
+        function isPrimaryOwner(){return primaryContext&&primaryContext.is_primary_owner===true}
+
+        function renderStores(){
+            const active=currentStore();
+            $("activeStoreName").textContent=active?active.store_name:"Tidak tersedia";
+            $("storeCount").textContent=stores.length;
+            $("roleChip").textContent=`👤 ${currentRole()||"pengguna"}`;
+            $("branchPanel").style.display=currentRole()==="owner"?"block":"none";
+            $("employeeTransferPanel").style.display=isPrimaryOwner()?"block":"none";
+            $("storeList").innerHTML=stores.length?stores.map(store=>`
+                <div class="ms-store ${store.is_current?"current":""}">
+                    <div><div class="ms-store-name">${esc(store.store_name)}</div><div class="ms-store-code">${esc(store.store_code)} · ${esc(store.member_role)}</div><div class="ms-store-meta">${({cafe:"☕ Kafe",warung:"🍜 Warung",retail:"🛒 Toko Ritel"})[String(store.operational_mode||"retail")]||"🛒 Toko Ritel"} · ${num(store.product_count)} produk · total stok ${num(store.total_stock)}</div></div>
+                    ${store.is_current?'<span class="ms-current-badge">TOKO AKTIF</span>':`<button class="ms-btn ms-btn-light" data-switch-store="${store.store_id}">Pindah ke Toko Ini</button>`}
+                </div>`).join(""):'<div class="ms-empty">Tidak ada toko yang dapat diakses.</div>';
+            $("storeList").querySelectorAll("[data-switch-store]").forEach(button=>button.onclick=()=>switchStore(button.dataset.switchStore));
+            $("destinationStore").innerHTML='<option value="">Pilih toko tujuan</option>'+stores.filter(row=>!row.is_current).map(row=>`<option value="${row.store_id}">${esc(row.store_name)} (${esc(row.store_code)})</option>`).join("");
+        }
+
+        async function switchStore(storeId){
+            const target=stores.find(row=>row.store_id===storeId);if(!target)return;
+            if(!confirm(`Pindah toko aktif perangkat ini ke ${target.store_name}?`))return;
+            setLoading(true);
+            try{await window.LDMMultiStore.switchStore(storeId);location.href="dashboard.html"}
+            catch(error){alertBox(errorMessage(error),"bad");setLoading(false)}
+        }
+
+        async function loadCandidates(){
+            const destination=$("destinationStore").value;
+            if(!destination){candidates=[];$("candidateRows").innerHTML='<tr><td colspan="5" class="ms-empty">Pilih toko tujuan terlebih dahulu.</td></tr>';return}
+            $("candidateRows").innerHTML='<tr><td colspan="5" class="ms-empty">Memuat barang…</td></tr>';
+            try{candidates=await window.LDMMultiStore.transferCandidates(destination);renderCandidates()}
+            catch(error){candidates=[];$("candidateRows").innerHTML=`<tr><td colspan="5" class="ms-empty">${esc(errorMessage(error))}</td></tr>`}
+        }
+
+        function renderCandidates(){
+            $("candidateRows").innerHTML=candidates.length?candidates.map((item,index)=>`
+                <tr><td><input type="checkbox" data-pick="${index}" ${item.transfer_ready?"":"disabled"}></td>
+                <td><strong>${esc(item.product_name)}</strong><br><small>${esc(item.barcode||"Tanpa barcode")} · ${esc(item.unit)}</small>${item.transfer_ready?"":`<div class="ms-not-ready">Belum ada di toko tujuan</div>${currentRole()==="owner"?`<button class="ms-btn ms-btn-light" type="button" data-add-destination="${index}" style="margin-top:6px">+ Tambahkan ke Cabang</button>`:""}`}</td>
+                <td>${num(item.source_stock)}</td><td>${num(item.destination_stock)}</td>
+                <td><input type="number" data-qty="${index}" min="0.001" step="0.001" max="${Number(item.source_stock)||0}" value="1" ${item.transfer_ready?"":"disabled"}></td></tr>`).join(""):'<tr><td colspan="5" class="ms-empty">Tidak ada master barang pada toko sumber.</td></tr>';
+            $("candidateRows").querySelectorAll("[data-add-destination]").forEach(button=>button.onclick=()=>addProductToDestination(Number(button.dataset.addDestination)));
+        }
+
+        async function addProductToDestination(index){
+            const item=candidates[index];const destination=$("destinationStore").value;if(!item||!destination)return;
+            const target=stores.find(row=>row.store_id===destination);
+            if(!confirm(`Tambahkan ${item.product_name} ke ${target?target.store_name:"cabang tujuan"}?\n\nProduk dibuat dengan stok awal 0. Ini tindakan sengaja dan tidak menyalin seluruh katalog.`))return;
+            setLoading(true);
+            try{const result=await window.LDMMultiStore.copyProductToStore(item.source_product_id,destination);alertBox(result.message||"Produk berhasil ditambahkan ke cabang tujuan.");await loadCandidates()}
+            catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}
+        }
+
+        function statusLabel(status){return {DRAFT:"Draft",IN_TRANSIT:"Dalam Pengiriman",RECEIVED:"Diterima",CANCELLED:"Dibatalkan"}[status]||status}
+        function renderTransfers(){
+            const active=currentStore();const activeId=active&&active.store_id;
+            $("transitCount").textContent=transfers.filter(row=>row.status==="IN_TRANSIT").length;
+            $("transferList").innerHTML=transfers.length?transfers.map(row=>{
+                const items=Array.isArray(row.items)?row.items:[];
+                let actions="";
+                if(row.status==="DRAFT"&&row.source_store_id===activeId){actions=`<button class="ms-btn ms-btn-primary" data-send="${row.id}">Kirim Stok</button><button class="ms-btn ms-btn-danger" data-cancel="${row.id}">Batalkan</button>`}
+                if(row.status==="IN_TRANSIT"&&row.destination_store_id===activeId){actions=`<button class="ms-btn ms-btn-primary" data-receive="${row.id}">Terima Stok</button>`}
+                return `<article class="ms-transfer"><div class="ms-transfer-top"><div><div class="ms-transfer-code">${esc(row.transfer_code)}</div><div class="ms-transfer-route">${esc(row.source_store_name)} → ${esc(row.destination_store_name)}</div></div><span class="ms-status status-${String(row.status).toLowerCase()}">${statusLabel(row.status)}</span></div><div class="ms-transfer-items">${items.map(item=>`${esc(item.name)}: ${num(item.qty_requested)} ${esc(item.unit)}`).join(" · ")||"Tanpa item"}</div>${row.note?`<div class="ms-transfer-items">Catatan: ${esc(row.note)}</div>`:""}<div class="ms-actions">${actions}</div></article>`
+            }).join(""):'<div class="ms-empty">Belum ada transfer stok.</div>';
+            $("transferList").querySelectorAll("[data-send]").forEach(btn=>btn.onclick=()=>sendTransfer(btn.dataset.send));
+            $("transferList").querySelectorAll("[data-receive]").forEach(btn=>btn.onclick=()=>receiveTransfer(btn.dataset.receive));
+            $("transferList").querySelectorAll("[data-cancel]").forEach(btn=>btn.onclick=()=>cancelTransfer(btn.dataset.cancel));
+        }
+
+        function selectedEmployee(){return employees.find(row=>row.user_id===$("employeeSelect").value)||null}
+        function renderEmployeeForm(){
+            const selected=selectedEmployee();
+            $("employeeSelect").innerHTML='<option value="">Pilih karyawan</option>'+employees.map(row=>`<option value="${row.user_id}">${esc(row.display_name||row.username)} · ${esc(row.role)} · ${esc(row.store_name)}</option>`).join("");
+            if(selected) $("employeeSelect").value=selected.user_id;
+            updateEmployeeDestination();
+        }
+        function updateEmployeeDestination(){
+            const employee=selectedEmployee();
+            if(!employee){
+                $("employeeInfo").textContent="Pilih karyawan untuk melihat cabang asal dan role.";
+                $("employeeDestination").innerHTML='<option value="">Pilih cabang tujuan</option>';
+                return;
+            }
+            $("employeeInfo").innerHTML=`<strong>${esc(employee.display_name||employee.username)}</strong><span class="ms-role-pill">${esc(employee.role)}</span><br>NIK Karyawan: ${esc(employee.employee_id||"-")}<br>Cabang asal: <strong>${esc(employee.store_name)}</strong> (${esc(employee.store_code)})`;
+            $("employeeDestination").innerHTML='<option value="">Pilih cabang tujuan</option>'+stores.filter(row=>row.store_id!==employee.store_id).map(row=>`<option value="${row.store_id}">${esc(row.store_name)} (${esc(row.store_code)})</option>`).join("");
+        }
+        function renderEmployeeTransfers(){
+            $("employeeTransferList").innerHTML=employeeTransfers.length?employeeTransfers.map(row=>`<article class="ms-employee-move"><strong>${esc(row.display_name||row.username||"Karyawan")} <span class="ms-role-pill">${esc(row.employee_role)}</span></strong><p>${esc(row.source_store_name)} → <strong>${esc(row.destination_store_name)}</strong><br>${new Date(row.moved_at).toLocaleString("id-ID")}${row.note?` · ${esc(row.note)}`:""}<br>Dipindahkan oleh ${esc(row.moved_by_name||"Owner")}</p></article>`).join(""):'<div class="ms-empty">Belum ada riwayat pemindahan karyawan.</div>';
+        }
+        async function loadEmployees(){
+            if(!isPrimaryOwner())return;
+            try{employees=await window.LDMMultiStore.listEmployees();renderEmployeeForm()}
+            catch(error){employees=[];$("employeeSelect").innerHTML='<option value="">Gagal memuat karyawan</option>';$("employeeInfo").textContent=errorMessage(error)}
+        }
+        async function loadEmployeeTransfers(){
+            if(!isPrimaryOwner())return;
+            try{employeeTransfers=await window.LDMMultiStore.listEmployeeTransfers(100);renderEmployeeTransfers()}
+            catch(error){employeeTransfers=[];$("employeeTransferList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`}
+        }
+        async function moveEmployee(){
+            const employee=selectedEmployee();
+            const destination=$("employeeDestination").value;
+            if(!employee||!destination){alertBox("Pilih karyawan dan cabang tujuan terlebih dahulu.","bad");return}
+            const target=stores.find(row=>row.store_id===destination);
+            if(!confirm(`Pindahkan ${employee.display_name||employee.username} dari ${employee.store_name} ke ${target?target.store_name:"cabang tujuan"}?\n\nAkses cabang lama akan dihentikan dan perangkat lama perlu otorisasi ulang.`))return;
+            setLoading(true);
+            try{
+                const result=await window.LDMMultiStore.transferEmployee(employee.user_id,destination,$("employeeTransferNote").value);
+                alertBox(result.message||`Karyawan berhasil dipindahkan ke ${result.destination_store_name}.`);
+                $("employeeTransferForm").reset();
+                await Promise.all([loadEmployees(),loadEmployeeTransfers()]);
+            }catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}
+        }
+
+        async function loadTransfers(){try{transfers=await window.LDMMultiStore.listTransfers(150);renderTransfers()}catch(error){$("transferList").innerHTML=`<div class="ms-empty">${esc(errorMessage(error))}</div>`}}
+        async function sendTransfer(id){if(!confirm("Kirim stok sekarang? Stok toko sumber akan langsung berkurang."))return;setLoading(true);try{await window.LDMMultiStore.sendTransfer(id);alertBox("Stok berhasil dikirim dan status menjadi Dalam Pengiriman.");await Promise.all([loadTransfers(),loadStores()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}}
+        async function receiveTransfer(id){if(!confirm("Konfirmasi seluruh barang transfer sudah diterima?"))return;setLoading(true);try{await window.LDMMultiStore.receiveTransfer(id);alertBox("Transfer diterima dan stok toko tujuan sudah bertambah.");await Promise.all([loadTransfers(),loadStores()])}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}}
+        async function cancelTransfer(id){const reason=prompt("Alasan pembatalan transfer:","");if(reason===null)return;setLoading(true);try{await window.LDMMultiStore.cancelTransfer(id,reason);alertBox("Draft transfer berhasil dibatalkan.");await loadTransfers()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}}
+
+        async function loadStores(){stores=await window.LDMMultiStore.listStores();renderStores()}
+        async function boot(){
+            try{
+                context=await window.LDMCloudSession.ensureAuthenticated({registerDevice:true});
+                primaryContext=await window.LDMPrimaryOwner.context(true);
+                await loadStores();
+                await Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]);
+                await window.LDMMultiStore.startRealtime(()=>Promise.all([loadTransfers(),loadEmployees(),loadEmployeeTransfers()]));
+            }
+            catch(error){alertBox(errorMessage(error),"bad")}
+        }
+        $("destinationStore").addEventListener("change",loadCandidates);
+        $("employeeSelect").addEventListener("change",updateEmployeeDestination);
+        $("refreshTransfers").onclick=loadTransfers;
+        $("refreshEmployees").onclick=()=>Promise.all([loadEmployees(),loadEmployeeTransfers()]);
+        $("employeeTransferForm").onsubmit=event=>{event.preventDefault();moveEmployee()};
+        $("branchForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,operationalMode:$("branchMode").value,copyProducts:$("copyProducts").checked});const copyNote=result.products_copied?"Katalog mode yang sama disalin dengan stok 0.":result.copy_skipped_mode_mismatch?"Mode cabang berbeda, sehingga katalog sengaja tidak disalin.":"Cabang dibuat tanpa menyalin katalog.";alertBox(`Cabang ${result.name} berhasil dibuat. ${copyNote}`);event.target.reset();$("copyProducts").checked=true;$("branchMode").value="retail";await loadStores()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
+        $("transferForm").onsubmit=async event=>{event.preventDefault();const selected=[];$("candidateRows").querySelectorAll("[data-pick]:checked").forEach(check=>{const index=Number(check.dataset.pick);const qty=Number($("candidateRows").querySelector(`[data-qty="${index}"]`).value);if(qty>0)selected.push({source_product_id:candidates[index].source_product_id,qty})});if(!selected.length){alertBox("Pilih minimal satu barang dan isi qty transfer.","bad");return}setLoading(true);try{const result=await window.LDMMultiStore.createTransfer($("destinationStore").value,selected,$("transferNote").value);alertBox(`Draft ${result.transfer_code} berhasil dibuat.`);event.target.reset();candidates=[];renderCandidates();await loadTransfers()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
+        function onlineState(){const offline=navigator.onLine===false;$("offlineBanner").classList.toggle("show",offline);document.querySelectorAll("button[type=submit]").forEach(btn=>btn.disabled=offline)}
+        window.addEventListener("online",onlineState);window.addEventListener("offline",onlineState);onlineState();boot();
+    })();
+    </script>
+    <script src="js/global-system-navigation.js?v=25.2"></script>
+</body>
+</html>
