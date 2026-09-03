@@ -2480,6 +2480,9 @@
     <script src="js/supabase-client.js"></script>
     <script src="js/cloud-auth.js?v=15.0"></script>
     <script src="js/cloud-session.js?v=6.0"></script>
+    <script src="js/store-mode.js?v=27.9.0-mode1"></script>
+    <script src="js/product-visuals.js?v=27.9.0-mode1"></script>
+    <link rel="stylesheet" href="css/store-modes.css?v=27.9.0-mode1">
     <script src="js/cloud-session-guard.js?v=15.0"></script>
     <!-- Live Sync Tahap 9: Cloud Absensi -->
     <script src="js/attendance-service.js?v=9.1"></script>
@@ -2682,6 +2685,8 @@
             </div>
         </div>
     </div>
+
+    <input type="file" id="ldmProductImagePicker" accept="image/jpeg,image/png,image/webp" style="display:none;">
 
     <!-- MODAL EDIT TAMPILAN & TEMA -->
     <div class="modal" id="modalEditHeader">
@@ -3738,6 +3743,9 @@ function CekPromoTersedia(item) {
         let role = (localStorage.getItem("userRole") || localStorage.getItem("role") || "admin").toLowerCase();
         let isOwner = role === "owner" && document.documentElement.dataset.ldmCatalogEditor === "true";
         let isCashier = role === "kasir";
+        const modeApi = window.LDMStoreMode;
+        const isRetailMode = !modeApi || modeApi.isRetail();
+        const showProductVisuals = Boolean(modeApi && modeApi.supportsProductImages());
 
         document.body.classList.toggle("role-kasir-readonly", isCashier);
 
@@ -3761,7 +3769,7 @@ function CekPromoTersedia(item) {
 
         let dataDenganIndex = data.map((item, index) => ({ ...item, originalIndex: index }));
 
-        let adaStokTipis = dataDenganIndex.some(item => (Number(item.stok) || 0) <= BATAS_STOK_MINIMAL);
+        let adaStokTipis = isRetailMode && dataDenganIndex.some(item => (Number(item.stok) || 0) <= BATAS_STOK_MINIMAL);
         document.getElementById("navBadge").style.display = adaStokTipis ? "flex" : "none";
 
         let keyword = document.getElementById("searchInput").value.toLowerCase();
@@ -3773,8 +3781,8 @@ function CekPromoTersedia(item) {
         });
 
         dataFiltered.sort((a, b) => {
-            let isWarningA = (Number(a.stok) || 0) <= BATAS_STOK_MINIMAL;
-            let isWarningB = (Number(b.stok) || 0) <= BATAS_STOK_MINIMAL;
+            let isWarningA = isRetailMode && (Number(a.stok) || 0) <= BATAS_STOK_MINIMAL;
+            let isWarningB = isRetailMode && (Number(b.stok) || 0) <= BATAS_STOK_MINIMAL;
 
             if (isWarningA && !isWarningB) return -1;
             if (!isWarningA && isWarningB) return 1;
@@ -3811,7 +3819,13 @@ function CekPromoTersedia(item) {
                         <span style="background:var(--border-color); padding:1px 6px; border-radius:4px; color:var(--text-color);">${ktg}</span>
                    </div>`;
 
-            let isWarning = stok <= BATAS_STOK_MINIMAL;
+            let isWarning = isRetailMode && stok <= BATAS_STOK_MINIMAL;
+            const productVisualUrl = showProductVisuals && window.LDMProductVisuals
+                ? window.LDMProductVisuals.get(item)
+                : "";
+            const productVisualHTML = showProductVisuals
+                ? `<div class="ldm-product-visual">${productVisualUrl ? `<img src="${productVisualUrl}" alt="Gambar ${item.nama}">` : `<span>Belum ada gambar menu</span>`}</div>`
+                : "";
 
 // Promo tersedia secara waktu/status
 let isPromoTersedia = CekPromoTersedia(item);
@@ -3980,19 +3994,23 @@ else {
 
             if (isOwner) {
                 actionButtonsHTML += `
+                    ${showProductVisuals ? `<button class="btn-act ldm-product-visual-button" onclick="pilihGambarProdukMode(${origIdx})">🖼️ Gambar</button>${productVisualUrl ? `<button class="btn-act ldm-product-visual-remove" onclick="hapusGambarProdukMode(${origIdx})">✕ Gambar</button>` : ""}` : ""}
                     <button class="btn-act btn-promo" onclick="bukaModalPromo(${origIdx})">🏷️ Promo</button>
                     <button class="btn-act btn-edit" onclick="bukaModalEdit(${origIdx})">✏️ Edit</button>
                     <button class="btn-act btn-hapus" onclick="hapusBarang(${origIdx})">🗑️ Hapus</button>
                 `;
             }
 
+            const stockBadgeHTML = isRetailMode
+                ? `<span class="stok-badge ${isWarning ? 'danger' : ''}">${isWarning ? (stok <= 0 ? 'Stok Habis: ' : 'Hampir Habis: ') : 'Stok: '} ${stok} ${stn}</span>`
+                : `<span class="stok-badge" style="background:rgba(15,157,88,.1);color:#0f9d58;">Aktif Dijual</span>`;
+
             div.innerHTML += `
                 <div class="item-card ${isWarning ? 'stok-warning' : ''}">
+                    ${productVisualHTML}
                     <div class="item-header">
                         <strong>${isWarning ? '⚠️ ' : ''}${item.nama}</strong>
-                        <span class="stok-badge ${isWarning ? 'danger' : ''}">
-                            ${isWarning ? 'Hampir Habis: ' : 'Stok: '} ${stok} ${stn}
-                        </span>
+                        ${stockBadgeHTML}
                     </div>
                     ${metadataHTML}
                     ${detailHargaHTML}
@@ -4008,6 +4026,63 @@ else {
         });
     }
 
+
+let ldmProductImageTargetIndex = null;
+
+function pilihGambarProdukMode(index) {
+    if (!window.LDMStoreMode || !window.LDMStoreMode.supportsProductImages()) return;
+    ldmProductImageTargetIndex = Number(index);
+    const picker = document.getElementById("ldmProductImagePicker");
+    if (!picker) return;
+    picker.value = "";
+    picker.click();
+}
+
+async function hapusGambarProdukMode(index) {
+    const data = JSON.parse(localStorage.getItem("dataBarang") || "[]");
+    const product = data[Number(index)];
+    if (!product || !window.LDMProductVisuals) return;
+    try {
+        await window.LDMProductVisuals.remove(product);
+        muatBarang();
+        tampilkanNotifikasi("Gambar Dihapus", `Gambar ${product.nama} sudah dihapus dari Storage.`, "🖼️");
+    } catch (error) {
+        tampilkanNotifikasi("Gambar Gagal Dihapus", error.message || String(error), "⚠️");
+    }
+}
+
+document.getElementById("ldmProductImagePicker")?.addEventListener("change", async function(event){
+    const file = event.target.files && event.target.files[0];
+    if (!file || ldmProductImageTargetIndex === null) return;
+    const data = JSON.parse(localStorage.getItem("dataBarang") || "[]");
+    const product = data[ldmProductImageTargetIndex];
+    if (!product || !window.LDMProductVisuals) return;
+    try {
+        await window.LDMProductVisuals.setFromFile(product, file);
+        muatBarang();
+        tampilkanNotifikasi("Gambar Disimpan", `Gambar ${product.nama} berhasil disimpan ke Supabase Storage untuk Mode ${window.LDMStoreMode.getMode() === "cafe" ? "Kafe" : "Warung"}.`, "✅");
+    } catch (error) {
+        tampilkanNotifikasi("Gambar Gagal Disimpan", error.message || String(error), "⚠️");
+    } finally {
+        ldmProductImageTargetIndex = null;
+        event.target.value = "";
+    }
+});
+
+function sinkronkanTampilanModeBarang(){
+    const mode = window.LDMStoreMode ? window.LDMStoreMode.getMode() : "retail";
+    const sub = document.getElementById("txtSubJudulToko");
+    if (sub && !sub.dataset.ldmModeManaged) {
+        sub.dataset.ldmModeManaged = "true";
+    }
+    if (sub) {
+        sub.textContent = mode === "cafe" ? "Mode Kafe · Menu & Harga" : (mode === "warung" ? "Mode Warung · Barang & Menu" : "Mode Toko Ritel · Barang & Stok");
+    }
+    if (typeof muatBarang === "function") muatBarang();
+}
+window.addEventListener("ldm-store-mode-change", sinkronkanTampilanModeBarang);
+window.addEventListener("ldm-product-visual-change", ()=>typeof muatBarang === "function" && muatBarang());
+window.addEventListener("ldm-cloud-session-ready", ()=>window.LDMStoreMode && window.LDMStoreMode.refreshFromCloud({silent:true}));
 
 function catatKartuStokMutasi(payload = {}) {
     try {

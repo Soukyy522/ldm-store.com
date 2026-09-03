@@ -499,7 +499,50 @@
             .btn-add { font-size: 0.95rem; }
             .btn-bayar, .btn-qris { font-size: 0.88rem; padding: 14px 2px; }
         }
-    </style>
+    
+
+        /* Mode Kafe/Warung - menu visual kasir */
+        .ldm-visual-menu-panel{
+            margin:0 0 12px;
+            padding:11px;
+            border:1px solid var(--border-color);
+            border-radius:13px;
+            background:var(--bg-secondary);
+            box-shadow:0 5px 18px var(--card-shadow);
+        }
+        .ldm-visual-menu-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px;}
+        .ldm-visual-menu-head strong{display:block;color:var(--heading-color);font-size:.78rem;}
+        .ldm-visual-menu-head span{display:block;margin-top:2px;color:#64748b;font-size:.59rem;}
+        body.dark-mode .ldm-visual-menu-head span{color:#94a3b8;}
+        .ldm-visual-menu-categories{display:flex;gap:5px;overflow:auto;max-width:55%;padding-bottom:2px;scrollbar-width:thin;}
+        .ldm-visual-category{
+            border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-color);
+            border-radius:999px;padding:5px 9px;font-size:.58rem;font-weight:700;cursor:pointer;white-space:nowrap;
+        }
+        .ldm-visual-category.active{background:#0f9d58;border-color:#0f9d58;color:#fff;}
+        .ldm-visual-menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px;max-height:370px;overflow:auto;padding:1px;}
+        .ldm-visual-menu-item{
+            border:1px solid var(--border-color);border-radius:11px;background:var(--input-bg);color:var(--text-color);
+            padding:0;overflow:hidden;cursor:pointer;text-align:left;transition:.16s ease;min-width:0;
+        }
+        .ldm-visual-menu-item:hover{transform:translateY(-1px);border-color:#0f9d58;box-shadow:0 6px 14px rgba(15,157,88,.09);}
+        .ldm-visual-menu-image{width:100%;aspect-ratio:16/9;background:#eef2f7;display:grid;place-items:center;color:#94a3b8;font-size:.58rem;font-weight:800;overflow:hidden;}
+        .ldm-visual-menu-image img{width:100%;height:100%;object-fit:cover;display:block;}
+        .ldm-visual-menu-content{padding:8px;}
+        .ldm-visual-menu-name{display:block;font-size:.68rem;font-weight:800;color:var(--heading-color);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .ldm-visual-menu-price{display:block;margin-top:3px;font-size:.69rem;font-weight:800;color:#0f9d58;}
+        .ldm-visual-menu-category{display:block;margin-top:2px;font-size:.54rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        html[data-ldm-store-mode="warung"] .ldm-visual-menu-grid{grid-template-columns:repeat(auto-fill,minmax(205px,1fr));}
+        html[data-ldm-store-mode="warung"] .ldm-visual-menu-item{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:stretch;}
+        html[data-ldm-store-mode="warung"] .ldm-visual-menu-image{width:72px;height:100%;min-height:72px;aspect-ratio:auto;}
+        html[data-ldm-store-mode="warung"] .ldm-visual-menu-content{display:flex;flex-direction:column;justify-content:center;}
+        @media(max-width:700px){
+            .ldm-visual-menu-head{flex-direction:column;}
+            .ldm-visual-menu-categories{max-width:100%;width:100%;}
+            .ldm-visual-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:330px;}
+            html[data-ldm-store-mode="warung"] .ldm-visual-menu-grid{grid-template-columns:1fr;}
+        }
+</style>
 
 <script id="ldmCompactNavRoleEarly">
 (function(){
@@ -1517,6 +1560,9 @@
     <script src="js/offline-queue.js?v=16.0"></script>
     <script src="js/cloud-auth.js?v=15.0"></script>
     <script src="js/cloud-session.js?v=16.0"></script>
+    <script src="js/store-mode.js?v=27.9.0-mode1"></script>
+    <script src="js/product-visuals.js?v=27.9.0-mode1"></script>
+    <link rel="stylesheet" href="css/store-modes.css?v=27.9.0-mode1">
     <script src="js/cloud-session-guard.js?v=16.0"></script>
     <script src="js/recovery-service.js?v=17.0"></script>
     <!-- Live Sync Tahap 9: Cloud Absensi -->
@@ -1577,6 +1623,19 @@
                     <span class="shortcut-hint">F2/F4: Cari | F8: Bayar</span>
                 </div>
             </div>
+
+            <!-- KAFE/WARUNG: menu visual. Retail tetap memakai pencarian/barcode tanpa gambar. -->
+            <section id="ldmVisualMenuPanel" class="ldm-visual-menu-panel" style="display:none;">
+                <div class="ldm-visual-menu-head">
+                    <div>
+                        <strong id="ldmVisualMenuTitle">☕ Menu Cepat</strong>
+                        <span id="ldmVisualMenuHint">Tekan item untuk langsung menambahkan 1 ke keranjang.</span>
+                    </div>
+                    <div id="ldmVisualMenuCategories" class="ldm-visual-menu-categories"></div>
+                </div>
+                <div id="ldmVisualMenuGrid" class="ldm-visual-menu-grid"></div>
+            </section>
+
 <div class="kasir-grid">
                 <div>
                     <div class="box-form">
@@ -2935,19 +2994,77 @@ function getKeputusanHarga(barang, qty = 1) {
         }
 
         function cekPeringatanStok() {
+            const badge = document.getElementById("navBadge");
+            const isRetail = !window.LDMStoreMode || window.LDMStoreMode.isRetail();
+            if (!isRetail) {
+                if (badge) badge.style.display = "none";
+                return;
+            }
             const BATAS_STOK_MINIMAL = 9;
             let localData = localStorage.getItem("dataBarang");
             if (!localData) return;
             let data = JSON.parse(localData);
             let adaStokTipis = data.some(item => (Number(item.stok) || 0) <= BATAS_STOK_MINIMAL);
-            
-            let badge = document.getElementById("navBadge");
-            if (badge) {
-                badge.style.display = adaStokTipis ? "flex" : "none";
-            }
+            if (badge) badge.style.display = adaStokTipis ? "flex" : "none";
         }
 
         /* LOGIKA TRANSAKSI KASIR */
+let ldmVisualMenuCategory = "Semua";
+
+function escapeModeHtml(value){
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[ch]);
+}
+
+function renderMenuVisualMode(){
+    const panel=document.getElementById("ldmVisualMenuPanel");
+    const grid=document.getElementById("ldmVisualMenuGrid");
+    const cats=document.getElementById("ldmVisualMenuCategories");
+    if(!panel || !grid || !cats) return;
+    const api=window.LDMStoreMode;
+    const mode=api ? api.getMode() : "retail";
+    const show=mode==="cafe" || mode==="warung";
+    panel.style.display=show ? "block" : "none";
+    if(!show) return;
+
+    const data=JSON.parse(localStorage.getItem("dataBarang")||"[]");
+    const title=document.getElementById("ldmVisualMenuTitle");
+    const hint=document.getElementById("ldmVisualMenuHint");
+    if(title) title.textContent=mode==="cafe" ? "☕ Menu Kafe" : "🍜 Menu Cepat Warung";
+    if(hint) hint.textContent=mode==="cafe" ? "Tekan kartu menu untuk langsung menambahkan 1 item ke keranjang." : "Pilih barang/menu yang sering dijual tanpa perlu mengetik nama.";
+
+    const categories=["Semua",...new Set(data.map(item=>String(item.kategori||"Lainnya").trim()).filter(Boolean))];
+    if(!categories.includes(ldmVisualMenuCategory)) ldmVisualMenuCategory="Semua";
+    cats.innerHTML=categories.map(cat=>`<button type="button" class="ldm-visual-category ${cat===ldmVisualMenuCategory?'active':''}" onclick="pilihKategoriMenuMode(decodeURIComponent('${encodeURIComponent(cat)}'))">${escapeModeHtml(cat)}</button>`).join("");
+
+    const filtered=data.map((item,index)=>({item,index})).filter(row=>ldmVisualMenuCategory==="Semua" || String(row.item.kategori||"Lainnya")===ldmVisualMenuCategory);
+    grid.innerHTML=filtered.map(({item,index})=>{
+        const visual=window.LDMProductVisuals ? window.LDMProductVisuals.get(item) : "";
+        const price=Number(item.harga)||0;
+        return `<button type="button" class="ldm-visual-menu-item" onclick="tambahItemDariMenuMode(${index})" title="Tambah ${escapeModeHtml(item.nama)} ke keranjang">
+            <span class="ldm-visual-menu-image">${visual ? `<img src="${visual}" alt="">` : (mode==='cafe'?'FOTO MENU':'GAMBAR')}</span>
+            <span class="ldm-visual-menu-content">
+                <span class="ldm-visual-menu-name">${escapeModeHtml(item.nama)}</span>
+                <span class="ldm-visual-menu-price">Rp ${price.toLocaleString('id-ID')}</span>
+                <span class="ldm-visual-menu-category">${escapeModeHtml(item.kategori||'Lainnya')}</span>
+            </span>
+        </button>`;
+    }).join("") || `<div style="grid-column:1/-1;padding:16px;text-align:center;color:#94a3b8;font-size:.68rem;">Belum ada barang/menu pada kategori ini.</div>`;
+}
+
+function pilihKategoriMenuMode(category){
+    ldmVisualMenuCategory=String(category||"Semua").replace(/&#39;/g,"'");
+    renderMenuVisualMode();
+}
+
+function tambahItemDariMenuMode(index){
+    const data=JSON.parse(localStorage.getItem("dataBarang")||"[]");
+    if(!data[index]) return;
+    document.getElementById("selectedBarangIndex").value=String(index);
+    document.getElementById("inputCariBarang").value=data[index].nama||"";
+    document.getElementById("jumlah").value="1";
+    tambahItem();
+}
+
 function filterBarang() {
     const input = document
         .getElementById("inputCariBarang")
@@ -2962,6 +3079,8 @@ function filterBarang() {
 
     const dataBarang =
         JSON.parse(localStorage.getItem("dataBarang")) || [];
+    const isRetailMode = !window.LDMStoreMode || window.LDMStoreMode.isRetail();
+    const showVisual = window.LDMStoreMode && window.LDMStoreMode.supportsProductImages();
 
     const hasil = input
         ? dataBarang.filter(item =>
@@ -3042,23 +3161,24 @@ function filterBarang() {
             `;
         }
 
+        const visualUrl = showVisual && window.LDMProductVisuals
+            ? window.LDMProductVisuals.get(item)
+            : "";
+        const visualHTML = showVisual
+            ? `<div style="width:42px;height:42px;flex:0 0 42px;border-radius:8px;overflow:hidden;background:#eef2f7;display:grid;place-items:center;color:#94a3b8;font-size:.55rem;">${visualUrl ? `<img src="${visualUrl}" alt="" style="width:100%;height:100%;object-fit:cover;">` : "MENU"}</div>`
+            : "";
+        const stockHTML = isRetailMode
+            ? `<small style="color:#94a3b8;margin-left:4px;">(Stok: ${Number(item.stok) || 0})</small>`
+            : "";
+
         itemDiv.innerHTML = `
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            ">
-                <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:9px;">
+                ${visualHTML}
+                <div style="min-width:0;flex:1;">
                     <strong>${item.nama}</strong>
                     – ${hargaHTML}
                     ${satuanText}
-
-                    <small style="
-                        color:#94a3b8;
-                        margin-left:4px;
-                    ">
-                        (Stok: ${item.stok || 0})
-                    </small>
+                    ${stockHTML}
                 </div>
             </div>
         `;
@@ -3170,6 +3290,26 @@ function tambahItem() {
             "⚠️"
         );
         return;
+    }
+
+    // Mode Retail memakai Strict Stock. Kafe/Warung memakai Soft Stock.
+    if (!window.LDMStoreMode || window.LDMStoreMode.isRetail()) {
+        const stokTersedia = Number(barang.stok) || 0;
+        const existing = keranjang.find(k =>
+            (barang.id && k.productId === barang.id) ||
+            (!barang.id && k.nama === barang.nama)
+        );
+        const totalDiminta = qty + (existing ? Number(existing.qty) || 0 : 0);
+        if (totalDiminta > stokTersedia) {
+            tampilkanAlertModal(
+                stokTersedia <= 0 ? "Stok Habis" : "Stok Tidak Cukup",
+                stokTersedia <= 0
+                    ? `${barang.nama} tidak dapat dijual karena stok sudah habis pada Mode Toko Ritel.`
+                    : `${barang.nama} hanya tersedia ${stokTersedia} ${barang.satuan || "Pcs"}. Jumlah yang diminta ${totalDiminta}.`,
+                "⚠️"
+            );
+            return;
+        }
     }
 
     // ==========================================
@@ -4677,7 +4817,8 @@ ${totalDiskonHTML}
                 </div>
 
 
-            </body>
+            
+</body>
 
             </html>
         `);
@@ -6131,5 +6272,26 @@ document.addEventListener(
 <script src="js/license-v2-client.js?v=25.2.0"></script>
 <script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 <script src="js/global-system-navigation.js?v=25.2"></script>
+<script>
+(function(){
+    function applyKasirMode(){
+        const api=window.LDMStoreMode;
+        const mode=api ? api.getMode() : "retail";
+        const input=document.getElementById("inputCariBarang");
+        if(input){
+            input.placeholder = mode === "cafe" ? "Cari menu / barcode..." : (mode === "warung" ? "Cari barang atau menu..." : "Nama / Barcode barang...");
+        }
+        if(typeof window.cekPeringatanStok === "function") window.cekPeringatanStok();
+        if(typeof window.renderMenuVisualMode === "function") window.renderMenuVisualMode();
+        const dropdown=document.getElementById("dropdownBarang");
+        if(dropdown && dropdown.style.display==="block" && typeof window.filterBarang === "function") window.filterBarang();
+    }
+    window.addEventListener("ldm-store-mode-change",applyKasirMode);
+    window.addEventListener("ldm-product-visual-change",()=>{ applyKasirMode(); if(typeof window.renderMenuVisualMode === "function") window.renderMenuVisualMode(); });
+    window.addEventListener("ldm-products-cache-updated",()=>typeof window.renderMenuVisualMode === "function" && window.renderMenuVisualMode());
+    window.addEventListener("ldm-cloud-session-ready",()=>window.LDMStoreMode && window.LDMStoreMode.refreshFromCloud({silent:true}));
+    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",applyKasirMode,{once:true}); else applyKasirMode();
+})();
+</script>
 </body>
 </html>

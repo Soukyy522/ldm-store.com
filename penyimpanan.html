@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0F9D58">
+  <title>Penyimpanan & Retensi - LocDailyMar</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f4f7f5;color:#263442;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.hero{background:linear-gradient(135deg,#0d2240,#0f9d58);color:#fff;padding:24px 18px}.hero-in,.wrap{width:min(1120px,calc(100% - 28px));margin:auto}.hero-in{display:flex;align-items:center;justify-content:space-between;gap:18px}.hero h1{margin:0 0 6px;font-size:clamp(23px,4vw,34px)}.hero p{margin:0;color:#d9f7e6;line-height:1.55}.pill{display:inline-flex;padding:7px 10px;border-radius:999px;background:#ffffff1c;border:1px solid #ffffff30;font-size:12px;font-weight:800}.wrap{padding:22px 0 50px}.notice{padding:14px 16px;background:#effaf4;border:1px solid #bee5cf;border-radius:14px;margin-bottom:16px;line-height:1.55}.notice strong{color:#087443}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #dde8e2;border-radius:18px;padding:18px;box-shadow:0 8px 25px rgba(15,35,27,.05)}.card.full{grid-column:1/-1}.card h2{font-size:17px;margin:0 0 5px}.sub{color:#697a72;font-size:12px;line-height:1.55;margin:0 0 14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{padding:13px;border:1px solid #e5ece8;border-radius:13px;background:#fafcfb}.stat span{display:block;font-size:11px;color:#6b7b73}.stat strong{display:block;margin-top:5px;font-size:17px;overflow-wrap:anywhere}.rows{display:grid;gap:7px}.row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid #eef2f0;font-size:13px}.row:last-child{border:0}.row strong{text-align:right}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.field label{display:block;font-size:11px;font-weight:800;margin-bottom:5px}.field input,.field select{width:100%;padding:10px;border:1px solid #cfdcd5;border-radius:10px;background:#fff;font:inherit}.check{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid #dce8e1;border-radius:12px;background:#f9fbfa;font-size:12px;line-height:1.45}.btns{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.btn{border:0;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}.primary{background:#0f9d58;color:#fff}.navy{background:#0d2240;color:#fff}.light{background:#e9f0ec;color:#263442}.btn:disabled{opacity:.55;cursor:wait}.protected{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.protected div{padding:10px;border-radius:11px;background:#f0f7f3;font-size:11px;font-weight:800;text-align:center;color:#1f5d43}.log{margin-top:14px;background:#0d2240;color:#dff9ea;padding:13px;border-radius:12px;white-space:pre-wrap;min-height:46px;font:12px/1.5 ui-monospace,monospace}.history{overflow:auto}.history table{width:100%;border-collapse:collapse;min-width:650px}.history th,.history td{padding:9px;border-bottom:1px solid #eef2f0;text-align:left;font-size:11px}.history th{background:#f7faf8;color:#607169;text-transform:uppercase}.good{color:#087443}.warn{color:#a05a00}.bad{color:#b42318}@media(max-width:760px){.grid{grid-template-columns:1fr}.card.full{grid-column:auto}.stats,.protected,.form-grid{grid-template-columns:1fr}.hero-in{align-items:flex-start;flex-direction:column}.row{display:block}.row strong{display:block;text-align:left;margin-top:4px}}
+  </style>
+  <script src="js/license-v2-config.js?v=25.2.0"></script>
+  <script src="js/license-v2-client.js?v=25.2.0"></script>
+  <script defer src="js/license-v2-guard.js?v=25.2.0"></script>
+</head>
+<body>
+<header class="hero"><div class="hero-in"><div><h1>🗄️ Penyimpanan & Retensi</h1><p>Atur bagaimana file dan data teknis lama dibersihkan tanpa menghapus histori penjualan penting.</p></div><span class="pill">Owner / Admin</span></div></header>
+<main class="wrap">
+  <div class="notice"><strong>Data bisnis inti dilindungi.</strong> Transaksi, detail transaksi, Closing Shift, End of Day, Purchase Order, dan Goods Receipt tidak masuk pembersihan otomatis. Retensi hanya ditujukan untuk audit teknis dan file lama sesuai batas waktu.</div>
+  <div class="grid">
+    <section class="card full">
+      <h2>Ringkasan penyimpanan toko</h2><p class="sub">Angka Storage di bawah dihitung dari file milik Store aktif. Data database ditampilkan sebagai jumlah record agar customer mudah membaca pertumbuhannya.</p>
+      <div class="stats"><div class="stat"><span>Total file Storage</span><strong id="storageTotal">-</strong></div><div class="stat"><span>Jumlah object</span><strong id="objectCount">-</strong></div><div class="stat"><span>Mode toko</span><strong id="storeMode">-</strong></div></div>
+      <div class="rows" style="margin-top:12px"><div class="row"><span>Gambar produk</span><strong id="productBytes">-</strong></div><div class="row"><span>Foto absensi</span><strong id="attendanceBytes">-</strong></div><div class="row"><span>Bukti pengeluaran</span><strong id="expenseBytes">-</strong></div></div>
+    </section>
+
+    <section class="card">
+      <h2>Kebijakan pembersihan otomatis</h2><p class="sub">Batas waktu dapat diubah Owner. Ketika dinonaktifkan, tidak ada cleanup otomatis untuk toko ini.</p>
+      <label class="check"><input type="checkbox" id="retentionEnabled" checked><span><strong>Aktifkan retensi otomatis</strong><br>Job terjadwal akan mengikuti batas waktu di bawah.</span></label>
+      <div class="form-grid" style="margin-top:11px">
+        <div class="field"><label>Audit teknis</label><input id="auditDays" type="number" min="30" max="3650" value="180"><small>hari</small></div>
+        <div class="field"><label>Foto absensi</label><input id="attendanceDays" type="number" min="30" max="3650" value="365"><small>hari</small></div>
+        <div class="field"><label>Bukti pengeluaran</label><input id="expenseDays" type="number" min="90" max="3650" value="1095"><small>hari</small></div>
+        <div class="field"><label>Gambar produk lama/yatim</label><input id="orphanDays" type="number" min="7" max="365" value="30"><small>hari setelah tidak digunakan</small></div>
+      </div>
+      <div class="btns"><button class="btn primary" id="saveBtn">Simpan Kebijakan</button><button class="btn navy" id="cleanupBtn">Jalankan Pembersihan Sekarang</button></div>
+    </section>
+
+    <section class="card">
+      <h2>Data yang tidak dihapus otomatis</h2><p class="sub">Bagian ini dipertahankan untuk laporan historis, audit usaha, dan rekonsiliasi.</p>
+      <div class="protected"><div>Transaksi</div><div>Detail Transaksi</div><div>Closing Shift</div><div>End of Day</div><div>Purchase Order</div><div>Goods Receipt</div></div>
+      <h2 style="margin-top:18px">Jumlah record toko</h2>
+      <div class="rows"><div class="row"><span>Produk</span><strong id="rowsProducts">-</strong></div><div class="row"><span>Transaksi</span><strong id="rowsTransactions">-</strong></div><div class="row"><span>Detail transaksi</span><strong id="rowsItems">-</strong></div><div class="row"><span>Mutasi stok</span><strong id="rowsStock">-</strong></div><div class="row"><span>Absensi</span><strong id="rowsAttendance">-</strong></div><div class="row"><span>Audit teknis</span><strong id="rowsAudit">-</strong></div></div>
+    </section>
+
+    <section class="card full">
+      <h2>Riwayat pembersihan</h2><p class="sub">Menunjukkan kapan cleanup berjalan dan berapa file/record yang berhasil dibersihkan.</p>
+      <div class="history"><table><thead><tr><th>Waktu</th><th>Pemicu</th><th>Status</th><th>Record DB</th><th>File</th><th>Ukuran file</th></tr></thead><tbody id="historyRows"><tr><td colspan="6">Memuat…</td></tr></tbody></table></div>
+      <div class="log" id="log">Menyiapkan Penyimpanan & Retensi…</div>
+      <div class="btns"><button class="btn light" id="refreshBtn">Muat Ulang</button><a class="btn light" href="pwa-settings.html">Penyimpanan Perangkat</a><a class="btn light" href="dashboard.html">← Dashboard</a></div>
+    </section>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=16.0"></script>
+<script src="js/cloud-session-guard.js?v=16.0"></script>
+<script src="js/store-mode.js?v=27.9.0"></script>
+<script>
+(function(){"use strict";
+const $=id=>document.getElementById(id);const fmt=n=>Number(n||0).toLocaleString("id-ID");
+function bytes(v){let n=Number(v||0);if(!n)return"0 B";const u=["B","KB","MB","GB","TB"];const i=Math.min(Math.floor(Math.log(n)/Math.log(1024)),u.length-1);return`${(n/Math.pow(1024,i)).toFixed(i?1:0)} ${u[i]}`}
+function log(m){$("log").textContent=`${new Date().toLocaleString("id-ID")} · ${m}`}
+function client(){if(!window.LDMSupabase)throw new Error("Supabase client belum tersedia.");return window.LDMSupabase.createClient()}
+async function rpc(name,args={}){if(window.LDMCloudSession)await LDMCloudSession.ensureAuthenticated({registerDevice:false});const {data,error}=await client().rpc(name,args);if(error)throw error;return data}
+async function load(){
+  try{
+    const [settings,overview]=await Promise.all([rpc("ldm_get_retention_settings"),rpc("ldm_storage_overview")]);
+    $("retentionEnabled").checked=settings.enabled!==false;$("auditDays").value=settings.audit_days||180;$("attendanceDays").value=settings.attendance_proof_days||365;$("expenseDays").value=settings.expense_receipt_days||1095;$("orphanDays").value=settings.orphan_product_image_days||30;
+    $("storageTotal").textContent=bytes(overview.storage_bytes);$("objectCount").textContent=fmt(overview.storage_objects);$("productBytes").textContent=bytes(overview.product_image_bytes);$("attendanceBytes").textContent=bytes(overview.attendance_proof_bytes);$("expenseBytes").textContent=bytes(overview.expense_receipt_bytes);
+    const rows=overview.rows||{};$("rowsProducts").textContent=fmt(rows.products);$("rowsTransactions").textContent=fmt(rows.transactions);$("rowsItems").textContent=fmt(rows.transaction_items);$("rowsStock").textContent=fmt(rows.stock_movements);$("rowsAttendance").textContent=fmt(rows.attendance);$("rowsAudit").textContent=fmt(rows.audit_events);
+    const mc=window.LDMStoreMode?.getConfig?.()||{icon:"🛒",label:"Mode Toko Ritel"};$("storeMode").textContent=`${mc.icon} ${mc.label}`;
+    const {data,error}=await client().from("storage_cleanup_runs").select("started_at,trigger_source,status,database_rows_deleted,storage_objects_deleted,storage_bytes_deleted").order("started_at",{ascending:false}).limit(20);if(error)throw error;
+    $("historyRows").innerHTML=(data||[]).length?(data||[]).map(r=>`<tr><td>${new Date(r.started_at).toLocaleString("id-ID")}</td><td>${r.trigger_source}</td><td>${r.status}</td><td>${fmt(r.database_rows_deleted)}</td><td>${fmt(r.storage_objects_deleted)}</td><td>${bytes(r.storage_bytes_deleted)}</td></tr>`).join(""):'<tr><td colspan="6">Belum ada riwayat cleanup.</td></tr>';
+    log("Ringkasan penyimpanan berhasil dimuat.");
+  }catch(e){log(`Gagal memuat: ${e.message||e}`)}
+}
+$("saveBtn").onclick=async()=>{const b=$("saveBtn");b.disabled=true;try{await rpc("ldm_update_retention_settings",{p_enabled:$("retentionEnabled").checked,p_audit_days:Number($("auditDays").value),p_attendance_proof_days:Number($("attendanceDays").value),p_expense_receipt_days:Number($("expenseDays").value),p_orphan_product_image_days:Number($("orphanDays").value)});log("Kebijakan retensi berhasil disimpan.");await load()}catch(e){log(`Gagal menyimpan: ${e.message||e}`);alert(e.message||e)}finally{b.disabled=false}};
+$("cleanupBtn").onclick=async()=>{if(!confirm("Jalankan pembersihan sekarang? Data bisnis inti tidak dihapus, tetapi file yang sudah melewati batas retensi akan dihapus permanen."))return;const b=$("cleanupBtn");b.disabled=true;try{await LDMCloudSession.ensureAuthenticated({registerDevice:false});const {data,error}=await client().functions.invoke("ldm-storage-maintenance",{body:{action:"cleanup-current-store"}});if(error)throw error;if(data&&data.ok===false)throw new Error(data.error||"Cleanup gagal.");log("Pembersihan selesai. Memuat ulang ringkasan…");await load()}catch(e){log(`Cleanup gagal: ${e.message||e}`);alert(e.message||e)}finally{b.disabled=false}};
+$("refreshBtn").onclick=load;addEventListener("ldm-store-mode-change",()=>{const mc=window.LDMStoreMode?.getConfig?.();if(mc)$("storeMode").textContent=`${mc.icon} ${mc.label}`});
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
+})();
+</script>
+<script src="js/global-system-navigation.js?v=27.9.0"></script>
+</body></html>

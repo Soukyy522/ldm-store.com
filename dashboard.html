@@ -3247,6 +3247,8 @@ body.dark-mode
     <script src="js/supabase-client.js"></script>
     <script src="js/cloud-auth.js?v=15.0"></script>
     <script src="js/cloud-session.js?v=6.0"></script>
+    <script src="js/store-mode.js?v=27.9.0-mode1"></script>
+    <link rel="stylesheet" href="css/store-modes.css?v=27.9.0-mode1">
     <script src="js/cloud-session-guard.js?v=15.0"></script>
     <!-- Live Sync Tahap 9: Cloud Absensi -->
     <script src="js/attendance-service.js?v=9.1"></script>
@@ -3654,6 +3656,22 @@ body.dark-mode
                     <button class="btn-header-action btn-header-logout" onclick="konfirmasiLogout()">🚪 Log out</button>
                 </div>
             </div>
+
+            <!-- MODE OPERASIONAL TOKO: compact dropdown, Owner dapat mengubah -->
+            <section class="ldm-mode-control" id="ldmModeControl" aria-label="Mode Operasional Toko">
+                <div class="ldm-mode-control-main">
+                    <span class="ldm-mode-control-icon" id="ldmModeIcon">🛒</span>
+                    <div class="ldm-mode-control-text">
+                        <strong>Mode Operasional Toko</strong>
+                        <span id="ldmModeDescription">Toko Ritel · kontrol stok ketat.</span>
+                    </div>
+                </div>
+                <select id="ldmModeSelect" class="ldm-mode-select" aria-label="Pilih Mode Operasional">
+                    <option value="cafe">☕ Kafe</option>
+                    <option value="warung">🍜 Warung</option>
+                    <option value="retail">🛒 Toko Ritel</option>
+                </select>
+            </section>
 
             <!-- Banner Hitung Mundur Reset WITA -->
             <div class="reset-timer-box">
@@ -12354,5 +12372,108 @@ window.addEventListener(
 </script>
 <script src="js/user-guide.js?v=24.2"></script>
 <script src="js/global-system-navigation.js?v=27.4"></script>
+
+<script>
+(function(){
+    "use strict";
+
+    const select = document.getElementById("ldmModeSelect");
+    const control = document.getElementById("ldmModeControl");
+    const icon = document.getElementById("ldmModeIcon");
+    const desc = document.getElementById("ldmModeDescription");
+
+    function modeApi(){ return window.LDMStoreMode || null; }
+
+    function setStockElementVisible(id, visible, closestSelector){
+        const el=document.getElementById(id);
+        if(!el) return;
+        const target=closestSelector ? el.closest(closestSelector) : el;
+        if(target) target.style.display=visible ? "" : "none";
+    }
+
+    function applyDashboardMode(mode){
+        const api=modeApi();
+        const cfg=api ? api.getConfig(mode) : {icon:"🛒",label:"Mode Toko Ritel",description:"Kontrol stok ketat."};
+        const isRetail=String(mode||"retail")==="retail";
+
+        if(select) select.value=mode||"retail";
+        if(icon) icon.textContent=cfg.icon||"🛒";
+        if(desc) desc.textContent=cfg.description||"";
+
+        ["adminStokKritis","adminStokHabis","kasirStokKritis","ownerStokKritis","ownerStokHabis"].forEach(id=>{
+            setStockElementVisible(id,isRetail,".card");
+        });
+        ["adminOpsStokKritis","adminOpsStokHabis"].forEach(id=>{
+            setStockElementVisible(id,isRetail,".dashboard-ops-card");
+        });
+        setStockElementVisible("kasirStockList",isRetail,".dashboard-mini-board");
+
+        // Badge stok pada navigasi tidak relevan untuk Kafe/Warung.
+        const navBadge=document.getElementById("navBadge");
+        if(navBadge && !isRetail) navBadge.style.display="none";
+
+        // Penamaan ringan agar konteks Kafe/Warung terasa berbeda tanpa mengubah struktur laporan.
+        const modeLabel = mode === "cafe" ? "Kafe" : (mode === "warung" ? "Warung" : "Toko Ritel");
+        if(control) control.setAttribute("data-active-mode", mode||"retail");
+        document.title = `Dashboard ${modeLabel} - LocDailyMar POS`;
+    }
+
+    function updatePermission(){
+        if(!select) return;
+        const role=String(localStorage.getItem("userRole")||localStorage.getItem("role")||"").toLowerCase();
+        const canEdit=role==="owner";
+        select.disabled=!canEdit;
+        select.title=canEdit ? "Ubah mode operasional toko" : "Hanya Owner yang dapat mengubah mode operasional";
+    }
+
+    async function initialLoad(){
+        const api=modeApi();
+        updatePermission();
+        if(!api){ applyDashboardMode("retail"); return; }
+        applyDashboardMode(api.getMode());
+        const result=await api.refreshFromCloud({silent:true});
+        applyDashboardMode(result && result.mode ? result.mode : api.getMode());
+    }
+
+    if(select){
+        select.addEventListener("change", async function(){
+            const api=modeApi();
+            if(!api) return;
+            const previous=api.getMode();
+            const next=this.value;
+            control && control.classList.add("ldm-mode-saving");
+            try{
+                await api.setMode(next);
+                applyDashboardMode(next);
+                if(typeof window.tampilkanAlertModal === "function"){
+                    window.tampilkanAlertModal("Mode Disimpan", `${api.getConfig(next).label} sekarang aktif untuk toko ini.`, "✅");
+                }
+            }catch(error){
+                this.value=previous;
+                applyDashboardMode(previous);
+                const message=(error && error.message) ? error.message : String(error);
+                if(typeof window.tampilkanAlertModal === "function"){
+                    window.tampilkanAlertModal("Mode Belum Tersimpan", message + "\n\nJika kolom operational_mode belum ada, jalankan SQL-INSTALASI-LENGKAP-3-MODE-MULTISTORE-STORAGE.sql yang disertakan.", "⚠️");
+                }else{
+                    alert(message);
+                }
+            }finally{
+                control && control.classList.remove("ldm-mode-saving");
+            }
+        });
+    }
+
+    window.addEventListener("ldm-store-mode-change", event=>{
+        applyDashboardMode(event.detail && event.detail.mode ? event.detail.mode : "retail");
+    });
+    window.addEventListener("ldm-cloud-session-ready", ()=>{
+        updatePermission();
+        initialLoad();
+    });
+    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",initialLoad,{once:true});
+    else initialLoad();
+})();
+</script>
+
 </body>
 </html>
