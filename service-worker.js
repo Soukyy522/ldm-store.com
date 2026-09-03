@@ -2,8 +2,8 @@
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-three-mode-storage-shell-v2`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-three-mode-storage-runtime-v2`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-demo-pages-report-date-shell-v3`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-demo-pages-report-date-runtime-v3`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
@@ -96,6 +96,10 @@ self.addEventListener("fetch", event => {
     const request = event.request;
     const url = new URL(request.url);
     if(request.method !== "GET" || isSupabaseApi(url)) return;
+    if(url.origin === self.location.origin && /\/demo\//i.test(url.pathname)){
+        event.respondWith(fetch(request, {cache:"no-store"}).catch(() => new Response("Sandbox demo memerlukan koneksi untuk memuat halaman ini.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}})));
+        return;
+    }
     if(request.mode === "navigate"){
         event.respondWith(networkFirstNavigation(request));
         return;
