@@ -30,6 +30,17 @@
         return data;
     }
 
+    async function requirePrimaryOwner(actionLabel="melakukan tindakan lintas cabang"){
+        if(!window.LDMPrimaryOwner?.context){
+            throw new Error("Konteks Owner Pusat belum tersedia.");
+        }
+        const ctx=await window.LDMPrimaryOwner.context();
+        if(ctx?.is_primary_owner!==true){
+            throw new Error(`Hanya Owner Pusat yang dapat ${actionLabel}.`);
+        }
+        return ctx;
+    }
+
     async function listStores(){
         try{
             const data=await rpc("ldm_my_network_stores_v2");
@@ -42,6 +53,7 @@
     }
 
     async function createBranch(options={}){
+        await requirePrimaryOwner("membuat cabang baru");
         return rpc("ldm_create_branch_store_v2",{
             p_code:String(options.code||"").trim(),
             p_name:String(options.name||"").trim(),
@@ -112,6 +124,7 @@
 
     async function copyProductToStore(sourceProductId,destinationStoreId){
         if(navigator.onLine===false) throw new Error("Penambahan produk ke cabang membutuhkan koneksi internet.");
+        await requirePrimaryOwner("menambahkan produk lintas cabang");
         return rpc("ldm_copy_product_to_store",{
             p_source_product_id:String(sourceProductId||"").trim(),
             p_destination_store_id:String(destinationStoreId||"").trim()
