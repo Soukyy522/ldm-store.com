@@ -14,7 +14,7 @@
             id: "warung",
             label: "Mode Warung",
             icon: "🍜",
-            description: "Tampilan sederhana untuk barang/menu, transaksi tetap berjalan walau stok sistem habis."
+            description: "Tampilan praktis tanpa gambar item, daftar cepat barang/menu, dan transaksi tetap berjalan walau stok sistem habis."
         }),
         retail: Object.freeze({
             id: "retail",
@@ -92,7 +92,9 @@
     }
 
     function supportsProductImages(){
-        return currentMode === "cafe" || currentMode === "warung";
+        // Gambar produk hanya menjadi bagian dari pengalaman Mode Kafe.
+        // Warung dan Retail sengaja menggunakan katalog tanpa thumbnail agar lebih ringan.
+        return currentMode === "cafe";
     }
 
     async function client(){
