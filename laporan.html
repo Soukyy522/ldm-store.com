@@ -2140,12 +2140,22 @@
                 <div class="filter-grid">
                     <div>
                         <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Dari Tanggal:</label>
-                        <input type="date" id="filterStartDate" class="filter-input" onchange="onSearchInput()">
+                        <input type="date" id="filterStartDate" class="filter-input" onchange="onDateRangeChanged()">
                     </div>
                     <div>
                         <label style="font-size: 0.65rem; color: #64748b; font-weight: 600;">Sampai Tanggal:</label>
-                        <input type="date" id="filterEndDate" class="filter-input" onchange="onSearchInput()">
+                        <input type="date" id="filterEndDate" class="filter-input" onchange="onDateRangeChanged()">
                     </div>
+                </div>
+
+                <div class="report-date-shortcuts" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 7px;">
+                    <button type="button" class="btn-export" onclick="setQuickReportRange('today')">Hari Ini</button>
+                    <button type="button" class="btn-export" onclick="setQuickReportRange('yesterday')">Kemarin</button>
+                    <button type="button" class="btn-export" onclick="setQuickReportRange('7days')">7 Hari</button>
+                    <button type="button" class="btn-export" onclick="setQuickReportRange('30days')">30 Hari</button>
+                </div>
+                <div id="reportBusinessDateHint" style="margin:0 0 8px;padding:8px 10px;border:1px solid #dbe7e0;border-radius:8px;background:#f4fbf7;font-size:.68rem;color:#355f49;line-height:1.45;">
+                    Hari baru tidak menghapus transaksi lama. Periode default adalah Hari Ini; gunakan Dari Tanggal dan Sampai Tanggal untuk membuka riwayat tanggal sebelumnya.
                 </div>
 
                 <input type="text" id="inputSearch" class="search-box" placeholder="🔍 Cari ID transaksi, tanggal, barang, kasir..." oninput="onSearchInput()">
@@ -2537,6 +2547,7 @@ document.addEventListener(
 
         cekPeringatanStok();
 
+        setDefaultReportDateRange();
         loadLaporan();
 
         batasiTampilanOmzetLaporan();
@@ -3383,12 +3394,101 @@ function simpanLaporanKeStorage(dataArray) {
 
                 updateTransactionArchiveStatus(
                     `Arsip lokal: ${(stats?.count ?? archiveRows.length).toLocaleString("id-ID")} transaksi ` +
-                    `• batas 50.000 • retensi sampai 365 hari sebelum dihapus otomatis • Backup Data menggunakan CSV.`
+                    `• cache perangkat maks. 50.000 transaksi / 365 hari • histori Cloud tidak dihapus saat tanggal berganti • pilih rentang tanggal untuk memuat histori lama.`
                 );
             } catch (error) {
                 console.warn("Arsip transaksi IndexedDB gagal dimuat:", error);
                 updateTransactionArchiveStatus(
                     `Arsip IndexedDB gagal dimuat. Menampilkan cache cepat ${localRows.length.toLocaleString("id-ID")} transaksi.`
+                );
+            }
+        }
+
+        let reportDateRangeInitialized = false;
+        let reportRangeRequestId = 0;
+
+        function localDateInputValue(date = new Date()) {
+            const d = new Date(date);
+            const pad = n => String(n).padStart(2, "0");
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        }
+
+        function setDefaultReportDateRange(force = false) {
+            const start = document.getElementById("filterStartDate");
+            const end = document.getElementById("filterEndDate");
+            if (!start || !end) return;
+            if (reportDateRangeInitialized && !force) return;
+            if (force || (!start.value && !end.value)) {
+                const today = localDateInputValue(new Date());
+                start.value = today;
+                end.value = today;
+            }
+            reportDateRangeInitialized = true;
+        }
+
+        function setQuickReportRange(kind) {
+            const start = document.getElementById("filterStartDate");
+            const end = document.getElementById("filterEndDate");
+            if (!start || !end) return;
+            const today = new Date();
+            today.setHours(12, 0, 0, 0);
+            let from = new Date(today);
+            let to = new Date(today);
+            if (kind === "yesterday") {
+                from.setDate(from.getDate() - 1);
+                to = new Date(from);
+            } else if (kind === "7days") {
+                from.setDate(from.getDate() - 6);
+            } else if (kind === "30days") {
+                from.setDate(from.getDate() - 29);
+            }
+            start.value = localDateInputValue(from);
+            end.value = localDateInputValue(to);
+            reportDateRangeInitialized = true;
+            onDateRangeChanged();
+        }
+
+        async function onDateRangeChanged() {
+            currentPage = 1;
+            onSearchInput();
+
+            const start = document.getElementById("filterStartDate");
+            const end = document.getElementById("filterEndDate");
+            const fromDate = start ? start.value : "";
+            const toDate = end ? end.value : "";
+
+            if (fromDate && toDate && fromDate > toDate) {
+                updateTransactionArchiveStatus("Rentang tanggal tidak valid: Dari Tanggal harus lebih kecil atau sama dengan Sampai Tanggal.");
+                return;
+            }
+
+            if (!window.LDMReporting || typeof window.LDMReporting.fetchAllReportTransactions !== "function") {
+                return;
+            }
+
+            const requestId = ++reportRangeRequestId;
+            updateTransactionArchiveStatus(
+                `Memuat riwayat ${fromDate || "awal"} sampai ${toDate || "terbaru"} dari arsip Cloud…`
+            );
+
+            try {
+                const rows = await window.LDMReporting.fetchAllReportTransactions({
+                    fromDate: fromDate || null,
+                    toDate: toDate || null,
+                    pageSize: 500
+                });
+                if (requestId !== reportRangeRequestId) return;
+                applyLaporanRows(rows, { migrateLegacy: false });
+                updateTransactionArchiveStatus(
+                    `Periode ${fromDate || "awal"} s.d. ${toDate || "terbaru"}: ${rows.length.toLocaleString("id-ID")} transaksi. ` +
+                    `Pergantian tanggal tidak menghapus histori; data Cloud tetap dipisahkan berdasarkan business_date.`
+                );
+            } catch (error) {
+                console.warn("Riwayat Cloud berdasarkan tanggal gagal dimuat:", error);
+                if (requestId !== reportRangeRequestId) return;
+                onSearchInput();
+                updateTransactionArchiveStatus(
+                    "Riwayat Cloud belum dapat dimuat. Menampilkan arsip lokal yang tersedia untuk rentang tanggal tersebut."
                 );
             }
         }
@@ -3411,18 +3511,17 @@ function simpanLaporanKeStorage(dataArray) {
 
                 let matchDate = true;
                 if (startDateVal || endDateVal) {
-                    let itemDate = item.waktu_teks ? new Date(item.waktu_teks) : (item.tanggal ? new Date(item.tanggal) : null);
-                    if (itemDate && !isNaN(itemDate.getTime())) {
-                        if (startDateVal) {
-                            let start = new Date(startDateVal);
-                            start.setHours(0,0,0,0);
-                            matchDate = matchDate && itemDate >= start;
-                        }
-                        if (endDateVal) {
-                            let end = new Date(endDateVal);
-                            end.setHours(23,59,59,999);
-                            matchDate = matchDate && itemDate <= end;
-                        }
+                    const rawDate = String(item.tanggal || item.business_date || item.waktu_teks || "").trim();
+                    let itemDateKey = /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate.slice(0, 10) : "";
+                    if (!itemDateKey) {
+                        const parsed = new Date(rawDate);
+                        if (!isNaN(parsed.getTime())) itemDateKey = localDateInputValue(parsed);
+                    }
+                    if (itemDateKey) {
+                        if (startDateVal) matchDate = matchDate && itemDateKey >= startDateVal;
+                        if (endDateVal) matchDate = matchDate && itemDateKey <= endDateVal;
+                    } else {
+                        matchDate = false;
                     }
                 }
 
@@ -4867,6 +4966,7 @@ function eksekusiResetSemua() {
             populateFontSelectors();
             muatHeaderToko();
             cekPeringatanStok();
+            setDefaultReportDateRange();
             loadLaporan();
             tampilkanStatusAksesLaporan();
         });
