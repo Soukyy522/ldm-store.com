@@ -41,7 +41,7 @@
     <script src="js/cloud-session.js?v=22.0"></script>
     <script src="js/cloud-session-guard.js?v=22.0"></script>
     <script src="js/primary-owner-service.js?v=25.1"></script>
-    <script src="js/multi-store-service.js?v=24.2.2"></script>
+    <script src="js/multi-store-service.js?v=24.2.3"></script>
 <script src="js/license-v2-config.js?v=25.2.0"></script>
 <script src="js/license-v2-client.js?v=25.2.0"></script>
 <script defer src="js/license-v2-guard.js?v=25.2.0"></script>
@@ -84,7 +84,7 @@
                     <div class="ms-store-list" id="storeList"><div class="ms-empty">Memuat toko…</div></div>
                 </section>
 
-                <section class="ms-panel" id="branchPanel">
+                <section class="ms-panel" id="branchPanel" style="display:none">
                     <div class="ms-panel-head"><div><span class="ms-panel-kicker">＋ Pengembangan</span><h2>Tambah Cabang</h2><p>Cabang mendapatkan Store ID baru dan stok awal nol.</p></div></div>
                     <form class="ms-form" id="branchForm">
                         <div class="ms-form-grid">
@@ -100,7 +100,7 @@
 
             <div>
                 <section class="ms-panel">
-                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">⇄ Perpindahan Barang</span><h2>Buat Transfer Stok</h2><p>Barang lintas mode tidak ditambahkan otomatis. Jika barang belum ada di tujuan, Owner dapat menambahkannya secara sengaja sebelum transfer.</p></div></div>
+                    <div class="ms-panel-head"><div><span class="ms-panel-kicker">⇄ Perpindahan Barang</span><h2>Buat Transfer Stok</h2><p>Barang lintas mode tidak ditambahkan otomatis. Jika barang belum ada di tujuan, hanya Owner Pusat yang dapat menambahkannya secara sengaja sebelum transfer.</p></div></div>
                     <form class="ms-form" id="transferForm">
                         <div class="ms-field"><label>Toko Tujuan</label><select id="destinationStore" required><option value="">Pilih toko tujuan</option></select></div>
                         <div class="ms-table-wrap"><table class="ms-table"><thead><tr><th>Pilih</th><th>Barang</th><th>Stok Sumber</th><th>Stok Tujuan</th><th>Qty Transfer</th></tr></thead><tbody id="candidateRows"><tr><td colspan="5" class="ms-empty">Pilih toko tujuan terlebih dahulu.</td></tr></tbody></table></div>
@@ -161,7 +161,7 @@
             $("activeStoreName").textContent=active?active.store_name:"Tidak tersedia";
             $("storeCount").textContent=stores.length;
             $("roleChip").textContent=`👤 ${currentRole()||"pengguna"}`;
-            $("branchPanel").style.display=currentRole()==="owner"?"block":"none";
+            $("branchPanel").style.display=isPrimaryOwner()?"block":"none";
             $("employeeTransferPanel").style.display=isPrimaryOwner()?"block":"none";
             $("storeList").innerHTML=stores.length?stores.map(store=>`
                 <div class="ms-store ${store.is_current?"current":""}">
@@ -191,13 +191,14 @@
         function renderCandidates(){
             $("candidateRows").innerHTML=candidates.length?candidates.map((item,index)=>`
                 <tr><td><input type="checkbox" data-pick="${index}" ${item.transfer_ready?"":"disabled"}></td>
-                <td><strong>${esc(item.product_name)}</strong><br><small>${esc(item.barcode||"Tanpa barcode")} · ${esc(item.unit)}</small>${item.transfer_ready?"":`<div class="ms-not-ready">Belum ada di toko tujuan</div>${currentRole()==="owner"?`<button class="ms-btn ms-btn-light" type="button" data-add-destination="${index}" style="margin-top:6px">+ Tambahkan ke Cabang</button>`:""}`}</td>
+                <td><strong>${esc(item.product_name)}</strong><br><small>${esc(item.barcode||"Tanpa barcode")} · ${esc(item.unit)}</small>${item.transfer_ready?"":`<div class="ms-not-ready">Belum ada di toko tujuan</div>${isPrimaryOwner()?`<button class="ms-btn ms-btn-light" type="button" data-add-destination="${index}" style="margin-top:6px">+ Tambahkan ke Cabang</button>`:""}`}</td>
                 <td>${num(item.source_stock)}</td><td>${num(item.destination_stock)}</td>
                 <td><input type="number" data-qty="${index}" min="0.001" step="0.001" max="${Number(item.source_stock)||0}" value="1" ${item.transfer_ready?"":"disabled"}></td></tr>`).join(""):'<tr><td colspan="5" class="ms-empty">Tidak ada master barang pada toko sumber.</td></tr>';
             $("candidateRows").querySelectorAll("[data-add-destination]").forEach(button=>button.onclick=()=>addProductToDestination(Number(button.dataset.addDestination)));
         }
 
         async function addProductToDestination(index){
+            if(!isPrimaryOwner()){alertBox("Hanya Owner Pusat yang dapat menambahkan produk lintas cabang.","bad");return}
             const item=candidates[index];const destination=$("destinationStore").value;if(!item||!destination)return;
             const target=stores.find(row=>row.store_id===destination);
             if(!confirm(`Tambahkan ${item.product_name} ke ${target?target.store_name:"cabang tujuan"}?\n\nProduk dibuat dengan stok awal 0. Ini tindakan sengaja dan tidak menyalin seluruh katalog.`))return;
@@ -288,7 +289,7 @@
         $("refreshTransfers").onclick=loadTransfers;
         $("refreshEmployees").onclick=()=>Promise.all([loadEmployees(),loadEmployeeTransfers()]);
         $("employeeTransferForm").onsubmit=event=>{event.preventDefault();moveEmployee()};
-        $("branchForm").onsubmit=async event=>{event.preventDefault();setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,operationalMode:$("branchMode").value,copyProducts:$("copyProducts").checked});const copyNote=result.products_copied?"Katalog mode yang sama disalin dengan stok 0.":result.copy_skipped_mode_mismatch?"Mode cabang berbeda, sehingga katalog sengaja tidak disalin.":"Cabang dibuat tanpa menyalin katalog.";alertBox(`Cabang ${result.name} berhasil dibuat. ${copyNote}`);event.target.reset();$("copyProducts").checked=true;$("branchMode").value="retail";await loadStores()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
+        $("branchForm").onsubmit=async event=>{event.preventDefault();if(!isPrimaryOwner()){alertBox("Hanya Owner Pusat yang dapat membuat cabang baru.","bad");return}setLoading(true);try{const result=await window.LDMMultiStore.createBranch({code:$("branchCode").value,name:$("branchName").value,operationalMode:$("branchMode").value,copyProducts:$("copyProducts").checked});const copyNote=result.products_copied?"Katalog mode yang sama disalin dengan stok 0.":result.copy_skipped_mode_mismatch?"Mode cabang berbeda, sehingga katalog sengaja tidak disalin.":"Cabang dibuat tanpa menyalin katalog.";alertBox(`Cabang ${result.name} berhasil dibuat. ${copyNote}`);event.target.reset();$("copyProducts").checked=true;$("branchMode").value="retail";await loadStores()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         $("transferForm").onsubmit=async event=>{event.preventDefault();const selected=[];$("candidateRows").querySelectorAll("[data-pick]:checked").forEach(check=>{const index=Number(check.dataset.pick);const qty=Number($("candidateRows").querySelector(`[data-qty="${index}"]`).value);if(qty>0)selected.push({source_product_id:candidates[index].source_product_id,qty})});if(!selected.length){alertBox("Pilih minimal satu barang dan isi qty transfer.","bad");return}setLoading(true);try{const result=await window.LDMMultiStore.createTransfer($("destinationStore").value,selected,$("transferNote").value);alertBox(`Draft ${result.transfer_code} berhasil dibuat.`);event.target.reset();candidates=[];renderCandidates();await loadTransfers()}catch(error){alertBox(errorMessage(error),"bad")}finally{setLoading(false)}};
         function onlineState(){const offline=navigator.onLine===false;$("offlineBanner").classList.toggle("show",offline);document.querySelectorAll("button[type=submit]").forEach(btn=>btn.disabled=offline)}
         window.addEventListener("online",onlineState);window.addEventListener("offline",onlineState);onlineState();boot();

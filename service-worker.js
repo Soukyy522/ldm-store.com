@@ -2,12 +2,12 @@
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-homepage-sandbox-v5-shell-v5`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-homepage-sandbox-v5-runtime-v5`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-clean-v7-shell-v7`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-clean-v7-runtime-v7`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
-    "./", "./homepage.html", "./index.html", "./dashboard.html", "./kasir.html", "./barang.html", "./Purchase-Order.html", "./goods.receipt.html", "./multi-store.html", "./supabase-stage20-unit-test.html",
+    "./", "./homepage.html", "./index.html", "./dashboard.html", "./kasir.html", "./barang.html", "./Purchase-Order.html", "./goods.receipt.html", "./multi-store.html",
     "./pwa-settings.html", "./penyimpanan.html", "./account-management.html", "./device-management.html", "./panduan.html", "./owner-control-center.html", "./recovery-center.html", "./qa-security-performance.html", "./license.html", "./license-v2.html", "./developer-license.html", "./developer-license-v2.html", "./offline.html", "./manifest.json", "./icon.png",
     "./assets/icons/icon-192.png", "./assets/icons/icon-512.png", "./assets/brand/locdailymar-logo.png",
     "./assets/icons/maskable-512.png", "./style.css", "./css/global-responsive-navigation.css", "./css/help-center.css", "./css/multi-store-dashboard-theme.css", "./css/central-catalog-control.css", "./setting.js", "./employee-id.js",
@@ -96,10 +96,6 @@ self.addEventListener("fetch", event => {
     const request = event.request;
     const url = new URL(request.url);
     if(request.method !== "GET" || isSupabaseApi(url)) return;
-    if(url.origin === self.location.origin && /\/demo\//i.test(url.pathname)){
-        event.respondWith(fetch(request, {cache:"no-store"}).catch(() => new Response("Sandbox demo memerlukan koneksi untuk memuat halaman ini.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}})));
-        return;
-    }
     if(request.mode === "navigate"){
         event.respondWith(networkFirstNavigation(request));
         return;
