@@ -368,3 +368,103 @@ html:not([data-ldm-eod-ready="true"]) a[data-ldm-route="eod.html"]{
     .ldm-global-mobile-overlay,
     .ldm-global-floating-toggle{display:none!important}
 }
+
+/* ========================================================================== */
+/* Commercial #01.1 - Desktop navigation compact mode                        */
+/* Panel dibuat lebih kecil dan hanya dibuka lewat tombol Menu.               */
+/* ========================================================================== */
+@media (min-width:900px){
+    .ldm-global-mega-bar{
+        min-height:50px;
+        gap:6px;
+        padding:6px clamp(14px,1.7vw,24px);
+    }
+    .ldm-global-mega-trigger{
+        height:34px;
+        gap:6px;
+        padding:0 11px;
+        border-radius:9px;
+        font-size:.72rem;
+    }
+    .ldm-global-mega-quick{gap:2px}
+    .ldm-global-mega-quick a{
+        min-height:32px;
+        gap:5px;
+        padding:0 8px;
+        border-radius:8px;
+        font-size:.67rem;
+    }
+    .ldm-global-mega-session{gap:5px}
+    .ldm-global-mode-chip,
+    .ldm-global-store,
+    .ldm-global-role{
+        min-height:27px;
+        max-width:185px;
+        display:inline-flex;
+        align-items:center;
+        gap:5px;
+        padding:4px 7px;
+        border:1px solid rgba(255,255,255,.12);
+        border-radius:999px;
+        background:rgba(255,255,255,.07);
+        color:#d6e0ec;
+        font-size:.6rem;
+        font-weight:780;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+    .ldm-global-mega-panel{
+        left:clamp(14px,1.7vw,24px);
+        width:min(820px,calc(100vw - 48px));
+        max-height:min(520px,calc(100dvh - 76px));
+        padding:11px;
+        border-radius:0 0 14px 14px;
+        box-shadow:0 20px 44px rgba(15,23,42,.22);
+    }
+    .ldm-global-panel-head{
+        gap:12px;
+        margin-bottom:8px;
+        padding:0 2px 8px;
+    }
+    .ldm-global-panel-head strong{font-size:.79rem}
+    .ldm-global-panel-head p{margin-top:2px;font-size:.59rem;line-height:1.35;max-width:560px}
+    .ldm-global-panel-close{padding:5px 7px;font-size:.64rem}
+    .ldm-global-mega-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:7px;
+    }
+    .ldm-global-group{
+        padding:7px;
+        border-radius:9px;
+    }
+    .ldm-global-group-title{
+        gap:5px;
+        margin-bottom:4px;
+        font-size:.55rem;
+        letter-spacing:.045em;
+    }
+    .ldm-global-links{gap:1px}
+    .ldm-global-link{
+        min-height:30px;
+        gap:6px;
+        padding:5px 6px;
+        border-radius:7px;
+        font-size:.64rem;
+        line-height:1.15;
+    }
+    .ldm-global-icon{
+        width:20px;
+        height:20px;
+        flex-basis:20px;
+        border-radius:6px;
+        font-size:.76rem;
+    }
+}
+
+@media (min-width:900px) and (max-width:1050px){
+    .ldm-global-mega-panel{width:min(700px,calc(100vw - 36px))}
+    .ldm-global-mega-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .ldm-global-mega-quick a:nth-child(n+3){display:none}
+    .ldm-global-role{display:none}
+}

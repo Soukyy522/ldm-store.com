@@ -25,7 +25,7 @@
   </style>
 </head>
 <body>
-  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.8.1 · Sinkron status · Ganti metode pembayaran</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.8.1 · Lisensi · Pembayaran · Incident Support</span></div><button id="logoutBtn" hidden>Keluar</button></header>
   <main class="wrap">
     <section class="login" id="loginBox">
       <h1>Login developer</h1>
@@ -45,7 +45,7 @@
         <div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div>
         <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div><div class="stat"><span>DIARSIPKAN</span><strong id="sArchived">0</strong></div>
       </div>
-      <div class="toolbar"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
+      <div class="toolbar"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><a class="btn soft" href="developer-incident-support.html" style="display:inline-flex;align-items:center">🚨 Incident Support</a><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
       <div class="warningBox"><b>Penghapusan aman:</b> gunakan <b>Arsipkan</b> untuk customer/lisensi yang sudah tidak digunakan. <b>Hapus Permanen</b> hanya diizinkan untuk lisensi yang benar-benar belum pernah dipakai, tidak pernah dibayar/refund, tidak pernah klaim trial, tidak pernah diaktivasi perangkat, dan belum diprovision ke Cloud Data Toko.</div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
     </section>
   </main>
@@ -72,7 +72,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/license-v2-admin-config.js?v=27.8.1"></script>
-  <script src="js/license-v2-admin.js?v=27.8.1"></script>
+  <script src="js/license-v2-admin.js?v=27.9.0-commercial-01.1"></script>
   <script>
     const $=id=>document.getElementById(id);
     let licenses=[],lastDelivery="";

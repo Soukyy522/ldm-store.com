@@ -42,6 +42,10 @@ File test browser tahap lama, duplikat service JS di root, checkout legacy, doku
 - Halaman: `monitoring-error.html` (Owner/Admin).
 - Client collector: `js/error-monitor.js`.
 - Admin UI: `js/error-monitor-admin.js`.
-- Migration: `SQL-34-MONITORING-ERROR.sql` / `supabase/sql/34-monitoring-error.sql`.
+- Migration: `SQL-34-MONITORING-ERROR.sql` + `SQL-35-DEVELOPER-INCIDENT-SUPPORT.sql`.
+- Installer sekali jalan untuk #01: `SQL-COMMERCIAL-01-MONITORING-ERROR-COMPLETE.sql`.
 - Retensi default: 30 hari, error yang sama dideduplikasi per Store ID.
+- Developer Incident Support: `developer-incident-support.html`, memakai login Developer Center dan pencarian exact incident code.
+- Lookup global dilakukan server-side melalui `ldm-license-admin-v2`, bukan melalui role customer.
+- Navigasi desktop memakai Mega Menu compact dan hanya terbuka setelah tombol Menu ditekan.
 - Modul tidak dimaksudkan untuk menyimpan password, isi form, data customer, atau payload transaksi.

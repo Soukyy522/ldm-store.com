@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Incident Support · LocDailyMar Developer Center</title>
+  <link rel="icon" href="icon.png">
+  <style>
+    :root{--navy:#0d2544;--blue:#1464cc;--bg:#edf2f7;--ink:#132844;--muted:#6a788c;--line:#dae3ee;--green:#07865f;--red:#b42318;--amber:#b96b00}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Poppins,Inter,system-ui,sans-serif;color:var(--ink)}button,input,textarea{font:inherit}
+    .top{min-height:64px;background:linear-gradient(110deg,#0b203b,#174472);color:#fff;display:flex;align-items:center;gap:16px;padding:10px 22px;justify-content:space-between}.top strong{font-size:17px}.top span{font-size:11px;color:#bfd1e7;display:block}.top-actions{display:flex;gap:8px;align-items:center}.top a,.top button{border:1px solid #ffffff38;color:#fff;background:transparent;border-radius:9px;padding:8px 11px;cursor:pointer;text-decoration:none;font-size:12px;font-weight:700}
+    .wrap{width:min(1050px,calc(100% - 28px));margin:24px auto 60px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 25px #263e5910;padding:20px;margin-bottom:14px}.panel h1,.panel h2{margin:0 0 6px}.panel h1{font-size:22px}.panel h2{font-size:16px}.note{font-size:12px;color:var(--muted);line-height:1.65;margin:0}
+    .login{max-width:430px;margin:55px auto}.field{display:grid;gap:6px;margin-top:13px}.field label{font-size:12px;font-weight:800}.field input,.field textarea{border:1px solid #cbd8e6;border-radius:10px;padding:11px;outline:none}.field input:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1464cc18}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.primary{background:var(--blue);color:#fff}.soft{background:#eaf1f9;color:#183c65}.success{background:#e6f7f0;color:var(--green)}.warning{background:#fff0d8;color:#8a5200}.danger{background:#ffebe8;color:var(--red)}.btn:disabled{opacity:.55;cursor:wait}
+    .lookup{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end;margin-top:16px}.lookup input{width:100%;text-transform:uppercase;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800}.message{font-size:12px;margin-top:10px;color:var(--red)}.message.ok{color:var(--green)}
+    .result{display:none}.result.show{display:block}.statusline{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:900}.b-open{background:#fee2e2;color:#991b1b}.b-investigating{background:#fef3c7;color:#92400e}.b-resolved{background:#dcfce7;color:#166534}.b-warning{background:#fef3c7;color:#92400e}.b-error{background:#fee2e2;color:#991b1b}.b-critical{background:#7f1d1d;color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.info{background:#f7f9fc;border:1px solid #e8edf4;border-radius:11px;padding:10px;min-width:0}.info span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:800;letter-spacing:.03em}.info strong{display:block;margin-top:4px;font-size:12px;overflow-wrap:anywhere}.wide{grid-column:1/-1}.detail{margin-top:12px}.detail h3{font-size:13px;margin:13px 0 6px}.box,pre{margin:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:11px;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.box{line-height:1.6}pre{background:#0f172a;color:#dbeafe;max-height:260px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.support-note{margin-top:14px;padding:12px;border:1px solid #bfdbfe;background:#eff6ff;color:#1e3a8a;border-radius:11px;font-size:11px;line-height:1.6}
+    @media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.lookup{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.wide{grid-column:1/-1}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.wrap{width:min(100% - 18px,1050px)}}
+  </style>
+</head>
+<body>
+<header class="top">
+  <div><strong>LocDailyMar Developer Center</strong><span>Incident Support · pencarian berdasarkan kode yang diberikan customer</span></div>
+  <div class="top-actions"><a href="developer-license-v2.html">← Lisensi</a><button id="logoutBtn" hidden>Keluar</button></div>
+</header>
+<main class="wrap">
+  <section id="loginBox" class="panel login">
+    <h1>Login Developer Support</h1>
+    <p class="note">Gunakan akun Developer Center yang emailnya terdaftar di secret <b>LDM2_ADMIN_EMAILS</b>. Halaman ini tidak menggunakan role customer.</p>
+    <div class="field"><label>Email developer</label><input id="email" type="email" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+    <button id="loginBtn" class="btn primary" style="width:100%;margin-top:16px">Masuk</button>
+    <div id="loginMessage" class="message"></div>
+  </section>
+
+  <section id="app" hidden>
+    <section class="panel">
+      <h1>🔎 Support Incident Lookup</h1>
+      <p class="note">Masukkan <b>kode incident persis</b> yang dikirim customer. Sistem tidak menyediakan daftar global semua incident agar data antar-customer tidak terbuka tanpa kebutuhan support.</p>
+      <div class="lookup">
+        <div class="field" style="margin:0"><label>Kode Incident</label><input id="incidentCode" placeholder="ERR-20260905-A72C91D083" maxlength="40" spellcheck="false"></div>
+        <button id="lookupBtn" class="btn primary">Cari Incident</button>
+      </div>
+      <div id="lookupMessage" class="message"></div>
+    </section>
+
+    <section id="result" class="panel result">
+      <div style="display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap">
+        <div><h2 id="incidentTitle">Incident</h2><p id="storeTitle" class="note"></p></div>
+        <button id="copySummaryBtn" class="btn soft">Salin Ringkasan</button>
+      </div>
+      <div class="statusline"><span id="severityBadge" class="badge"></span><span id="supportBadge" class="badge"></span><span id="resolvedBadge" class="badge"></span></div>
+      <div class="grid" id="incidentGrid"></div>
+      <div class="detail">
+        <h3>Pesan Error</h3><div id="messageBox" class="box"></div>
+        <h3>Stack Trace</h3><pre id="stackBox">-</pre>
+      </div>
+      <div class="actions">
+        <button id="investigateBtn" class="btn warning">Tandai Investigasi</button>
+        <button id="resolveBtn" class="btn success">Tandai Selesai</button>
+        <button id="reopenBtn" class="btn danger">Buka Lagi</button>
+      </div>
+      <div class="support-note"><b>Audit:</b> pencarian dan perubahan status dicatat di audit Developer Center menggunakan email developer yang login. Email developer tidak ditulis ke database customer.</div>
+    </section>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/license-v2-admin-config.js?v=27.8.1"></script>
+<script src="js/license-v2-admin.js?v=27.9.0-commercial-01.1"></script>
+<script>
+(function(){
+  "use strict";
+  const $=id=>document.getElementById(id);
+  let current=null;
+  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  const dt=v=>v?new Date(v).toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"medium"}):"-";
+  function showApp(on){$("loginBox").hidden=on;$("app").hidden=!on;$("logoutBtn").hidden=!on}
+  function message(text,type="error"){$("lookupMessage").textContent=text||"";$("lookupMessage").className="message "+(type==="ok"?"ok":"")}
+  function validCode(){return String($("incidentCode").value||"").trim().toUpperCase()}
+  function badgeClass(prefix,value){return `badge ${prefix}-${String(value||"open").toLowerCase()}`}
+  function info(label,value,wide=false){return `<div class="info ${wide?"wide":""}"><span>${esc(label)}</span><strong>${esc(value??"-")}</strong></div>`}
+  function summaryText(){
+    if(!current)return "";
+    const i=current.incident,s=current.store||{};
+    return [
+      `LocDailyMar Support Incident`,
+      `Incident: ${i.incident_code}`,
+      `Toko: ${s.name||"-"} (${s.code||"-"})`,
+      `Store ID: ${i.store_id}`,
+      `Status Support: ${i.support_status||"open"}`,
+      `Level: ${i.severity}`,
+      `Halaman: ${i.page}`,
+      `Aksi: ${i.action||"-"}`,
+      `Versi: ${i.app_version||"-"}`,
+      `Role/User: ${i.role||"-"} / ${i.username||"-"}`,
+      `Terjadi: ${i.occurrence_count||1}x`,
+      `Pertama: ${dt(i.first_seen_at)}`,
+      `Terakhir: ${dt(i.last_seen_at)}`,
+      `Pesan: ${i.message||"-"}`
+    ].join("\n");
+  }
+  function render(data){
+    current=data; const i=data.incident,s=data.store||{};
+    $("result").classList.add("show");
+    $("incidentTitle").textContent=i.incident_code;
+    $("storeTitle").textContent=`${s.name||"Toko tidak ditemukan"}${s.code?` · ${s.code}`:""}`;
+    $("severityBadge").className=badgeClass("b",i.severity);$("severityBadge").textContent=String(i.severity||"error").toUpperCase();
+    $("supportBadge").className=badgeClass("b",i.support_status||"open");$("supportBadge").textContent=`SUPPORT: ${String(i.support_status||"open").toUpperCase()}`;
+    $("resolvedBadge").className=`badge ${i.resolved_at?"b-resolved":"b-open"}`;$("resolvedBadge").textContent=i.resolved_at?"INCIDENT SELESAI":"INCIDENT TERBUKA";
+    $("incidentGrid").innerHTML=[
+      info("Store ID",i.store_id),info("User",i.username||"-"),info("Role",i.role||"-"),
+      info("Halaman",i.page),info("Aksi",i.action||"-"),info("Error",i.error_name||"-"),
+      info("Versi App",i.app_version||"-"),info("Online",i.online===true?"Ya":i.online===false?"Tidak":"-"),info("Terjadi",`${i.occurrence_count||1}x`),
+      info("Pertama",dt(i.first_seen_at)),info("Terakhir",dt(i.last_seen_at)),info("Support Update",dt(i.support_last_action_at)),
+      info("Source",`${i.source_file||"-"}${i.line_no?`:${i.line_no}${i.column_no?`:${i.column_no}`:""}`:""}`,true),
+      info("Browser",i.browser||"-",true),info("Device ID",i.device_id||"-",true),
+      info("Resolution",i.resolution_note||"-",true)
+    ].join("");
+    $("messageBox").textContent=i.message||"-";$("stackBox").textContent=i.stack||"-";
+  }
+  async function lookup(){
+    const code=validCode();$("incidentCode").value=code;
+    if(!/^ERR-\d{8}-[A-F0-9]{10}$/.test(code)){message("Format kode incident tidak valid.");return}
+    const b=$("lookupBtn");b.disabled=true;message("Mencari incident...","ok");
+    try{const d=await LDMLicenseV2Admin.call("incident_lookup",{incident_code:code});render(d);message("Incident ditemukan.","ok")}catch(e){$("result").classList.remove("show");message(e.message)}finally{b.disabled=false}
+  }
+  async function updateStatus(status){
+    if(!current)return;
+    let note="";
+    if(status==="resolved"){
+      note=prompt("Catatan penyelesaian yang boleh dilihat customer:",current.incident.resolution_note||"Diselesaikan oleh LocDailyMar Support.");
+      if(note===null)return;
+    }
+    const labels={open:"membuka kembali",investigating:"menandai sebagai investigasi",resolved:"menandai selesai"};
+    if(!confirm(`Lanjut ${labels[status]} untuk ${current.incident.incident_code}?`))return;
+    try{
+      await LDMLicenseV2Admin.call("incident_support_update",{incident_code:current.incident.incident_code,support_status:status,note});
+      await lookup();
+    }catch(e){message(e.message)}
+  }
+  $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true)}catch(e){$("loginMessage").textContent=e.message}};
+  $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false);current=null;$("result").classList.remove("show")};
+  $("lookupBtn").onclick=lookup;$("incidentCode").addEventListener("keydown",e=>{if(e.key==="Enter")lookup()});
+  $("investigateBtn").onclick=()=>updateStatus("investigating");$("resolveBtn").onclick=()=>updateStatus("resolved");$("reopenBtn").onclick=()=>updateStatus("open");
+  $("copySummaryBtn").onclick=async()=>{if(!current)return;try{await navigator.clipboard.writeText(summaryText());message("Ringkasan incident disalin.","ok")}catch{message("Browser tidak mengizinkan clipboard. Salin detail secara manual.")}};
+  (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Konfigurasi Developer Center belum tersedia.";return}const session=await LDMLicenseV2Admin.session();showApp(Boolean(session))}catch(e){$("loginMessage").textContent=e.message}})();
+})();
+</script>
+</body>
+</html>
