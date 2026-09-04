@@ -122,7 +122,7 @@
     const code=validCode();$("incidentCode").value=code;
     if(!/^ERR-\d{8}-[A-F0-9]{10}$/.test(code)){message("Format kode incident tidak valid.");return}
     const b=$("lookupBtn");b.disabled=true;message("Mencari incident...","ok");
-    try{const d=await LDMLicenseV2Admin.call("incident_lookup",{incident_code:code});render(d);message("Incident ditemukan.","ok")}catch(e){$("result").classList.remove("show");message(e.message)}finally{b.disabled=false}
+    try{const d=await LDMLicenseV2Admin.call("incident_lookup",{incident_code:code});render(d);message("Incident ditemukan. API Support: "+(d.support_api_version||"v2+"),"ok")}catch(e){$("result").classList.remove("show");const m=String(e&&e.message||"Gagal mencari incident.");if(/Action admin tidak dikenal:\s*incident_lookup/i.test(m)){message("Edge Function ldm-license-admin-v2 yang aktif masih versi lama. Deploy ulang function dari folder license-authority-v2 pada PROJECT LICENSE AUTHORITY, bukan App Supabase.")}else{message(m)}}finally{b.disabled=false}
   }
   async function updateStatus(status){
     if(!current)return;
