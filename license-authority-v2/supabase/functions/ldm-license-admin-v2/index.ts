@@ -4,7 +4,7 @@ import {
 } from "../_shared/ldm-midtrans-operations.ts";
 
 const encoder = new TextEncoder();
-const ADMIN_API_VERSION = "27.8.1";
+const ADMIN_API_VERSION = "27.9.0-commercial-01.1";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
 function clean(value: unknown, max = 200) { return String(value || "").trim().slice(0, max); }
@@ -57,6 +57,23 @@ function midtransBase() {
   return env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true"
     ? "https://app.midtrans.com"
     : "https://app.sandbox.midtrans.com";
+}
+function applicationAdminClient() {
+  const appUrl = env("LDM_APP_SUPABASE_URL");
+  const appService = env("LDM_APP_SERVICE_ROLE_KEY");
+  if (!appUrl || !appService) {
+    throw new Error("Incident Support belum dikonfigurasi. Isi LDM_APP_SUPABASE_URL dan LDM_APP_SERVICE_ROLE_KEY pada Secrets Developer Center.");
+  }
+  return createClient(appUrl, appService, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+}
+function validIncidentCode(value: unknown) {
+  const code = clean(value, 40).toUpperCase();
+  if (!/^ERR-\d{8}-[A-F0-9]{10}$/.test(code)) {
+    throw Object.assign(new Error("Kode incident tidak valid. Contoh: ERR-20260905-A72C91D083"), { status: 400 });
+  }
+  return code;
 }
 async function createMidtransSnap(input: {
   orderId: string;
@@ -148,6 +165,78 @@ Deno.serve(async (req) => {
         detail,
       });
     };
+
+    if (action === "incident_lookup") {
+      const incidentCode = validIncidentCode(body.incident_code);
+      const app = applicationAdminClient();
+      const { data: incident, error: incidentError } = await app.from("client_error_events")
+        .select("id,incident_code,store_id,user_id,username,role,severity,page,action,error_name,message,stack,source_file,line_no,column_no,app_version,device_id,browser,online,viewport,occurrence_count,first_seen_at,last_seen_at,resolved_at,resolution_note,support_status,support_last_action_at,created_at")
+        .eq("incident_code", incidentCode).maybeSingle();
+      if (incidentError) {
+        if (/support_status|support_last_action_at/i.test(incidentError.message || "")) {
+          throw new Error("SQL-35-DEVELOPER-INCIDENT-SUPPORT.sql belum dijalankan pada App Supabase.");
+        }
+        throw incidentError;
+      }
+      if (!incident) return json(req, { ok: false, message: "Incident tidak ditemukan." }, 404);
+
+      const { data: store, error: storeError } = await app.from("stores")
+        .select("id,code,name,status")
+        .eq("id", incident.store_id).maybeSingle();
+      if (storeError) throw storeError;
+
+      await audit("support_incident_lookup", null, {
+        incident_code: incidentCode,
+        store_id: incident.store_id,
+      });
+      return json(req, { ok: true, incident, store: store || null });
+    }
+
+    if (action === "incident_support_update") {
+      const incidentCode = validIncidentCode(body.incident_code);
+      const supportStatus = clean(body.support_status, 20).toLowerCase();
+      const note = clean(body.note, 1000);
+      if (!["open", "investigating", "resolved"].includes(supportStatus)) {
+        return json(req, { ok: false, message: "Status support tidak valid." }, 400);
+      }
+
+      const app = applicationAdminClient();
+      const nowIso = new Date().toISOString();
+      const update: Record<string, unknown> = {
+        support_status: supportStatus,
+        support_last_action_at: nowIso,
+      };
+      if (supportStatus === "resolved") {
+        update.resolved_at = nowIso;
+        update.resolved_by = null;
+        update.resolution_note = note || "Diselesaikan oleh LocDailyMar Support.";
+      } else {
+        update.resolved_at = null;
+        update.resolved_by = null;
+        update.resolution_note = null;
+      }
+
+      const { data: incident, error: updateError } = await app.from("client_error_events")
+        .update(update)
+        .eq("incident_code", incidentCode)
+        .select("id,incident_code,store_id,support_status,support_last_action_at,resolved_at,resolution_note")
+        .maybeSingle();
+      if (updateError) {
+        if (/support_status|support_last_action_at/i.test(updateError.message || "")) {
+          throw new Error("SQL-35-DEVELOPER-INCIDENT-SUPPORT.sql belum dijalankan pada App Supabase.");
+        }
+        throw updateError;
+      }
+      if (!incident) return json(req, { ok: false, message: "Incident tidak ditemukan." }, 404);
+
+      await audit("support_incident_update", null, {
+        incident_code: incidentCode,
+        store_id: incident.store_id,
+        support_status: supportStatus,
+        note: note ? note.slice(0, 240) : null,
+      });
+      return json(req, { ok: true, incident });
+    }
 
     if (action === "dashboard") {
       const nowIso = new Date().toISOString();
@@ -580,6 +669,8 @@ Deno.serve(async (req) => {
     }, 400);
   } catch (error) {
     console.error("LDM_LICENSE_ADMIN_V2", error);
-    return json(req, { ok: false, message: (error as Error)?.message || "Server Developer Center gagal memproses permintaan." }, 500);
+    const requestedStatus = Number((error as { status?: number })?.status || 500);
+    const status = requestedStatus >= 400 && requestedStatus < 600 ? requestedStatus : 500;
+    return json(req, { ok: false, message: (error as Error)?.message || "Server Developer Center gagal memproses permintaan." }, status);
   }
 });
