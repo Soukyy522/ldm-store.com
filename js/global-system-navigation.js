@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.9.0-simlocal-adaptive-nav-v3";
+    const NAV_VERSION="27.9.0-commercial-monitoring-v2";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -38,6 +38,7 @@
         {page:"penyimpanan.html",icon:"🗄️",label:"Penyimpanan & Retensi",group:"Sistem",roles:["owner","admin"],feature:"app_update"},
         {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"],feature:"recovery_center"},
         {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"],feature:"qa_security"},
+        {page:"monitoring-error.html",icon:"🚨",label:"Monitoring Error",group:"Sistem",roles:["owner","admin"],feature:"monitoring_error"},
         {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"panduan.html",icon:"📘",label:"Panduan & Bantuan",group:"Sistem",roles:["owner","admin","kasir"]}
     ];
@@ -464,9 +465,9 @@
         close.addEventListener("click",()=>{setOpen(false);trigger.focus()});
         document.addEventListener("click",event=>{if(shell.isConnected&&!shell.contains(event.target))setOpen(false)});
         document.addEventListener("keydown",event=>{if(event.key==="Escape")setOpen(false)});
-        let hoverTimer=0;
-        shell.addEventListener("mouseenter",()=>{if(matchMedia("(min-width:900px)").matches){clearTimeout(hoverTimer);setOpen(true)}});
-        shell.addEventListener("mouseleave",()=>{if(matchMedia("(min-width:900px)").matches){clearTimeout(hoverTimer);hoverTimer=setTimeout(()=>setOpen(false),180)}});
+        // Desktop compact: Mega Menu hanya dibuka lewat tombol Menu.
+        // Hover-open sengaja dinonaktifkan agar panel tidak menutupi layar saat
+        // pointer sekadar melewati navigation bar.
         return true;
     }
 
