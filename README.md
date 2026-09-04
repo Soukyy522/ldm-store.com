@@ -36,3 +36,12 @@ Jangan menaruh Supabase `service_role`, JWT secret, database password, Midtrans 
 
 ## Catatan build bersih
 File test browser tahap lama, duplikat service JS di root, checkout legacy, dokumentasi tahap historis, dan tool QA Node yang tidak dibutuhkan runtime telah dikeluarkan dari ZIP distribusi ini. Tidak ada tabel/database customer yang dihapus oleh proses pembersihan file ZIP.
+
+
+## Commercial Readiness #01 - Monitoring Error
+- Halaman: `monitoring-error.html` (Owner/Admin).
+- Client collector: `js/error-monitor.js`.
+- Admin UI: `js/error-monitor-admin.js`.
+- Migration: `SQL-34-MONITORING-ERROR.sql` / `supabase/sql/34-monitoring-error.sql`.
+- Retensi default: 30 hari, error yang sama dideduplikasi per Store ID.
+- Modul tidak dimaksudkan untuk menyimpan password, isi form, data customer, atau payload transaksi.

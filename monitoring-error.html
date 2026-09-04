@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script src="js/storage-engine.js?v=27.7.1"></script>
+    <script src="js/storage-quota-guard.js?v=27.7.1"></script>
+    <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
+    <script src="js/local-time.js?v=26.4.0"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#0d2240">
+    <title>Monitoring Error - LocDailyMar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.png">
+    <link rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0">
+    <link rel="stylesheet" href="css/store-modes.css?v=27.9.0">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <style>
+        *{box-sizing:border-box}
+        body{margin:0;background:#f3f6fb;color:#14213d;font:15px/1.5 Inter,Arial,sans-serif}
+        .wrap{width:min(1280px,calc(100% - 28px));margin:24px auto 60px}
+        .top,.card,.metric{background:#fff;border:1px solid #dfe5ef;border-radius:18px;box-shadow:0 10px 30px rgba(15,35,70,.07)}
+        .top{padding:24px;display:flex;gap:18px;justify-content:space-between;align-items:center}
+        .top h1{margin:0 0 5px;font-size:clamp(1.35rem,3vw,2rem)}
+        .top p,.muted{margin:0;color:#64748b}
+        .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+        button,.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer;text-decoration:none;background:#0d2240;color:#fff}
+        .secondary{background:#e8eef7;color:#0d2240}.warning{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+        .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+        .metric{padding:18px}.metric span{color:#64748b}.metric b{display:block;font-size:1.7rem;margin:4px 0}.metric small{color:#94a3b8}
+        .card{padding:18px;margin-top:14px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+        label{font-size:.82rem;font-weight:800;color:#475569;display:grid;gap:5px}
+        select{min-width:150px;padding:10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#14213d;font:inherit}
+        .monitor-status{margin-left:auto;color:#64748b;font-size:.86rem}.monitor-status.ok{color:#166534}.monitor-status.error{color:#991b1b}.monitor-status.loading{color:#075985}
+        .table-wrap{overflow:auto;border:1px solid #e2e8f0;border-radius:14px}
+        table{width:100%;border-collapse:collapse;min-width:1100px;background:#fff}
+        th,td{padding:12px 11px;border-bottom:1px solid #edf1f6;text-align:left;vertical-align:top}
+        th{background:#f8fafc;font-size:.78rem;color:#475569;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0}
+        .incident-link{background:transparent;color:#0f766e;padding:0;border-radius:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:900}
+        .message-cell{max-width:360px;white-space:normal;overflow-wrap:anywhere}.muted{font-size:.82rem}
+        .severity{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:.72rem;font-weight:900}.severity-warning{background:#fef3c7;color:#92400e}.severity-error{background:#fee2e2;color:#991b1b}.severity-critical{background:#7f1d1d;color:#fff}
+        .btn-small{font-size:.75rem;padding:7px 9px;background:#e8eef7;color:#0d2240;margin:1px}.btn-resolve{background:#dcfce7;color:#166534}
+        .empty-cell{text-align:center;color:#64748b;padding:28px}
+        .privacy-note{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:14px;padding:14px;margin-top:14px}
+        .modal{position:fixed;inset:0;background:rgba(15,23,42,.62);display:none;align-items:center;justify-content:center;padding:18px;z-index:99999}.modal.open{display:flex}.modal-card{background:#fff;width:min(900px,100%);max-height:88vh;overflow:auto;border-radius:18px;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+        .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}.detail-grid>div{background:#f8fafc;padding:10px;border-radius:10px}.detail-grid span{display:block;font-size:.75rem;color:#64748b}.detail-grid strong{overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px;font-size:.78rem}
+        @media(max-width:900px){.top{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr 1fr}.monitor-status{margin-left:0;width:100%}}
+        @media(max-width:520px){.summary{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.wrap{width:min(100% - 18px,1280px);margin-top:14px}}
+    </style>
+    <script src="js/security-hardening.js?v=19.0"></script>
+    <script src="js/error-monitor.js?v=27.9.0-monitor1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/cloud-auth.js?v=15.0"></script>
+    <script src="js/cloud-session.js?v=16.0"></script>
+    <script src="js/cloud-session-guard.js?v=15.0"></script>
+    <script src="js/store-mode.js?v=27.9.0-mode1"></script>
+    <script src="js/license-v2-config.js?v=27.4.0"></script>
+    <script src="js/license-v2-client.js?v=27.4.0"></script>
+    <script defer src="js/license-v2-guard.js?v=27.4.0"></script>
+</head>
+<body>
+<main class="wrap">
+    <section class="top">
+        <div>
+            <h1>🚨 Monitoring Error</h1>
+            <p>Mencatat error teknis aplikasi per toko agar masalah lebih cepat ditemukan. Hanya Owner/Admin yang dapat melihat incident.</p>
+        </div>
+        <div class="actions">
+            <button id="btnTestError" class="warning">Buat Error Uji</button>
+            <button id="btnRefresh">Refresh</button>
+            <a class="btn secondary" href="dashboard.html">← Dashboard</a>
+        </div>
+    </section>
+
+    <section class="summary">
+        <div class="metric"><span>Incident terbuka</span><b id="statOpen">—</b><small>Belum ditandai selesai</small></div>
+        <div class="metric"><span>24 jam terakhir</span><b id="stat24h">—</b><small>Error unik yang terlihat</small></div>
+        <div class="metric"><span>7 hari terakhir</span><b id="stat7d">—</b><small>Untuk melihat tren masalah</small></div>
+        <div class="metric"><span>Storage tabel</span><b id="statStorage">—</b><small id="retentionText">Retensi: 30 hari</small></div>
+    </section>
+
+    <section class="card">
+        <div class="toolbar">
+            <label>Status
+                <select id="filterStatus">
+                    <option value="open">Terbuka</option>
+                    <option value="resolved">Selesai</option>
+                    <option value="all">Semua</option>
+                </select>
+            </label>
+            <label>Periode
+                <select id="filterDays">
+                    <option value="1">24 jam</option>
+                    <option value="7">7 hari</option>
+                    <option value="30" selected>30 hari</option>
+                    <option value="90">90 hari</option>
+                </select>
+            </label>
+            <div id="monitorStatus" class="monitor-status">Belum dimuat.</div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Incident</th><th>Level</th><th>Halaman/Aksi</th><th>Pesan</th><th>Terjadi</th><th>User</th><th>Terakhir</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="monitorTableBody"><tr><td colspan="8" class="empty-cell">Memuat...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="privacy-note">
+            <strong>Privasi:</strong> Monitoring ini hanya menyimpan metadata teknis yang dibatasi seperti halaman, jenis error, versi aplikasi, browser, dan waktu. Password, isi form, data customer, serta isi transaksi tidak dikirim oleh modul monitoring.
+        </div>
+    </section>
+</main>
+
+<div class="modal" id="detailModal" aria-hidden="true">
+    <div class="modal-card">
+        <div class="modal-head"><h3>Detail Incident</h3><button class="secondary" data-close-detail>✕ Tutup</button></div>
+        <div id="detailContent"></div>
+    </div>
+</div>
+
+<script src="js/error-monitor-admin.js?v=27.9.0-monitor1"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-monitor1"></script>
+</body>
+</html>
