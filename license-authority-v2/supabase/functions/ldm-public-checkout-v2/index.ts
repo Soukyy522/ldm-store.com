@@ -5,7 +5,8 @@ import {
   reserveApplicationOwnerCredentials, releaseApplicationOwnerReservation,
 } from "../_shared/ldm-license-delivery.ts";
 import {
-  cancelPaymentForRetry, midtransNotificationUrl, reconcilePaymentFromMidtrans,
+  assertMidtransRuntime, cancelPaymentForRetry, midtransClientKey, midtransEnvironment,
+  midtransNotificationUrl, reconcilePaymentFromMidtrans,
 } from "../_shared/ldm-midtrans-operations.ts";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
@@ -50,8 +51,8 @@ async function createMidtransSnap(input: {
   orderId: string; amount: number; itemName: string;
   customerName: string; customerEmail: string; customerPhone: string;
 }) {
+  assertMidtransRuntime(true);
   const serverKey = env("MIDTRANS_SERVER_KEY");
-  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
   const finish = env("MIDTRANS_FINISH_URL");
   const payload: Record<string, unknown> = {
     transaction_details: { order_id: input.orderId, gross_amount: input.amount },
@@ -61,24 +62,32 @@ async function createMidtransSnap(input: {
       email: input.customerEmail,
       phone: input.customerPhone || undefined,
     },
+    page_expiry: { duration: 24, unit: "hours" },
   };
   if (finish) payload.callbacks = { finish };
   const notificationUrl = midtransNotificationUrl();
-  const response = await fetch(`${midtransBase()}/snap/v1/transactions`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      ...(notificationUrl ? { "X-Override-Notification": notificationUrl } : {}),
-    },
-    body: JSON.stringify(payload),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data?.token || !data?.redirect_url) {
-    throw new Error(clean(data?.error_messages?.join?.("; ") || data?.message || `Midtrans HTTP ${response.status}`, 500));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`${midtransBase()}/snap/v1/transactions`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${btoa(`${serverKey}:`)}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        ...(notificationUrl ? { "X-Override-Notification": notificationUrl } : {}),
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.token || !data?.redirect_url) {
+      throw new Error(clean(data?.error_messages?.join?.("; ") || data?.message || `Midtrans HTTP ${response.status}`, 500));
+    }
+    return { token: String(data.token), redirectUrl: String(data.redirect_url) };
+  } finally {
+    clearTimeout(timeout);
   }
-  return { token: String(data.token), redirectUrl: String(data.redirect_url) };
 }
 function requestIp(req: Request) {
   return clean(
@@ -306,8 +315,8 @@ Deno.serve(async (req) => {
         return json(req, {
           ok: true, reused: true, order_id: oldPayment.order_id, payment_id: oldPayment.id,
           amount: oldPayment.amount, snap_token: oldPayment.snap_token, redirect_url: oldPayment.redirect_url,
-          client_key: env("MIDTRANS_CLIENT_KEY"),
-          environment: env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true" ? "production" : "sandbox",
+          client_key: midtransClientKey(),
+          environment: midtransEnvironment(),
           status_token: newStatusToken,
         });
       }
@@ -369,8 +378,8 @@ Deno.serve(async (req) => {
         return json(req, {
           ok: true, retried: true, order_id: retryOrderId, payment_id: retryOrder.payment_id,
           amount, snap_token: retrySnap.token, redirect_url: retrySnap.redirectUrl,
-          client_key: env("MIDTRANS_CLIENT_KEY"),
-          environment: env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true" ? "production" : "sandbox",
+          client_key: midtransClientKey(),
+          environment: midtransEnvironment(),
           status_token: retryStatusToken,
         });
       } catch (retryPaymentError) {
@@ -437,8 +446,8 @@ Deno.serve(async (req) => {
       return json(req, {
         ok: true, order_id: newOrder, payment_id: order.payment_id, amount,
         snap_token: snap.token, redirect_url: snap.redirectUrl,
-        client_key: env("MIDTRANS_CLIENT_KEY"),
-        environment: env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true" ? "production" : "sandbox",
+        client_key: midtransClientKey(),
+        environment: midtransEnvironment(),
         status_token: publicToken,
       });
     } catch (paymentError) {

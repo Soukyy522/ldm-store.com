@@ -1,10 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
-  cancelPaymentForRetry, midtransNotificationUrl, reconcilePaymentFromMidtrans,
+  assertMidtransRuntime, cancelPaymentForRetry, midtransRuntimeHealth, midtransNotificationUrl,
+  reconcilePaymentFromMidtrans,
 } from "../_shared/ldm-midtrans-operations.ts";
 
 const encoder = new TextEncoder();
-const ADMIN_API_VERSION = "27.9.0-commercial-01.1";
+const ADMIN_API_VERSION = "27.9.0-commercial-06-v19";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
 function clean(value: unknown, max = 200) { return String(value || "").trim().slice(0, max); }
@@ -97,8 +98,8 @@ async function createMidtransSnap(input: {
   customerEmail: string;
   customerPhone: string;
 }) {
+  assertMidtransRuntime(true);
   const serverKey = env("MIDTRANS_SERVER_KEY");
-  if (!serverKey) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
 
   const finish = env("MIDTRANS_FINISH_URL");
   const payload: Record<string, unknown> = {
@@ -109,6 +110,7 @@ async function createMidtransSnap(input: {
       email: input.customerEmail,
       phone: input.customerPhone || undefined,
     },
+    page_expiry: { duration: 24, unit: "hours" },
   };
   if (finish) payload.callbacks = { finish };
 
@@ -179,6 +181,52 @@ Deno.serve(async (req) => {
         detail,
       });
     };
+
+    if (action === "midtrans_diagnostics") {
+      const runtime = midtransRuntimeHealth();
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+      const [pendingQ, staleQ, paidQ, failedQ] = await Promise.all([
+        admin.from("ldm2_payments").select("id", { count: "exact", head: true }).in("status", ["pending", "challenge"]),
+        admin.from("ldm2_payments").select("id", { count: "exact", head: true }).in("status", ["pending", "challenge"]).lte("created_at", tenMinutesAgo),
+        admin.from("ldm2_payments").select("id", { count: "exact", head: true }).eq("status", "paid").gte("paid_at", oneDayAgo),
+        admin.from("ldm2_payments").select("id", { count: "exact", head: true }).in("status", ["failed", "expired", "cancelled"]).gte("updated_at", oneDayAgo),
+      ]);
+      for (const query of [pendingQ, staleQ, paidQ, failedQ]) if (query.error) throw query.error;
+
+      let recentEvents: any[] = [];
+      let migrationRequired = false;
+      const eventQuery = await admin.from("ldm2_midtrans_events")
+        .select("event_key,order_id,source,transaction_status,status_code,signature_valid,receive_count,last_received_at,processed_at,processing_error")
+        .order("last_received_at", { ascending: false }).limit(20);
+      if (eventQuery.error) {
+        if (/ldm2_midtrans_events|does not exist|schema cache/i.test(eventQuery.error.message || "")) migrationRequired = true;
+        else throw eventQuery.error;
+      } else recentEvents = eventQuery.data || [];
+
+      const paymentQuery = await admin.from("ldm2_payments")
+        .select("order_id,status,provider_status,amount,last_reconciled_at,reconcile_attempts,last_reconcile_error,processed_at,paid_at,updated_at")
+        .in("status", ["pending", "challenge", "failed", "expired", "cancelled", "partially_refunded", "refunded"])
+        .order("updated_at", { ascending: false }).limit(20);
+      if (paymentQuery.error && !/last_reconciled_at|reconcile_attempts|schema cache/i.test(paymentQuery.error.message || "")) throw paymentQuery.error;
+      if (paymentQuery.error) migrationRequired = true;
+
+      await audit("MIDTRANS_DIAGNOSTICS", null, { environment: runtime.environment, migration_required: migrationRequired });
+      return json(req, {
+        ok: true,
+        runtime,
+        migration_required: migrationRequired,
+        summary: {
+          pending_or_challenge: pendingQ.count || 0,
+          pending_over_10_minutes: staleQ.count || 0,
+          paid_last_24h: paidQ.count || 0,
+          failed_expired_cancelled_last_24h: failedQ.count || 0,
+        },
+        recent_events: recentEvents,
+        recent_nonpaid_payments: paymentQuery.error ? [] : (paymentQuery.data || []),
+      });
+    }
 
     if (action === "incident_support_info") {
       return json(req, {

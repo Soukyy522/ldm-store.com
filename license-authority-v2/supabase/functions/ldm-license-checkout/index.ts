@@ -95,6 +95,13 @@ async function createSnap(input: {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
+  if (env("LDM_ENABLE_LEGACY_CHECKOUT").toLowerCase() !== "true") {
+    return json(req, {
+      ok: false,
+      code: "LEGACY_CHECKOUT_DISABLED",
+      message: "Endpoint ldm-license-checkout sudah deprecated. Gunakan ldm-public-checkout-v2.",
+    }, 410);
+  }
   if (req.method === "GET") return json(req, {
     ok: true, service: "LDM_LICENSE_CHECKOUT", mode: env("MIDTRANS_IS_PRODUCTION").toLowerCase() === "true" ? "production" : "sandbox",
   });

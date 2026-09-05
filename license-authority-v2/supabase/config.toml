@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.ldm-public-checkout-v2]
 verify_jwt = false
+
+[functions.ldm-midtrans-reconcile]
+verify_jwt = false
