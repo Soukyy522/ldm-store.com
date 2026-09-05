@@ -96,3 +96,15 @@ Halaman khusus developer kini memakai navigasi bersama yang hanya berada di area
 - Developer memproses request PRV dari `developer-incident-support.html` melalui Edge Function server-side.
 - SQL: `supabase/sql/40-privacy-center.sql`.
 - Tidak ada auto-delete langsung dari browser; penghapusan/koreksi diproses setelah verifikasi.
+
+## Commercial Readiness #06 — Midtrans & Lisensi Production Hardening (V19)
+- Payment state machine diperketat agar status `paid` tidak dapat turun kembali menjadi `pending`, `challenge`, `failed`, `expired`, atau `cancelled` akibat event lama/out-of-order.
+- `ldm2_midtrans_events` menyimpan inbox/audit event Midtrans yang deduplicated dengan `event_key`; duplicate event yang sudah sukses diproses tidak mengaktifkan lisensi dua kali.
+- Webhook memverifikasi `signature_key`, lalu memanggil Midtrans GET Status sebelum status diterapkan ke database.
+- Aktivasi/perpanjangan lisensi tetap dilakukan atomically di `ldm2_apply_midtrans_notification`.
+- Refund/partial refund dicatat sebagai status pembayaran dan audit, tetapi tidak otomatis mencabut lisensi; entitlement perlu review merchant.
+- Edge Function baru `ldm-midtrans-reconcile` menyediakan rekonsiliasi berkala untuk payment `pending/challenge` dan self-healing bila webhook terlambat.
+- Developer Center memiliki panel `Midtrans Diagnostics` yang hanya menampilkan metadata aman, bukan Server Key/Client Key.
+- Environment guard menolak Production yang masih memakai key Sandbox berawalan `SB-` dan memastikan Notification URL HTTPS tersedia.
+- Checkout legacy `ldm-license-checkout` default dinonaktifkan; jalur production resmi adalah `ldm-public-checkout-v2`.
+- SQL utama: `SQL-41-MIDTRANS-PRODUCTION-HARDENING-LICENSE-AUTHORITY.sql` (jalankan pada License Authority Supabase, bukan App Supabase).

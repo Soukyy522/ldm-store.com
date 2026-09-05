@@ -19,15 +19,16 @@
     .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:#fff}.soft{background:#eaf1f9;color:#183c65}.danger{background:#ffebe8;color:var(--red)}.success{background:#e6f7f0;color:var(--green)}.btn:disabled{opacity:.55;cursor:wait}.login .btn{width:100%;margin-top:17px}.message{font-size:12px;margin-top:12px;color:var(--red)}
     .app{display:none}.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:13px}.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 25px #263e5910}.stat{padding:17px}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:4px}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:20px 0 12px}.toolbar h2{margin:0;font-size:20px}.toolbar .right{display:flex;gap:8px}.panel{overflow:hidden}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:1380px}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #e7edf4;font-size:11px;vertical-align:top}th{background:#f7f9fc;color:#627086;font-size:9px;text-transform:uppercase;letter-spacing:.04em}td code{font-size:10px;word-break:break-all}
-    .badge{display:inline-block;border-radius:99px;padding:4px 8px;font-size:9px;font-weight:700}.active,.paid{background:#e4f6ef;color:var(--green)}.pending_payment,.pending,.challenge{background:#fff0d8;color:var(--amber)}.suspended{background:#fff0d8;color:var(--amber)}.expired,.cancelled,.failed{background:#feeae7;color:var(--red)}.trial{background:#e6efff;color:#1559ad}
+    .badge{display:inline-block;border-radius:99px;padding:4px 8px;font-size:9px;font-weight:700}.active,.paid{background:#e4f6ef;color:var(--green)}.pending_payment,.pending,.challenge{background:#fff0d8;color:var(--amber)}.suspended{background:#fff0d8;color:var(--amber)}.expired,.cancelled,.failed,.refunded,.partially_refunded{background:#feeae7;color:var(--red)}.trial{background:#e6efff;color:#1559ad}
     .rowactions{display:flex;gap:5px;flex-wrap:wrap}.rowactions button,.rowactions a{border:0;border-radius:7px;padding:6px 8px;font-size:9px;font-weight:700;cursor:pointer;text-decoration:none}.modal{position:fixed;inset:0;background:#091a2dc7;display:none;place-items:center;padding:15px;z-index:10}.modal.open{display:grid}.modalcard{background:#fff;width:min(720px,100%);max-height:90vh;overflow:auto;border-radius:18px;padding:23px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0;font-size:20px}.close{border:0;background:#edf2f7;border-radius:9px;padding:7px 10px;cursor:pointer}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.full{grid-column:1/-1}
     .result{margin-top:14px;padding:14px;border-radius:11px;background:#edf8f3;color:#096a4d;font-size:12px;word-break:break-word;display:none}.result.show{display:block}.result code{display:block;background:#fff;border:1px solid #cce7da;padding:8px;border-radius:8px;margin:4px 0 9px;color:#123;word-break:break-all}.device{padding:12px;border:1px solid var(--line);border-radius:11px;margin-top:9px;display:flex;justify-content:space-between;gap:10px}.device span{font-size:11px;color:var(--muted);display:block}.empty{text-align:center;padding:35px;color:var(--muted)}.archivedRow{opacity:.72;background:#f8fafc}.archiveBadge{background:#e9edf3;color:#536174}.filters{display:flex;gap:8px;flex-wrap:wrap}.filters input,.filters select{border:1px solid #cbd8e6;border-radius:9px;padding:8px 10px;background:#fff;color:var(--ink);font-size:11px}.dangerSolid{background:#b42318!important;color:#fff!important}.warningBox{background:#fff7e8;border:1px solid #f4d49b;color:#7a4a00;padding:12px;border-radius:11px;font-size:11px;line-height:1.6;margin-bottom:12px}
+    .diagGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.diagCard{border:1px solid var(--line);border-radius:12px;padding:12px;background:#f8fafc}.diagCard b{display:block;font-size:11px}.diagCard span{font-size:11px;color:var(--muted)}.diagOk{color:var(--green)!important}.diagBad{color:var(--red)!important}.diagTable{width:100%;min-width:760px}.diagTable th,.diagTable td{font-size:10px;padding:8px}.diagNote{font-size:11px;line-height:1.6;color:var(--muted)}
     @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:14px}.top{padding:0 14px}}
   </style>
   <script defer src="js/developer-navigation.js?v=27.9.0-devnav15"></script>
 </head>
 <body>
-  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.8.1 · Lisensi · Pembayaran · Support Center</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.9 · Lisensi · Midtrans Hardening · Support Center</span></div><button id="logoutBtn" hidden>Keluar</button></header>
   <main class="wrap">
     <section class="login" id="loginBox">
       <h1>Login developer</h1>
@@ -47,7 +48,7 @@
         <div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div>
         <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div><div class="stat"><span>DIARSIPKAN</span><strong id="sArchived">0</strong></div>
       </div>
-      <div class="toolbar developer-nav-target" id="licenseManagement"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
+      <div class="toolbar developer-nav-target" id="licenseManagement"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="midtransDiagBtn">Midtrans Diagnostics</button><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
       <div class="warningBox"><b>Penghapusan aman:</b> gunakan <b>Arsipkan</b> untuk customer/lisensi yang sudah tidak digunakan. <b>Hapus Permanen</b> hanya diizinkan untuk lisensi yang benar-benar belum pernah dipakai, tidak pernah dibayar/refund, tidak pernah klaim trial, tidak pernah diaktivasi perangkat, dan belum diprovision ke Cloud Data Toko.</div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
     </section>
   </main>
@@ -70,11 +71,12 @@
   </div></div>
 
   <div class="modal" id="paymentModal"><div class="modalcard"><div class="modalhead"><h2>Link pembayaran Midtrans</h2><button class="close" data-close>✕</button></div><div class="result show" id="paymentResult"></div></div></div>
+  <div class="modal" id="midtransDiagModal"><div class="modalcard"><div class="modalhead"><h2>Midtrans Production Diagnostics</h2><button class="close" data-close>✕</button></div><p class="diagNote">Panel ini hanya menampilkan status konfigurasi dan metadata pembayaran. Server Key/Client Key tidak pernah ditampilkan.</p><div id="midtransDiagResult">Memuat…</div></div></div>
   <div class="modal" id="deviceModal"><div class="modalcard"><div class="modalhead"><h2>Perangkat lisensi</h2><button class="close" data-close>✕</button></div><div id="devices"></div></div></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/license-v2-admin-config.js?v=27.8.1"></script>
-  <script src="js/license-v2-admin.js?v=27.9.0-commercial-01.1"></script>
+  <script src="js/license-v2-admin.js?v=27.9.0-commercial-06-v19"></script>
   <script>
     const $=id=>document.getElementById(id);
     let licenses=[],lastDelivery="";
@@ -146,9 +148,34 @@
       $(target).innerHTML=`<b>Store Code</b><code>${esc(d.license.store_code)}</code><b>Store ID</b><code>${esc(d.license.store_id)}</code><b>Network ID</b><code>${esc(d.license.network_id)}</code>${d.license.license_key?`<b>License Key — simpan sekarang</b><code>${esc(d.license.license_key)}</code>`:""}<b>Order ID</b><code>${esc(d.payment.order_id)}</code><b>Nominal</b><code>${money(d.payment.amount)}</code><div class="rowactions"><button class="success" onclick="navigator.clipboard.writeText(lastDelivery)">Salin semua data</button>${paymentUrl?`<a class="primary" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka Midtrans</a>`:""}</div><p>Lisensi masih terkunci. Webhook Midtrans akan mengaktifkan atau memperpanjangnya otomatis setelah pembayaran berhasil.</p>`;
     }
 
+    function renderMidtransDiagnostics(d){
+      const r=d.runtime||{},s=d.summary||{};
+      const problemList=(r.problems||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+      const events=(d.recent_events||[]).slice(0,10);
+      $("midtransDiagResult").innerHTML=`
+        <div class="diagGrid">
+          <div class="diagCard"><b>Environment</b><span class="${r.ok?'diagOk':'diagBad'}">${esc(String(r.environment||'-').toUpperCase())}</span></div>
+          <div class="diagCard"><b>Runtime</b><span class="${r.ok?'diagOk':'diagBad'}">${r.ok?'SIAP':'PERLU DIPERBAIKI'}</span></div>
+          <div class="diagCard"><b>Server Key</b><span>${r.server_key_configured?'Terkonfigurasi · '+esc(r.server_key_kind||''):'Belum ada'}</span></div>
+          <div class="diagCard"><b>Client Key</b><span>${r.client_key_configured?'Terkonfigurasi · '+esc(r.client_key_kind||''):'Belum ada'}</span></div>
+          <div class="diagCard"><b>Notification URL</b><span>${esc(r.notification_url||'Belum valid')}</span></div>
+          <div class="diagCard"><b>Pending / Challenge</b><span>${Number(s.pending_or_challenge||0)} · >10 menit: ${Number(s.pending_over_10_minutes||0)}</span></div>
+          <div class="diagCard"><b>Paid 24 jam</b><span>${Number(s.paid_last_24h||0)}</span></div>
+          <div class="diagCard"><b>Final gagal 24 jam</b><span>${Number(s.failed_expired_cancelled_last_24h||0)}</span></div>
+        </div>
+        ${d.migration_required?'<p class="diagBad"><b>SQL-12 Midtrans Production Hardening belum terpasang lengkap.</b></p>':''}
+        ${problemList?`<div class="warningBox"><b>Masalah konfigurasi:</b><ul>${problemList}</ul></div>`:'<p class="diagOk"><b>Konfigurasi dasar Midtrans konsisten.</b></p>'}
+        <p class="diagNote"><b>API:</b> ${esc(r.api_base||'-')}<br><b>Snap:</b> ${esc(r.snap_base||'-')}</p>
+        <div class="tablewrap"><table class="diagTable"><thead><tr><th>Order</th><th>Source</th><th>Status</th><th>Signature</th><th>Receive</th><th>Processed</th><th>Error</th></tr></thead><tbody>${events.length?events.map(e=>`<tr><td>${esc(e.order_id||'-')}</td><td>${esc(e.source||'-')}</td><td>${esc(e.transaction_status||'-')}</td><td>${e.signature_valid===true?'VALID':e.signature_valid===false?'INVALID':'N/A'}</td><td>${Number(e.receive_count||0)}</td><td>${dt(e.processed_at)}</td><td>${esc(e.processing_error||'')}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">Belum ada event Midtrans.</td></tr>'}</tbody></table></div>`;
+    }
+    async function midtransDiagnostics(){
+      open("midtransDiagModal");$("midtransDiagResult").textContent="Memeriksa konfigurasi dan event Midtrans…";
+      try{const d=await LDMLicenseV2Admin.call("midtrans_diagnostics");renderMidtransDiagnostics(d)}catch(e){$("midtransDiagResult").innerHTML=`<p class="diagBad">${esc(e.message||String(e))}</p>`}
+    }
+
     $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await load()}catch(e){$("loginMessage").textContent=e.message}};
     $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false)};
-    $("refreshBtn").onclick=load;$("newBtn").onclick=()=>open("issueModal");
+    $("midtransDiagBtn").onclick=midtransDiagnostics;$("refreshBtn").onclick=load;$("newBtn").onclick=()=>open("issueModal");
     $("searchBox").addEventListener("input",render);$("scopeFilter").addEventListener("change",render);
     $("iPlan").onchange=()=>{const lifetime=$("iPlan").value==="LIFETIME";$("iCycle").innerHTML=lifetime?'<option value="lifetime">Lifetime</option>':'<option value="monthly">Bulanan</option><option value="yearly">Tahunan</option>'};
     $("issueBtn").onclick=async()=>{
