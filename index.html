@@ -4,7 +4,7 @@
     <script src="js/storage-engine.js?v=27.7.1"></script>
     <script src="js/storage-quota-guard.js?v=27.7.1"></script>
     <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
-<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script>    <script src="js/error-monitor.js?v=27.9.0-monitor3"></script>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script>    <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
 <script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1276,10 +1276,24 @@ async function resumeCloudLogin() {
 
     } catch (error) {
 
-        console.warn(
-            "Tidak ada session cloud yang dapat dilanjutkan:",
-            error
-        );
+        const errorName =
+            String(error?.name || "");
+
+        const errorMessage =
+            String(error?.message || "");
+
+        const isMissingSession =
+            errorName === "AuthSessionMissingError" ||
+            /auth\s+session\s+missing/i.test(errorMessage);
+
+        // Tidak adanya session Cloud adalah kondisi normal pada halaman login.
+        // Jangan mencetak stack trace seolah-olah aplikasi gagal.
+        if (!isMissingSession) {
+            console.warn(
+                "Gagal melanjutkan session Cloud:",
+                error
+            );
+        }
 
         window.LDMCloudSession
             .clearCompatibilityCache();
