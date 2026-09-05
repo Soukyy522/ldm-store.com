@@ -1,10 +1,10 @@
-// Build: 27.9.0 commercial-12-developer-navigation-v14
+// Build: 27.9.0 commercial-12-runtime-auth-bugfix-v16
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-12-devnav-shell-v14`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-12-devnav-runtime-v14`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-12-runtime-auth-shell-v16`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-12-runtime-auth-runtime-v16`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
@@ -103,7 +103,7 @@ self.addEventListener("fetch", event => {
     }
     if(
         url.origin === self.location.origin &&
-        /\/js\/(?:local-time|developer-navigation|global-system-navigation|peripheral-setup|peripheral-setup-embedded|receipt-customizer-embedded|onboarding-service|onboarding-wizard|onboarding-dashboard|error-monitor|error-monitor-admin|support-center|license-checkout-v2|license-v2-(?:config|client|guard|admin-config|admin)|reporting-(?:service|bootstrap))\.js$/i.test(url.pathname)
+        /\/js\/(?:local-time|developer-navigation|global-system-navigation|peripheral-setup|peripheral-setup-embedded|receipt-customizer-embedded|onboarding-service|onboarding-wizard|onboarding-dashboard|error-monitor|error-monitor-admin|support-center|cloud-session-guard|license-checkout-v2|license-v2-(?:config|client|guard|admin-config|admin)|reporting-(?:service|bootstrap))\.js$/i.test(url.pathname)
     ){
         event.respondWith(networkFirstAsset(request));
         return;

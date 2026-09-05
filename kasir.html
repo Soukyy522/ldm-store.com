@@ -1564,7 +1564,7 @@
     <script src="js/store-mode.js?v=27.9.0-mode1"></script>
     <script src="js/product-visuals.js?v=27.9.0-mode1"></script>
     <link rel="stylesheet" href="css/store-modes.css?v=27.9.0-mode2">
-    <script src="js/cloud-session-guard.js?v=16.0"></script>
+    <script src="js/cloud-session-guard.js?v=17.0"></script>
     <script src="js/recovery-service.js?v=17.0"></script>
     <!-- Live Sync Tahap 9: Cloud Absensi -->
     <script src="js/attendance-service.js?v=9.1"></script>
@@ -5280,6 +5280,179 @@ document.addEventListener(
 
     }
 );
+
+// =====================================================
+// WAJIB LOGIN
+// =====================================================
+
+function requireLogin() {
+
+    const session =
+        getSecuritySession();
+
+
+    if (!session) {
+
+        clearSecuritySession();
+
+        window.location.replace(
+            SECURITY_CONFIG.LOGIN_PAGE
+        );
+
+        return null;
+
+    }
+
+
+    return session;
+
+}
+
+
+// =====================================================
+// CEK ROLE
+// =====================================================
+
+function requireRole(
+    allowedRoles = []
+) {
+
+    const session =
+        requireLogin();
+
+
+    if (!session) {
+
+        return null;
+
+    }
+
+
+    const allowed =
+        allowedRoles.map(
+            role =>
+                String(role || "")
+                    .trim()
+                    .toLowerCase()
+        );
+
+
+    if (
+        !allowed.includes(
+            session.role
+        )
+    ) {
+
+        window.location.replace(
+            SECURITY_CONFIG.DASHBOARD_PAGE
+        );
+
+        return null;
+
+    }
+
+
+    return session;
+
+}
+
+
+// =====================================================
+// PERPANJANG SESSION
+// =====================================================
+
+function refreshSession() {
+
+    if (
+        localStorage.getItem(
+            "isLoggedIn"
+        ) !== "true"
+    ) {
+
+        return;
+
+    }
+
+
+    localStorage.setItem(
+        "loginTimestamp",
+        Date.now().toString()
+    );
+
+}
+
+
+// =====================================================
+// AKTIVITAS USER
+// =====================================================
+
+let lastActivityRefresh = 0;
+
+function registerSecurityActivity() {
+
+    const now =
+        Date.now();
+
+    if (
+        now -
+        lastActivityRefresh <
+        SECURITY_CONFIG.ACTIVITY_REFRESH_INTERVAL
+    ) {
+
+        return;
+
+    }
+
+    lastActivityRefresh =
+        now;
+
+    refreshSession();
+
+}
+
+
+function terapkanMenuRole() {
+
+    const session =
+        getSecuritySession();
+
+    if (!session) {
+        return;
+    }
+
+    const role =
+        String(session.role || "")
+            .trim()
+            .toLowerCase();
+
+    document
+        .querySelectorAll(
+            "[data-role-access]"
+        )
+        .forEach(
+            element => {
+
+                const allowed =
+                    String(
+                        element.dataset.roleAccess || ""
+                    )
+                        .split(",")
+                        .map(
+                            value =>
+                                value.trim().toLowerCase()
+                        )
+                        .filter(Boolean);
+
+                element.style.display =
+                    allowed.includes(role)
+                        ? ""
+                        : "none";
+
+            }
+        );
+
+}
+
 
 // =====================================================
 // LOGOUT

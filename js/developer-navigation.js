@@ -1,17 +1,23 @@
 (function(){
   "use strict";
-  const VERSION="27.9.0-commercial-12-devnav-v15";
+  const VERSION="27.9.0-commercial-12-devnav-v14";
   const routes=[
     {key:"overview",icon:"🏠",label:"Ringkasan",href:"developer-license-v2.html#developerOverview",page:"developer-license-v2.html",hash:"#developeroverview"},
     {key:"licenses",icon:"🔐",label:"Customer & Lisensi",href:"developer-license-v2.html#licenseManagement",page:"developer-license-v2.html",hash:"#licensemanagement"},
-    {key:"support",icon:"🛟",label:"Support Center",href:"developer-incident-support.html#supportOverview",page:"developer-incident-support.html",hash:"#supportoverview"}
+    {key:"support",icon:"🛟",label:"Support Center",href:"developer-incident-support.html#supportOverview",page:"developer-incident-support.html",hash:"#supportoverview"},
+    {key:"incident",icon:"🚨",label:"Incident ERR",href:"developer-incident-support.html#incidentLookupPanel",page:"developer-incident-support.html",hash:"#incidentlookuppanel"},
+    {key:"tickets",icon:"🎫",label:"Tiket Customer",href:"developer-incident-support.html#ticketQueuePanel",page:"developer-incident-support.html",hash:"#ticketqueuepanel"}
   ];
   const esc=s=>String(s??"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   function pageName(){return (location.pathname.split("/").pop()||"").toLowerCase()}
   function activeKey(){
     const page=pageName(),hash=(location.hash||"").toLowerCase();
     if(page==="developer-license-v2.html") return hash==="#licensemanagement"?"licenses":"overview";
-    if(page==="developer-incident-support.html") return "support";
+    if(page==="developer-incident-support.html"){
+      if(hash==="#ticketqueuepanel")return "tickets";
+      if(hash==="#incidentlookuppanel")return "incident";
+      return "support";
+    }
     return "";
   }
   function build(){

@@ -36,6 +36,83 @@
 
     addPendingStyle();
 
+    function isJwtIssuedAtFutureError(error){
+        const code =
+            String(
+                error && error.code || ""
+            ).toUpperCase();
+
+        const message =
+            String(
+                error && error.message || error || ""
+            );
+
+        return (
+            code === "PGRST303" &&
+            /jwt\s+issued\s+at\s+future/i.test(message)
+        ) || /PGRST303[\s\S]*jwt\s+issued\s+at\s+future/i.test(message);
+    }
+
+    function wait(ms){
+        return new Promise(
+            resolve =>
+                window.setTimeout(resolve, ms)
+        );
+    }
+
+    async function bootWithJwtClockRetry(){
+        /*
+         * PGRST303 "JWT issued at future" dapat muncul sementara
+         * ketika validator PostgREST melihat waktu yang tertinggal
+         * dari penerbit token. Jangan refresh token di sini karena
+         * token baru justru memiliki iat yang lebih baru. Ulangi
+         * request yang sama dengan jeda terbatas.
+         */
+        const retryDelays = [
+            0,
+            450,
+            1200,
+            2500,
+            4200
+        ];
+
+        let lastError = null;
+
+        for(
+            let attempt = 0;
+            attempt < retryDelays.length;
+            attempt += 1
+        ){
+            const delay =
+                retryDelays[attempt];
+
+            if(delay > 0){
+                await wait(delay);
+            }
+
+            try{
+                return await boot();
+            }catch(error){
+                lastError = error;
+
+                if(
+                    !isJwtIssuedAtFutureError(error) ||
+                    attempt === retryDelays.length - 1
+                ){
+                    throw error;
+                }
+
+                console.warn(
+                    `Cloud Auth Guard: PGRST303 sementara, retry ${attempt + 1}/${retryDelays.length - 1}.`
+                );
+            }
+        }
+
+        throw lastError || new Error(
+            "Cloud Auth Guard gagal setelah retry PGRST303."
+        );
+    }
+
     function hasCachedOfflineLease(){
         try{
             const lease = JSON.parse(
@@ -81,7 +158,13 @@
             )
         );
 
-        if(!preserveOfflineLease){
+        const transientJwtClockFailure =
+            isJwtIssuedAtFutureError(error);
+
+        if(
+            !preserveOfflineLease &&
+            !transientJwtClockFailure
+        ){
             try{
                 if(
                     window.LDMCloudSession
@@ -96,12 +179,18 @@
             }
         }
 
+        const finalMessage =
+            transientJwtClockFailure
+                ? "Supabase Data API sementara menolak JWT karena sinkronisasi waktu (PGRST303). Muat ulang halaman beberapa saat lagi. Session lokal tidak dihapus."
+                : (
+                    error && error.message
+                        ? error.message
+                        : "Session cloud tidak valid."
+                );
+
         const message =
             encodeURIComponent(
-                error &&
-                error.message
-                    ? error.message
-                    : "Session cloud tidak valid."
+                finalMessage
             );
 
         root.classList.remove(
@@ -268,7 +357,7 @@
 
     async function bootWithOfflineFallback(){
         try{
-            return await boot();
+            return await bootWithJwtClockRetry();
         }catch(error){
             const offlineContext =
                 window.LDMOfflineQueue &&
@@ -316,7 +405,8 @@
     window.LDMCloudGuard =
         Object.freeze({
             boot,
-            patchLogoutFunctions
+            patchLogoutFunctions,
+            isJwtIssuedAtFutureError
         });
 
     /*
