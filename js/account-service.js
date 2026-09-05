@@ -11,6 +11,17 @@
         return window.LDMSupabase.createClient();
     }
 
+    async function invokeAccountAdmin(body){
+        if(!window.LDMEdgeFunctionClient || typeof window.LDMEdgeFunctionClient.invoke!=="function"){
+            throw new Error("Edge Function client helper belum tersedia. Muat ulang aplikasi V22.");
+        }
+        return window.LDMEdgeFunctionClient.invoke("ldm-account-admin",{
+            body,
+            timeoutMs:25000,
+            requireAuth:true
+        });
+    }
+
     async function functionErrorMessage(error,fallback){
         if(error && error.context){
             try{
@@ -23,7 +34,11 @@
                 }
             }catch(_ignored){}
         }
-        return String(error && error.message || fallback);
+        const message=String(error && error.message || fallback);
+        if(/Failed to send a request to the Edge Function|Failed to fetch|NetworkError/i.test(message)){
+            return "Tidak dapat menghubungi Edge Function ldm-account-admin. Pastikan function sudah dideploy pada App Supabase, CORS V22 sudah terpasang, dan periksa Functions > ldm-account-admin > Invocations/Logs.";
+        }
+        return message;
     }
 
     async function accountContext(){
@@ -69,19 +84,14 @@
 
     async function createAccount({email,password,username,displayName,role}){
         await ownerContext();
-        const supabase = client();
-        const {data,error} = await supabase.functions.invoke("ldm-account-admin",{
-            body:{
-                action:"create",
-                email:String(email||"").trim().toLowerCase(),
-                password:String(password||""),
-                username:String(username||"").trim(),
-                display_name:String(displayName||"").trim() || null,
-                role:String(role||"kasir").trim().toLowerCase()
-            }
+        const data = await invokeAccountAdmin({
+            action:"create",
+            email:String(email||"").trim().toLowerCase(),
+            password:String(password||""),
+            username:String(username||"").trim(),
+            display_name:String(displayName||"").trim() || null,
+            role:String(role||"kasir").trim().toLowerCase()
         });
-        if(error) throw new Error(await functionErrorMessage(error,"Edge Function create account gagal."));
-        if(data && data.error) throw new Error(data.error);
         localStorage.removeItem("ldmAttendanceProfiles");
         window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
         return data;
@@ -89,11 +99,7 @@
 
     async function deleteAccount(userId){
         await ownerContext();
-        const {data,error} = await client().functions.invoke("ldm-account-admin",{
-            body:{action:"delete",user_id:userId}
-        });
-        if(error) throw new Error(await functionErrorMessage(error,"Edge Function delete account gagal."));
-        if(data && data.error) throw new Error(data.error);
+        const data = await invokeAccountAdmin({action:"delete",user_id:userId});
         localStorage.removeItem("ldmAttendanceProfiles");
         window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
         return data;
@@ -101,11 +107,7 @@
 
     async function reactivateAccount(userId){
         await ownerContext();
-        const {data,error} = await client().functions.invoke("ldm-account-admin",{
-            body:{action:"reactivate",user_id:String(userId||"").trim()}
-        });
-        if(error) throw new Error(await functionErrorMessage(error,"Edge Function reaktivasi akun gagal."));
-        if(data && data.error) throw new Error(data.error);
+        const data = await invokeAccountAdmin({action:"reactivate",user_id:String(userId||"").trim()});
         localStorage.removeItem("ldmAttendanceProfiles");
         window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
         return data;

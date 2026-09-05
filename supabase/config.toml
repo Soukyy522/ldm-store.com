@@ -414,3 +414,7 @@ enabled = true
 
 [functions.ldm-account-admin]
 verify_jwt = false
+
+
+[functions.ldm-storage-maintenance]
+verify_jwt = false

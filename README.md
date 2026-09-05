@@ -108,3 +108,29 @@ Halaman khusus developer kini memakai navigasi bersama yang hanya berada di area
 - Environment guard menolak Production yang masih memakai key Sandbox berawalan `SB-` dan memastikan Notification URL HTTPS tersedia.
 - Checkout legacy `ldm-license-checkout` default dinonaktifkan; jalur production resmi adalah `ldm-public-checkout-v2`.
 - SQL utama: `SQL-41-MIDTRANS-PRODUCTION-HARDENING-LICENSE-AUTHORITY.sql` (jalankan pada License Authority Supabase, bukan App Supabase).
+
+## Commercial #06 V20 — Refund Management + Refund Policy
+- Developer Center sekarang memiliki Refund Management untuk payment `paid` / `partially_refunded`.
+- Kebijakan default: refund maksimal 3 hari kalender sejak `paid_at` dan dapat diubah 1-30 hari dari Developer Center.
+- Refund penuh dan sebagian didukung bila payment provider/Midtrans mendukung.
+- Alasan refund wajib, refund key unik, audit developer, dan riwayat refund tersimpan di License Authority.
+- Customer hanya melihat kebijakan refund pada `license.html` dan mengajukan melalui Pusat Bantuan & Support. Customer tidak dapat menjalankan Refund API.
+- Refund tidak otomatis mencabut lisensi. Tindakan lisensi tetap direview developer.
+- SQL: `SQL-42-REFUND-MANAGEMENT-POLICY.sql` pada PROJECT LICENSE AUTHORITY V2.
+
+## Commercial #06 V21 — Customer Refund Request di Pusat Bantuan & Support
+- Form **Ajukan Refund** kini terintegrasi langsung di `support-center.html`, tanpa menambah menu customer baru.
+- Form hanya tersedia untuk Owner pada browser checkout dan selama `ldm2_refund_eligibility()` masih mengembalikan eligible.
+- Jika batas refund sudah lewat, form input disembunyikan dan diganti informasi deadline/penolakan.
+- Customer request memakai kode `RFD-YYYYMMDD-XXXXXXXXXX` dan disimpan pada `ldm2_refund_requests` di License Authority.
+- Satu request aktif per payment untuk mencegah pengajuan duplikat.
+- Developer Center > Refund Management menampilkan antrean RFD dan menyediakan aksi Tinjau, Tolak, dan Proses.
+- Proses RFD tetap menggunakan Refund API server-side dari V20. Customer tidak memiliki akses langsung ke Midtrans Refund API.
+
+## Storage & Retention Runtime Hardening V22
+- Halaman `penyimpanan.html` sekarang memakai `js/edge-function-client.js` + `js/storage-retention.js` untuk error Edge Function yang lebih diagnostik.
+- `ldm-storage-maintenance` memverifikasi session Owner/Admin di dalam function dan `supabase/config.toml` menetapkan `verify_jwt=false`, sehingga manual call dan Cron secret tidak ditolak gateway sebelum handler berjalan.
+- CORS mengizinkan header aplikasi `x-ldm-device-id`; `ldm-account-admin` juga diperbaiki agar tidak terkena preflight yang sama.
+- Edge Function tidak lagi mengakses `storage.objects` lewat PostgREST. SQL-44 membuat RPC service-role `ldm_storage_cleanup_plan_store(uuid)` yang membaca metadata Storage secara read-only, sedangkan penghapusan object tetap dilakukan lewat Storage API.
+- Jalankan `SQL-44-STORAGE-RETENTION-RUNTIME-HARDENING.sql` pada App Supabase dan deploy `ldm-storage-maintenance` V22 sebelum memakai Cleanup manual.
+- Untuk cleanup Storage otomatis, buat `LDM_STORAGE_CRON_SECRET`, Vault `ldm_app_supabase_url` + `ldm_storage_cron_secret`, lalu jalankan `SQL-44B-STORAGE-CLEANUP-CRON-TEMPLATE.sql` pada App Supabase.

@@ -1,10 +1,10 @@
-// Build: 27.9.0 commercial-06-customer-refund-request-v21
+// Build: 27.9.0 commercial-storage-retention-runtime-hardening-v22
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-06-refund-request-shell-v21`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-06-refund-request-runtime-v21`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-storage-retention-shell-v22`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-storage-retention-runtime-v22`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
@@ -14,7 +14,7 @@ const APP_SHELL = [
     "./assets/icons/maskable-512.png", "./style.css", "./css/global-responsive-navigation.css", "./css/developer-navigation.css", "./css/privacy-center.css", "./css/peripheral-setup-embedded.css", "./css/help-center.css", "./css/support-center-v21.css", "./css/multi-store-dashboard-theme.css", "./css/central-catalog-control.css", "./setting.js", "./employee-id.js",
     "./js/pwa-manager.js", "./js/local-time.js", "./js/developer-navigation.js", "./js/peripheral-setup.js", "./js/peripheral-setup-embedded.js", "./js/receipt-customizer-embedded.js", "./js/onboarding-service.js", "./js/onboarding-wizard.js", "./js/onboarding-dashboard.js", "./js/error-monitor.js", "./js/error-monitor-admin.js", "./js/support-center.js", "./js/privacy-center.js", "./js/user-guide.js", "./js/storage-engine.js", "./js/storage-quota-guard.js", "./js/storage-health-monitor.js", "./js/security-hardening.js", "./js/qa-runtime.js", "./js/recovery-service.js", "./js/global-system-navigation.js", "./js/primary-owner-service.js", "./js/central-catalog-control.js",
     "./js/license-v2-config.js", "./js/license-v2-client.js", "./js/license-checkout-v2.js", "./js/license-v2-guard.js", "./js/license-v2-admin-config.js", "./js/license-v2-admin.js",
-    "./js/offline-queue.js", "./js/supabase-config.js", "./js/supabase-client.js", "./js/account-service.js", "./js/device-service.js",
+    "./js/offline-queue.js", "./js/supabase-config.js", "./js/supabase-client.js", "./js/edge-function-client.js", "./js/storage-retention.js", "./js/account-service.js", "./js/device-service.js",
     "./js/cloud-auth.js", "./js/cloud-session.js", "./js/cloud-session-guard.js",
     "./js/unit-conversion.js", "./js/promo-pricing.js", "./js/multi-store-service.js", "./js/store-mode.js", "./js/product-visuals.js", "./css/store-modes.css", "./js/products-service.js", "./js/products-bootstrap.js",
     "./js/procurement-service.js", "./js/procurement-bootstrap.js",
@@ -103,7 +103,7 @@ self.addEventListener("fetch", event => {
     }
     if(
         url.origin === self.location.origin &&
-        /\/js\/(?:local-time|developer-navigation|global-system-navigation|peripheral-setup|peripheral-setup-embedded|receipt-customizer-embedded|onboarding-service|onboarding-wizard|onboarding-dashboard|error-monitor|error-monitor-admin|support-center|privacy-center|cloud-session-guard|license-checkout-v2|license-v2-(?:config|client|guard|admin-config|admin)|reporting-(?:service|bootstrap))\.js$/i.test(url.pathname)
+        /\/js\/(?:local-time|developer-navigation|global-system-navigation|peripheral-setup|peripheral-setup-embedded|receipt-customizer-embedded|onboarding-service|onboarding-wizard|onboarding-dashboard|error-monitor|error-monitor-admin|support-center|privacy-center|edge-function-client|storage-retention|account-service|cloud-session-guard|license-checkout-v2|license-v2-(?:config|client|guard|admin-config|admin)|reporting-(?:service|bootstrap))\.js$/i.test(url.pathname)
     ){
         event.respondWith(networkFirstAsset(request));
         return;
