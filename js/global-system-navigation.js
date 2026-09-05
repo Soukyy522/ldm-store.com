@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.9.0-commercial04-integrated2";
+    const NAV_VERSION="27.9.0-privacy18";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -41,6 +41,7 @@
         {page:"setup-awal.html",icon:"🚀",label:"Setup Awal",group:"Sistem",roles:["owner"],infrastructure:true},
         {page:"monitoring-error.html",icon:"🚨",label:"Monitoring Error",group:"Sistem",roles:["owner","admin"],infrastructure:true},
         {page:"support-center.html",icon:"🛟",label:"Pusat Bantuan & Support",group:"Sistem",roles:["owner","admin","kasir"]},
+        {page:"privacy-center.html",icon:"🔐",label:"Privacy Center",group:"Sistem",roles:["owner","admin","kasir"],infrastructure:true},
         {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"panduan.html",icon:"📘",label:"Panduan Pengguna",group:"Sistem",roles:["owner","admin","kasir"]}
     ];
