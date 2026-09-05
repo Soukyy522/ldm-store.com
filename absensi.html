@@ -4,7 +4,7 @@
     <script src="js/storage-engine.js?v=27.7.1"></script>
     <script src="js/storage-quota-guard.js?v=27.7.1"></script>
     <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
-<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script>    <script src="js/error-monitor.js?v=27.9.0-monitor1"></script>
+<script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script>    <script src="js/error-monitor.js?v=27.9.0-monitor3"></script>
 <script defer src="js/qa-runtime.js?v=19.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3012,6 +3012,100 @@ function cekAbsensiOwnerTanggal() {
         alertBox.classList.add("show");
     }
 
+}
+
+// =====================================================
+// BADGE NOTIFIKASI ABSENSI OWNER
+// =====================================================
+
+function hitungAkunBelumAbsenPadaTanggal(tanggal) {
+    if (!tanggal) return 0;
+
+    const akunList = getDatabaseAkun();
+    const logAbsensi = JSON.parse(
+        localStorage.getItem("dataAbsensi") || "[]"
+    );
+
+    return akunList.reduce((total, akun) => {
+        const username = String(akun && akun.username || "")
+            .trim()
+            .toLowerCase();
+
+        if (!username) return total;
+
+        const sudahAbsen = logAbsensi.some(item =>
+            String(item && item.username || "")
+                .trim()
+                .toLowerCase() === username
+            && item.tanggal === tanggal
+        );
+
+        return total + (sudahAbsen ? 0 : 1);
+    }, 0);
+}
+
+function updateOwnerNotificationBadge() {
+    if (!hasPermission("absensi.history")) return;
+
+    const badge = document.getElementById(
+        "ownerAttendanceNotificationBadge"
+    );
+
+    if (!badge) return;
+
+    const input = document.getElementById(
+        "ownerAttendanceDate"
+    );
+
+    let tanggal = input && input.value;
+
+    if (!tanggal) {
+        const kemarin = new Date();
+        kemarin.setDate(kemarin.getDate() - 1);
+        tanggal = getTanggalWITA(kemarin);
+    }
+
+    const total = hitungAkunBelumAbsenPadaTanggal(tanggal);
+    badge.textContent = String(total);
+    badge.classList.toggle("show", total > 0);
+    badge.setAttribute(
+        "aria-label",
+        total > 0
+            ? `${total} akun belum melakukan absensi`
+            : "Semua akun sudah melakukan absensi"
+    );
+}
+
+function updateOwnerHistoryNotification() {
+    if (!hasPermission("absensi.history")) return;
+
+    const badge = document.getElementById(
+        "ownerHistoryNotification"
+    );
+
+    if (!badge) return;
+
+    const input = document.getElementById(
+        "ownerHistoryDate"
+    );
+
+    let tanggal = input && input.value;
+
+    if (!tanggal) {
+        const kemarin = new Date();
+        kemarin.setDate(kemarin.getDate() - 1);
+        tanggal = getTanggalWITA(kemarin);
+    }
+
+    const total = hitungAkunBelumAbsenPadaTanggal(tanggal);
+    badge.textContent = String(total);
+    badge.classList.toggle("show", total > 0);
+    badge.setAttribute(
+        "aria-label",
+        total > 0
+            ? `${total} akun belum melakukan absensi pada tanggal riwayat`
+            : "Semua akun sudah melakukan absensi pada tanggal riwayat"
+    );
 }
 
 // =====================================================

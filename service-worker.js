@@ -1,10 +1,10 @@
-// Build: 27.9.0 commercial-support-v5-login-nav-fix
+// Build: 27.9.0 commercial-support-v6-runtime-fix
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-support-center-v5-login-nav-fix-shell-v5`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-support-center-v5-login-nav-fix-runtime-v5`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-support-center-v6-runtime-fix-shell-v6`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-support-center-v6-runtime-fix-runtime-v6`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
