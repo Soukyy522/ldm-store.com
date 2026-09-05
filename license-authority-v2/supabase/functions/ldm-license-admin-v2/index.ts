@@ -75,6 +75,13 @@ function validIncidentCode(value: unknown) {
   }
   return code;
 }
+function validSupportTicketCode(value: unknown) {
+  const code = clean(value, 40).toUpperCase();
+  if (!/^SUP-\d{8}-[A-F0-9]{10}$/.test(code)) {
+    throw Object.assign(new Error("Kode tiket Support tidak valid. Contoh: SUP-20260905-A72C91D083"), { status: 400 });
+  }
+  return code;
+}
 async function createMidtransSnap(input: {
   orderId: string;
   amount: number;
@@ -166,6 +173,17 @@ Deno.serve(async (req) => {
       });
     };
 
+    if (action === "incident_support_info") {
+      return json(req, {
+        ok: true,
+        support_api_version: "commercial-12-support-v1",
+        actions: [
+          "incident_lookup", "incident_support_update",
+          "support_ticket_queue", "support_ticket_lookup", "support_ticket_update"
+        ]
+      });
+    }
+
     if (action === "incident_lookup") {
       const incidentCode = validIncidentCode(body.incident_code);
       const app = applicationAdminClient();
@@ -189,7 +207,7 @@ Deno.serve(async (req) => {
         incident_code: incidentCode,
         store_id: incident.store_id,
       });
-      return json(req, { ok: true, incident, store: store || null });
+      return json(req, { ok: true, support_api_version: "commercial-01-support-v3", incident, store: store || null });
     }
 
     if (action === "incident_support_update") {
@@ -236,6 +254,93 @@ Deno.serve(async (req) => {
         note: note ? note.slice(0, 240) : null,
       });
       return json(req, { ok: true, incident });
+    }
+
+    if (action === "support_ticket_queue") {
+      const app = applicationAdminClient();
+      const limit = Math.max(1, Math.min(Number(body.limit || 60), 100));
+      const requestedStatus = clean(body.status, 30).toLowerCase();
+      let query = app.from("support_tickets")
+        .select("id,ticket_code,store_id,created_by,created_username,created_role,ticket_type,category,subject,description,related_page,incident_code,app_version,browser,online,status,resolution_note,support_last_action_at,resolved_at,created_at,updated_at")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (["open", "investigating", "waiting_customer", "resolved", "closed"].includes(requestedStatus)) {
+        query = query.eq("status", requestedStatus);
+      } else {
+        query = query.in("status", ["open", "investigating", "waiting_customer"]);
+      }
+      const { data: tickets, error: ticketError } = await query;
+      if (ticketError) {
+        if (/support_tickets/i.test(ticketError.message || "")) {
+          throw new Error("SQL-38-CUSTOMER-SUPPORT-REPORTING.sql belum dijalankan pada App Supabase.");
+        }
+        throw ticketError;
+      }
+      const storeIds = [...new Set((tickets || []).map((t: any) => String(t.store_id || "")).filter(Boolean))];
+      let stores: any[] = [];
+      if (storeIds.length) {
+        const { data: storeRows, error: storeError } = await app.from("stores").select("id,code,name,status").in("id", storeIds);
+        if (storeError) throw storeError;
+        stores = storeRows || [];
+      }
+      const storeMap = new Map(stores.map((st: any) => [String(st.id), st]));
+      const rows = (tickets || []).map((t: any) => ({ ...t, store: storeMap.get(String(t.store_id)) || null }));
+      await audit("support_ticket_queue", null, { count: rows.length, status: requestedStatus || "active" });
+      return json(req, { ok: true, support_api_version: "commercial-12-support-v1", tickets: rows });
+    }
+
+    if (action === "support_ticket_lookup") {
+      const ticketCode = validSupportTicketCode(body.ticket_code);
+      const app = applicationAdminClient();
+      const { data: ticket, error: ticketError } = await app.from("support_tickets")
+        .select("id,ticket_code,store_id,created_by,created_username,created_role,ticket_type,category,subject,description,related_page,incident_code,app_version,browser,online,status,resolution_note,support_last_action_at,resolved_at,created_at,updated_at")
+        .eq("ticket_code", ticketCode).maybeSingle();
+      if (ticketError) {
+        if (/support_tickets/i.test(ticketError.message || "")) {
+          throw new Error("SQL-38-CUSTOMER-SUPPORT-REPORTING.sql belum dijalankan pada App Supabase.");
+        }
+        throw ticketError;
+      }
+      if (!ticket) return json(req, { ok: false, message: "Tiket Support tidak ditemukan." }, 404);
+      const { data: store, error: storeError } = await app.from("stores").select("id,code,name,status").eq("id", ticket.store_id).maybeSingle();
+      if (storeError) throw storeError;
+      await audit("support_ticket_lookup", null, { ticket_code: ticketCode, store_id: ticket.store_id });
+      return json(req, { ok: true, support_api_version: "commercial-12-support-v1", ticket, store: store || null });
+    }
+
+    if (action === "support_ticket_update") {
+      const ticketCode = validSupportTicketCode(body.ticket_code);
+      const status = clean(body.status, 30).toLowerCase();
+      const note = clean(body.note, 2000);
+      if (!["open", "investigating", "waiting_customer", "resolved", "closed"].includes(status)) {
+        return json(req, { ok: false, message: "Status tiket Support tidak valid." }, 400);
+      }
+      const app = applicationAdminClient();
+      const nowIso = new Date().toISOString();
+      const update: Record<string, unknown> = {
+        status,
+        support_last_action_at: nowIso,
+        resolution_note: note || null,
+        resolved_at: ["resolved", "closed"].includes(status) ? nowIso : null,
+      };
+      const { data: ticket, error: updateError } = await app.from("support_tickets")
+        .update(update).eq("ticket_code", ticketCode)
+        .select("id,ticket_code,store_id,status,resolution_note,support_last_action_at,resolved_at,updated_at")
+        .maybeSingle();
+      if (updateError) {
+        if (/support_tickets/i.test(updateError.message || "")) {
+          throw new Error("SQL-38-CUSTOMER-SUPPORT-REPORTING.sql belum dijalankan pada App Supabase.");
+        }
+        throw updateError;
+      }
+      if (!ticket) return json(req, { ok: false, message: "Tiket Support tidak ditemukan." }, 404);
+      await audit("support_ticket_update", null, {
+        ticket_code: ticketCode,
+        store_id: ticket.store_id,
+        status,
+        note: note ? note.slice(0, 240) : null,
+      });
+      return json(req, { ok: true, support_api_version: "commercial-12-support-v1", ticket });
     }
 
     if (action === "dashboard") {
