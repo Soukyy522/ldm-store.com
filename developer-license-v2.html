@@ -9,6 +9,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Developer Center · Lisensi LocDailyMar</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/developer-navigation.css?v=27.9.0-devnav14">
   <style>
     :root{--navy:#0d2544;--blue:#1464cc;--bg:#edf2f7;--ink:#132844;--muted:#6a788c;--line:#dae3ee;--green:#07865f;--red:#b42318;--amber:#b96b00}
     *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Poppins,system-ui,sans-serif;color:var(--ink)}button,input,select,textarea{font:inherit}
@@ -23,9 +24,10 @@
     .result{margin-top:14px;padding:14px;border-radius:11px;background:#edf8f3;color:#096a4d;font-size:12px;word-break:break-word;display:none}.result.show{display:block}.result code{display:block;background:#fff;border:1px solid #cce7da;padding:8px;border-radius:8px;margin:4px 0 9px;color:#123;word-break:break-all}.device{padding:12px;border:1px solid var(--line);border-radius:11px;margin-top:9px;display:flex;justify-content:space-between;gap:10px}.device span{font-size:11px;color:var(--muted);display:block}.empty{text-align:center;padding:35px;color:var(--muted)}.archivedRow{opacity:.72;background:#f8fafc}.archiveBadge{background:#e9edf3;color:#536174}.filters{display:flex;gap:8px;flex-wrap:wrap}.filters input,.filters select{border:1px solid #cbd8e6;border-radius:9px;padding:8px 10px;background:#fff;color:var(--ink);font-size:11px}.dangerSolid{background:#b42318!important;color:#fff!important}.warningBox{background:#fff7e8;border:1px solid #f4d49b;color:#7a4a00;padding:12px;border-radius:11px;font-size:11px;line-height:1.6;margin-bottom:12px}
     @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:14px}.top{padding:0 14px}}
   </style>
+  <script defer src="js/developer-navigation.js?v=27.9.0-devnav14"></script>
 </head>
 <body>
-  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.8.1 · Lisensi · Pembayaran · Incident Support</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.8.1 · Lisensi · Pembayaran · Support Center</span></div><button id="logoutBtn" hidden>Keluar</button></header>
   <main class="wrap">
     <section class="login" id="loginBox">
       <h1>Login developer</h1>
@@ -37,7 +39,7 @@
     </section>
 
     <section class="app" id="app">
-      <div class="stats">
+      <div class="stats developer-nav-target" id="developerOverview">
         <div class="stat"><span>SEMUA LISENSI</span><strong id="sTotal">0</strong></div>
         <div class="stat"><span>AKTIF</span><strong id="sActive">0</strong></div>
         <div class="stat"><span>TRIAL AKTIF</span><strong id="sTrial">0</strong></div>
@@ -45,7 +47,7 @@
         <div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div>
         <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div><div class="stat"><span>DIARSIPKAN</span><strong id="sArchived">0</strong></div>
       </div>
-      <div class="toolbar"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><a class="btn soft" href="developer-incident-support.html" style="display:inline-flex;align-items:center">🚨 Incident Support</a><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
+      <div class="toolbar developer-nav-target" id="licenseManagement"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
       <div class="warningBox"><b>Penghapusan aman:</b> gunakan <b>Arsipkan</b> untuk customer/lisensi yang sudah tidak digunakan. <b>Hapus Permanen</b> hanya diizinkan untuk lisensi yang benar-benar belum pernah dipakai, tidak pernah dibayar/refund, tidak pernah klaim trial, tidak pernah diaktivasi perangkat, dan belum diprovision ke Cloud Data Toko.</div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
     </section>
   </main>

@@ -61,6 +61,16 @@ File test browser tahap lama, duplikat service JS di root, checkout legacy, doku
 - Setup Awal adalah infrastructure menu, bukan fitur paket berbayar.
 
 
+## Commercial Readiness #12 — Support Center & Feedback Terintegrasi (V13)
+
+- Customer melaporkan masalah langsung dari `support-center.html`; tidak ada menu Support baru.
+- Laporan mendapat kode `SUP-YYYYMMDD-XXXXXXXXXX` dan disimpan store-scoped pada `support_tickets`.
+- Owner/Admin dapat melihat seluruh tiket toko aktif; Kasir hanya tiket yang dibuat akunnya sendiri.
+- Kode `ERR-...` Monitoring Error dapat dilampirkan opsional untuk menghubungkan laporan customer dengan incident teknis.
+- Developer Center `developer-incident-support.html` kini memuat Customer Support Ticket Queue dan dapat mengubah status Open / Investigating / Waiting Customer / Resolved / Closed melalui Edge Function server-side.
+- Browser customer tidak memiliki akses global ke tiket toko lain. Service Role App Supabase tetap hanya berada pada Edge Function Developer Center.
+- SQL tambahan: `SQL-38-CUSTOMER-SUPPORT-REPORTING.sql`.
+
 ## Commercial Readiness #04 — Printer, Scanner & Kustomisasi Struk terintegrasi Setup Awal (V11)
 - Printer & Scanner kini terintegrasi langsung pada langkah 5 `setup-awal.html`; tidak menambah menu Sistem baru.
 - `printer-scanner-setup.html` dipertahankan hanya sebagai redirect kompatibilitas ke `setup-awal.html#stepDevice`.
@@ -72,3 +82,8 @@ File test browser tahap lama, duplikat service JS di root, checkout legacy, doku
 - Wizard dapat menandai printer/scanner sebagai tidak digunakan agar toko tanpa salah satu perangkat tetap valid.
 - Owner yang menyelesaikan wizard juga memperbarui langkah `device` pada Setup Awal #02 melalui RPC yang sudah ada.
 - Tidak ada SQL baru pada #04.
+
+
+## Developer Center Navigation — V14
+
+Halaman khusus developer kini memakai navigasi bersama yang hanya berada di area aplikasi developer setelah session Developer Center valid. Menu: Ringkasan, Customer & Lisensi, Support Center, Incident ERR, dan Tiket Customer. Asset: `css/developer-navigation.css` + `js/developer-navigation.js`. Navigasi customer tidak dipakai pada halaman developer.

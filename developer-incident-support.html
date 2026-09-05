@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>Incident Support · LocDailyMar Developer Center</title>
+  <title>Support Center · LocDailyMar Developer Center</title>
   <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="css/developer-navigation.css?v=27.9.0-devnav14">
   <style>
     :root{--navy:#0d2544;--blue:#1464cc;--bg:#edf2f7;--ink:#132844;--muted:#6a788c;--line:#dae3ee;--green:#07865f;--red:#b42318;--amber:#b96b00}
     *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Poppins,Inter,system-ui,sans-serif;color:var(--ink)}button,input,textarea{font:inherit}
@@ -16,12 +17,15 @@
     .result{display:none}.result.show{display:block}.statusline{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:900}.b-open{background:#fee2e2;color:#991b1b}.b-investigating{background:#fef3c7;color:#92400e}.b-resolved{background:#dcfce7;color:#166534}.b-warning{background:#fef3c7;color:#92400e}.b-error{background:#fee2e2;color:#991b1b}.b-critical{background:#7f1d1d;color:#fff}
     .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.info{background:#f7f9fc;border:1px solid #e8edf4;border-radius:11px;padding:10px;min-width:0}.info span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:800;letter-spacing:.03em}.info strong{display:block;margin-top:4px;font-size:12px;overflow-wrap:anywhere}.wide{grid-column:1/-1}.detail{margin-top:12px}.detail h3{font-size:13px;margin:13px 0 6px}.box,pre{margin:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:11px;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.box{line-height:1.6}pre{background:#0f172a;color:#dbeafe;max-height:260px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.support-note{margin-top:14px;padding:12px;border:1px solid #bfdbfe;background:#eff6ff;color:#1e3a8a;border-radius:11px;font-size:11px;line-height:1.6}
     @media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.lookup{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.wide{grid-column:1/-1}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.wrap{width:min(100% - 18px,1050px)}}
+
+    .ticket-toolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:14px}.ticket-toolbar .field{min-width:180px;flex:1}.ticket-toolbar select{border:1px solid #cbd8e6;border-radius:10px;padding:10px;background:#fff}.ticket-list{display:grid;gap:10px;margin-top:13px}.ticket-card{border:1px solid #dfe7f0;background:#fbfdff;border-radius:12px;padding:13px}.ticket-card .head{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.ticket-card code{font-weight:900;color:#143b65}.ticket-card .subject{font-weight:800;margin-top:4px}.ticket-card .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.ticket-card .desc{white-space:pre-wrap;margin-top:10px;font-size:12px;line-height:1.55;background:#f6f9fc;border-radius:9px;padding:10px}.ticket-card .ticket-note{white-space:pre-wrap;margin-top:9px;background:#eff8f3;border:1px solid #c9ead7;color:#175c3b;border-radius:9px;padding:9px;font-size:11px;line-height:1.55}.ticket-empty{padding:18px;text-align:center;border:1px dashed #cdd9e5;border-radius:10px;color:var(--muted)}
   </style>
+  <script defer src="js/developer-navigation.js?v=27.9.0-devnav14"></script>
 </head>
 <body>
 <header class="top">
-  <div><strong>LocDailyMar Developer Center</strong><span>Incident Support · pencarian berdasarkan kode yang diberikan customer</span></div>
-  <div class="top-actions"><a href="developer-license-v2.html">← Lisensi</a><button id="logoutBtn" hidden>Keluar</button></div>
+  <div><strong>LocDailyMar Developer Center</strong><span>Incident Support + Customer Ticket Queue</span></div>
+  <div class="top-actions"><button id="logoutBtn" hidden>Keluar</button></div>
 </header>
 <main class="wrap">
   <section id="loginBox" class="panel login">
@@ -34,7 +38,8 @@
   </section>
 
   <section id="app" hidden>
-    <section class="panel">
+    <div id="supportOverview" class="developer-nav-target" aria-hidden="true"></div>
+    <section class="panel developer-nav-target" id="incidentLookupPanel">
       <h1>🔎 Support Incident Lookup</h1>
       <p class="note">Masukkan <b>kode incident persis</b> yang dikirim customer. Sistem tidak menyediakan daftar global semua incident agar data antar-customer tidak terbuka tanpa kebutuhan support.</p>
       <div class="lookup">
@@ -61,6 +66,20 @@
         <button id="reopenBtn" class="btn danger">Buka Lagi</button>
       </div>
       <div class="support-note"><b>Audit:</b> pencarian dan perubahan status dicatat di audit Developer Center menggunakan email developer yang login. Email developer tidak ditulis ke database customer.</div>
+    </section>
+
+    <section class="panel developer-nav-target" id="ticketQueuePanel">
+      <div style="display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap">
+        <div><h1>🎫 Customer Support Tickets</h1><p class="note">Antrean laporan <b>SUP-...</b> yang dikirim langsung customer dari Pusat Bantuan & Support. Tiket memang ditujukan ke Support sehingga dapat tampil sebagai antrean.</p></div>
+        <button id="ticketRefreshBtn" class="btn soft">↻ Refresh</button>
+      </div>
+      <div class="ticket-toolbar">
+        <div class="field" style="margin:0"><label>Status</label><select id="ticketStatusFilter"><option value="active">Aktif</option><option value="open">Terbuka</option><option value="investigating">Investigasi</option><option value="waiting_customer">Menunggu Customer</option><option value="resolved">Selesai</option><option value="closed">Ditutup</option></select></div>
+        <div class="field" style="margin:0;flex:2"><label>Cari kode exact (opsional)</label><input id="ticketCodeLookup" placeholder="SUP-20260905-A72C91D083" maxlength="40" spellcheck="false"></div>
+        <button id="ticketLookupBtn" class="btn primary">Cari Tiket</button>
+      </div>
+      <div id="ticketMessage" class="message"></div>
+      <div id="ticketList" class="ticket-list"><div class="ticket-empty">Memuat antrean Support...</div></div>
     </section>
   </section>
 </main>
@@ -138,12 +157,41 @@
       await lookup();
     }catch(e){message(e.message)}
   }
-  $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true)}catch(e){$("loginMessage").textContent=e.message}};
+  function ticketStatusLabel(v){return ({open:"Terbuka",investigating:"Investigasi",waiting_customer:"Menunggu Customer",resolved:"Selesai",closed:"Ditutup"})[String(v||"open")]||v}
+  function ticketTypeLabel(v){return ({issue:"Masalah/Bug",feedback:"Feedback",question:"Pertanyaan"})[String(v||"")]||v||"-"}
+  function ticketMsg(text,type="error"){$("ticketMessage").textContent=text||"";$("ticketMessage").className="message "+(type==="ok"?"ok":"")}
+  async function ticketUpdate(code,status){
+    const defaults={investigating:"Laporan sedang diperiksa oleh LocDailyMar Support.",waiting_customer:"Support memerlukan informasi tambahan dari customer.",resolved:"Masalah telah ditangani oleh LocDailyMar Support.",closed:"Tiket ditutup oleh LocDailyMar Support.",open:"Tiket dibuka kembali oleh LocDailyMar Support."};
+    const note=prompt("Catatan yang boleh dilihat customer:",defaults[status]||"");if(note===null)return;
+    try{await LDMLicenseV2Admin.call("support_ticket_update",{ticket_code:code,status,note});ticketMsg(`Tiket ${code} diperbarui.`,"ok");await loadTicketQueue()}catch(e){ticketMsg(e.message)}
+  }
+  function renderTicketRows(rows){
+    const host=$("ticketList");
+    if(!Array.isArray(rows)||!rows.length){host.innerHTML='<div class="ticket-empty">Tidak ada tiket pada filter ini.</div>';return}
+    host.innerHTML=rows.map(row=>{
+      const t=row.ticket||row,st=row.store||t.store||{};
+      const meta=[ticketStatusLabel(t.status),ticketTypeLabel(t.ticket_type),t.category||"-",`${st.name||"Toko"}${st.code?` · ${st.code}`:""}`,`${t.created_role||"-"} / ${t.created_username||"-"}`,dt(t.created_at)].map(x=>`<span class="badge b-open">${esc(x)}</span>`).join("");
+      return `<article class="ticket-card"><div class="head"><div><code>${esc(t.ticket_code)}</code><div class="subject">${esc(t.subject)}</div></div><div class="actions" style="margin:0"><button class="btn warning js-ticket-action" data-code="${esc(t.ticket_code)}" data-status="investigating">Investigasi</button><button class="btn soft js-ticket-action" data-code="${esc(t.ticket_code)}" data-status="waiting_customer">Menunggu</button><button class="btn success js-ticket-action" data-code="${esc(t.ticket_code)}" data-status="resolved">Selesai</button><button class="btn danger js-ticket-action" data-code="${esc(t.ticket_code)}" data-status="closed">Tutup</button></div></div><div class="meta">${meta}${t.incident_code?`<span class="badge b-warning">${esc(t.incident_code)}</span>`:""}</div><div class="desc">${esc(t.description||"-")}</div>${t.related_page?`<div class="note" style="margin-top:8px">Halaman/Fitur: ${esc(t.related_page)} · App ${esc(t.app_version||"-")} · Online ${t.online===true?"Ya":t.online===false?"Tidak":"-"}</div>`:""}${t.resolution_note?`<div class="ticket-note"><b>Catatan Support:</b><br>${esc(t.resolution_note)}</div>`:""}</article>`
+    }).join("");
+    host.querySelectorAll(".js-ticket-action").forEach(b=>b.onclick=()=>ticketUpdate(b.dataset.code,b.dataset.status));
+  }
+  async function loadTicketQueue(){
+    const filter=$("ticketStatusFilter").value;ticketMsg("Memuat tiket...","ok");
+    try{const d=await LDMLicenseV2Admin.call("support_ticket_queue",{status:filter==="active"?"":filter,limit:80});renderTicketRows(d.tickets||[]);ticketMsg(`Antrean dimuat · ${(d.tickets||[]).length} tiket.`,"ok")}
+    catch(e){$("ticketList").innerHTML='<div class="ticket-empty">Antrean belum dapat dimuat.</div>';const m=String(e&&e.message||"");if(/Action admin tidak dikenal:\s*support_ticket_queue/i.test(m)){ticketMsg("Edge Function Developer Center masih versi lama. Deploy ulang ldm-license-admin-v2 setelah SQL-38 dipasang.")}else{ticketMsg(m||"Gagal memuat antrean.")}}
+  }
+  async function lookupSupportTicket(){
+    const code=String($("ticketCodeLookup").value||"").trim().toUpperCase();$("ticketCodeLookup").value=code;
+    if(!/^SUP-\d{8}-[A-F0-9]{10}$/.test(code)){ticketMsg("Format kode SUP tidak valid.");return}
+    try{const d=await LDMLicenseV2Admin.call("support_ticket_lookup",{ticket_code:code});renderTicketRows([{...d.ticket,store:d.store}]);ticketMsg("Tiket ditemukan.","ok")}catch(e){ticketMsg(e.message)}
+  }
+  $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await loadTicketQueue()}catch(e){$("loginMessage").textContent=e.message}};
   $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false);current=null;$("result").classList.remove("show")};
   $("lookupBtn").onclick=lookup;$("incidentCode").addEventListener("keydown",e=>{if(e.key==="Enter")lookup()});
   $("investigateBtn").onclick=()=>updateStatus("investigating");$("resolveBtn").onclick=()=>updateStatus("resolved");$("reopenBtn").onclick=()=>updateStatus("open");
   $("copySummaryBtn").onclick=async()=>{if(!current)return;try{await navigator.clipboard.writeText(summaryText());message("Ringkasan incident disalin.","ok")}catch{message("Browser tidak mengizinkan clipboard. Salin detail secara manual.")}};
-  (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Konfigurasi Developer Center belum tersedia.";return}const session=await LDMLicenseV2Admin.session();showApp(Boolean(session))}catch(e){$("loginMessage").textContent=e.message}})();
+  $("ticketRefreshBtn").onclick=loadTicketQueue;$("ticketStatusFilter").onchange=loadTicketQueue;$("ticketLookupBtn").onclick=lookupSupportTicket;$("ticketCodeLookup").addEventListener("keydown",e=>{if(e.key==="Enter")lookupSupportTicket()});
+  (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Konfigurasi Developer Center belum tersedia.";return}const session=await LDMLicenseV2Admin.session();showApp(Boolean(session));if(session)await loadTicketQueue()}catch(e){$("loginMessage").textContent=e.message}})();
 })();
 </script>
 </body>
