@@ -24,7 +24,7 @@
 </head>
 <body>
 <header class="top">
-  <div><strong>LocDailyMar Developer Center</strong><span>Incident Support + Customer Ticket Queue</span></div>
+  <div><strong>LocDailyMar Developer Center</strong><span>Incident Support + Customer Ticket Queue + Privacy Requests</span></div>
   <div class="top-actions"><button id="logoutBtn" hidden>Keluar</button></div>
 </header>
 <main class="wrap">
@@ -80,6 +80,19 @@
       </div>
       <div id="ticketMessage" class="message"></div>
       <div id="ticketList" class="ticket-list"><div class="ticket-empty">Memuat antrean Support...</div></div>
+    </section>
+    <section class="panel" id="privacyQueuePanel">
+      <div style="display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap">
+        <div><h1>🔐 Privacy Requests</h1><p class="note">Antrean request <b>PRV-...</b> dari Privacy Center customer. Request ini dapat berisi data pribadi, jadi gunakan hanya untuk kebutuhan verifikasi dan pemenuhan permintaan.</p></div>
+        <button id="privacyRefreshBtn" class="btn soft">↻ Refresh</button>
+      </div>
+      <div class="ticket-toolbar">
+        <div class="field" style="margin:0"><label>Status</label><select id="privacyStatusFilter"><option value="active">Aktif</option><option value="submitted">Diajukan</option><option value="verifying">Verifikasi</option><option value="processing">Diproses</option><option value="waiting_user">Menunggu User</option><option value="completed">Selesai</option><option value="rejected">Ditolak</option><option value="cancelled">Dibatalkan</option></select></div>
+        <div class="field" style="margin:0;flex:2"><label>Cari kode exact (opsional)</label><input id="privacyCodeLookup" placeholder="PRV-20260906-A72C91D083" maxlength="40" spellcheck="false"></div>
+        <button id="privacyLookupBtn" class="btn primary">Cari Request</button>
+      </div>
+      <div id="privacyDevMessage" class="message"></div>
+      <div id="privacyDevList" class="ticket-list"><div class="ticket-empty">Memuat antrean Privacy Request...</div></div>
     </section>
   </section>
 </main>
@@ -185,13 +198,45 @@
     if(!/^SUP-\d{8}-[A-F0-9]{10}$/.test(code)){ticketMsg("Format kode SUP tidak valid.");return}
     try{const d=await LDMLicenseV2Admin.call("support_ticket_lookup",{ticket_code:code});renderTicketRows([{...d.ticket,store:d.store}]);ticketMsg("Tiket ditemukan.","ok")}catch(e){ticketMsg(e.message)}
   }
-  $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await loadTicketQueue()}catch(e){$("loginMessage").textContent=e.message}};
+
+  function privacyStatusLabel(v){return ({submitted:"Diajukan",verifying:"Verifikasi",processing:"Diproses",waiting_user:"Menunggu User",completed:"Selesai",rejected:"Ditolak",cancelled:"Dibatalkan"})[String(v||"submitted")]||v}
+  function privacyTypeLabel(v){return ({access_copy:"Akses/Salinan",correction:"Koreksi",restriction:"Pembatasan",deletion:"Penghapusan",withdraw_consent:"Tarik Persetujuan",portability:"Portabilitas",automated_decision_objection:"Keberatan Otomatis",other:"Lainnya"})[String(v||"")]||v||"-"}
+  function privacyMsg(text,type="error"){$("privacyDevMessage").textContent=text||"";$("privacyDevMessage").className="message "+(type==="ok"?"ok":"")}
+  async function privacyUpdate(code,status){
+    const defaults={verifying:"Permintaan sedang diverifikasi.",processing:"Permintaan sedang diproses.",waiting_user:"Diperlukan informasi tambahan dari pemohon.",completed:"Permintaan telah selesai diproses.",rejected:"Permintaan tidak dapat dipenuhi. Jelaskan alasan dan dasar yang relevan.",submitted:"Permintaan dikembalikan ke status diajukan."};
+    const note=prompt("Catatan yang boleh dilihat pemohon:",defaults[status]||"");if(note===null)return;
+    try{await LDMLicenseV2Admin.call("privacy_request_update",{request_code:code,status,note});privacyMsg(`Privacy Request ${code} diperbarui.`,"ok");await loadPrivacyQueue()}catch(e){privacyMsg(e.message)}
+  }
+  function renderPrivacyRows(rows){
+    const host=$("privacyDevList");
+    if(!Array.isArray(rows)||!rows.length){host.innerHTML='<div class="ticket-empty">Tidak ada Privacy Request pada filter ini.</div>';return}
+    host.innerHTML=rows.map(row=>{
+      const r=row.request||row,st=row.store||r.store||{};
+      const meta=[privacyStatusLabel(r.status),privacyTypeLabel(r.request_type),r.data_scope||"-",`${st.name||"Toko"}${st.code?` · ${st.code}`:""}`,`${r.requested_role||"-"} / ${r.requested_username||"-"}`,dt(r.created_at)].map(x=>`<span class="badge b-open">${esc(x)}</span>`).join("");
+      const due=r.statutory_due_at?`<span class="badge b-warning">Target ${esc(dt(r.statutory_due_at))}</span>`:"";
+      const correction=r.desired_correction?`<div class="ticket-note" style="background:#f8fafc;border-color:#dfe7f0;color:#344054"><b>Data yang diminta untuk dikoreksi:</b><br>${esc(r.desired_correction)}</div>`:"";
+      return `<article class="ticket-card"><div class="head"><div><code>${esc(r.request_code)}</code><div class="subject">${esc(privacyTypeLabel(r.request_type))}</div></div><div class="actions" style="margin:0"><button class="btn soft js-prv-action" data-code="${esc(r.request_code)}" data-status="verifying">Verifikasi</button><button class="btn warning js-prv-action" data-code="${esc(r.request_code)}" data-status="processing">Proses</button><button class="btn soft js-prv-action" data-code="${esc(r.request_code)}" data-status="waiting_user">Menunggu</button><button class="btn success js-prv-action" data-code="${esc(r.request_code)}" data-status="completed">Selesai</button><button class="btn danger js-prv-action" data-code="${esc(r.request_code)}" data-status="rejected">Tolak</button></div></div><div class="meta">${meta}${due}</div><div class="desc">${esc(r.details||"-")}</div>${correction}${r.response_note?`<div class="ticket-note"><b>Catatan Privacy Support:</b><br>${esc(r.response_note)}</div>`:""}<div class="note" style="margin-top:8px">Email: ${esc(r.requester_email||"-")} · App ${esc(r.app_version||"-")} · Online ${r.online===true?"Ya":r.online===false?"Tidak":"-"}</div></article>`
+    }).join("");
+    host.querySelectorAll(".js-prv-action").forEach(b=>b.onclick=()=>privacyUpdate(b.dataset.code,b.dataset.status));
+  }
+  async function loadPrivacyQueue(){
+    const filter=$("privacyStatusFilter").value;privacyMsg("Memuat Privacy Request...","ok");
+    try{const d=await LDMLicenseV2Admin.call("privacy_request_queue",{status:filter==="active"?"":filter,limit:80});renderPrivacyRows(d.requests||[]);privacyMsg(`Antrean dimuat · ${(d.requests||[]).length} request.`,"ok")}
+    catch(e){$("privacyDevList").innerHTML='<div class="ticket-empty">Antrean Privacy Request belum dapat dimuat.</div>';const m=String(e&&e.message||"");if(/Action admin tidak dikenal:\s*privacy_request_queue/i.test(m)){privacyMsg("Edge Function Developer Center masih versi lama. Deploy ulang ldm-license-admin-v2 setelah SQL-40 dipasang.")}else{privacyMsg(m||"Gagal memuat Privacy Request.")}}
+  }
+  async function lookupPrivacyRequest(){
+    const code=String($("privacyCodeLookup").value||"").trim().toUpperCase();$("privacyCodeLookup").value=code;
+    if(!/^PRV-\d{8}-[A-F0-9]{10}$/.test(code)){privacyMsg("Format kode PRV tidak valid.");return}
+    try{const d=await LDMLicenseV2Admin.call("privacy_request_lookup",{request_code:code});renderPrivacyRows([{...d.request,store:d.store}]);privacyMsg("Privacy Request ditemukan.","ok")}catch(e){privacyMsg(e.message)}
+  }
+  $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await Promise.all([loadTicketQueue(),loadPrivacyQueue()])}catch(e){$("loginMessage").textContent=e.message}};
   $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false);current=null;$("result").classList.remove("show")};
   $("lookupBtn").onclick=lookup;$("incidentCode").addEventListener("keydown",e=>{if(e.key==="Enter")lookup()});
   $("investigateBtn").onclick=()=>updateStatus("investigating");$("resolveBtn").onclick=()=>updateStatus("resolved");$("reopenBtn").onclick=()=>updateStatus("open");
   $("copySummaryBtn").onclick=async()=>{if(!current)return;try{await navigator.clipboard.writeText(summaryText());message("Ringkasan incident disalin.","ok")}catch{message("Browser tidak mengizinkan clipboard. Salin detail secara manual.")}};
   $("ticketRefreshBtn").onclick=loadTicketQueue;$("ticketStatusFilter").onchange=loadTicketQueue;$("ticketLookupBtn").onclick=lookupSupportTicket;$("ticketCodeLookup").addEventListener("keydown",e=>{if(e.key==="Enter")lookupSupportTicket()});
-  (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Konfigurasi Developer Center belum tersedia.";return}const session=await LDMLicenseV2Admin.session();showApp(Boolean(session));if(session)await loadTicketQueue()}catch(e){$("loginMessage").textContent=e.message}})();
+  $("privacyRefreshBtn").onclick=loadPrivacyQueue;$("privacyStatusFilter").onchange=loadPrivacyQueue;$("privacyLookupBtn").onclick=lookupPrivacyRequest;$("privacyCodeLookup").addEventListener("keydown",e=>{if(e.key==="Enter")lookupPrivacyRequest()});
+  (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Konfigurasi Developer Center belum tersedia.";return}const session=await LDMLicenseV2Admin.session();showApp(Boolean(session));if(session)await Promise.all([loadTicketQueue(),loadPrivacyQueue()])}catch(e){$("loginMessage").textContent=e.message}})();
 })();
 </script>
 </body>

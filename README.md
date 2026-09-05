@@ -84,6 +84,15 @@ File test browser tahap lama, duplikat service JS di root, checkout legacy, doku
 - Tidak ada SQL baru pada #04.
 
 
-## Developer Center Navigation — V14
+## Developer Center Navigation — V15
 
-Halaman khusus developer kini memakai navigasi bersama yang hanya berada di area aplikasi developer setelah session Developer Center valid. Menu: Ringkasan, Customer & Lisensi, Support Center, Incident ERR, dan Tiket Customer. Asset: `css/developer-navigation.css` + `js/developer-navigation.js`. Navigasi customer tidak dipakai pada halaman developer.
+Halaman khusus developer kini memakai navigasi bersama yang hanya berada di area aplikasi developer setelah session Developer Center valid. Menu: Ringkasan, Customer & Lisensi, dan Support Center. Pencarian Incident ERR serta antrean Tiket Customer tetap berada di dalam halaman Support Center dan tidak dijadikan menu navigasi terpisah. Asset: `css/developer-navigation.css` + `js/developer-navigation.js`. Navigasi customer tidak dipakai pada halaman developer.
+
+
+## Commercial Readiness #11 — Privacy Center
+- `privacy-center.html` menjadi pusat informasi dan request privasi untuk seluruh role login.
+- Request memakai kode `PRV-YYYYMMDD-XXXXXXXXXX` dan disimpan di `privacy_requests`.
+- Riwayat request hanya dapat dibaca oleh user yang membuatnya; Owner/Admin tidak otomatis melihat request privasi user lain.
+- Developer memproses request PRV dari `developer-incident-support.html` melalui Edge Function server-side.
+- SQL: `supabase/sql/40-privacy-center.sql`.
+- Tidak ada auto-delete langsung dari browser; penghapusan/koreksi diproses setelah verifikasi.

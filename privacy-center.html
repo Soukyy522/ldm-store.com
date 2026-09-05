@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Privacy Center - LocDailyMar</title>
+<script src="js/storage-engine.js?v=27.7.1"></script>
+<script src="js/storage-quota-guard.js?v=27.7.1"></script>
+<script src="js/local-time.js?v=26.4.0"></script>
+<link rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-privacy18">
+<link rel="stylesheet" href="css/store-modes.css?v=27.9.0-mode1">
+<link rel="stylesheet" href="css/privacy-center.css?v=27.9.0-privacy18">
+<script src="js/security-hardening.js?v=19.0"></script>
+<script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=16.0"></script><script src="js/cloud-session-guard.js?v=17.0"></script>
+<script src="js/store-mode.js?v=27.9.0-mode1"></script>
+<script src="js/license-v2-config.js?v=27.4.0"></script><script src="js/license-v2-client.js?v=27.4.0"></script>
+</head>
+<body>
+<main class="privacy-shell">
+<section class="privacy-hero">
+  <h1>🔐 Privacy Center</h1>
+  <p>Pahami data yang digunakan LocDailyMar, tujuan pemrosesannya, dan ajukan permintaan terkait data pribadi Anda. Permintaan privasi dibuat sebagai request tercatat agar dapat diverifikasi dan ditindaklanjuti secara aman.</p>
+</section>
+
+<div class="privacy-grid">
+  <section class="privacy-card">
+    <h2>Data yang Umumnya Diproses</h2>
+    <p>Jenis data dapat berbeda tergantung fitur yang digunakan oleh toko dan akun Anda.</p>
+    <div class="data-cards">
+      <div class="data-card"><strong>👤 Akun & Identitas</strong><small>Nama/display name, email akun, role, identitas teknis user dan informasi profil yang diperlukan untuk akses aplikasi.</small></div>
+      <div class="data-card"><strong>📝 Absensi & Aktivitas</strong><small>Data absensi dan aktivitas operasional yang berkaitan dengan akun ketika fitur tersebut digunakan.</small></div>
+      <div class="data-card"><strong>💻 Perangkat & Sesi</strong><small>Informasi perangkat, sesi, versi aplikasi, status koneksi, dan metadata teknis untuk keamanan serta pemulihan.</small></div>
+      <div class="data-card"><strong>🛟 Support & Keamanan</strong><small>Tiket Support, incident error, audit teknis, dan metadata troubleshooting yang diperlukan untuk penanganan masalah.</small></div>
+      <div class="data-card"><strong>🧾 Aktivitas Bisnis Terkait Akun</strong><small>Jejak tindakan seperti transaksi, approval, closing atau aktivitas lain ketika diperlukan untuk audit operasional toko.</small></div>
+      <div class="data-card"><strong>☁️ Cloud & Retensi</strong><small>Data aplikasi disimpan sesuai fungsi, konfigurasi retensi, kebutuhan keamanan, dan kewajiban yang berlaku.</small></div>
+    </div>
+  </section>
+
+  <section class="privacy-card">
+    <h2>Hak & Kontrol Data</h2>
+    <p>Privacy Center menyediakan jalur permintaan untuk hak-hak utama terkait data pribadi.</p>
+    <div class="rights">
+      <div class="right-row"><div class="right-icon">1</div><div><strong>Akses / Salinan</strong><small>Meminta informasi dan salinan data pribadi tentang diri Anda yang diproses.</small></div></div>
+      <div class="right-row"><div class="right-icon">2</div><div><strong>Koreksi</strong><small>Meminta perbaikan data yang salah atau tidak akurat.</small></div></div>
+      <div class="right-row"><div class="right-icon">3</div><div><strong>Pembatasan Pemrosesan</strong><small>Meminta penundaan atau pembatasan pemrosesan sesuai kondisi yang berlaku.</small></div></div>
+      <div class="right-row"><div class="right-icon">4</div><div><strong>Penghapusan</strong><small>Meminta penghapusan/pemusnahan data pribadi sesuai ruang lingkup dan ketentuan yang berlaku.</small></div></div>
+      <div class="right-row"><div class="right-icon">5</div><div><strong>Penarikan Persetujuan</strong><small>Berlaku untuk pemrosesan yang memang menggunakan persetujuan sebagai dasar pemrosesan.</small></div></div>
+      <div class="right-row"><div class="right-icon">6</div><div><strong>Portabilitas / Keberatan Otomatis</strong><small>Permintaan penggunaan data dalam format lazim atau keberatan atas keputusan otomatis jika relevan.</small></div></div>
+    </div>
+  </section>
+
+  <section class="privacy-card full">
+    <h2>⏳ Retensi & Penghapusan</h2>
+    <div class="retention-box">Penghapusan tidak dilakukan otomatis saat tombol ditekan. Request akan diverifikasi karena sebagian data dapat terkait catatan bisnis, keamanan, hak pihak lain, proses hukum, atau kewajiban penyimpanan. Jika permintaan dapat dipenuhi, hasilnya akan dicatat pada request <b>PRV-...</b>.</div>
+    <div class="quick-links"><a class="btn btn-soft" href="penyimpanan.html">🗄️ Lihat Penyimpanan & Retensi</a><a class="btn btn-soft" href="support-center.html">🛟 Pusat Bantuan & Support</a></div>
+  </section>
+
+  <section class="privacy-card full" id="privacyRequestFormCard">
+    <h2>📝 Ajukan Permintaan Privasi</h2>
+    <p>Permintaan ini hanya untuk data pribadi milik akun Anda. Jangan mengajukan permintaan data milik orang lain melalui form ini.</p>
+    <div class="form-grid">
+      <div class="field"><label for="privacyRequestType">Jenis permintaan</label><select id="privacyRequestType"><option value="access_copy">Akses / Salinan Data</option><option value="correction">Koreksi Data</option><option value="restriction">Pembatasan Pemrosesan</option><option value="deletion">Penghapusan / Pemusnahan</option><option value="withdraw_consent">Penarikan Persetujuan</option><option value="portability">Portabilitas Data</option><option value="automated_decision_objection">Keberatan Keputusan Otomatis</option><option value="other">Lainnya</option></select></div>
+      <div class="field"><label for="privacyDataScope">Ruang lingkup data</label><select id="privacyDataScope"><option value="account_profile">Akun & Profil</option><option value="attendance">Absensi</option><option value="device_session">Perangkat & Sesi</option><option value="support_security">Support & Keamanan</option><option value="business_activity">Aktivitas Bisnis Terkait Akun</option><option value="all_personal_data">Seluruh Data Pribadi Saya</option><option value="other">Lainnya</option></select></div>
+      <div class="field full"><label for="privacyDetails">Jelaskan permintaan</label><textarea id="privacyDetails" maxlength="5000" placeholder="Jelaskan data apa yang ingin diakses, diperbaiki, dibatasi, atau dihapus dan alasan/ruang lingkup yang diperlukan."></textarea><span class="help"><span id="privacyChars">0</span>/5000 karakter · minimum 15 karakter.</span></div>
+      <div class="field full" id="correctionField" hidden><label for="privacyCorrection">Data yang seharusnya</label><textarea id="privacyCorrection" maxlength="3000" placeholder="Contoh: nama yang benar seharusnya ..., email yang benar ..."></textarea><span class="help">Wajib diisi untuk permintaan koreksi.</span></div>
+    </div>
+    <div class="check-row"><input type="checkbox" id="privacyConfirm"><label for="privacyConfirm">Saya memahami bahwa permintaan ini perlu diverifikasi dan tidak selalu berarti data dapat langsung dihapus/diubah. Saya hanya mengajukan permintaan terkait data pribadi saya sendiri.</label></div>
+    <div class="actions"><button id="btnSubmitPrivacy" class="btn btn-primary">🔐 Kirim Permintaan</button><button id="btnClearPrivacy" class="btn btn-soft" type="button">Bersihkan Form</button></div>
+    <div id="privacyMessage" class="privacy-message"></div>
+    <div id="privacySuccess" class="success-box"><strong>Permintaan berhasil dibuat.</strong><div style="margin-top:6px">Kode request: <span id="createdPrivacyCode" class="request-code">-</span></div><div class="actions"><button id="btnCopyPrivacyCode" class="btn btn-soft" type="button">📋 Salin Kode</button></div></div>
+  </section>
+
+  <section class="privacy-card full">
+    <div class="requests-head"><div><h2>📂 Riwayat Permintaan Saya</h2><p>Hanya request yang dibuat oleh akun Anda yang ditampilkan di sini, termasuk jika Anda adalah Owner/Admin.</p></div><button id="btnRefreshPrivacy" class="btn btn-soft">↻ Refresh</button></div>
+    <div id="privacyListMessage" class="privacy-message"></div>
+    <div id="privacyRequestsList" class="request-list"><div class="empty">Memuat permintaan privasi...</div></div>
+  </section>
+</div>
+
+<div class="legal-note"><strong>Catatan kebijakan:</strong> Privacy Center adalah sarana operasional untuk mengelola permintaan terkait data pribadi. Pelaksanaan akhir tetap mengikuti kebijakan, dasar pemrosesan, perjanjian, identitas pengendali/prosesor yang sebenarnya, dan peraturan yang berlaku. Identitas badan usaha/pengendali serta kontak privasi final perlu dilengkapi sebelum peluncuran komersial.</div>
+</main>
+<script src="js/privacy-center.js?v=27.9.0-privacy18"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-privacy18"></script>
+</body>
+</html>
