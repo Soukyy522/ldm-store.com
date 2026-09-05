@@ -159,7 +159,7 @@
             return;
         }
         window.LDMErrorMonitor.test();
-        status("Error uji dikirim. Tunggu sebentar lalu tekan Refresh.","ok");
+        status("Event uji Monitoring dikirim. Ini bukan error aplikasi. Tunggu sebentar lalu tekan Refresh.","ok");
         setTimeout(load,1800);
     }
 

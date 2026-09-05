@@ -49,3 +49,13 @@ File test browser tahap lama, duplikat service JS di root, checkout legacy, doku
 - Lookup global dilakukan server-side melalui `ldm-license-admin-v2`, bukan melalui role customer.
 - Navigasi desktop memakai Mega Menu compact dan hanya terbuka setelah tombol Menu ditekan.
 - Modul tidak dimaksudkan untuk menyimpan password, isi form, data customer, atau payload transaksi.
+
+
+## Commercial Readiness #02 - Onboarding & Setup Wizard
+- `setup-awal.html` menjadi wizard Owner per store.
+- Progress disimpan di `public.store_onboarding` melalui SQL-37.
+- Existing store saat migrasi pertama dianggap legacy-complete agar tidak mengganggu customer lama.
+- Store baru otomatis mendapat onboarding pending melalui trigger.
+- Produk, akun, perangkat, dan transaksi dideteksi dari data Cloud yang sudah ada.
+- Dashboard menampilkan card progress hanya untuk Owner jika setup belum selesai.
+- Setup Awal adalah infrastructure menu, bukan fitur paket berbayar.
