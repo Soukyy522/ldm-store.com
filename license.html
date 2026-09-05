@@ -43,7 +43,7 @@
     .checkout-agree input{margin-top:2px}.checkout-actions{display:flex;gap:8px;flex-wrap:wrap}.payment-manage{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;padding-top:10px;border-top:1px dashed #d8e3ee}.payment-manage[hidden]{display:none!important}.btn.danger-soft{background:#fff0ef;color:#9c3028;border:1px solid #f0c3bf}.btn.warn-soft{background:#fff8e8;color:#7b5b00;border:1px solid #ead69b}
     .checkout-status{display:none;white-space:pre-wrap;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:11px;line-height:1.55}
     .checkout-status.show{display:block}.checkout-status.info{background:#eef6ff;color:#24547d}.checkout-status.success{background:#eafaf0;color:#116536}.checkout-status.error{background:#fff0ef;color:#9c3028}
-    .checkout-security{font-size:10px;color:#667085;line-height:1.5;margin-top:12px}.checkout-security b{color:#344054}
+    .checkout-security{font-size:10px;color:#667085;line-height:1.5;margin-top:12px}.checkout-security b{color:#344054}.refund-policy-card{margin-top:12px;padding:12px 13px;border:1px solid #f0d7a3;border-radius:12px;background:#fff9ec;color:#684b08;font-size:10.5px;line-height:1.6}.refund-policy-card strong{color:#493400}.refund-policy-card a{color:#1464cc;font-weight:700;text-decoration:none}.refund-policy-card ul{margin:6px 0 0;padding-left:18px}
     .license-receipt{margin:0 20px 20px;border:2px solid #0f9d58;border-radius:17px;background:#fbfffd;padding:18px;box-shadow:0 12px 32px #087f5b16}.license-receipt[hidden]{display:none!important}.license-receipt.show{animation:checkoutIn .25s ease}.receipt-title{display:flex;gap:10px;align-items:flex-start}.receipt-title h3{margin:0;font-size:20px;color:#087f5b}.receipt-title p{margin:4px 0 0;font-size:12px;color:#536578}.receipt-alert{margin:14px 0;background:#fff3cd;border:2px solid #e8b931;border-radius:12px;padding:13px;color:#6f5200;font-size:12px;line-height:1.6}.receipt-alert strong{font-size:13px}.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.receipt-item{background:#fff;border:1px solid #dce9e3;border-radius:11px;padding:11px}.receipt-item.full{grid-column:1/-1}.receipt-item span{display:block;color:#667085;font-size:10px}.receipt-item strong{display:block;margin-top:4px;font-size:12px;word-break:break-all}.receipt-key strong{font-size:16px;color:#0b5e43;letter-spacing:.02em}.receipt-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.receipt-provision{margin-top:12px;border-radius:10px;padding:10px 11px;font-size:11px;line-height:1.5}.receipt-provision.ok{background:#eafaf0;color:#116536}.receipt-provision.warn{background:#fff5df;color:#765700}.receipt-foot{font-size:10.5px;color:#667085;line-height:1.6;margin:12px 0 0}.receipt-link[hidden]{display:none!important}
     .trial-compact{margin:14px 0 18px;border:1px solid #cfe0f3;border-radius:15px;background:linear-gradient(135deg,#f7fbff,#f6fff9);overflow:hidden}.trial-compact summary{list-style:none;cursor:pointer;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px}.trial-compact summary::-webkit-details-marker{display:none}.trial-compact-title{display:flex;align-items:center;gap:10px;min-width:0}.trial-compact-icon{width:36px;height:36px;border-radius:11px;background:#e8f7ef;display:grid;place-items:center;flex:0 0 auto}.trial-compact-copy strong{display:block;font-size:12px;color:#163b62}.trial-compact-copy span{display:block;font-size:10.5px;color:var(--muted);line-height:1.45}.trial-compact-cta{font-size:10px;font-weight:800;color:var(--blue);white-space:nowrap}.trial-compact-body{border-top:1px solid #e1ebf5;padding:14px 15px}.trial-compact .grid{margin:0}.trial-compact .actions{margin-top:10px}@media(max-width:600px){.trial-compact summary{align-items:flex-start}.trial-compact-cta{white-space:normal;text-align:right}}
     @media(max-width:760px){.checkout-body{grid-template-columns:1fr}.checkout-form-grid{grid-template-columns:1fr}.checkout-field.full{grid-column:auto}}@media(max-width:600px){.receipt-grid{grid-template-columns:1fr}.receipt-item.full{grid-column:auto}.license-receipt{margin-left:12px;margin-right:12px}.receipt-actions .btn{width:100%}}
@@ -103,6 +103,16 @@
           </div>
           <div class="checkout-status" id="publicCheckoutStatus"></div>
           <div class="checkout-security"><b>Keamanan:</b> Password Owner dikirim melalui HTTPS langsung ke backend Cloud untuk membuat reservasi akun Auth dan tidak disimpan di database License Authority/localStorage. Profile, Store, dan hak Owner baru dibuat setelah pembayaran terverifikasi. License Key baru dikembalikan setelah status order sah.</div>
+          <div class="refund-policy-card" id="refundPolicyCard">
+            <strong>↩ Kebijakan Refund LocDailyMar</strong>
+            <ul>
+              <li>Permintaan refund dapat diajukan maksimal <b id="refundPolicyDays">3 hari kalender</b> sejak pembayaran terverifikasi.</li>
+              <li>Refund hanya berlaku untuk transaksi yang memenuhi kebijakan LocDailyMar dan dukungan metode pembayaran/provider.</li>
+              <li>Refund tidak selalu diterima secara instan; waktu dana kembali mengikuti payment provider.</li>
+              <li>Untuk mengajukan refund, siapkan Order ID lalu hubungi <a href="support-center.html">Pusat Bantuan & Support</a>.</li>
+            </ul>
+            <span id="refundPolicyState">Memuat kebijakan refund aktif…</span>
+          </div>
         </form>
         <aside class="checkout-summary">
           <span>Paket</span><strong id="checkoutPlanName">-</strong>
@@ -163,7 +173,7 @@
 
   <script src="js/license-v2-config.js?v=27.8.1"></script>
   <script src="js/license-v2-client.js?v=27.8.1"></script>
-  <script src="js/license-checkout-v2.js?v=27.9.0-commercial-06-v19"></script>
+  <script src="js/license-checkout-v2.js?v=27.9.0-commercial-06-refund-v20"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);

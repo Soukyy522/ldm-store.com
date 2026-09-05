@@ -131,6 +131,21 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = clean(body.action, 30).toLowerCase();
 
+    if (action === "refund_policy") {
+      const result = await admin.rpc("ldm2_get_refund_policy");
+      if (result.error) {
+        if (/ldm2_get_refund_policy|does not exist|schema cache/i.test(result.error.message || "")) {
+          return json(req, {
+            ok: true,
+            policy: { enabled: true, refund_window_days: 3, allow_partial_refund: true, min_reason_length: 10, policy_version: "fallback-v1" },
+            migration_required: true,
+          });
+        }
+        throw result.error;
+      }
+      return json(req, { ok: true, policy: result.data, migration_required: false });
+    }
+
     if (action === "status") {
       const order = clean(body.order_id, 120);
       const token = clean(body.status_token, 200);

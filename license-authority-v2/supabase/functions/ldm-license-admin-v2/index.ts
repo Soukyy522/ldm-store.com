@@ -1,11 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   assertMidtransRuntime, cancelPaymentForRetry, midtransRuntimeHealth, midtransNotificationUrl,
-  reconcilePaymentFromMidtrans,
+  reconcilePaymentFromMidtrans, refundMidtransTransaction,
 } from "../_shared/ldm-midtrans-operations.ts";
 
 const encoder = new TextEncoder();
-const ADMIN_API_VERSION = "27.9.0-commercial-06-v19";
+const ADMIN_API_VERSION = "27.9.0-commercial-06-refund-v20";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
 function clean(value: unknown, max = 200) { return String(value || "").trim().slice(0, max); }
@@ -484,6 +484,236 @@ Deno.serve(async (req) => {
         note: note ? note.slice(0, 240) : null,
       });
       return json(req, { ok: true, support_api_version: "commercial-11-privacy-v1", request: requestRow });
+    }
+
+
+    if (action === "refund_overview") {
+      const policyResult = await admin.rpc("ldm2_get_refund_policy");
+      if (policyResult.error) {
+        if (/ldm2_get_refund_policy|does not exist|schema cache/i.test(policyResult.error.message || "")) {
+          throw new Error("SQL-42-REFUND-MANAGEMENT-POLICY.sql belum dijalankan pada License Authority.");
+        }
+        throw policyResult.error;
+      }
+      const { data: refunds, error: refundError } = await admin.from("ldm2_refunds")
+        .select("id,payment_id,license_id,order_id,refund_key,refund_type,amount,reason,status,provider_status,error_message,requested_by_email,requested_at,accepted_at,completed_at,failed_at,updated_at")
+        .order("requested_at", { ascending: false }).limit(50);
+      if (refundError) {
+        if (/ldm2_refunds|does not exist|schema cache/i.test(refundError.message || "")) {
+          throw new Error("SQL-42-REFUND-MANAGEMENT-POLICY.sql belum dijalankan pada License Authority.");
+        }
+        throw refundError;
+      }
+      await audit("REFUND_OVERVIEW", null, { count: (refunds || []).length });
+      return json(req, { ok: true, policy: policyResult.data, refunds: refunds || [] });
+    }
+
+    if (action === "refund_policy_update") {
+      const days = Number(body.refund_window_days);
+      const enabled = body.enabled !== false;
+      const allowPartial = body.allow_partial_refund !== false;
+      if (!Number.isInteger(days) || days < 1 || days > 30) {
+        return json(req, { ok: false, message: "Batas refund harus 1-30 hari." }, 400);
+      }
+      const summary = `Refund dapat diajukan maksimal ${days} hari kalender sejak pembayaran terverifikasi. Refund hanya diproses untuk transaksi yang memenuhi syarat provider dan kebijakan LocDailyMar.`;
+      const { data: policy, error: policyError } = await admin.from("ldm2_refund_policy")
+        .update({
+          enabled,
+          refund_window_days: days,
+          allow_partial_refund: allowPartial,
+          policy_summary: summary,
+          policy_version: `2026-09-v20-${days}d`,
+          updated_at: new Date().toISOString(),
+          updated_by: adminEmail,
+        }).eq("id", 1)
+        .select("id,enabled,refund_window_days,allow_partial_refund,min_reason_length,policy_version,policy_summary,updated_at,updated_by")
+        .maybeSingle();
+      if (policyError) {
+        if (/ldm2_refund_policy|does not exist|schema cache/i.test(policyError.message || "")) {
+          throw new Error("SQL-42-REFUND-MANAGEMENT-POLICY.sql belum dijalankan pada License Authority.");
+        }
+        throw policyError;
+      }
+      await audit("REFUND_POLICY_UPDATE", null, { refund_window_days: days, enabled, allow_partial_refund: allowPartial });
+      return json(req, { ok: true, policy });
+    }
+
+    if (action === "refund_preview") {
+      const licenseId = clean(body.license_id, 80);
+      const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
+        .select("id,license_id,order_id,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,created_at,provider_detail")
+        .eq("license_id", licenseId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (paymentError) throw paymentError;
+      if (!payment) return json(req, { ok: false, message: "Pembayaran tidak ditemukan." }, 404);
+
+      const eligibilityResult = await admin.rpc("ldm2_refund_eligibility", { p_payment_id: payment.id });
+      if (eligibilityResult.error) {
+        if (/ldm2_refund_eligibility|does not exist|schema cache/i.test(eligibilityResult.error.message || "")) {
+          throw new Error("SQL-42-REFUND-MANAGEMENT-POLICY.sql belum dijalankan pada License Authority.");
+        }
+        throw eligibilityResult.error;
+      }
+      const { data: history, error: historyError } = await admin.from("ldm2_refunds")
+        .select("refund_key,refund_type,amount,reason,status,provider_status,error_message,requested_by_email,requested_at,accepted_at,failed_at,updated_at")
+        .eq("payment_id", payment.id).order("requested_at", { ascending: false });
+      if (historyError) throw historyError;
+      await audit("REFUND_PREVIEW", licenseId, { order_id: payment.order_id, eligible: eligibilityResult.data?.eligible === true });
+      return json(req, {
+        ok: true,
+        payment: {
+          ...payment,
+          provider_payment_method: clean(payment?.provider_detail?.payment_type || "", 60) || null,
+        },
+        eligibility: eligibilityResult.data,
+        history: history || [],
+      });
+    }
+
+    if (action === "refund_payment") {
+      const licenseId = clean(body.license_id, 80);
+      const refundType = clean(body.refund_type, 20).toLowerCase();
+      const reason = clean(body.reason, 255);
+      const requestedAmount = Math.round(Number(body.amount || 0));
+      if (!["full", "partial"].includes(refundType)) {
+        return json(req, { ok: false, message: "Jenis refund harus full atau partial." }, 400);
+      }
+
+      let { data: payment, error: paymentError } = await admin.from("ldm2_payments")
+        .select("id,license_id,order_id,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
+        .eq("license_id", licenseId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (paymentError) throw paymentError;
+      if (!payment) return json(req, { ok: false, message: "Pembayaran tidak ditemukan." }, 404);
+      if (!["paid", "partially_refunded"].includes(String(payment.status || "").toLowerCase())) {
+        return json(req, { ok: false, message: `Status ${payment.status || "-"} tidak dapat direfund.` }, 409);
+      }
+
+      // Selalu minta status aktual provider sebelum refund. Midtrans Refund API
+      // ditujukan untuk transaksi settlement; partial_refund tetap dapat memiliki sisa refundable.
+      const sync = await reconcilePaymentFromMidtrans(admin, payment, `developer_refund_precheck:${adminEmail}`);
+      const refreshed = await admin.from("ldm2_payments")
+        .select("id,license_id,order_id,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
+        .eq("id", payment.id).maybeSingle();
+      if (refreshed.error) throw refreshed.error;
+      if (refreshed.data) payment = refreshed.data;
+      const remoteStatus = clean(sync?.remote?.transaction_status || payment.provider_status || "", 60).toLowerCase();
+      if (!["settlement", "partial_refund"].includes(remoteStatus)) {
+        return json(req, {
+          ok: false,
+          code: "MIDTRANS_REFUND_REQUIRES_SETTLEMENT",
+          message: `Refund Midtrans memerlukan transaksi Settlement. Status provider saat ini: ${remoteStatus || "tidak diketahui"}.`,
+        }, 409);
+      }
+
+      const eligibilityResult = await admin.rpc("ldm2_refund_eligibility", { p_payment_id: payment.id });
+      if (eligibilityResult.error) throw eligibilityResult.error;
+      const eligibility = eligibilityResult.data || {};
+      if (eligibility.eligible !== true) {
+        return json(req, { ok: false, code: "REFUND_NOT_ELIGIBLE", message: eligibility.reason || "Transaksi tidak memenuhi kebijakan refund.", eligibility }, 409);
+      }
+      const remaining = Number(eligibility.remaining_refundable || 0);
+      const amount = refundType === "full" ? remaining : requestedAmount;
+      if (!Number.isSafeInteger(amount) || amount <= 0 || amount > remaining) {
+        return json(req, { ok: false, message: `Nominal refund harus antara Rp1 dan sisa refundable Rp${remaining.toLocaleString("id-ID")}.` }, 400);
+      }
+
+      const providerMethod = clean(sync?.remote?.payment_type || payment?.provider_detail?.payment_type || "", 60).toLowerCase();
+      const refundApiMethods = ["credit_card", "gopay", "shopeepay", "dana", "ovo", "qris", "kredivo", "akulaku"];
+      if (providerMethod && !refundApiMethods.includes(providerMethod)) {
+        return json(req, {
+          ok: false,
+          code: "REFUND_PROVIDER_UNSUPPORTED",
+          message: `Metode pembayaran ${providerMethod.toUpperCase()} tidak mendukung Refund API Midtrans pada konfigurasi saat ini. Lakukan pengembalian dana manual dari merchant dan catat referensinya di Support/Audit.`,
+        }, 409);
+      }
+      if (refundType === "partial" && ["ovo", "shopeepay"].includes(providerMethod)) {
+        return json(req, {
+          ok: false,
+          code: "PARTIAL_REFUND_PROVIDER_UNSUPPORTED",
+          message: `Metode ${providerMethod.toUpperCase()} tidak didukung untuk partial refund pada konfigurasi Refund API yang digunakan. Gunakan full refund atau proses sesuai kebijakan provider.`,
+        }, 409);
+      }
+
+      const keyDate = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+      const refundKey = `LDM-RF-${keyDate}-${randomHex(5)}`;
+      const prepared = await admin.rpc("ldm2_prepare_refund", {
+        p_payment_id: payment.id,
+        p_refund_key: refundKey,
+        p_refund_type: refundType,
+        p_amount: amount,
+        p_reason: reason,
+        p_admin_user_id: authData.user.id,
+        p_admin_email: adminEmail,
+      });
+      if (prepared.error) throw prepared.error;
+
+      try {
+        const provider = await refundMidtransTransaction({
+          targetId: clean(payment.provider_transaction_id || payment.order_id, 160),
+          refundKey,
+          amount,
+          reason,
+        });
+        const remote = provider.data || {};
+        const finished = await admin.rpc("ldm2_finish_refund", {
+          p_refund_key: refundKey,
+          p_success: true,
+          p_provider_status: clean(remote.transaction_status || "refund", 80),
+          p_provider_transaction_id: clean(remote.transaction_id || payment.provider_transaction_id || "", 160) || null,
+          p_provider_response: {
+            status_code: clean(remote.status_code, 20),
+            status_message: clean(remote.status_message, 500),
+            transaction_status: clean(remote.transaction_status, 60),
+            payment_type: clean(remote.payment_type || providerMethod, 60),
+            refund_key: clean(remote.refund_key || refundKey, 120),
+            refund_amount: amount,
+          },
+          p_error: null,
+          p_unknown: false,
+        });
+        if (finished.error) throw finished.error;
+        await audit("REFUND_PAYMENT", licenseId, {
+          order_id: payment.order_id,
+          refund_key: refundKey,
+          refund_type: refundType,
+          amount,
+          reason,
+          provider_status: clean(remote.transaction_status, 60),
+        });
+        return json(req, {
+          ok: true,
+          message: `Refund ${refundType === "full" ? "penuh" : "sebagian"} sebesar Rp${amount.toLocaleString("id-ID")} diterima Midtrans.`,
+          refund: finished.data,
+          refund_key: refundKey,
+          provider_status: clean(remote.transaction_status, 60),
+          payment_method: providerMethod || null,
+        });
+      } catch (refundError) {
+        const err = refundError as any;
+        const uncertain = err?.name === "AbortError" || /timeout|network|fetch failed|connection/i.test(String(err?.message || ""));
+        try {
+          await admin.rpc("ldm2_finish_refund", {
+            p_refund_key: refundKey,
+            p_success: false,
+            p_provider_status: clean(err?.detail?.transaction_status || "", 80) || null,
+            p_provider_transaction_id: clean(err?.detail?.transaction_id || payment.provider_transaction_id || "", 160) || null,
+            p_provider_response: err?.detail && typeof err.detail === "object" ? err.detail : {},
+            p_error: clean(err?.message || "Refund Midtrans gagal.", 1000),
+            p_unknown: uncertain,
+          });
+        } catch (markError) {
+          console.error("REFUND_MARK_FAILED", refundKey, markError);
+        }
+        await audit("REFUND_PAYMENT_FAILED", licenseId, {
+          order_id: payment.order_id, refund_key: refundKey, refund_type: refundType, amount,
+          uncertain, error: clean(err?.message || "Refund gagal", 500),
+        });
+        if (uncertain) {
+          throw Object.assign(new Error("Respons refund tidak dapat dipastikan karena gangguan jaringan/timeout. Jangan membuat refund baru dulu. Periksa Midtrans Dashboard dan riwayat refund dengan refund_key yang sama."), {
+            status: 503, code: "REFUND_STATUS_UNKNOWN", detail: { refund_key: refundKey },
+          });
+        }
+        throw refundError;
+      }
     }
 
     if (action === "dashboard") {

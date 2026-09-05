@@ -1,10 +1,10 @@
-// Build: 27.9.0 commercial-06-midtrans-production-hardening-v19
+// Build: 27.9.0 commercial-06-refund-management-v20
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-06-midtrans-shell-v19`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-06-midtrans-runtime-v19`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-06-refund-shell-v20`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-commercial-06-refund-runtime-v20`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

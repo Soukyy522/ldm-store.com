@@ -160,6 +160,52 @@ export async function getMidtransTransactionStatus(orderId: string) {
   return { exists: true, data, http_status: response.status };
 }
 
+
+export async function refundMidtransTransaction(input: {
+  targetId: string;
+  refundKey: string;
+  amount: number;
+  reason: string;
+}) {
+  assertMidtransRuntime(false);
+  const target = cleanMidtrans(input.targetId, 160);
+  const refundKey = cleanMidtrans(input.refundKey, 120);
+  const reason = cleanMidtrans(input.reason, 255);
+  const amount = Number(input.amount);
+  if (!target) throw new Error("Order/Transaction ID Midtrans kosong.");
+  if (!/^[A-Za-z0-9_-]{6,120}$/.test(refundKey)) {
+    throw Object.assign(new Error("Refund key tidak valid."), { status: 400, code: "REFUND_KEY_INVALID" });
+  }
+  if (!Number.isSafeInteger(amount) || amount <= 0) {
+    throw Object.assign(new Error("Nominal refund tidak valid."), { status: 400, code: "REFUND_AMOUNT_INVALID" });
+  }
+  if (reason.length < 10) {
+    throw Object.assign(new Error("Alasan refund minimal 10 karakter."), { status: 400, code: "REFUND_REASON_REQUIRED" });
+  }
+
+  const { response, data } = await request(
+    `${apiBase()}/v2/${encodeURIComponent(target)}/refund`,
+    {
+      method: "POST",
+      headers: authHeaders(true),
+      body: JSON.stringify({ refund_key: refundKey, amount, reason }),
+    },
+    20000,
+  );
+
+  const providerStatus = cleanMidtrans(data?.transaction_status, 60).toLowerCase();
+  const providerCode = cleanMidtrans(data?.status_code, 20);
+  if (!response.ok || providerCode !== "200" || !["refund", "partial_refund"].includes(providerStatus)) {
+    const message = messages(data) || `Midtrans refund HTTP ${response.status}`;
+    throw Object.assign(new Error(`Midtrans menolak refund: ${message}`), {
+      status: response.status >= 400 ? response.status : 409,
+      code: "MIDTRANS_REFUND_REJECTED",
+      detail: data,
+    });
+  }
+  return { ok: true, data, http_status: response.status };
+}
+
 export async function cancelMidtransCoreTransaction(orderId: string) {
   assertMidtransRuntime(false);
   const order = cleanMidtrans(orderId, 120);
