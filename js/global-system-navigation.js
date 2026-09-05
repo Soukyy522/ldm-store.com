@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.9.0-commercial-monitoring-support-v3";
+    const NAV_VERSION="27.9.0-commercial-monitoring-support-v5";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -38,7 +38,7 @@
         {page:"penyimpanan.html",icon:"🗄️",label:"Penyimpanan & Retensi",group:"Sistem",roles:["owner","admin"],feature:"app_update"},
         {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"],feature:"recovery_center"},
         {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"],feature:"qa_security"},
-        {page:"monitoring-error.html",icon:"🚨",label:"Monitoring Error",group:"Sistem",roles:["owner","admin"],feature:"monitoring_error"},
+        {page:"monitoring-error.html",icon:"🚨",label:"Monitoring Error",group:"Sistem",roles:["owner","admin"],infrastructure:true},
         {page:"support-center.html",icon:"🛟",label:"Pusat Bantuan & Support",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"panduan.html",icon:"📘",label:"Panduan Pengguna",group:"Sistem",roles:["owner","admin","kasir"]}
@@ -258,7 +258,9 @@
 
     function routeAllowed(route,role,eodReady){
         if(!route.roles.includes(role))return false;
-        if(!licenseFeatureAllowed(route.feature))return false;
+        // Fitur infrastructure (Monitoring/Support) tidak dipaketkan sebagai
+        // fitur berbayar. Role tetap membatasi siapa yang dapat melihatnya.
+        if(!route.infrastructure && !licenseFeatureAllowed(route.feature))return false;
         if(route.requiresEodReady && !eodReady)return false;
         const profile=modeProfile();
         if(profile.hidden.includes(modeRouteKey(route)))return false;

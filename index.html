@@ -1316,6 +1316,15 @@ function showCloudAuthErrorFromUrl() {
 }
 
 // =====================================================
+// KONFIGURASI SESSION LOGIN
+// =====================================================
+
+const LOGIN_SECURITY = Object.freeze({
+    // Disamakan dengan timeout session pada halaman operasional.
+    SESSION_TIME: 30 * 60 * 1000
+});
+
+// =====================================================
 // CEK SESSION
 // =====================================================
 
