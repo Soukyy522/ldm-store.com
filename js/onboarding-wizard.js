@@ -92,7 +92,14 @@
         const team=state.steps?.team||{};
         $("teamNote").textContent=team.skipped ? "Langkah tim dilewati untuk sekarang." : (Number(counts.accounts||0)>1 ? "Akun tambahan sudah terdeteksi." : "Saat ini baru terdeteksi akun Owner.");
         const device=state.steps?.device||{};
-        $("deviceNote").textContent=device.skipped ? "Pemeriksaan perangkat dilewati untuk sekarang." : (device.checked ? "Pemeriksaan perangkat dasar sudah dijalankan." : "Belum menjalankan pemeriksaan perangkat dasar.");
+        const localPeripheral=window.LDMPeripheralSetup?.status?.();
+        $("deviceNote").textContent=device.skipped
+            ? "Setup perangkat dilewati untuk sekarang."
+            : (device.checked
+                ? "Printer & Scanner sudah dikonfirmasi pada Setup Awal."
+                : (localPeripheral?.complete
+                    ? "Perangkat lokal sudah siap. Tekan Tandai Perangkat Siap pada bagian Printer & Scanner untuk menyinkronkan progress Cloud."
+                    : "Printer/scanner pada perangkat ini belum selesai disiapkan."));
         const sale=state.steps?.sale||{};
         $("saleNote").textContent=sale.skipped ? "Transaksi pertama dilewati untuk sekarang." : (Number(counts.transactions||0)>0 ? "Transaksi toko sudah terdeteksi." : "Belum ada transaksi pada toko ini.");
 
@@ -166,7 +173,12 @@
     async function deviceCheck(){
         const caps=window.LDMOnboarding.deviceCapabilities();
         renderCapabilities(caps);
-        await mark("device",false);
+        const peripheral=window.LDMPeripheralSetup?.status?.();
+        if(peripheral?.complete){
+            message("Browser siap dan konfigurasi printer/scanner lokal sudah selesai. Tekan Tandai Perangkat Siap untuk menyinkronkan progress Cloud.","ok");
+        }else{
+            message("Pemeriksaan browser selesai. Lanjutkan pengujian printer dan scanner pada bagian yang sama di bawah ini.","ok");
+        }
     }
 
     async function finish(){

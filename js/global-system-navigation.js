@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.9.0-commercial02-onboarding1";
+    const NAV_VERSION="27.9.0-commercial04-integrated2";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*

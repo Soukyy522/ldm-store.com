@@ -1,0 +1,34 @@
+/* Commercial #04 V10 — Printer/Scanner integrated into Setup Awal */
+#stepDevice .peripheral-embedded{margin-top:14px;display:grid;gap:14px}
+#stepDevice .peripheral-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+#stepDevice .peripheral-summary-card{background:#f7faf8;border:1px solid #e2eae6;border-radius:12px;padding:11px 12px}
+#stepDevice .peripheral-summary-card span{display:block;color:#667085;font-size:11px;margin-bottom:3px}
+#stepDevice .peripheral-summary-card strong{display:block;color:#2C3E50;font-size:13px;overflow-wrap:anywhere}
+#stepDevice .peripheral-panel{border:1px solid #e0e8e4;border-radius:14px;padding:14px;background:#fbfdfc}
+#stepDevice .peripheral-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:11px}
+#stepDevice .peripheral-panel-head h3{margin:0;color:#2C3E50;font-size:15px}
+#stepDevice .peripheral-panel-head p{margin:4px 0 0;color:#667085;font-size:12px;line-height:1.5}
+#stepDevice .peripheral-status{font-size:10px;font-weight:900;border-radius:999px;padding:5px 8px;background:#fff3da;color:#805500;white-space:nowrap}
+#stepDevice .peripheral-status.ok{background:#e7f7ed;color:#08783f}
+#stepDevice .peripheral-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#stepDevice .peripheral-field label{display:block;font-size:11px;font-weight:800;color:#2C3E50;margin-bottom:5px}
+#stepDevice .peripheral-field input,#stepDevice .peripheral-field select{width:100%;border:1px solid #ccd8d2;border-radius:9px;padding:9px 10px;font:inherit;background:#fff}
+#stepDevice .peripheral-hint{margin-top:5px;color:#667085;font-size:11px;line-height:1.5}
+#stepDevice .peripheral-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px}
+#stepDevice .peripheral-check{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:9px;background:#f4f8f6;font-size:11px}
+#stepDevice .peripheral-check .ok{color:#08783f}#stepDevice .peripheral-check .warn{color:#9a6700}
+#stepDevice .peripheral-receipt{width:min(100%,300px);margin-top:10px;background:#fff;border:1px dashed #9aa7a0;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:#111}
+#stepDevice .peripheral-receipt.w80{width:min(100%,410px)}
+#stepDevice .peripheral-receipt .center{text-align:center}#stepDevice .peripheral-receipt .line{border-top:1px dashed #333;margin:6px 0}#stepDevice .peripheral-receipt .row{display:flex;justify-content:space-between;gap:8px}
+#stepDevice .peripheral-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+#stepDevice .peripheral-toggle{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:#2C3E50}#stepDevice .peripheral-toggle input{width:17px;height:17px}
+#stepDevice .peripheral-scanner-box{display:grid;grid-template-columns:1fr auto;gap:7px}
+#stepDevice .peripheral-result{margin-top:8px;padding:10px;border-radius:9px;background:#f7faf8;border:1px solid #e4ebe7;font-size:12px;line-height:1.5}
+#stepDevice .peripheral-result.ok{background:#edf8f1;border-color:#c8e8d4}#stepDevice .peripheral-result.warn{background:#fff8e8;border-color:#efd69b}
+#stepDevice .peripheral-notice{margin-top:9px;padding:10px 11px;border-radius:10px;background:#fff8e8;border:1px solid #efd69b;color:#6b4d00;font-size:11px;line-height:1.55}
+#stepDevice .peripheral-final{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px;border-radius:12px;background:#f2f8f5;border:1px solid #d5e8dc}
+#stepDevice .peripheral-final strong{display:block;color:#2C3E50;font-size:13px}#stepDevice .peripheral-final span{color:#667085;font-size:11px}
+#stepDevice .peripheral-message{min-height:18px;margin-top:8px;font-size:11px;color:#667085}#stepDevice .peripheral-message.ok{color:#08783f}#stepDevice .peripheral-message.error{color:#b42318}
+#stepDevice .kbd{display:inline-block;border:1px solid #ccd3cf;border-bottom-width:2px;border-radius:5px;padding:1px 5px;background:#fff;font-family:ui-monospace,monospace;font-size:10px}
+@media(max-width:780px){#stepDevice .peripheral-summary{grid-template-columns:1fr 1fr}#stepDevice .peripheral-grid2,#stepDevice .peripheral-checks{grid-template-columns:1fr}#stepDevice .peripheral-scanner-box{grid-template-columns:1fr}}
+@media(max-width:480px){#stepDevice .peripheral-summary{grid-template-columns:1fr}}
