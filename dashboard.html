@@ -10781,20 +10781,10 @@ function getSecuritySession() {
             .toLowerCase();
 
 
-if (!isValidRole(normalizedRole)) {
-    return null;
-}
-
-
-    if (
-        !allowedRoles.includes(
-            normalizedRole
-        )
-    ) {
-
+    if (!isValidRole(normalizedRole)) {
         return null;
-
     }
+
 
 
     // Cek session timeout
