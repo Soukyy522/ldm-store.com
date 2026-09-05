@@ -59,3 +59,14 @@ File test browser tahap lama, duplikat service JS di root, checkout legacy, doku
 - Produk, akun, perangkat, dan transaksi dideteksi dari data Cloud yang sudah ada.
 - Dashboard menampilkan card progress hanya untuk Owner jika setup belum selesai.
 - Setup Awal adalah infrastructure menu, bukan fitur paket berbayar.
+
+
+## Commercial Readiness #04 — Printer & Scanner terintegrasi Setup Awal (V10)
+- Printer & Scanner kini terintegrasi langsung pada langkah 5 `setup-awal.html`; tidak menambah menu Sistem baru.
+- `printer-scanner-setup.html` dipertahankan hanya sebagai redirect kompatibilitas ke `setup-awal.html#stepDevice`.
+- Konfigurasi printer/scanner disimpan lokal per browser + Store ID karena setiap terminal dapat memakai hardware berbeda.
+- Printer: 58/80 mm, print test, konfirmasi hasil cetak, dan integrasi lebar struk ke `kasir.html`.
+- Scanner: tes USB/Bluetooth keyboard-wedge melalui input barcode + Enter; kamera hanya pemeriksaan opsional.
+- Wizard dapat menandai printer/scanner sebagai tidak digunakan agar toko tanpa salah satu perangkat tetap valid.
+- Owner yang menyelesaikan wizard juga memperbarui langkah `device` pada Setup Awal #02 melalui RPC yang sudah ada.
+- Tidak ada SQL baru pada #04.

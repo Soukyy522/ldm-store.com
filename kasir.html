@@ -1574,6 +1574,7 @@
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
     <script src="js/products-service.js?v=21.0"></script>
     <script src="js/transactions-service.js?v=16.0"></script>
+    <script src="js/peripheral-setup.js?v=27.9.0-commercial04-integrated2"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
     <!-- Live Sync Tahap 10: Cloud Retur compatibility -->
     <script src="js/returns-service.js?v=10.0"></script>
@@ -4584,11 +4585,17 @@ const offlineStatusHTML = trx.offlineQueueStatus && trx.offlineQueueStatus !== "
        CETAK
        ===================================================== */
 
+    const peripheralSettings = window.LDMPeripheralSetup?.getSettings?.() || {};
+    const receiptWidth = String(peripheralSettings.receiptWidth || "58") === "80" ? "80" : "58";
+    const receiptMetrics = receiptWidth === "80"
+        ? { page: "80mm", content: "72mm", popup: 520 }
+        : { page: "58mm", content: "50mm", popup: 400 };
+
     let printWindow =
         window.open(
             "",
             "",
-            "height=600,width=400"
+            `height=600,width=${receiptMetrics.popup}`
         );
 
 
@@ -4605,10 +4612,24 @@ const offlineStatusHTML = trx.offlineQueueStatus && trx.offlineQueueStatus !== "
 
                 <style>
 
+                    @page {
+                        size: ${receiptMetrics.page} auto;
+                        margin: 0;
+                    }
+
+                    html, body {
+                        width: ${receiptMetrics.page};
+                        margin: 0;
+                        padding: 0;
+                    }
+
                     body {
+                        box-sizing: border-box;
+                        width: ${receiptMetrics.content};
+                        margin: 0 auto;
+                        padding: 2mm 0;
                         font-family: monospace;
-                        padding: 15px;
-                        font-size: 12px;
+                        font-size: 11px;
                     }
 
                     .text-center {
@@ -6276,7 +6297,7 @@ document.addEventListener(
 <script src="js/license-v2-config.js?v=25.2.0"></script>
 <script src="js/license-v2-client.js?v=25.2.0"></script>
 <script defer src="js/license-v2-guard.js?v=25.2.0"></script>
-<script src="js/global-system-navigation.js?v=27.9.0-commercial02-onboarding1"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-commercial04-integrated2"></script>
 <script>
 (function(){
     function applyKasirMode(){

@@ -50,4 +50,4 @@ async function reactivateAt(i){const target=archivedAccounts[i];if(!target)retur
 async function changePassword(){const a=document.getElementById("ownPassword").value,b=document.getElementById("ownPassword2").value;if(a!==b){showMessage("❌ Konfirmasi password tidak sama.","error");return}try{await LDMAccounts.changeOwnPassword(a);document.getElementById("ownPassword").value=document.getElementById("ownPassword2").value="";showMessage("✅ Password akun sendiri berhasil diubah.")}catch(e){showMessage("❌ "+(e.message||String(e)),"error")}}
 async function boot(){await refreshAll();try{await LDMAccounts.startRealtime(async()=>refreshAll());document.getElementById("realtime").textContent="Realtime: aktif"}catch(e){document.getElementById("realtime").textContent="Realtime: gagal";console.warn(e)}}
 document.addEventListener("DOMContentLoaded",boot);
-</script><script src="js/global-system-navigation.js?v=27.9.0-commercial02-onboarding1"></script></body></html>
+</script><script src="js/global-system-navigation.js?v=27.9.0-commercial04-integrated2"></script></body></html>
