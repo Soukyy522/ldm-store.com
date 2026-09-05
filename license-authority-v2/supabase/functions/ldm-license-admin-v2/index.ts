@@ -62,7 +62,7 @@ function applicationAdminClient() {
   const appUrl = env("LDM_APP_SUPABASE_URL");
   const appService = env("LDM_APP_SERVICE_ROLE_KEY");
   if (!appUrl || !appService) {
-    throw new Error("Incident Support belum dikonfigurasi. Isi LDM_APP_SUPABASE_URL dan LDM_APP_SERVICE_ROLE_KEY pada Secrets Developer Center.");
+    throw new Error("Developer Support belum dikonfigurasi. Isi LDM_APP_SUPABASE_URL dan LDM_APP_SERVICE_ROLE_KEY pada Secrets Developer Center.");
   }
   return createClient(appUrl, appService, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
@@ -79,6 +79,13 @@ function validSupportTicketCode(value: unknown) {
   const code = clean(value, 40).toUpperCase();
   if (!/^SUP-\d{8}-[A-F0-9]{10}$/.test(code)) {
     throw Object.assign(new Error("Kode tiket Support tidak valid. Contoh: SUP-20260905-A72C91D083"), { status: 400 });
+  }
+  return code;
+}
+function validPrivacyRequestCode(value: unknown) {
+  const code = clean(value, 40).toUpperCase();
+  if (!/^PRV-\d{8}-[A-F0-9]{10}$/.test(code)) {
+    throw Object.assign(new Error("Kode Privacy Request tidak valid. Contoh: PRV-20260906-A72C91D083"), { status: 400 });
   }
   return code;
 }
@@ -176,10 +183,11 @@ Deno.serve(async (req) => {
     if (action === "incident_support_info") {
       return json(req, {
         ok: true,
-        support_api_version: "commercial-12-support-v1",
+        support_api_version: "commercial-11-privacy-v1",
         actions: [
           "incident_lookup", "incident_support_update",
-          "support_ticket_queue", "support_ticket_lookup", "support_ticket_update"
+          "support_ticket_queue", "support_ticket_lookup", "support_ticket_update",
+          "privacy_request_queue", "privacy_request_lookup", "privacy_request_update"
         ]
       });
     }
@@ -341,6 +349,93 @@ Deno.serve(async (req) => {
         note: note ? note.slice(0, 240) : null,
       });
       return json(req, { ok: true, support_api_version: "commercial-12-support-v1", ticket });
+    }
+
+    if (action === "privacy_request_queue") {
+      const app = applicationAdminClient();
+      const limit = Math.max(1, Math.min(Number(body.limit || 60), 100));
+      const requestedStatus = clean(body.status, 30).toLowerCase();
+      let query = app.from("privacy_requests")
+        .select("id,request_code,store_id,requested_by,requester_email,requested_username,requested_role,request_type,data_scope,details,desired_correction,app_version,browser,online,status,response_note,privacy_last_action_at,statutory_due_at,completed_at,created_at,updated_at")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (["submitted", "verifying", "processing", "waiting_user", "completed", "rejected", "cancelled"].includes(requestedStatus)) {
+        query = query.eq("status", requestedStatus);
+      } else {
+        query = query.in("status", ["submitted", "verifying", "processing", "waiting_user"]);
+      }
+      const { data: requests, error: requestError } = await query;
+      if (requestError) {
+        if (/privacy_requests/i.test(requestError.message || "")) {
+          throw new Error("SQL-40-PRIVACY-CENTER.sql belum dijalankan pada App Supabase.");
+        }
+        throw requestError;
+      }
+      const storeIds = [...new Set((requests || []).map((r: any) => String(r.store_id || "")).filter(Boolean))];
+      let stores: any[] = [];
+      if (storeIds.length) {
+        const { data: storeRows, error: storeError } = await app.from("stores").select("id,code,name,status").in("id", storeIds);
+        if (storeError) throw storeError;
+        stores = storeRows || [];
+      }
+      const storeMap = new Map(stores.map((st: any) => [String(st.id), st]));
+      const rows = (requests || []).map((r: any) => ({ ...r, store: storeMap.get(String(r.store_id)) || null }));
+      await audit("privacy_request_queue", null, { count: rows.length, status: requestedStatus || "active" });
+      return json(req, { ok: true, support_api_version: "commercial-11-privacy-v1", requests: rows });
+    }
+
+    if (action === "privacy_request_lookup") {
+      const requestCode = validPrivacyRequestCode(body.request_code);
+      const app = applicationAdminClient();
+      const { data: requestRow, error: requestError } = await app.from("privacy_requests")
+        .select("id,request_code,store_id,requested_by,requester_email,requested_username,requested_role,request_type,data_scope,details,desired_correction,app_version,browser,online,status,response_note,privacy_last_action_at,statutory_due_at,completed_at,created_at,updated_at")
+        .eq("request_code", requestCode).maybeSingle();
+      if (requestError) {
+        if (/privacy_requests/i.test(requestError.message || "")) {
+          throw new Error("SQL-40-PRIVACY-CENTER.sql belum dijalankan pada App Supabase.");
+        }
+        throw requestError;
+      }
+      if (!requestRow) return json(req, { ok: false, message: "Privacy Request tidak ditemukan." }, 404);
+      const { data: store, error: storeError } = await app.from("stores").select("id,code,name,status").eq("id", requestRow.store_id).maybeSingle();
+      if (storeError) throw storeError;
+      await audit("privacy_request_lookup", null, { request_code: requestCode, store_id: requestRow.store_id });
+      return json(req, { ok: true, support_api_version: "commercial-11-privacy-v1", request: requestRow, store: store || null });
+    }
+
+    if (action === "privacy_request_update") {
+      const requestCode = validPrivacyRequestCode(body.request_code);
+      const status = clean(body.status, 30).toLowerCase();
+      const note = clean(body.note, 3000);
+      if (!["submitted", "verifying", "processing", "waiting_user", "completed", "rejected"].includes(status)) {
+        return json(req, { ok: false, message: "Status Privacy Request tidak valid." }, 400);
+      }
+      const app = applicationAdminClient();
+      const nowIso = new Date().toISOString();
+      const update: Record<string, unknown> = {
+        status,
+        privacy_last_action_at: nowIso,
+        response_note: note || null,
+        completed_at: ["completed", "rejected"].includes(status) ? nowIso : null,
+      };
+      const { data: requestRow, error: updateError } = await app.from("privacy_requests")
+        .update(update).eq("request_code", requestCode).neq("status", "cancelled")
+        .select("id,request_code,store_id,status,response_note,privacy_last_action_at,statutory_due_at,completed_at,updated_at")
+        .maybeSingle();
+      if (updateError) {
+        if (/privacy_requests/i.test(updateError.message || "")) {
+          throw new Error("SQL-40-PRIVACY-CENTER.sql belum dijalankan pada App Supabase.");
+        }
+        throw updateError;
+      }
+      if (!requestRow) return json(req, { ok: false, message: "Privacy Request tidak ditemukan." }, 404);
+      await audit("privacy_request_update", null, {
+        request_code: requestCode,
+        store_id: requestRow.store_id,
+        status,
+        note: note ? note.slice(0, 240) : null,
+      });
+      return json(req, { ok: true, support_api_version: "commercial-11-privacy-v1", request: requestRow });
     }
 
     if (action === "dashboard") {
