@@ -504,8 +504,17 @@ Deno.serve(async (req) => {
         }
         throw refundError;
       }
-      await audit("REFUND_OVERVIEW", null, { count: (refunds || []).length });
-      return json(req, { ok: true, policy: policyResult.data, refunds: refunds || [] });
+      const { data: refundRequests, error: requestError } = await admin.from("ldm2_refund_requests")
+        .select("id,request_code,payment_id,license_id,order_id,refund_type,requested_amount,reason_category,reason_detail,requester_name,requester_email,status,response_note,linked_refund_key,refund_deadline,created_at,updated_at,completed_at,cancelled_at")
+        .order("created_at", { ascending: false }).limit(100);
+      if (requestError) {
+        if (/ldm2_refund_requests|does not exist|schema cache/i.test(requestError.message || "")) {
+          throw new Error("SQL-43-CUSTOMER-REFUND-REQUESTS.sql belum dijalankan pada License Authority.");
+        }
+        throw requestError;
+      }
+      await audit("REFUND_OVERVIEW", null, { count: (refunds || []).length, request_count: (refundRequests || []).length });
+      return json(req, { ok: true, policy: policyResult.data, refunds: refunds || [], requests: refundRequests || [] });
     }
 
     if (action === "refund_policy_update") {
@@ -536,6 +545,29 @@ Deno.serve(async (req) => {
       }
       await audit("REFUND_POLICY_UPDATE", null, { refund_window_days: days, enabled, allow_partial_refund: allowPartial });
       return json(req, { ok: true, policy });
+    }
+
+    if (action === "refund_request_update") {
+      const requestCode = clean(body.request_code, 40).toUpperCase();
+      const status = clean(body.status, 30).toLowerCase();
+      const note = clean(body.note, 3000);
+      if (!/^RFD-\d{8}-[A-F0-9]{10}$/.test(requestCode)) {
+        return json(req, { ok: false, message: "Kode RFD tidak valid." }, 400);
+      }
+      if (!["reviewing", "waiting_customer", "approved", "rejected"].includes(status)) {
+        return json(req, { ok: false, message: "Status review refund tidak valid." }, 400);
+      }
+      const updated = await admin.rpc("ldm2_update_refund_request", {
+        p_request_code: requestCode, p_status: status, p_response_note: note || null, p_linked_refund_key: null,
+      });
+      if (updated.error) {
+        if (/ldm2_update_refund_request|does not exist|schema cache/i.test(updated.error.message || "")) {
+          throw new Error("SQL-43-CUSTOMER-REFUND-REQUESTS.sql belum dijalankan pada License Authority.");
+        }
+        throw updated.error;
+      }
+      await audit("REFUND_REQUEST_UPDATE", null, { request_code: requestCode, status, note: note ? note.slice(0, 240) : null });
+      return json(req, { ok: true, request: updated.data });
     }
 
     if (action === "refund_preview") {
@@ -571,9 +603,10 @@ Deno.serve(async (req) => {
 
     if (action === "refund_payment") {
       const licenseId = clean(body.license_id, 80);
-      const refundType = clean(body.refund_type, 20).toLowerCase();
-      const reason = clean(body.reason, 255);
-      const requestedAmount = Math.round(Number(body.amount || 0));
+      let refundType = clean(body.refund_type, 20).toLowerCase();
+      let reason = clean(body.reason, 255);
+      let requestedAmount = Math.round(Number(body.amount || 0));
+      const refundRequestCode = clean(body.refund_request_code, 40).toUpperCase();
       if (!["full", "partial"].includes(refundType)) {
         return json(req, { ok: false, message: "Jenis refund harus full atau partial." }, 400);
       }
@@ -583,6 +616,34 @@ Deno.serve(async (req) => {
         .eq("license_id", licenseId).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (paymentError) throw paymentError;
       if (!payment) return json(req, { ok: false, message: "Pembayaran tidak ditemukan." }, 404);
+
+      let linkedRequest: any = null;
+      if (refundRequestCode) {
+        if (!/^RFD-\d{8}-[A-F0-9]{10}$/.test(refundRequestCode)) {
+          return json(req, { ok: false, message: "Kode permintaan refund tidak valid." }, 400);
+        }
+        const requestResult = await admin.from("ldm2_refund_requests")
+          .select("id,request_code,payment_id,license_id,order_id,refund_type,requested_amount,reason_detail,status,response_note")
+          .eq("request_code", refundRequestCode).maybeSingle();
+        if (requestResult.error) {
+          if (/ldm2_refund_requests|does not exist|schema cache/i.test(requestResult.error.message || "")) {
+            throw new Error("SQL-43-CUSTOMER-REFUND-REQUESTS.sql belum dijalankan pada License Authority.");
+          }
+          throw requestResult.error;
+        }
+        linkedRequest = requestResult.data;
+        if (!linkedRequest) return json(req, { ok: false, message: "Permintaan refund customer tidak ditemukan." }, 404);
+        if (String(linkedRequest.payment_id) !== String(payment.id) || String(linkedRequest.license_id) !== String(licenseId)) {
+          return json(req, { ok: false, message: "Permintaan refund tidak cocok dengan pembayaran/lisensi ini." }, 409);
+        }
+        if (!["submitted", "reviewing", "waiting_customer", "approved"].includes(String(linkedRequest.status || ""))) {
+          return json(req, { ok: false, message: `Permintaan ${refundRequestCode} berstatus ${linkedRequest.status} dan tidak dapat diproses.` }, 409);
+        }
+        refundType = String(linkedRequest.refund_type || "").toLowerCase();
+        requestedAmount = Math.round(Number(linkedRequest.requested_amount || 0));
+        reason = clean(linkedRequest.reason_detail || "Permintaan refund customer", 255);
+      }
+
       if (!["paid", "partially_refunded"].includes(String(payment.status || "").toLowerCase())) {
         return json(req, { ok: false, message: `Status ${payment.status || "-"} tidak dapat direfund.` }, 409);
       }
@@ -645,6 +706,14 @@ Deno.serve(async (req) => {
         p_admin_email: adminEmail,
       });
       if (prepared.error) throw prepared.error;
+      if (refundRequestCode) {
+        const markProcessing = await admin.rpc("ldm2_update_refund_request", {
+          p_request_code: refundRequestCode, p_status: "processing",
+          p_response_note: "Permintaan disetujui dan sedang diproses ke payment provider.",
+          p_linked_refund_key: refundKey,
+        });
+        if (markProcessing.error) console.error("REFUND_REQUEST_PROCESSING_MARK_FAILED", refundRequestCode, markProcessing.error);
+      }
 
       try {
         const provider = await refundMidtransTransaction({
@@ -671,6 +740,14 @@ Deno.serve(async (req) => {
           p_unknown: false,
         });
         if (finished.error) throw finished.error;
+        if (refundRequestCode) {
+          const doneRequest = await admin.rpc("ldm2_update_refund_request", {
+            p_request_code: refundRequestCode, p_status: "completed",
+            p_response_note: `Refund sebesar Rp${amount.toLocaleString("id-ID")} telah diterima payment provider.`,
+            p_linked_refund_key: refundKey,
+          });
+          if (doneRequest.error) console.error("REFUND_REQUEST_COMPLETE_MARK_FAILED", refundRequestCode, doneRequest.error);
+        }
         await audit("REFUND_PAYMENT", licenseId, {
           order_id: payment.order_id,
           refund_key: refundKey,
@@ -702,6 +779,19 @@ Deno.serve(async (req) => {
           });
         } catch (markError) {
           console.error("REFUND_MARK_FAILED", refundKey, markError);
+        }
+        if (refundRequestCode) {
+          try {
+            await admin.rpc("ldm2_update_refund_request", {
+              p_request_code: refundRequestCode, p_status: uncertain ? "processing" : "reviewing",
+              p_response_note: uncertain
+                ? "Status refund belum dapat dipastikan karena gangguan jaringan. Developer sedang melakukan verifikasi provider."
+                : `Refund belum berhasil diproses provider: ${clean(err?.message || "Refund gagal", 500)}`,
+              p_linked_refund_key: refundKey,
+            });
+          } catch (requestMarkError) {
+            console.error("REFUND_REQUEST_MARK_FAILED", refundRequestCode, requestMarkError);
+          }
         }
         await audit("REFUND_PAYMENT_FAILED", licenseId, {
           order_id: payment.order_id, refund_key: refundKey, refund_type: refundType, amount,

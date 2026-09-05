@@ -118,6 +118,23 @@ function safePlanCycle(plan: string, cycle: string) {
   return ["monthly", "yearly"].includes(cycle);
 }
 
+async function verifiedCheckoutPayment(admin: any, order: string, token: string) {
+  if (!order || !token) throw Object.assign(new Error("Order/token status wajib diisi."), { status: 400 });
+  const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
+    .select("id,license_id,order_id,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
+    .eq("order_id", order).maybeSingle();
+  if (paymentError) throw paymentError;
+  if (!payment) throw Object.assign(new Error("Order tidak ditemukan."), { status: 404 });
+  const { data: delivery, error: deliveryError } = await admin.from("ldm2_checkout_deliveries")
+    .select("public_status_token_hash").eq("payment_id", payment.id).maybeSingle();
+  if (deliveryError) throw deliveryError;
+  if (!delivery) throw Object.assign(new Error("Status checkout tidak tersedia."), { status: 404 });
+  if (await sha256Hex(token) !== delivery.public_status_token_hash) {
+    throw Object.assign(new Error("Token status tidak valid."), { status: 403 });
+  }
+  return payment;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   if (req.method !== "POST") return json(req, { ok: false, message: "Gunakan POST." }, 405);
@@ -144,6 +161,91 @@ Deno.serve(async (req) => {
         throw result.error;
       }
       return json(req, { ok: true, policy: result.data, migration_required: false });
+    }
+
+    if (action === "refund_context" || action === "refund_request_create" || action === "refund_request_cancel") {
+      const order = clean(body.order_id, 120);
+      const token = clean(body.status_token, 200);
+      let payment = await verifiedCheckoutPayment(admin, order, token);
+
+      // Untuk halaman Support, status payment dibaca ulang bila diminta agar
+      // eligibility tidak bergantung pada callback browser yang mungkin stale.
+      if (body.sync_midtrans === true && ["pending", "challenge", "paid", "partially_refunded"].includes(String(payment.status || "").toLowerCase())) {
+        try {
+          await reconcilePaymentFromMidtrans(admin, payment, `customer_refund_context:${order}`);
+          payment = await verifiedCheckoutPayment(admin, order, token);
+        } catch (syncError) {
+          console.error("CUSTOMER_REFUND_CONTEXT_SYNC", order, syncError);
+        }
+      }
+
+      const eligibilityResult = await admin.rpc("ldm2_refund_eligibility", { p_payment_id: payment.id });
+      if (eligibilityResult.error) {
+        if (/ldm2_refund_eligibility|does not exist|schema cache/i.test(eligibilityResult.error.message || "")) {
+          return json(req, { ok: false, code: "REFUND_SQL_MISSING", message: "SQL-42 Refund Management belum dijalankan pada License Authority." }, 503);
+        }
+        throw eligibilityResult.error;
+      }
+      const eligibility = eligibilityResult.data || {};
+
+      const { data: license, error: licenseError } = await admin.from("ldm2_licenses")
+        .select("id,customer_name,customer_email,customer_phone,plan_code,primary_store_code,primary_store_name,status")
+        .eq("id", payment.license_id).maybeSingle();
+      if (licenseError) throw licenseError;
+
+      const requestQuery = await admin.from("ldm2_refund_requests")
+        .select("id,request_code,payment_id,license_id,order_id,refund_type,requested_amount,reason_category,reason_detail,status,response_note,linked_refund_key,refund_deadline,created_at,updated_at,completed_at,cancelled_at")
+        .eq("payment_id", payment.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (requestQuery.error && /ldm2_refund_requests|does not exist|schema cache/i.test(requestQuery.error.message || "")) {
+        return json(req, { ok: false, code: "REFUND_REQUEST_SQL_MISSING", message: "SQL-43 Customer Refund Requests belum dijalankan pada License Authority." }, 503);
+      }
+      if (requestQuery.error) throw requestQuery.error;
+      const existingRequest = requestQuery.data || null;
+
+      if (action === "refund_context") {
+        return json(req, {
+          ok: true,
+          payment: {
+            id: payment.id, order_id: payment.order_id, status: payment.status, provider_status: payment.provider_status,
+            amount: payment.amount, refund_amount: payment.refund_amount || 0, paid_at: payment.paid_at, created_at: payment.created_at,
+            payment_method: clean(payment?.provider_detail?.payment_type || "", 60) || null,
+          },
+          license: license ? {
+            customer_name: license.customer_name, plan_code: license.plan_code, store_code: license.primary_store_code,
+            store_name: license.primary_store_name, license_status: license.status,
+          } : null,
+          eligibility,
+          request: existingRequest,
+        });
+      }
+
+      if (action === "refund_request_create") {
+        if (eligibility.eligible !== true) {
+          return json(req, { ok: false, code: "REFUND_NOT_ELIGIBLE", message: eligibility.reason || "Pembayaran tidak memenuhi kebijakan refund.", eligibility }, 409);
+        }
+        if (existingRequest && ["submitted","reviewing","waiting_customer","approved","processing"].includes(String(existingRequest.status || ""))) {
+          return json(req, { ok: false, code: "REFUND_REQUEST_ACTIVE", message: `Permintaan ${existingRequest.request_code} masih aktif. Pantau status request tersebut terlebih dahulu.`, request: existingRequest }, 409);
+        }
+        const refundType = clean(body.refund_type, 20).toLowerCase();
+        const requestedAmount = Math.round(Number(body.amount || 0));
+        const category = clean(body.reason_category, 40).toLowerCase();
+        const detail = clean(body.reason_detail, 1500);
+        const requestCode = `RFD-${new Date().toISOString().slice(0,10).replace(/-/g, "")}-${randomHex(5)}`;
+        const created = await admin.rpc("ldm2_create_customer_refund_request", {
+          p_payment_id: payment.id, p_request_code: requestCode, p_refund_type: refundType,
+          p_requested_amount: requestedAmount, p_reason_category: category, p_reason_detail: detail,
+        });
+        if (created.error) throw created.error;
+        return json(req, { ok: true, message: "Permintaan refund berhasil dikirim ke Developer Support.", request: created.data });
+      }
+
+      const requestCode = clean(body.request_code, 40).toUpperCase();
+      if (!/^RFD-\d{8}-[A-F0-9]{10}$/.test(requestCode)) {
+        return json(req, { ok: false, message: "Kode permintaan refund tidak valid." }, 400);
+      }
+      const cancelled = await admin.rpc("ldm2_cancel_customer_refund_request", { p_payment_id: payment.id, p_request_code: requestCode });
+      if (cancelled.error) throw cancelled.error;
+      return json(req, { ok: true, message: "Permintaan refund dibatalkan.", request: cancelled.data });
     }
 
     if (action === "status") {

@@ -2,6 +2,8 @@
   "use strict";
   const $=id=>document.getElementById(id);
   const APP_VERSION=String(window.LDM_APP_VERSION||"27.9.0");
+  const CHECKOUT_STORAGE_KEYS=["ldmPublicCheckoutV278","ldmPublicCheckoutV276","ldmPublicCheckoutV273","ldmPublicCheckoutV272"];
+  let currentRefundContext=null;
   function client(){
     if(window.ldmSupabase) return window.ldmSupabase;
     if(window.LDMSupabase && window.LDMSupabase.isConfigured && window.LDMSupabase.isConfigured()) return window.LDMSupabase.createClient();
@@ -13,6 +15,29 @@
   function ticketStatus(v){v=String(v||"open").toLowerCase();return({open:"Terbuka",investigating:"Sedang Diinvestigasi",waiting_customer:"Menunggu Customer",resolved:"Selesai",closed:"Ditutup"})[v]||v}
   function typeLabel(v){return({issue:"Masalah / Bug",feedback:"Saran / Feedback",question:"Pertanyaan"})[String(v||"")]||v||"-"}
   function categoryLabel(v){return({kasir:"Kasir & Transaksi",barang_stok:"Barang & Stok",laporan:"Laporan",akun_absensi:"Akun & Absensi",printer_scanner:"Printer & Scanner",multi_store:"Multi-Toko / Transfer",lisensi_pembayaran:"Lisensi & Pembayaran",aplikasi_update:"Aplikasi & Update",saran_fitur:"Saran Fitur",lainnya:"Lainnya"})[String(v||"")]||v||"-"}
+  function money(v){return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(v||0))}
+  function refundStatusLabel(v){return({submitted:"Diajukan",reviewing:"Sedang Diverifikasi",waiting_customer:"Menunggu Informasi",approved:"Disetujui",processing:"Sedang Diproses",completed:"Refund Selesai",rejected:"Ditolak",cancelled:"Dibatalkan"})[String(v||"").toLowerCase()]||String(v||"-")}
+  function readCheckoutContext(){
+    for(const key of CHECKOUT_STORAGE_KEYS){
+      try{const value=JSON.parse(localStorage.getItem(key)||"null");if(value?.order_id&&value?.status_token)return {order_id:String(value.order_id),status_token:String(value.status_token)}}catch{}
+    }
+    return null;
+  }
+  function checkoutUrl(){
+    const base=window.LDM_LICENSE_V2_CONFIG||{};
+    const url=String(base.checkoutUrl||"").trim()||String(base.serverUrl||"").replace(/\/ldm-license-v2\/?$/i,"/ldm-public-checkout-v2");
+    if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/functions\/v1\/ldm-public-checkout-v2$/i.test(url))throw new Error("URL Public Checkout belum dikonfigurasi.");
+    return url;
+  }
+  async function callCheckout(payload){
+    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),20000);
+    try{
+      const response=await fetch(checkoutUrl(),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),cache:"no-store",signal:controller.signal});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||data?.ok===false){const e=new Error(data?.message||`Refund HTTP ${response.status}`);e.code=data?.code||"REFUND_REQUEST_FAILED";e.data=data;throw e}
+      return data;
+    }finally{clearTimeout(timeout)}
+  }
   function setMsg(id,t,type){const n=$(id);if(!n)return;n.textContent=t||"";n.className=`support-message ${type||""}`}
   function browserSummary(){const ua=String(navigator.userAgent||"").replace(/\s+/g," ").trim();return ua.slice(0,480)}
   function validIncident(code){return !code || /^ERR-\d{8}-[A-F0-9]{10}$/.test(code)}
@@ -63,6 +88,76 @@
     catch(e){$("ticketsList").innerHTML='<div class="empty">Riwayat tiket belum dapat dimuat.</div>';setMsg("ticketListMessage",e&&e.message?e.message:"Gagal memuat tiket.","error")}
   }
   async function copyText(value,msgId){if(!value)return;try{await navigator.clipboard.writeText(value);setMsg(msgId,`Kode ${value} disalin.`,`ok`)}catch{setMsg(msgId,"Clipboard tidak tersedia. Salin kode secara manual.","error")}}
+  function refundRoleAllowed(){
+    const role=String((window.LDMCloudSession&&window.LDMCloudSession.getCurrentRole&&window.LDMCloudSession.getCurrentRole())||"").toLowerCase();
+    return role==="owner";
+  }
+  function setRefundInputsDisabled(disabled){
+    ["refundRequestType","refundRequestAmount","refundReasonCategory","refundReasonDetail","refundRequestConfirm","btnSubmitRefundRequest"].forEach(id=>{const n=$(id);if(n)n.disabled=disabled});
+  }
+  function renderRefundRequestStatus(r){
+    const box=$("refundExistingRequest");if(!box)return;
+    if(!r){box.hidden=true;box.innerHTML="";return}
+    const active=["submitted","reviewing","waiting_customer","approved","processing"].includes(String(r.status||""));
+    box.hidden=false;
+    box.innerHTML=`<div class="ticket-top"><div><div class="refund-request-code">${esc(r.request_code||"-")}</div><div class="ticket-title">${esc(refundStatusLabel(r.status))}</div></div>${["submitted","waiting_customer"].includes(String(r.status||""))?`<button class="btn btn-soft" id="btnCancelRefundRequest">Batalkan Request</button>`:""}</div><div class="ticket-meta"><span class="badge tag">${esc(String(r.refund_type||"-").toUpperCase())}</span><span class="badge tag">${esc(money(r.requested_amount))}</span></div><div class="help" style="margin-top:8px">Diajukan ${esc(fmt(r.created_at))}${r.updated_at?` · Update ${esc(fmt(r.updated_at))}`:""}</div>${r.response_note?`<div class="ticket-note"><strong>Catatan Developer:</strong><br>${esc(r.response_note)}</div>`:""}`;
+    const cancel=$("btnCancelRefundRequest");if(cancel)cancel.addEventListener("click",cancelRefundRequest);
+    if(active)setRefundInputsDisabled(true);
+  }
+  function renderRefundContext(d){
+    currentRefundContext=d;
+    const section=$("refundRequestSection"),form=$("refundRequestFormWrap"),expired=$("refundExpiredNote"),info=$("refundInfoGrid"),state=$("refundContextMessage");
+    if(!section)return;
+    section.hidden=false;
+    const p=d.payment||{},e=d.eligibility||{},l=d.license||{},r=d.request||null;
+    $("refundPolicyBadge").textContent=`Kebijakan ${Number(e.refund_window_days||3)} hari`;
+    $("refundOrderId").textContent=p.order_id||"-";$("refundPaymentStatus").textContent=String(p.status||"-").toUpperCase();$("refundPaymentAmount").textContent=money(p.amount);$("refundRemainingAmount").textContent=money(e.remaining_refundable||0);$("refundPaidAt").textContent=fmt(p.paid_at);$("refundDeadline").textContent=fmt(e.refund_deadline);$("refundPlan").textContent=l.plan_code||"-";$("refundStore").textContent=[l.store_name,l.store_code].filter(Boolean).join(" · ")||"-";info.hidden=false;
+    renderRefundRequestStatus(r);
+    expired.hidden=true;
+    if(e.eligible===true){
+      state.className="refund-state ok";state.textContent=`✅ Pembayaran masih berada dalam batas refund ${Number(e.refund_window_days||0)} hari. Form pengajuan tersedia sampai ${fmt(e.refund_deadline)}.`;
+      form.hidden=false;setRefundInputsDisabled(false);
+      const partialOption=$("refundRequestType").querySelector('option[value="partial"]');partialOption.disabled=e.allow_partial_refund===false;if(partialOption.disabled&&$("refundRequestType").value==="partial")$("refundRequestType").value="full";
+      $("refundRequestAmount").max=String(Number(e.remaining_refundable||0));
+      updateRefundAmountMode();
+      if(r&&["submitted","reviewing","waiting_customer","approved","processing"].includes(String(r.status||"")))setRefundInputsDisabled(true);
+    }else{
+      form.hidden=true;
+      const deadline=e.refund_deadline?new Date(e.refund_deadline).getTime():0;
+      const isExpired=deadline&&Date.now()>deadline;
+      if(isExpired){state.className="refund-state warn";state.textContent="Masa pengajuan refund untuk pembayaran ini sudah berakhir.";expired.hidden=false;$("refundExpiredText").textContent=`Batas refund berakhir pada ${fmt(e.refund_deadline)}. ${e.reason||"Permintaan refund baru tidak dapat diajukan."}`}
+      else{state.className="refund-state off";state.textContent=e.reason||"Pembayaran ini tidak memenuhi syarat pengajuan refund."}
+    }
+  }
+  function updateRefundAmountMode(){
+    if(!currentRefundContext)return;const e=currentRefundContext.eligibility||{},input=$("refundRequestAmount"),partial=$("refundRequestType").value==="partial";
+    input.disabled=!partial;input.value=String(Number(e.remaining_refundable||0));$("refundAmountHelp").textContent=partial?`Maksimal ${money(e.remaining_refundable||0)}.`:"Refund penuh otomatis menggunakan seluruh sisa refundable.";
+  }
+  async function loadRefundContext(){
+    const section=$("refundRequestSection");if(!section)return;
+    if(!refundRoleAllowed()){section.hidden=true;return}
+    const last=readCheckoutContext();if(!last){section.hidden=true;return}
+    section.hidden=false;$("refundContextMessage").className="refund-state info";$("refundContextMessage").textContent="Memeriksa transaksi pembayaran terakhir dan kebijakan refund…";$("refundRequestFormWrap").hidden=true;$("refundInfoGrid").hidden=true;$("refundExpiredNote").hidden=true;
+    try{const d=await callCheckout({action:"refund_context",order_id:last.order_id,status_token:last.status_token,sync_midtrans:true});renderRefundContext(d)}catch(e){$("refundContextMessage").className="refund-state off";$("refundContextMessage").textContent=e?.message||"Kelayakan refund belum dapat diperiksa.";$("refundRequestFormWrap").hidden=true}
+  }
+  async function submitRefundRequest(){
+    if(!currentRefundContext?.eligibility?.eligible){setMsg("refundRequestMessage","Pembayaran tidak memenuhi syarat refund.","error");return}
+    if(!$("refundRequestConfirm").checked){setMsg("refundRequestMessage","Centang persetujuan kebijakan refund terlebih dahulu.","error");return}
+    const last=readCheckoutContext();if(!last){setMsg("refundRequestMessage","Data order checkout tidak ditemukan pada perangkat ini.","error");return}
+    const type=$("refundRequestType").value,detail=String($("refundReasonDetail").value||"").trim(),category=$("refundReasonCategory").value;
+    if(detail.length<20){setMsg("refundRequestMessage","Penjelasan refund minimal 20 karakter.","error");return}
+    const remaining=Number(currentRefundContext.eligibility.remaining_refundable||0);const amount=type==="full"?remaining:Math.round(Number($("refundRequestAmount").value||0));
+    if(type==="partial"&&(!Number.isSafeInteger(amount)||amount<=0||amount>remaining)){setMsg("refundRequestMessage",`Nominal partial refund harus antara Rp1 dan ${money(remaining)}.`,"error");return}
+    const btn=$("btnSubmitRefundRequest");btn.disabled=true;btn.textContent="Mengirim Permintaan…";setMsg("refundRequestMessage","Mengirim permintaan refund ke Developer Support…","");
+    try{const d=await callCheckout({action:"refund_request_create",order_id:last.order_id,status_token:last.status_token,refund_type:type,amount,reason_category:category,reason_detail:detail});setMsg("refundRequestMessage",`Permintaan ${d.request?.request_code||"RFD"} berhasil dibuat. Pantau statusnya pada card ini.`,"ok");await loadRefundContext()}
+    catch(e){setMsg("refundRequestMessage",e?.message||"Permintaan refund gagal dikirim.","error")}
+    finally{btn.disabled=false;btn.textContent="↩️ Kirim Permintaan Refund"}
+  }
+  async function cancelRefundRequest(){
+    const r=currentRefundContext?.request,last=readCheckoutContext();if(!r?.request_code||!last)return;if(!confirm(`Batalkan permintaan ${r.request_code}?`))return;
+    try{await callCheckout({action:"refund_request_cancel",order_id:last.order_id,status_token:last.status_token,request_code:r.request_code});setMsg("refundRequestMessage","Permintaan refund dibatalkan.","ok");await loadRefundContext()}catch(e){setMsg("refundRequestMessage",e?.message||"Gagal membatalkan permintaan refund.","error")}
+  }
+
   async function lookupIncident(){
     const code=String($("incidentCode").value||"").trim().toUpperCase(); $("incidentCode").value=code;$("result").hidden=true;
     if(!/^ERR-\d{8}-[A-F0-9]{10}$/.test(code)){setMsg("supportMessage","Format kode incident tidak valid. Contoh: ERR-20260905-A72C91D083","error");return}
@@ -82,6 +177,11 @@
     const updateMonitoringButton=()=>{const role=String((window.LDMCloudSession&&window.LDMCloudSession.getCurrentRole&&window.LDMCloudSession.getCurrentRole())||"").toLowerCase();const mon=$("btnMonitoring");if(mon)mon.style.display=(role==="owner"||role==="admin")?"inline-flex":"none";};
     updateMonitoringButton();
     loadTickets();
-    window.addEventListener("ldm-license-v2-authorized",()=>{updateMonitoringButton();loadTickets();},{once:true});
+    const refundType=$("refundRequestType");if(refundType)refundType.addEventListener("change",updateRefundAmountMode);
+    const refundReason=$("refundReasonDetail");if(refundReason)refundReason.addEventListener("input",()=>{$("refundReasonChars").textContent=String(refundReason.value.length)});
+    const submitRefund=$("btnSubmitRefundRequest");if(submitRefund)submitRefund.addEventListener("click",submitRefundRequest);
+    const refreshRefund=$("btnRefreshRefundContext");if(refreshRefund)refreshRefund.addEventListener("click",loadRefundContext);
+    loadRefundContext();
+    window.addEventListener("ldm-license-v2-authorized",()=>{updateMonitoringButton();loadTickets();loadRefundContext();},{once:true});
   });
 })();
