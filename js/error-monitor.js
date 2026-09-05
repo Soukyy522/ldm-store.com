@@ -1,7 +1,7 @@
 (function(){
     "use strict";
 
-    const VERSION = "27.9.0-monitor-1";
+    const VERSION = "27.9.0-monitor-4";
     const QUEUE_LIMIT = 20;
     const DEDUPE_MS = 30000;
     const queue = [];
@@ -101,8 +101,10 @@
                 : "error",
             page: safeText(options.page || pageName(),220),
             action: safeText(options.action || "client_runtime",180),
-            error_name: normalized.error_name,
-            message: normalized.message,
+            error_name: safeText(options.error_name || normalized.error_name,160),
+            message: options.message != null
+                ? redact(options.message,1200)
+                : normalized.message,
             stack: normalized.stack,
             source_file: safeText(options.source_file || "",500),
             line_no: Number.isFinite(Number(options.line_no)) ? Number(options.line_no) : null,
@@ -231,9 +233,11 @@
         capture,
         flush,
         pendingCount: () => queue.length,
-        test: () => capture(new Error("Error uji Monitoring LocDailyMar"),{
+        test: () => capture("Uji Monitoring LocDailyMar — event sintetis, bukan error aplikasi.",{
             action:"monitoring_test",
-            severity:"warning"
+            severity:"warning",
+            error_name:"MonitoringTest",
+            message:"Uji Monitoring LocDailyMar — event sintetis, bukan error aplikasi."
         })
     });
 })();
