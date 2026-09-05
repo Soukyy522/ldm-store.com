@@ -32,3 +32,115 @@
 #stepDevice .kbd{display:inline-block;border:1px solid #ccd3cf;border-bottom-width:2px;border-radius:5px;padding:1px 5px;background:#fff;font-family:ui-monospace,monospace;font-size:10px}
 @media(max-width:780px){#stepDevice .peripheral-summary{grid-template-columns:1fr 1fr}#stepDevice .peripheral-grid2,#stepDevice .peripheral-checks{grid-template-columns:1fr}#stepDevice .peripheral-scanner-box{grid-template-columns:1fr}}
 @media(max-width:480px){#stepDevice .peripheral-summary{grid-template-columns:1fr}}
+
+/* Commercial #04 V12 — Receipt customizer with real-paper CSS preview */
+#stepDevice .receipt-customizer-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.95fr);gap:16px;align-items:start}
+#stepDevice .receipt-customizer-form{display:grid;gap:10px}
+#stepDevice .receipt-customizer-form textarea{width:100%;border:1px solid #ccd8d2;border-radius:9px;padding:9px 10px;font:inherit;background:#fff;resize:vertical;min-height:72px}
+#stepDevice .receipt-preview-column{min-width:0}
+#stepDevice .receipt-preview-title{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin:0 0 8px;color:#2C3E50}
+#stepDevice .receipt-preview-title strong{font-size:12px}
+#stepDevice .receipt-preview-title span{font-size:9px;font-weight:700;letter-spacing:.03em;color:#7a8792;text-transform:uppercase}
+#stepDevice .receipt-paper-stage{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    min-height:370px;
+    padding:28px 20px 42px;
+    overflow:hidden;
+    border:1px solid #dce5e1;
+    border-radius:14px;
+    background:
+        radial-gradient(circle at 18% 12%,rgba(255,255,255,.9),transparent 30%),
+        linear-gradient(145deg,#eef2f0 0%,#e4e9e6 55%,#dce2df 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.75);
+}
+#stepDevice .receipt-paper-stage::before{
+    content:"";
+    position:absolute;
+    left:12%;right:12%;bottom:22px;
+    height:22px;
+    border-radius:50%;
+    background:rgba(23,39,32,.18);
+    filter:blur(14px);
+    pointer-events:none;
+}
+#stepDevice .receipt-paper-stage::after{
+    content:"KERTAS THERMAL";
+    position:absolute;
+    right:12px;bottom:9px;
+    color:rgba(44,62,80,.36);
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.12em;
+    pointer-events:none;
+}
+#stepDevice .receipt-custom-preview{
+    position:relative;
+    z-index:1;
+    width:min(100%,220px);
+    min-height:300px;
+    margin:0 auto;
+    padding:22px 16px 30px;
+    border:0;
+    border-radius:3px 3px 1px 1px;
+    color:#171717;
+    font-family:"Courier New",ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:9px;
+    line-height:1.42;
+    background:
+        linear-gradient(90deg,rgba(17,24,39,.024),transparent 5%,transparent 95%,rgba(17,24,39,.018)),
+        repeating-linear-gradient(0deg,rgba(40,50,45,.012) 0 1px,transparent 1px 4px),
+        #fffef9;
+    box-shadow:
+        0 24px 30px rgba(27,39,34,.16),
+        0 7px 10px rgba(27,39,34,.10),
+        inset 0 0 0 1px rgba(80,90,85,.035);
+    transform:perspective(900px) rotateX(.45deg);
+    transform-origin:top center;
+    transition:width .18s ease,box-shadow .18s ease;
+}
+#stepDevice .receipt-custom-preview::before{
+    content:"";
+    position:absolute;
+    top:0;left:6%;right:6%;
+    height:7px;
+    border-radius:0 0 50% 50%;
+    box-shadow:0 5px 8px rgba(40,45,42,.08);
+    opacity:.7;
+    pointer-events:none;
+}
+/* Zig-zag torn thermal-paper bottom edge; remains HTML/CSS, no image. */
+#stepDevice .receipt-custom-preview::after{
+    content:"";
+    position:absolute;
+    z-index:2;
+    left:0;right:0;bottom:-11px;
+    height:12px;
+    background:
+      linear-gradient(135deg,transparent 6px,#fffef9 0) 0 0/12px 12px repeat-x,
+      linear-gradient(45deg,transparent 6px,#fffef9 0) 6px 0/12px 12px repeat-x;
+    filter:drop-shadow(0 4px 2px rgba(27,39,34,.06));
+    pointer-events:none;
+}
+#stepDevice .receipt-custom-preview.w80{width:min(100%,300px);font-size:9.5px;padding-left:18px;padding-right:18px}
+#stepDevice .receipt-preview-center{text-align:center;overflow-wrap:anywhere}
+#stepDevice .receipt-preview-center>strong{display:block;margin-bottom:3px;font-size:1.17em;letter-spacing:.02em;text-transform:uppercase}
+#stepDevice .receipt-preview-muted{color:#343a37;white-space:normal;overflow-wrap:anywhere}
+#stepDevice .receipt-preview-meta{margin-top:6px;color:#4d5551;font-size:8.5px;line-height:1.48}
+#stepDevice .receipt-preview-line{height:1px;border:0;margin:8px 0;background:repeating-linear-gradient(90deg,#343a37 0 5px,transparent 5px 8px)}
+#stepDevice .receipt-preview-row{display:flex;justify-content:space-between;gap:8px;margin:2px 0}
+#stepDevice .receipt-preview-row span:last-child,#stepDevice .receipt-preview-row strong:last-child{text-align:right;white-space:nowrap}
+#stepDevice .receipt-preview-discount{color:#171717;font-size:8.5px}
+#stepDevice .receipt-customizer-panel code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#eef3f1;border-radius:5px;padding:1px 4px}
+@media(max-width:860px){
+    #stepDevice .receipt-customizer-grid{grid-template-columns:1fr}
+    #stepDevice .receipt-paper-stage{min-height:350px}
+}
+@media(max-width:480px){
+    #stepDevice .receipt-paper-stage{padding:20px 12px 36px;min-height:330px}
+    #stepDevice .receipt-custom-preview{width:min(100%,205px)}
+    #stepDevice .receipt-custom-preview.w80{width:min(100%,265px)}
+    #stepDevice .receipt-preview-title{align-items:flex-start;flex-direction:column}
+}
