@@ -8,15 +8,38 @@ import {
   assertMidtransRuntime, cancelPaymentForRetry, midtransClientKey, midtransEnvironment,
   midtransNotificationUrl, reconcilePaymentFromMidtrans,
 } from "../_shared/ldm-midtrans-operations.ts";
+import {
+  assertDokuRuntime, createDokuCheckout, dokuEnvironment, dokuRuntimeHealth,
+  reconcilePaymentFromDoku,
+} from "../_shared/ldm-doku-operations.ts";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
 function randomHex(bytes = 8) {
   return [...crypto.getRandomValues(new Uint8Array(bytes))]
     .map((v) => v.toString(16).padStart(2, "0")).join("").toUpperCase();
 }
-function orderId() {
-  const date = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+function orderId(provider = "midtrans") {
+  const date = new Date().toISOString().replace(/\D/g, "").slice(0, 12);
+  // DOKU Checkout harus aman untuk channel kartu yang membatasi invoice_number <= 30 karakter.
+  if (provider === "doku") return `LDMDK${date}${randomHex(3)}`;
   return `LDM-PURCHASE-${date}-${randomHex(4)}`;
+}
+function allowedGateways() {
+  const configured = env("LDM2_ALLOWED_PAYMENT_GATEWAYS").toLowerCase()
+    .split(",").map((v) => v.trim()).filter((v) => ["midtrans","doku"].includes(v));
+  return [...new Set(configured.length ? configured : ["midtrans"])];
+}
+function defaultGateway() {
+  const value = env("LDM2_DEFAULT_PAYMENT_GATEWAY").toLowerCase();
+  const allowed = allowedGateways();
+  return allowed.includes(value) ? value : allowed[0];
+}
+function gatewayConfigured(gateway: string) {
+  if (gateway === "midtrans") {
+    try { assertMidtransRuntime(true); return true; } catch { return false; }
+  }
+  if (gateway === "doku") return dokuRuntimeHealth().ok;
+  return false;
 }
 function licenseKey(plan: string) {
   const short = plan.replace("WARUNG_", "W");
@@ -121,7 +144,7 @@ function safePlanCycle(plan: string, cycle: string) {
 async function verifiedCheckoutPayment(admin: any, order: string, token: string) {
   if (!order || !token) throw Object.assign(new Error("Order/token status wajib diisi."), { status: 400 });
   const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
-    .select("id,license_id,order_id,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
+    .select("id,license_id,order_id,provider,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,redirect_url,snap_token,created_at")
     .eq("order_id", order).maybeSingle();
   if (paymentError) throw paymentError;
   if (!payment) throw Object.assign(new Error("Order tidak ditemukan."), { status: 404 });
@@ -148,6 +171,21 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = clean(body.action, 30).toLowerCase();
 
+    if (action === "gateway_config") {
+      const gateways = allowedGateways().map((id) => ({
+        id,
+        label: id === "doku" ? "DOKU" : "Midtrans",
+        enabled: gatewayConfigured(id),
+        mode: id === "doku" ? dokuEnvironment() : midtransEnvironment(),
+      }));
+      const enabled = gateways.filter((g) => g.enabled);
+      return json(req, {
+        ok: true,
+        default_gateway: enabled.some((g) => g.id === defaultGateway()) ? defaultGateway() : (enabled[0]?.id || null),
+        gateways,
+      });
+    }
+
     if (action === "refund_policy") {
       const result = await admin.rpc("ldm2_get_refund_policy");
       if (result.error) {
@@ -170,9 +208,10 @@ Deno.serve(async (req) => {
 
       // Untuk halaman Support, status payment dibaca ulang bila diminta agar
       // eligibility tidak bergantung pada callback browser yang mungkin stale.
-      if (body.sync_midtrans === true && ["pending", "challenge", "paid", "partially_refunded"].includes(String(payment.status || "").toLowerCase())) {
+      if ((body.sync_provider === true || body.sync_midtrans === true) && ["pending", "challenge", "paid", "partially_refunded"].includes(String(payment.status || "").toLowerCase())) {
         try {
-          await reconcilePaymentFromMidtrans(admin, payment, `customer_refund_context:${order}`);
+          if (payment.provider === "doku") await reconcilePaymentFromDoku(admin, payment, `customer_refund_context:${order}`);
+          else await reconcilePaymentFromMidtrans(admin, payment, `customer_refund_context:${order}`);
           payment = await verifiedCheckoutPayment(admin, order, token);
         } catch (syncError) {
           console.error("CUSTOMER_REFUND_CONTEXT_SYNC", order, syncError);
@@ -253,7 +292,7 @@ Deno.serve(async (req) => {
       const token = clean(body.status_token, 200);
       if (!order || !token) return json(req, { ok: false, message: "Order/token status wajib diisi." }, 400);
       let { data: payment, error: pErr } = await admin.from("ldm2_payments")
-        .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,paid_at,processed_at")
+        .select("id,license_id,order_id,provider,status,provider_status,billing_cycle,amount,paid_at,processed_at,redirect_url,created_at")
         .eq("order_id", order).maybeSingle();
       if (pErr) throw pErr;
       if (!payment) return json(req, { ok: false, message: "Order tidak ditemukan." }, 404);
@@ -265,22 +304,22 @@ Deno.serve(async (req) => {
       const tokenHash = await sha256Hex(token);
       if (tokenHash !== delivery.public_status_token_hash) return json(req, { ok: false, message: "Token status tidak valid." }, 403);
 
-      // 27.6.1: self-healing status sync. Jika webhook terlambat/gagal,
-      // tombol Cek Status melakukan GET Status ke Midtrans lalu menerapkan
-      // status aktual ke database License Authority.
-      let midtrans_sync: any = null;
-      let midtrans_sync_error: string | null = null;
-      if (body.sync_midtrans === true && ["pending", "challenge"].includes(String(payment.status || "").toLowerCase())) {
+      // V23: self-healing status sync berdasarkan provider.
+      let provider_sync: any = null;
+      let provider_sync_error: string | null = null;
+      if ((body.sync_provider === true || body.sync_midtrans === true) && ["pending", "challenge"].includes(String(payment.status || "").toLowerCase())) {
         try {
-          midtrans_sync = await reconcilePaymentFromMidtrans(admin, payment, "public_checkout_status");
+          provider_sync = payment.provider === "doku"
+            ? await reconcilePaymentFromDoku(admin, payment, "public_checkout_status")
+            : await reconcilePaymentFromMidtrans(admin, payment, "public_checkout_status");
           const refreshed = await admin.from("ldm2_payments")
-            .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,paid_at,processed_at")
+            .select("id,license_id,order_id,provider,status,provider_status,billing_cycle,amount,paid_at,processed_at,redirect_url,created_at")
             .eq("order_id", order).maybeSingle();
           if (refreshed.error) throw refreshed.error;
           if (refreshed.data) payment = refreshed.data;
         } catch (syncError) {
-          console.error("MIDTRANS_STATUS_SYNC", order, syncError);
-          midtrans_sync_error = clean((syncError as Error)?.message || "Status Midtrans belum dapat disinkronkan.", 500);
+          console.error("PAYMENT_PROVIDER_STATUS_SYNC", order, syncError);
+          provider_sync_error = clean((syncError as Error)?.message || "Status provider belum dapat disinkronkan.", 500);
         }
       }
 
@@ -302,20 +341,30 @@ Deno.serve(async (req) => {
         ok: true,
         order_id: order,
         payment_status: payment.status,
+        payment_gateway: payment.provider || "midtrans",
         provider_status: payment.provider_status,
+        redirect_url: payment.redirect_url || null,
         paid_at: payment.paid_at,
         license_status: license?.status || null,
         provision_status: receipt?.provision_status || delivery.provision_status,
         receipt,
         receipt_error: receiptError,
-        midtrans_sync: midtrans_sync ? {
-          transaction_status: midtrans_sync.found
-            ? clean(midtrans_sync?.remote?.transaction_status || "", 40)
-            : "not_created",
-          fraud_status: clean(midtrans_sync?.remote?.fraud_status || "", 40) || null,
+        provider_sync: provider_sync ? {
+          provider: payment.provider || "midtrans",
+          found: provider_sync.found !== false,
+          transaction_status: payment.provider === "doku"
+            ? clean(provider_sync?.remote?.transaction?.status || provider_sync?.remote?.order?.status || "", 60)
+            : (provider_sync.found ? clean(provider_sync?.remote?.transaction_status || "", 40) : "not_created"),
           synced: true,
         } : null,
-        midtrans_sync_error,
+        provider_sync_error,
+        // Compatibility untuk frontend lama Midtrans.
+        midtrans_sync: payment.provider !== "doku" && provider_sync ? {
+          transaction_status: provider_sync.found ? clean(provider_sync?.remote?.transaction_status || "", 40) : "not_created",
+          fraud_status: clean(provider_sync?.remote?.fraud_status || "", 40) || null,
+          synced: true,
+        } : null,
+        midtrans_sync_error: payment.provider !== "doku" ? provider_sync_error : null,
       });
     }
 
@@ -325,7 +374,7 @@ Deno.serve(async (req) => {
       if (!order || !token) return json(req, { ok: false, message: "Order/token status wajib diisi." }, 400);
 
       const { data: payment, error: pErr } = await admin.from("ldm2_payments")
-        .select("id,license_id,order_id,status,provider_status,billing_cycle,amount,snap_token,payment_type,paid_at,processed_at")
+        .select("id,license_id,order_id,provider,status,provider_status,billing_cycle,amount,snap_token,redirect_url,payment_type,paid_at,processed_at")
         .eq("order_id", order).maybeSingle();
       if (pErr) throw pErr;
       if (!payment) return json(req, { ok: false, message: "Order tidak ditemukan." }, 404);
@@ -347,6 +396,13 @@ Deno.serve(async (req) => {
       }
       if (!["pending", "challenge", "failed", "expired"].includes(payment.status)) {
         return json(req, { ok: false, code: "PAYMENT_NOT_CANCELLABLE", message: `Status pembayaran ${payment.status} tidak dapat dibatalkan.` }, 409);
+      }
+
+      if (payment.provider === "doku") {
+        return json(req, {
+          ok: false, code: "DOKU_CANCEL_REQUIRES_FEATURE",
+          message: "Pembatalan remote DOKU Checkout belum diaktifkan pada V23 karena fitur Cancel Order DOKU harus diaktifkan khusus oleh DOKU. Biarkan order berakhir atau selesaikan melalui dashboard DOKU.",
+        }, 409);
       }
 
       const cancelled = await cancelPaymentForRetry(
@@ -373,6 +429,7 @@ Deno.serve(async (req) => {
     const storeName = clean(body.store_name, 120);
     const storeCode = clean(body.store_code, 30).toUpperCase();
     const ownerPassword = String(body.owner_password ?? "");
+    const paymentGateway = clean(body.payment_gateway || defaultGateway(), 20).toLowerCase();
 
     if (customerName.length < 2) return json(req, { ok: false, message: "Nama customer wajib diisi." }, 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) return json(req, { ok: false, message: "Email customer tidak valid." }, 400);
@@ -386,6 +443,9 @@ Deno.serve(async (req) => {
       return json(req, { ok: false, message: "Password Owner harus 8-72 karakter, tanpa spasi, dan mengandung huruf besar, huruf kecil, serta angka." }, 400);
     }
     if (!safePlanCycle(planCode, billingCycle)) return json(req, { ok: false, message: "Periode paket tidak sesuai." }, 400);
+    if (!allowedGateways().includes(paymentGateway)) return json(req, { ok: false, code: "PAYMENT_GATEWAY_NOT_ALLOWED", message: "Payment gateway tidak diizinkan." }, 400);
+    if (!gatewayConfigured(paymentGateway)) return json(req, { ok: false, code: "PAYMENT_GATEWAY_NOT_CONFIGURED", message: `${paymentGateway === "doku" ? "DOKU" : "Midtrans"} belum dikonfigurasi pada server.` }, 503);
+    if (paymentGateway === "doku") assertDokuRuntime(); else assertMidtransRuntime(true);
 
     const fingerprint = await checkRateLimit(admin, customerEmail, req);
 
@@ -416,10 +476,10 @@ Deno.serve(async (req) => {
         return json(req, { ok: false, code: "PENDING_PLAN_MISMATCH", message: `Store Code ${storeCode} sudah mempunyai order pending untuk paket ${existing.plan_code}.` }, 409);
       }
       const { data: oldPayment } = await admin.from("ldm2_payments")
-        .select("id,order_id,status,snap_token,redirect_url,billing_cycle,amount")
+        .select("id,order_id,provider,status,snap_token,redirect_url,billing_cycle,amount")
         .eq("license_id", existing.id)
         .in("status", ["pending", "challenge"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
-      if (oldPayment?.snap_token && oldPayment.billing_cycle === billingCycle && Number(oldPayment.amount) === amount) {
+      if (oldPayment?.snap_token && oldPayment.provider === paymentGateway && oldPayment.billing_cycle === billingCycle && Number(oldPayment.amount) === amount) {
         const reserved = await reserveApplicationOwnerCredentials({
           customerName, customerEmail, ownerPassword, storeCode, orderId: oldPayment.order_id,
         });
@@ -431,14 +491,17 @@ Deno.serve(async (req) => {
         await saveAttempt(admin, fingerprint, oldPayment.order_id);
         return json(req, {
           ok: true, reused: true, order_id: oldPayment.order_id, payment_id: oldPayment.id,
-          amount: oldPayment.amount, snap_token: oldPayment.snap_token, redirect_url: oldPayment.redirect_url,
-          client_key: midtransClientKey(),
-          environment: midtransEnvironment(),
+          amount: oldPayment.amount, payment_gateway: oldPayment.provider || paymentGateway,
+          snap_token: oldPayment.snap_token, redirect_url: oldPayment.redirect_url,
+          client_key: oldPayment.provider === "midtrans" ? midtransClientKey() : null,
+          environment: oldPayment.provider === "doku" ? dokuEnvironment() : midtransEnvironment(),
+          cancel_supported: oldPayment.provider !== "doku",
           status_token: newStatusToken,
         });
       }
       if (oldPayment) {
-        return json(req, { ok: false, code: "PENDING_ORDER_EXISTS", message: "Masih ada order pending dengan periode berbeda. Selesaikan atau tunggu order tersebut berakhir." }, 409);
+        const providerNote = oldPayment.provider !== paymentGateway ? ` Order lama menggunakan ${oldPayment.provider === "doku" ? "DOKU" : "Midtrans"}.` : "";
+        return json(req, { ok: false, code: "PENDING_ORDER_EXISTS", message: `Masih ada order pending dengan gateway/periode berbeda.${providerNote} Selesaikan atau tunggu order tersebut berakhir.` }, 409);
       }
 
       // Jika order lama sudah failed/expired/cancelled, buat payment baru pada lisensi pending yang sama.
@@ -450,7 +513,7 @@ Deno.serve(async (req) => {
         return json(req, { ok: false, code: "PENDING_ORDER_REQUIRES_SUPPORT", message: "Data checkout lama tidak lengkap. Hubungi developer." }, 409);
       }
 
-      const retryOrderId = orderId();
+      const retryOrderId = orderId(paymentGateway);
       const { data: retryOrder, error: retryOrderError } = await admin.rpc("ldm2_create_retry_purchase_order", {
         p_order_id: retryOrderId,
         p_license_id: existing.id,
@@ -458,6 +521,10 @@ Deno.serve(async (req) => {
         p_amount: amount,
       });
       if (retryOrderError) throw retryOrderError;
+      if (paymentGateway === "doku") {
+        const providerSet = await admin.rpc("ldm2_set_payment_provider", { p_order_id: retryOrderId, p_provider: "doku" });
+        if (providerSet.error) throw providerSet.error;
+      }
       const retryStatusToken = statusToken();
       const { error: retryDeliveryError } = await admin.from("ldm2_checkout_deliveries").insert({
         payment_id: retryOrder.payment_id,
@@ -483,6 +550,23 @@ Deno.serve(async (req) => {
       await saveAttempt(admin, fingerprint, retryOrderId);
 
       try {
+        if (paymentGateway === "doku") {
+          const checkout = await createDokuCheckout({
+            orderId: retryOrderId, amount,
+            itemName: `Lisensi LocDailyMar - ${plan.name} (${billingCycle})`,
+            customerName, customerEmail, customerPhone,
+          });
+          const { error: retrySaveError } = await admin.rpc("ldm2_set_doku_checkout", {
+            p_order_id: retryOrderId, p_checkout_token: checkout.tokenId, p_redirect_url: checkout.redirectUrl,
+            p_provider_detail: { request_id: checkout.requestId, expired_date: checkout.expiredDate, session_id: checkout.sessionId },
+          });
+          if (retrySaveError) throw retrySaveError;
+          return json(req, {
+            ok: true, retried: true, order_id: retryOrderId, payment_id: retryOrder.payment_id, amount,
+            payment_gateway: "doku", checkout_token: checkout.tokenId, redirect_url: checkout.redirectUrl,
+            environment: dokuEnvironment(), cancel_supported: false, status_token: retryStatusToken,
+          });
+        }
         const retrySnap = await createMidtransSnap({
           orderId: retryOrderId, amount,
           itemName: `Lisensi LocDailyMar - ${plan.name} (${billingCycle})`,
@@ -493,22 +577,22 @@ Deno.serve(async (req) => {
         });
         if (retrySaveError) throw retrySaveError;
         return json(req, {
-          ok: true, retried: true, order_id: retryOrderId, payment_id: retryOrder.payment_id,
-          amount, snap_token: retrySnap.token, redirect_url: retrySnap.redirectUrl,
-          client_key: midtransClientKey(),
-          environment: midtransEnvironment(),
+          ok: true, retried: true, order_id: retryOrderId, payment_id: retryOrder.payment_id, amount,
+          payment_gateway: "midtrans", snap_token: retrySnap.token, redirect_url: retrySnap.redirectUrl,
+          client_key: midtransClientKey(), environment: midtransEnvironment(), cancel_supported: true,
           status_token: retryStatusToken,
         });
       } catch (retryPaymentError) {
-        const message = clean((retryPaymentError as Error)?.message || "Midtrans gagal membuat pembayaran.");
+        const label = paymentGateway === "doku" ? "DOKU" : "Midtrans";
+        const message = clean((retryPaymentError as Error)?.message || `${label} gagal membuat pembayaran.`);
         await admin.rpc("ldm2_mark_payment_error", { p_order_id: retryOrderId, p_message: message });
         try { await releaseApplicationOwnerReservation(admin, retryOrderId); } catch (_) {}
-        return json(req, { ok: false, message: `Retry tersimpan tetapi Midtrans gagal: ${message}`, order_id: retryOrderId }, 502);
+        return json(req, { ok: false, message: `Retry tersimpan tetapi ${label} gagal: ${message}`, order_id: retryOrderId }, 502);
       }
     }
 
     const rawKey = licenseKey(planCode);
-    const newOrder = orderId();
+    const newOrder = orderId(paymentGateway);
     const keyHash = await sha256Hex(rawKey);
     const { data: order, error: orderError } = await admin.rpc("ldm2_create_purchase_order", {
       p_order_id: newOrder,
@@ -522,9 +606,13 @@ Deno.serve(async (req) => {
       p_store_code: storeCode,
       p_store_name: storeName,
       p_amount: amount,
-      p_notes: "PUBLIC_CHECKOUT_27_6_OWNER_EMAIL_PASSWORD",
+      p_notes: `PUBLIC_CHECKOUT_V23_${paymentGateway.toUpperCase()}_OWNER_EMAIL_PASSWORD`,
     });
     if (orderError) throw orderError;
+    if (paymentGateway === "doku") {
+      const providerSet = await admin.rpc("ldm2_set_payment_provider", { p_order_id: newOrder, p_provider: "doku" });
+      if (providerSet.error) throw providerSet.error;
+    }
 
     const publicToken = statusToken();
     const { error: deliveryInsertError } = await admin.from("ldm2_checkout_deliveries").insert({
@@ -551,6 +639,23 @@ Deno.serve(async (req) => {
     await saveAttempt(admin, fingerprint, newOrder);
 
     try {
+      if (paymentGateway === "doku") {
+        const checkout = await createDokuCheckout({
+          orderId: newOrder, amount,
+          itemName: `Lisensi LocDailyMar - ${plan.name} (${billingCycle})`,
+          customerName, customerEmail, customerPhone,
+        });
+        const { error: saveError } = await admin.rpc("ldm2_set_doku_checkout", {
+          p_order_id: newOrder, p_checkout_token: checkout.tokenId, p_redirect_url: checkout.redirectUrl,
+          p_provider_detail: { request_id: checkout.requestId, expired_date: checkout.expiredDate, session_id: checkout.sessionId },
+        });
+        if (saveError) throw saveError;
+        return json(req, {
+          ok: true, order_id: newOrder, payment_id: order.payment_id, amount,
+          payment_gateway: "doku", checkout_token: checkout.tokenId, redirect_url: checkout.redirectUrl,
+          environment: dokuEnvironment(), cancel_supported: false, status_token: publicToken,
+        });
+      }
       const snap = await createMidtransSnap({
         orderId: newOrder, amount,
         itemName: `Lisensi LocDailyMar - ${plan.name} (${billingCycle})`,
@@ -562,16 +667,16 @@ Deno.serve(async (req) => {
       if (saveError) throw saveError;
       return json(req, {
         ok: true, order_id: newOrder, payment_id: order.payment_id, amount,
-        snap_token: snap.token, redirect_url: snap.redirectUrl,
-        client_key: midtransClientKey(),
-        environment: midtransEnvironment(),
+        payment_gateway: "midtrans", snap_token: snap.token, redirect_url: snap.redirectUrl,
+        client_key: midtransClientKey(), environment: midtransEnvironment(), cancel_supported: true,
         status_token: publicToken,
       });
     } catch (paymentError) {
-      const message = clean((paymentError as Error)?.message || "Midtrans gagal membuat pembayaran.");
+      const label = paymentGateway === "doku" ? "DOKU" : "Midtrans";
+      const message = clean((paymentError as Error)?.message || `${label} gagal membuat pembayaran.`);
       await admin.rpc("ldm2_mark_payment_error", { p_order_id: newOrder, p_message: message });
       try { await releaseApplicationOwnerReservation(admin, newOrder); } catch (_) {}
-      return json(req, { ok: false, message: `Order tersimpan tetapi Midtrans gagal: ${message}`, order_id: newOrder }, 502);
+      return json(req, { ok: false, message: `Order tersimpan tetapi ${label} gagal: ${message}`, order_id: newOrder }, 502);
     }
   } catch (error) {
     console.error("LDM_PUBLIC_CHECKOUT", error);

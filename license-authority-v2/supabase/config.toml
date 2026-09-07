@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.ldm-midtrans-reconcile]
 verify_jwt = false
+
+[functions.ldm-doku-webhook]
+verify_jwt = false
+
+[functions.ldm-doku-reconcile]
+verify_jwt = false

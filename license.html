@@ -57,7 +57,7 @@
       <span class="eyebrow">Lisensi · Paket Berbayar</span>
       <h1>Pilih paket sesuai perkembangan toko</h1>
       <p>Klik salah satu card paket untuk melihat seluruh fitur yang dibuka, fitur yang dikunci, fungsi masing-masing fitur, kuota toko/perangkat, dan pilihan harga.</p>
-      <p class="hero-note">Paket tahunan memberikan penghematan dibanding pembayaran bulanan selama 12 bulan. Pembayaran dilakukan langsung dari halaman ini melalui Midtrans; metode yang tampil mengikuti channel yang aktif pada akun merchant.</p>
+      <p class="hero-note">Paket tahunan memberikan penghematan dibanding pembayaran bulanan selama 12 bulan. Pembayaran dapat diproses melalui <strong>Midtrans</strong> atau <strong>DOKU Checkout</strong>; metode yang tampil mengikuti channel yang aktif pada masing-masing akun merchant.</p>
       <p class="hero-note">Jika masa bulanan/tahunan berakhir, lisensi otomatis tidak dapat digunakan dan dianggap <strong>ditangguhkan sementara</strong>. Data toko tidak dihapus. Setelah developer memperpanjang periode, lisensi kembali aktif.</p>
     </section>
 
@@ -76,7 +76,7 @@
 
     <section class="checkout-panel" id="publicCheckoutPanel" hidden>
       <div class="checkout-head">
-        <div><span class="tag">PEMBAYARAN AMAN</span><h2>Bayar Lisensi LocDailyMar</h2><p>Isi data customer. Setelah valid, Midtrans akan menampilkan metode pembayaran yang aktif pada akun merchant.</p></div>
+        <div><span class="tag">PEMBAYARAN AMAN</span><h2>Bayar Lisensi LocDailyMar</h2><p>Isi data customer, pilih payment gateway, lalu lanjutkan. Midtrans membuka Snap, sedangkan DOKU menggunakan halaman DOKU Checkout resmi.</p></div>
         <button type="button" class="checkout-close" id="checkoutCloseBtn" aria-label="Tutup pembayaran">✕</button>
       </div>
       <div class="checkout-body">
@@ -90,6 +90,7 @@
             <div class="checkout-field"><label>Konfirmasi Password Owner</label><div class="password-wrap"><input id="checkoutOwnerPasswordConfirm" type="password" autocomplete="new-password" required minlength="8" maxlength="72" placeholder="Ulangi password"><button class="password-toggle" type="button" data-password-target="checkoutOwnerPasswordConfirm">Lihat</button></div><div class="password-help">Password tidak disimpan di License Authority atau localStorage. Gunakan password manager untuk menyimpannya.</div></div>
             <div class="checkout-field"><label>Store Code</label><input id="checkoutStoreCode" required maxlength="30" autocomplete="off" placeholder="Contoh: TOKO-BUDI-01" style="text-transform:uppercase"></div>
             <div class="checkout-field"><label>Periode paket</label><select id="checkoutPeriod" required></select></div>
+            <div class="checkout-field"><label>Payment Gateway</label><select id="checkoutGateway" required><option value="">Memuat gateway…</option></select><div class="password-help" id="checkoutGatewayHelp">Gateway yang tersedia ditentukan oleh konfigurasi server.</div></div>
           </div>
           <label class="checkout-agree"><input type="checkbox" id="checkoutAgree"> <span>Saya memastikan Email Owner, Password Owner, nomor kontak, dan Store Code sudah benar. Email + password ini akan menjadi akun Owner setelah pembayaran terverifikasi. Password tidak ditampilkan kembali oleh LocDailyMar.</span></label>
           <div class="checkout-actions">
@@ -102,7 +103,7 @@
             <button class="btn danger-soft" type="button" id="checkoutCancelBtn">Batalkan Order Pembayaran</button>
           </div>
           <div class="checkout-status" id="publicCheckoutStatus"></div>
-          <div class="checkout-security"><b>Keamanan:</b> Password Owner dikirim melalui HTTPS langsung ke backend Cloud untuk membuat reservasi akun Auth dan tidak disimpan di database License Authority/localStorage. Profile, Store, dan hak Owner baru dibuat setelah pembayaran terverifikasi. License Key baru dikembalikan setelah status order sah.</div>
+          <div class="checkout-security"><b>Keamanan:</b> Password Owner dikirim melalui HTTPS langsung ke backend Cloud untuk membuat reservasi akun Auth dan tidak disimpan di database License Authority/localStorage. Secret Key payment provider tidak pernah dikirim ke browser. Profile, Store, dan hak Owner baru dibuat setelah pembayaran terverifikasi oleh backend. License Key baru dikembalikan setelah status order sah.</div>
           <div class="refund-policy-card" id="refundPolicyCard">
             <strong>↩ Kebijakan Refund LocDailyMar</strong>
             <ul>
@@ -118,6 +119,7 @@
           <span>Paket</span><strong id="checkoutPlanName">-</strong>
           <span>Periode</span><strong id="checkoutPlanPeriod">-</strong>
           <span>Total resmi</span><strong class="checkout-total" id="checkoutPlanAmount">Rp0</strong>
+          <span>Payment Gateway</span><strong id="checkoutGatewaySummary">-</strong>
           <span>Setelah pembayaran</span><strong style="font-size:12px;line-height:1.5">Email + Password Owner langsung bisa dipakai login. License Key + Store Code + Store UUID + Network ID juga tampil di halaman ini.</strong>
         </aside>
       </div>
@@ -173,7 +175,7 @@
 
   <script src="js/license-v2-config.js?v=27.8.1"></script>
   <script src="js/license-v2-client.js?v=27.8.1"></script>
-  <script src="js/license-checkout-v2.js?v=27.9.0-commercial-06-refund-v20"></script>
+  <script src="js/license-checkout-v2.js?v=27.9.0-commercial-06-multigateway-v23"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);

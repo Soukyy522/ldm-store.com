@@ -612,10 +612,16 @@ Deno.serve(async (req) => {
       }
 
       let { data: payment, error: paymentError } = await admin.from("ldm2_payments")
-        .select("id,license_id,order_id,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
+        .select("id,license_id,order_id,provider,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
         .eq("license_id", licenseId).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (paymentError) throw paymentError;
       if (!payment) return json(req, { ok: false, message: "Pembayaran tidak ditemukan." }, 404);
+      if (String(payment.provider || "midtrans").toLowerCase() === "doku") {
+        return json(req, {
+          ok: false, code: "DOKU_REFUND_MANUAL_V23",
+          message: "Pembayaran ini memakai DOKU. V23 belum mengirim refund otomatis ke DOKU agar transaksi DOKU tidak salah diteruskan ke Refund API Midtrans. Proses refund DOKU secara manual/merchant terlebih dahulu, lalu catat hasilnya di Support/Audit. Integrasi DOKU Refund dapat ditambahkan pada tahap berikutnya.",
+        }, 409);
+      }
 
       let linkedRequest: any = null;
       if (refundRequestCode) {
@@ -652,7 +658,7 @@ Deno.serve(async (req) => {
       // ditujukan untuk transaksi settlement; partial_refund tetap dapat memiliki sisa refundable.
       const sync = await reconcilePaymentFromMidtrans(admin, payment, `developer_refund_precheck:${adminEmail}`);
       const refreshed = await admin.from("ldm2_payments")
-        .select("id,license_id,order_id,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
+        .select("id,license_id,order_id,provider,status,provider_status,provider_transaction_id,amount,refund_amount,paid_at,processed_at,provider_detail,created_at")
         .eq("id", payment.id).maybeSingle();
       if (refreshed.error) throw refreshed.error;
       if (refreshed.data) payment = refreshed.data;

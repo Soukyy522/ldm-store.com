@@ -1,10 +1,10 @@
-// Build: 27.9.0 commercial-storage-retention-runtime-hardening-v22
+// Build: 27.9.0 commercial-multi-gateway-doku-v23
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-storage-retention-shell-v22`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-storage-retention-runtime-v22`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-multigateway-doku-shell-v23`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-multigateway-doku-runtime-v23`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
