@@ -28,7 +28,7 @@
   <script defer src="js/developer-navigation.js?v=27.9.0-refund-request-v21"></script>
 </head>
 <body>
-  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.10 · Lisensi · Midtrans · Refund Requests · Support Center</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.11 · Lisensi · Lynk.id · Refund Requests · Support Center</span></div><button id="logoutBtn" hidden>Keluar</button></header>
   <main class="wrap">
     <section class="login" id="loginBox">
       <h1>Login developer</h1>
@@ -48,34 +48,34 @@
         <div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div>
         <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div><div class="stat"><span>DIARSIPKAN</span><strong id="sArchived">0</strong></div>
       </div>
-      <div class="toolbar developer-nav-target" id="licenseManagement"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="refundOverviewBtn">Refund Management</button><button class="btn soft" id="midtransDiagBtn">Midtrans Diagnostics</button><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">+ Buat lisensi & pembayaran</button></div></div>
+      <div class="toolbar developer-nav-target" id="licenseManagement"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="refundOverviewBtn">Refund Management</button><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">Buka Checkout Lynk.id</button></div></div>
       <div class="warningBox"><b>Penghapusan aman:</b> gunakan <b>Arsipkan</b> untuk customer/lisensi yang sudah tidak digunakan. <b>Hapus Permanen</b> hanya diizinkan untuk lisensi yang benar-benar belum pernah dipakai, tidak pernah dibayar/refund, tidak pernah klaim trial, tidak pernah diaktivasi perangkat, dan belum diprovision ke Cloud Data Toko. <b>Refund:</b> transaksi PAID tunduk pada batas hari kebijakan aktif. Permintaan customer RFD masuk ke Refund Management untuk diverifikasi sebelum dana diproses.</div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
     </section>
   </main>
 
   <div class="modal" id="issueModal"><div class="modalcard">
-    <div class="modalhead"><h2>Buat lisensi + Midtrans</h2><button class="close" data-close>✕</button></div>
-    <p class="note">License Key, Store ID, Network ID, dan link pembayaran dibuat bersamaan. Lisensi tetap terkunci sampai webhook Midtrans menyatakan pembayaran berhasil.</p>
+    <div class="modalhead"><h2>Checkout pembayaran Lynk.id</h2><button class="close" data-close>✕</button></div>
+    <p class="note">Pembayaran V27 dibuat dari license.html agar URL produk Lynk.id dan webhook otomatis tetap konsisten. Gunakan tombol di bawah untuk membuka checkout customer.</p>
     <div class="formgrid">
       <div class="field"><label>Nama customer</label><input id="iName"></div>
       <div class="field"><label>Email</label><input id="iEmail" type="email"></div>
       <div class="field"><label>Nomor WhatsApp</label><input id="iPhone"></div>
       <div class="field"><label>Nama toko pusat</label><input id="iStoreName" placeholder="Contoh: LocDailyMar Banjarmasin"></div>
       <div class="field"><label>Store Code</label><input id="iStoreCode" maxlength="30" placeholder="Kosongkan agar dibuat otomatis"></div>
-      <div class="field"><label>Paket</label><select id="iPlan"><option value="WARUNG_KECIL">Warung Kecil</option><option value="WARUNG_SEDERHANA">Warung Sederhana</option><option value="TOKO">Toko</option><option value="LIFETIME">Lifetime</option></select></div>
-      <div class="field"><label>Periode pembayaran</label><select id="iCycle"><option value="monthly">Bulanan</option><option value="yearly">Tahunan</option></select></div>
+      <div class="field"><label>Paket</label><select id="iPlan"><option value="WARUNG_KECIL">Warung Kecil</option><option value="WARUNG_SEDERHANA">Warung Sederhana</option><option value="TOKO">Toko</option></select></div>
+      <div class="field"><label>Periode pembayaran</label><select id="iCycle"><option value="monthly">Bulanan</option><option value="yearly">Tahunan</option><option value="two_year">2 Tahun</option></select></div>
       <div class="field full"><label>Catatan internal</label><textarea id="iNotes"></textarea></div>
     </div>
-    <button class="btn primary" id="issueBtn" style="margin-top:15px">Generate & Buat Pembayaran</button>
+    <button class="btn primary" id="issueBtn" style="margin-top:15px">Buka license.html</button>
     <div class="result" id="issueResult"></div>
   </div></div>
 
-  <div class="modal" id="paymentModal"><div class="modalcard"><div class="modalhead"><h2>Link pembayaran Midtrans</h2><button class="close" data-close>✕</button></div><div class="result show" id="paymentResult"></div></div></div>
-  <div class="modal" id="midtransDiagModal"><div class="modalcard"><div class="modalhead"><h2>Midtrans Production Diagnostics</h2><button class="close" data-close>✕</button></div><p class="diagNote">Panel ini hanya menampilkan status konfigurasi dan metadata pembayaran. Server Key/Client Key tidak pernah ditampilkan.</p><div id="midtransDiagResult">Memuat…</div></div></div>
+  </div>
+  </div>
   <div class="modal" id="refundOverviewModal"><div class="modalcard refundOverviewModalWide">
     <div class="modalhead"><h2>Refund Management & Customer Requests</h2><button class="close" data-close>✕</button></div>
     <div class="refundPolicyBox"><b>Kebijakan Refund LocDailyMar</b><br>Refund hanya dapat diproses dalam batas hari yang ditetapkan sejak pembayaran terverifikasi. Dukungan refund tetap bergantung pada metode pembayaran dan payment provider.</div>
-    <div class="refundRequestQueue"><h3>Permintaan Refund Customer</h3><p>Request <b>RFD-...</b> dikirim dari Pusat Bantuan & Support. Review dulu sebelum mengeksekusi dana ke Midtrans.</p><div class="tablewrap"><table><thead><tr><th>Kode</th><th>Customer</th><th>Order</th><th>Jenis</th><th>Nominal</th><th>Alasan</th><th>Status</th><th>Deadline</th><th>Tindakan</th></tr></thead><tbody id="refundRequestRows"></tbody></table></div></div>
+    <div class="refundRequestQueue"><h3>Permintaan Refund Customer</h3><p>Request <b>RFD-...</b> dikirim dari Pusat Bantuan & Support. Review dulu, lalu proses pengembalian dana sesuai prosedur Lynk.id/merchant.</p><div class="tablewrap"><table><thead><tr><th>Kode</th><th>Customer</th><th>Order</th><th>Jenis</th><th>Nominal</th><th>Alasan</th><th>Status</th><th>Deadline</th><th>Tindakan</th></tr></thead><tbody id="refundRequestRows"></tbody></table></div></div>
     <div class="formgrid" style="margin-top:12px">
       <div class="field"><label>Batas refund (hari kalender)</label><input id="refundPolicyDaysInput" type="number" min="1" max="30" value="3"></div>
       <div class="field"><label>Status kebijakan</label><select id="refundPolicyEnabled"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></div>
@@ -92,7 +92,7 @@
     <div class="field"><label>Jenis refund</label><select id="refundType"><option value="full">Refund Penuh</option><option value="partial">Refund Sebagian</option></select></div>
     <div class="field"><label>Nominal refund</label><input id="refundAmount" type="number" min="1" step="1"></div>
     <div class="field"><label>Alasan refund</label><textarea id="refundReason" rows="4" maxlength="255" placeholder="Contoh: pembayaran ganda, customer salah memilih paket, atau alasan valid lainnya."></textarea></div>
-    <label class="refundAck"><input type="checkbox" id="refundConfirm"><span>Saya sudah memverifikasi Order ID, nominal, alasan, serta memahami bahwa refund mengembalikan dana melalui Midtrans/payment provider, harus tercatat untuk audit, dan <b>tidak otomatis mencabut lisensi</b>.</span></label>
+    <label class="refundAck"><input type="checkbox" id="refundConfirm"><span>Saya sudah memverifikasi Order ID, nominal, alasan, serta memahami bahwa refund dana dilakukan melalui prosedur Lynk.id/merchant, harus tercatat untuk audit, dan <b>tidak otomatis mencabut lisensi</b>.</span></label>
     <div class="rowactions" style="margin-top:14px"><button class="btn primary" id="processRefundBtn">Proses Refund</button><button class="btn soft" data-close>Tutup</button></div>
     <div class="refundHistory"><h3>Riwayat Refund Pembayaran Ini</h3><div class="tablewrap"><table><thead><tr><th>Refund Key</th><th>Jenis</th><th>Nominal</th><th>Status</th><th>Alasan</th><th>Waktu</th><th>Error</th></tr></thead><tbody id="refundHistoryRows"></tbody></table></div></div>
   </div></div>
@@ -139,13 +139,13 @@
         ? `<button class="danger" onclick="statusLicense('${l.id}','suspended')">Tangguhkan</button>`
         : l.status==="pending_payment"
           ? (paymentPending
-              ? `<button class="soft" onclick="syncPayment('${l.id}')">Cek Status Midtrans</button><button class="danger" onclick="cancelPendingPayment('${l.id}')">Batalkan Order</button>`
+              ? `<button class="soft" onclick="syncPayment('${l.id}')">Cek Status Lynk.id</button><button class="danger" onclick="cancelPendingPayment('${l.id}')">Batalkan Order</button>`
               : `<button class="primary" onclick="retryPurchase('${l.id}')">Buat Pembayaran Baru</button><button class="danger" onclick="cancelPendingLicense('${l.id}')">Batalkan Lisensi</button>`)
           : (l.status==="cancelled"&&l.latest_payment_status==="cancelled"
               ? `<button class="primary" onclick="retryPurchase('${l.id}')">Pulihkan & Buat Pembayaran</button>`
               : `<button class="success" onclick="statusLicense('${l.id}','active')">Aktifkan manual</button>`);
       const refundAction=["paid","partially_refunded"].includes(String(l.latest_payment_status||"").toLowerCase())?`<button class="soft" onclick="openRefund('${l.id}')">Refund</button>`:"";
-      return `<button class="soft" onclick="devices('${l.id}')">Perangkat</button>${refundAction}${statusAction}${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Ubah trial ke berbayar</button>`:(l.plan_code!=="LIFETIME"&&!['pending_payment','cancelled'].includes(l.status)?`<button class="primary" onclick="renew('${l.id}')">Pembayaran perpanjangan</button>`:"")}${paymentUrl&&paymentPending?`<a class="soft" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka pembayaran</a>`:""}${l.status!=="active"&&l.status!=="pending_payment"?`<button class="danger" onclick="archiveLicense('${l.id}')">Arsipkan</button>`:""}`;
+      return `<button class="soft" onclick="devices('${l.id}')">Perangkat</button>${refundAction}${statusAction}${l.is_trial?`<button class="primary" onclick="convertTrial('${l.id}')">Ubah trial ke berbayar</button>`:(!['pending_payment','cancelled'].includes(l.status)?`<button class="primary" onclick="renew('${l.id}')">Pembayaran perpanjangan</button>`:"")}${paymentUrl&&paymentPending?`<a class="soft" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka pembayaran</a>`:""}${l.status!=="active"&&l.status!=="pending_payment"?`<button class="danger" onclick="archiveLicense('${l.id}')">Arsipkan</button>`:""}`;
     }
     function archivedActions(l){
       return `<button class="success" onclick="restoreLicense('${l.id}')">Pulihkan</button><button class="dangerSolid" onclick="purgeLicense('${l.id}')">Hapus Permanen</button>`;
@@ -166,11 +166,11 @@
       </tr>`}).join("");
     }
 
-    function deliveryText(d){return `LOCDailyMar - DATA LISENSI\n\nPaket: ${d.license.plan_name||d.license.plan_code}\nStore Code: ${d.license.store_code}\nStore ID: ${d.license.store_id}\nNetwork ID: ${d.license.network_id}\nLicense Key: ${d.license.license_key||"Gunakan License Key lama"}\nOrder ID: ${d.payment.order_id}\nNominal: ${money(d.payment.amount)}\nStatus: MENUNGGU PEMBAYARAN\n\nLink pembayaran Midtrans:\n${d.payment.redirect_url||"Belum tersedia"}`}
+    function deliveryText(d){return `LOCDailyMar - DATA LISENSI\n\nPaket: ${d.license.plan_name||d.license.plan_code}\nStore Code: ${d.license.store_code}\nStore ID: ${d.license.store_id}\nNetwork ID: ${d.license.network_id}\nLicense Key: ${d.license.license_key||"Gunakan License Key lama"}\nOrder ID: ${d.payment.order_id}\nNominal: ${money(d.payment.amount)}\nStatus: MENUNGGU PEMBAYARAN\n\nLink pembayaran Lynk.id:\n${d.payment.redirect_url||"Belum tersedia"}`}
     function showPayment(d,target="paymentResult"){
       lastDelivery=deliveryText(d);
       const paymentUrl=safeUrl(d.payment.redirect_url);
-      $(target).innerHTML=`<b>Store Code</b><code>${esc(d.license.store_code)}</code><b>Store ID</b><code>${esc(d.license.store_id)}</code><b>Network ID</b><code>${esc(d.license.network_id)}</code>${d.license.license_key?`<b>License Key — simpan sekarang</b><code>${esc(d.license.license_key)}</code>`:""}<b>Order ID</b><code>${esc(d.payment.order_id)}</code><b>Nominal</b><code>${money(d.payment.amount)}</code><div class="rowactions"><button class="success" onclick="navigator.clipboard.writeText(lastDelivery)">Salin semua data</button>${paymentUrl?`<a class="primary" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka Midtrans</a>`:""}</div><p>Lisensi masih terkunci. Webhook Midtrans akan mengaktifkan atau memperpanjangnya otomatis setelah pembayaran berhasil.</p>`;
+      $(target).innerHTML=`<b>Store Code</b><code>${esc(d.license.store_code)}</code><b>Store ID</b><code>${esc(d.license.store_id)}</code><b>Network ID</b><code>${esc(d.license.network_id)}</code>${d.license.license_key?`<b>License Key — simpan sekarang</b><code>${esc(d.license.license_key)}</code>`:""}<b>Order ID</b><code>${esc(d.payment.order_id)}</code><b>Nominal</b><code>${money(d.payment.amount)}</code><div class="rowactions"><button class="success" onclick="navigator.clipboard.writeText(lastDelivery)">Salin semua data</button>${paymentUrl?`<a class="primary" target="_blank" rel="noopener" href="${esc(paymentUrl)}">Buka Lynk.id</a>`:""}</div><p>Lisensi masih terkunci. Webhook Lynk.id akan mengaktifkan atau memperpanjangnya otomatis setelah pembayaran berhasil.</p>`;
     }
 
 
@@ -190,7 +190,7 @@
       if(!currentRefundLicenseId||!currentRefundData)return;if(!$("refundConfirm").checked){alert("Centang konfirmasi refund terlebih dahulu.");return}
       const type=$("refundType").value,amount=Math.round(Number($("refundAmount").value||0)),reason=$("refundReason").value.trim();const e=currentRefundData.eligibility||{};
       if(reason.length<Number(e.min_reason_length||10)){alert(`Alasan refund minimal ${Number(e.min_reason_length||10)} karakter.`);return}
-      const finalAmount=type==="full"?Number(e.remaining_refundable||0):amount;if(!confirm(`PROSES REFUND ${type==="full"?"PENUH":"SEBAGIAN"}?\n\nOrder: ${currentRefundData.payment.order_id}\nNominal: ${money(finalAmount)}\nAlasan: ${reason}\n\nTindakan ini akan mengirim Refund API ke Midtrans.`))return;
+      const finalAmount=type==="full"?Number(e.remaining_refundable||0):amount;if(!confirm(`PROSES REFUND ${type==="full"?"PENUH":"SEBAGIAN"}?\n\nOrder: ${currentRefundData.payment.order_id}\nNominal: ${money(finalAmount)}\nAlasan: ${reason}\n\nTindakan ini hanya mencatat proses refund. Pengembalian dana dilakukan melalui prosedur Lynk.id/merchant.`))return;
       const btn=$("processRefundBtn");btn.disabled=true;btn.textContent="Memproses Refund…";try{const d=await LDMLicenseV2Admin.call("refund_payment",{license_id:currentRefundLicenseId,refund_type:type,amount:finalAmount,reason,refund_request_code:currentRefundRequestCode||null});alert(`${d.message||"Refund diterima."}\nRefund Key: ${d.refund_key||'-'}`);const refreshed=await LDMLicenseV2Admin.call("refund_preview",{license_id:currentRefundLicenseId});renderRefundPreview(refreshed);await load()}catch(e){alert(`Refund gagal:\n${e.message||String(e)}`);try{const refreshed=await LDMLicenseV2Admin.call("refund_preview",{license_id:currentRefundLicenseId});renderRefundPreview(refreshed)}catch(_){}}finally{btn.disabled=false;btn.textContent="Proses Refund"}
     }
     function refundRequestStatus(v){return({submitted:"DIAJUKAN",reviewing:"DIVERIFIKASI",waiting_customer:"MENUNGGU CUSTOMER",approved:"DISETUJUI",processing:"DIPROSES",completed:"SELESAI",rejected:"DITOLAK",cancelled:"DIBATALKAN"})[String(v||"")]||String(v||"-").toUpperCase()}
@@ -210,57 +210,15 @@
     async function refundOverview(){open("refundOverviewModal");$("refundRequestRows").innerHTML='<tr><td colspan="9" class="empty">Memuat permintaan customer…</td></tr>';$("refundOverviewRows").innerHTML='<tr><td colspan="8" class="empty">Memuat…</td></tr>';try{const d=await LDMLicenseV2Admin.call("refund_overview");renderRefundOverview(d)}catch(e){$("refundOverviewRows").innerHTML=`<tr><td colspan="8" class="empty">${esc(e.message||String(e))}</td></tr>`}}
     async function saveRefundPolicy(){const days=Math.round(Number($("refundPolicyDaysInput").value||0));if(days<1||days>30){alert("Batas refund harus 1-30 hari.");return}if(!confirm(`Ubah kebijakan refund menjadi maksimal ${days} hari kalender sejak pembayaran terverifikasi?`))return;const b=$("saveRefundPolicyBtn");b.disabled=true;try{await LDMLicenseV2Admin.call("refund_policy_update",{refund_window_days:days,enabled:$("refundPolicyEnabled").value==="true",allow_partial_refund:$("refundPolicyPartial").value==="true"});const d=await LDMLicenseV2Admin.call("refund_overview");renderRefundOverview(d);alert("Kebijakan refund diperbarui.")}catch(e){alert(e.message||String(e))}finally{b.disabled=false}}
 
-    function renderMidtransDiagnostics(d){
-      const r=d.runtime||{},s=d.summary||{};
-      const problemList=(r.problems||[]).map(x=>`<li>${esc(x)}</li>`).join("");
-      const events=(d.recent_events||[]).slice(0,10);
-      $("midtransDiagResult").innerHTML=`
-        <div class="diagGrid">
-          <div class="diagCard"><b>Environment</b><span class="${r.ok?'diagOk':'diagBad'}">${esc(String(r.environment||'-').toUpperCase())}</span></div>
-          <div class="diagCard"><b>Runtime</b><span class="${r.ok?'diagOk':'diagBad'}">${r.ok?'SIAP':'PERLU DIPERBAIKI'}</span></div>
-          <div class="diagCard"><b>Server Key</b><span>${r.server_key_configured?'Terkonfigurasi · '+esc(r.server_key_kind||''):'Belum ada'}</span></div>
-          <div class="diagCard"><b>Client Key</b><span>${r.client_key_configured?'Terkonfigurasi · '+esc(r.client_key_kind||''):'Belum ada'}</span></div>
-          <div class="diagCard"><b>Notification URL</b><span>${esc(r.notification_url||'Belum valid')}</span></div>
-          <div class="diagCard"><b>Pending / Challenge</b><span>${Number(s.pending_or_challenge||0)} · >10 menit: ${Number(s.pending_over_10_minutes||0)}</span></div>
-          <div class="diagCard"><b>Paid 24 jam</b><span>${Number(s.paid_last_24h||0)}</span></div>
-          <div class="diagCard"><b>Final gagal 24 jam</b><span>${Number(s.failed_expired_cancelled_last_24h||0)}</span></div>
-        </div>
-        ${d.migration_required?'<p class="diagBad"><b>SQL-12 Midtrans Production Hardening belum terpasang lengkap.</b></p>':''}
-        ${problemList?`<div class="warningBox"><b>Masalah konfigurasi:</b><ul>${problemList}</ul></div>`:'<p class="diagOk"><b>Konfigurasi dasar Midtrans konsisten.</b></p>'}
-        <p class="diagNote"><b>API:</b> ${esc(r.api_base||'-')}<br><b>Snap:</b> ${esc(r.snap_base||'-')}</p>
-        <div class="tablewrap"><table class="diagTable"><thead><tr><th>Order</th><th>Source</th><th>Status</th><th>Signature</th><th>Receive</th><th>Processed</th><th>Error</th></tr></thead><tbody>${events.length?events.map(e=>`<tr><td>${esc(e.order_id||'-')}</td><td>${esc(e.source||'-')}</td><td>${esc(e.transaction_status||'-')}</td><td>${e.signature_valid===true?'VALID':e.signature_valid===false?'INVALID':'N/A'}</td><td>${Number(e.receive_count||0)}</td><td>${dt(e.processed_at)}</td><td>${esc(e.processing_error||'')}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">Belum ada event Midtrans.</td></tr>'}</tbody></table></div>`;
-    }
-    async function midtransDiagnostics(){
-      open("midtransDiagModal");$("midtransDiagResult").textContent="Memeriksa konfigurasi dan event Midtrans…";
-      try{const d=await LDMLicenseV2Admin.call("midtrans_diagnostics");renderMidtransDiagnostics(d)}catch(e){$("midtransDiagResult").innerHTML=`<p class="diagBad">${esc(e.message||String(e))}</p>`}
-    }
-
     window.reviewRefundRequest=reviewRefundRequest;window.rejectRefundRequest=rejectRefundRequest;window.processRefundRequest=processRefundRequest;
     $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await load()}catch(e){$("loginMessage").textContent=e.message}};
     $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false)};
-    $("refundOverviewBtn").onclick=refundOverview;$("saveRefundPolicyBtn").onclick=saveRefundPolicy;$("processRefundBtn").onclick=processRefund;$("refundType").onchange=()=>{if(!currentRefundData)return;const partial=$("refundType").value==="partial";$("refundAmount").disabled=!partial||currentRefundData.eligibility?.eligible!==true;if(!partial)$("refundAmount").value=String(Number(currentRefundData.eligibility?.remaining_refundable||0))};$("midtransDiagBtn").onclick=midtransDiagnostics;$("refreshBtn").onclick=load;$("newBtn").onclick=()=>open("issueModal");
+    $("refundOverviewBtn").onclick=refundOverview;$("saveRefundPolicyBtn").onclick=saveRefundPolicy;$("processRefundBtn").onclick=processRefund;$("refundType").onchange=()=>{if(!currentRefundData)return;const partial=$("refundType").value==="partial";$("refundAmount").disabled=!partial||currentRefundData.eligibility?.eligible!==true;if(!partial)$("refundAmount").value=String(Number(currentRefundData.eligibility?.remaining_refundable||0))};$("refreshBtn").onclick=load;$("newBtn").onclick=()=>window.open("license.html","_blank","noopener");
     $("searchBox").addEventListener("input",render);$("scopeFilter").addEventListener("change",render);
-    $("iPlan").onchange=()=>{const lifetime=$("iPlan").value==="LIFETIME";$("iCycle").innerHTML=lifetime?'<option value="lifetime">Lifetime</option>':'<option value="monthly">Bulanan</option><option value="yearly">Tahunan</option>'};
-    $("issueBtn").onclick=async()=>{
-      const button=$("issueBtn");button.disabled=true;
-      try{
-        const d=await LDMLicenseV2Admin.call("issue_payment",{customer_name:$("iName").value,customer_email:$("iEmail").value,customer_phone:$("iPhone").value,store_name:$("iStoreName").value,store_code:$("iStoreCode").value,plan_code:$("iPlan").value,billing_cycle:$("iCycle").value,notes:$("iNotes").value});
-        $("issueResult").classList.add("show");showPayment(d,"issueResult");await load();
-      }catch(e){if(e.data?.license&&e.data?.payment){$("issueResult").classList.add("show");showPayment(e.data,"issueResult")}alert(e.message)}finally{button.disabled=false}
-    };
+        $("issueBtn").onclick=()=>window.open("license.html","_blank","noopener");
     async function statusLicense(id,status){const reason=prompt(status==="suspended"?"Alasan penangguhan:":"Catatan pengaktifan kembali:","");if(reason===null)return;try{await LDMLicenseV2Admin.call("set_status",{license_id:id,status,reason});await load()}catch(e){alert(e.message)}}
-    async function cancelPendingPayment(id){
-      if(!confirm("Batalkan order pembayaran Midtrans yang masih pending/challenge?\n\nLisensi dan Store Code tetap disimpan agar customer dapat membuat order baru dan memilih metode lain."))return;
-      try{const d=await LDMLicenseV2Admin.call("cancel_pending_payment",{license_id:id,reason:"Mengganti metode pembayaran"});alert(d.message||"Order pembayaran dibatalkan.");await load()}catch(e){alert(e.message)}
-    }
-    async function syncPayment(id){try{const d=await LDMLicenseV2Admin.call("sync_payment_status",{license_id:id});alert(d.message||`Status pembayaran: ${d.payment_status||"-"}`);await load()}catch(e){alert(e.message)}}
-    async function retryPurchase(id){
-      const l=licenses.find(x=>x.id===id);if(!l)return;
-      const defaultCycle=l.plan_code==="LIFETIME"?"lifetime":(["monthly","yearly"].includes(l.latest_billing_cycle)?l.latest_billing_cycle:"monthly");
-      const answer=prompt(l.plan_code==="LIFETIME"?"Ketik lifetime untuk membuat pembayaran baru:":"Periode pembayaran baru: ketik monthly atau yearly",defaultCycle);if(!answer)return;
-      const cycle=answer.trim().toLowerCase();if(l.plan_code==="LIFETIME"?cycle!=="lifetime":!["monthly","yearly"].includes(cycle)){alert("Periode pembayaran tidak valid.");return}
-      try{const d=await LDMLicenseV2Admin.call("retry_purchase_payment",{license_id:id,billing_cycle:cycle});showPayment(d);open("paymentModal");await load()}catch(e){alert(e.message)}
-    }
+    async function cancelPendingPayment(id){alert("Pembatalan order Lynk.id dilakukan melalui alur checkout/support. Gunakan license.html untuk membuat order baru.")}
+    async function syncPayment(id){alert("Status Lynk.id diverifikasi otomatis melalui webhook. Customer dapat menekan Cek Status Pembayaran di license.html.")}
     async function cancelPendingLicense(id){
       const reason=prompt("Order sudah tidak pending. Tandai lisensi pending_payment ini sebagai cancelled agar dapat diarsipkan?","Checkout tidak dilanjutkan");if(reason===null)return;
       try{await LDMLicenseV2Admin.call("set_status",{license_id:id,status:"cancelled",reason});await load()}catch(e){alert(e.message)}
@@ -282,14 +240,7 @@
       if(confirmation.trim().toUpperCase()!=="HAPUS"){alert("Konfirmasi salah. Penghapusan dibatalkan.");return}
       try{const d=await LDMLicenseV2Admin.call("purge_unused_license",{license_id:id,confirmation:"HAPUS"});alert(d.message||"Data berhasil dihapus permanen.");await load()}catch(e){alert("Tidak dapat dihapus permanen:\n"+e.message+"\n\nGunakan Arsipkan bila data memiliki riwayat.")}
     }
-    async function renew(id){const answer=prompt("Periode perpanjangan: ketik monthly atau yearly","yearly");if(!answer)return;const cycle=answer.trim().toLowerCase();if(!["monthly","yearly"].includes(cycle)){alert("Gunakan monthly atau yearly.");return}try{const d=await LDMLicenseV2Admin.call("renew_payment",{license_id:id,billing_cycle:cycle});showPayment(d);open("paymentModal");await load()}catch(e){alert(e.message)}}
-    async function convertTrial(id){
-      const answer=prompt("Paket tujuan: WARUNG_KECIL, WARUNG_SEDERHANA, TOKO, atau LIFETIME","WARUNG_SEDERHANA");if(!answer)return;
-      const plan=answer.trim().toUpperCase();if(!["WARUNG_KECIL","WARUNG_SEDERHANA","TOKO","LIFETIME"].includes(plan)){alert("Kode paket tidak valid.");return}
-      let cycle=plan==="LIFETIME"?"lifetime":String(prompt("Periode: ketik monthly atau yearly","yearly")||"").trim().toLowerCase();if(!cycle)return;
-      if(plan!=="LIFETIME"&&!["monthly","yearly"].includes(cycle)){alert("Gunakan monthly atau yearly.");return}
-      try{const d=await LDMLicenseV2Admin.call("convert_trial_payment",{license_id:id,plan_code:plan,billing_cycle:cycle});showPayment(d);open("paymentModal");await load()}catch(e){if(e.data?.license&&e.data?.payment){showPayment(e.data);open("paymentModal")}alert(e.message)}
-    }
+    async function renew(id){window.open("license.html","_blank","noopener")}
     async function devices(id){open("deviceModal");$("devices").innerHTML="Memuat…";try{const d=await LDMLicenseV2Admin.call("devices",{license_id:id});$("devices").innerHTML=d.devices.length?d.devices.map(v=>`<div class="device"><div><b>${esc(v.device_name)}</b><span>${esc(v.store_code)} · ${esc(v.app_version||"-")}</span><span>Terakhir: ${dt(v.last_seen_at)} · ${esc(v.status)}</span></div>${v.status==="active"?`<button class="btn danger" onclick="deactivateDevice('${v.id}','${id}')">Nonaktifkan</button>`:""}</div>`).join(""):'<div class="empty">Belum ada perangkat.</div>'}catch(e){$("devices").textContent=e.message}}
     async function deactivateDevice(aid,lid){if(!confirm("Nonaktifkan perangkat ini dan kosongkan slotnya?"))return;await LDMLicenseV2Admin.call("deactivate_device",{activation_id:aid,reason:"Dinonaktifkan developer"});await devices(lid);await load()}
     (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Isi js/license-v2-admin-config.js terlebih dahulu.";return}const session=await LDMLicenseV2Admin.session();if(session){showApp(true);await load()}}catch(e){$("loginMessage").textContent=e.message}})();
