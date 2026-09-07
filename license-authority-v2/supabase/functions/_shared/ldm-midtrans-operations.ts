@@ -29,6 +29,44 @@ function keyKind(value: string) {
   return /^SB-/i.test(value) ? "sandbox" : "production_or_custom";
 }
 
+function productionHttpsUrl(value: string, label: string) {
+  const raw = String(value || "").trim();
+  if (!raw) return { ok: false, value: "", problem: `${label} belum ada.` };
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.toLowerCase();
+    if (url.protocol !== "https:") {
+      return { ok: false, value: raw, problem: `${label} wajib HTTPS pada Production.` };
+    }
+    if (["localhost", "127.0.0.1", "::1"].includes(host) || host.endsWith(".local")) {
+      return { ok: false, value: raw, problem: `${label} tidak boleh memakai localhost pada Production.` };
+    }
+    return { ok: true, value: url.href, problem: "" };
+  } catch {
+    return { ok: false, value: raw, problem: `${label} bukan URL yang valid.` };
+  }
+}
+
+function productionAllowedOrigins() {
+  return env("LDM2_CHECKOUT_ALLOWED_ORIGINS")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function validateProductionOrigin(origin: string) {
+  try {
+    const url = new URL(origin);
+    const host = url.hostname.toLowerCase();
+    if (url.protocol !== "https:") return false;
+    if (url.pathname !== "/" || url.search || url.hash) return false;
+    if (["localhost", "127.0.0.1", "::1"].includes(host) || host.endsWith(".local")) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function serverKey() {
   const value = env("MIDTRANS_SERVER_KEY");
   if (!value) throw new Error("MIDTRANS_SERVER_KEY belum disimpan pada Supabase Secrets.");
@@ -104,24 +142,52 @@ export function midtransRuntimeHealth() {
   const server = env("MIDTRANS_SERVER_KEY");
   const client = env("MIDTRANS_CLIENT_KEY");
   const notification = midtransNotificationUrl();
+  const finish = env("MIDTRANS_FINISH_URL");
+  const allowedOrigins = productionAllowedOrigins();
+  const allowNullOrigin = env("LDM2_ALLOW_NULL_ORIGIN").toLowerCase() === "true";
   const problems: string[] = [];
+
   if (!server) problems.push("MIDTRANS_SERVER_KEY belum ada.");
   if (!client) problems.push("MIDTRANS_CLIENT_KEY belum ada.");
   if (!notification) problems.push("Notification URL HTTPS belum valid.");
-  if (productionMode() && /^SB-/i.test(server)) problems.push("Production masih memakai Server Key Sandbox.");
-  if (productionMode() && /^SB-/i.test(client)) problems.push("Production masih memakai Client Key Sandbox.");
+
+  if (productionMode()) {
+    if (/^SB-/i.test(server)) problems.push("Production masih memakai Server Key Sandbox.");
+    if (/^SB-/i.test(client)) problems.push("Production masih memakai Client Key Sandbox.");
+
+    const notificationCheck = productionHttpsUrl(notification, "MIDTRANS_NOTIFICATION_URL");
+    if (!notificationCheck.ok) problems.push(notificationCheck.problem);
+
+    const finishCheck = productionHttpsUrl(finish, "MIDTRANS_FINISH_URL");
+    if (!finishCheck.ok) problems.push(finishCheck.problem);
+
+    if (!allowedOrigins.length) {
+      problems.push("LDM2_CHECKOUT_ALLOWED_ORIGINS wajib diisi pada Production.");
+    } else if (allowedOrigins.some((origin) => !validateProductionOrigin(origin))) {
+      problems.push("LDM2_CHECKOUT_ALLOWED_ORIGINS Production hanya boleh berisi origin HTTPS valid tanpa path, localhost, wildcard, query, atau hash.");
+    }
+
+    if (allowNullOrigin) {
+      problems.push("LDM2_ALLOW_NULL_ORIGIN harus false pada Production.");
+    }
+  }
+
   return {
     ok: problems.length === 0,
+    hardening_version: "27.9.0-midtrans-production-v22",
     environment: midtransEnvironment(),
     api_base: apiBase(),
     snap_base: appBase(),
     notification_url: notification || null,
+    finish_url: finish || null,
     server_key_configured: Boolean(server),
     server_key_kind: keyKind(server),
     client_key_configured: Boolean(client),
     client_key_kind: keyKind(client),
-    finish_url_configured: Boolean(env("MIDTRANS_FINISH_URL")),
-    allowed_origins_configured: Boolean(env("LDM2_CHECKOUT_ALLOWED_ORIGINS")),
+    finish_url_configured: Boolean(finish),
+    allowed_origins_configured: allowedOrigins.length > 0,
+    allowed_origins_count: allowedOrigins.length,
+    null_origin_allowed: allowNullOrigin,
     problems,
   };
 }
