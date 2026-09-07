@@ -1,10 +1,10 @@
-// Build: 27.9.0 commercial-multi-gateway-doku-v23
+// Build: 27.9.0 commercial-lynk-auto-license-only-v26.1
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-multigateway-doku-shell-v23`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-multigateway-doku-runtime-v23`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-lynk-license-only-shell-v26-1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-lynk-license-only-runtime-v26-1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
