@@ -1,10 +1,10 @@
-// Build: 27.9.0 commercial-lynk-auto-license-only-v27
+// Build: 27.9.0 commercial-lynk-public-terms-refund-v28.1
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-lynk-license-only-shell-v27-2`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-lynk-license-only-runtime-v27-2`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-lynk-public-terms-refund-shell-v28-1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-lynk-public-terms-refund-runtime-v28-1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

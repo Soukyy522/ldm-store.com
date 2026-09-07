@@ -109,14 +109,15 @@
           <div class="checkout-status" id="publicCheckoutStatus"></div>
           <div class="checkout-security"><b>Keamanan mode Lynk.id:</b> Halaman ini hanya mengarahkan customer ke URL produk/checkout Lynk.id yang sudah dikonfigurasi. Password Owner tidak dibaca pada mode ini, tidak dikirim ke Lynk.id, tidak dimasukkan ke WhatsApp, dan tidak disimpan ke localStorage. Status pembayaran hanya menjadi lunas setelah webhook Lynk.id lolos pencocokan backend. Hasil lisensi tidak dikirim melalui email; customer melihatnya melalui panel hasil dan tombol Cek Status Pembayaran di halaman ini.</div>
           <div class="refund-policy-card" id="refundPolicyCard">
-            <strong>↩ Kebijakan Refund LocDailyMar</strong>
+            <strong>↩ Refund mengikuti Ketentuan Publik LYNK.ID</strong>
             <ul>
-              <li>Permintaan refund dapat diajukan maksimal <b id="refundPolicyDays">3 hari kalender</b> sejak pembayaran terverifikasi.</li>
-              <li>Refund hanya berlaku untuk transaksi yang memenuhi kebijakan LocDailyMar dan dukungan metode pembayaran/provider.</li>
-              <li>Refund tidak selalu diterima secara instan; untuk pembayaran manual, proses dan bukti pengembalian dana dikonfirmasi melalui WhatsApp/Support LocDailyMar.</li>
-              <li>Untuk mengajukan refund, siapkan Order ID lalu hubungi <a href="support-center.html">Pusat Bantuan & Support</a>.</li>
+              <li>Permohonan refund kepada <b>LYNK.ID</b> untuk transaksi LocDailyMar dapat diajukan paling lambat <b id="refundPolicyDays">24 jam</b> setelah pembayaran.</li>
+              <li>Dasar refund LYNK.ID yang dipakai di LocDailyMar hanya <b>produk/layanan lisensi belum diterima</b>. Salah paket, ketidaksesuaian layanan, atau komplain lain diarahkan langsung ke LocDailyMar sebagai Kreator.</li>
+              <li>Jika disetujui LYNK.ID, nilai yang dikembalikan dapat <b>tidak termasuk biaya transaksi, biaya jasa platform, dan pajak yang berlaku</b>.</li>
+              <li>Setelah lewat 24 jam, klaim belum menerima produk/layanan harus disampaikan langsung kepada LocDailyMar. <a href="support-center.html#refundRequestSection">Buka Pusat Bantuan & Support</a>.</li>
+              <li>Order yang masih PENDING dibatalkan melalui tombol <b>Batalkan Order Pembayaran</b>, bukan melalui refund.</li>
             </ul>
-            <span id="refundPolicyState">Memuat kebijakan refund aktif…</span>
+            <span id="refundPolicyState">Memuat ketentuan refund LYNK.ID…</span> · <a href="https://www.lynk.id/terms" target="_blank" rel="noopener">Baca Syarat & Ketentuan LYNK.ID</a>
           </div>
         </form>
         <aside class="checkout-summary">
@@ -149,6 +150,7 @@
           <a class="btn primary receipt-link" id="receiptLoginBtn" target="_blank" rel="noopener noreferrer" hidden>Masuk Aplikasi sebagai Owner</a>
           <a class="btn ghost receipt-link" id="receiptPasswordBtn" target="_blank" rel="noopener noreferrer" hidden>Buat / Ganti Password Owner (Order Lama)</a>
           <a class="btn ghost receipt-link" id="receiptGuideBtn" target="_blank" rel="noopener noreferrer" hidden>Buka Panduan</a>
+          <a class="btn danger-soft receipt-link" id="receiptRefundBtn" href="support-center.html#refundRequestSection">Ajukan Refund</a>
         </div>
         <p class="receipt-foot">Email Owner tetap dipakai sebagai identitas akun dan pencocokan pembayaran Lynk.id, bukan untuk pengiriman hasil. Setelah provisioning siap, gunakan tombol <b>Buat / Ganti Password Owner</b> bila tersedia, lalu login. Jika halaman ter-refresh, tekan <b>Cek Status Pembayaran</b> pada browser/perangkat yang sama untuk menampilkan kembali data lisensi.</p>
       </section>
@@ -177,9 +179,9 @@
     </div>
   </div>
 
-  <script src="js/license-v2-config.js?v=27.9.0-whatsapp-v24"></script>
+  <script src="js/license-v2-config.js?v=27.9.0-v28.1"></script>
   <script src="js/license-v2-client.js?v=27.8.1"></script>
-  <script src="js/license-checkout-v2.js?v=27.9.0-lynk-default-v25"></script>
+  <script src="js/license-checkout-v2.js?v=27.9.0-v28.1"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);

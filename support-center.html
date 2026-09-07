@@ -55,35 +55,37 @@
 
 <section class="card full refund-card" id="refundRequestSection" hidden>
   <div class="section-head">
-    <div><div class="section-kicker">Pembayaran & Kebijakan</div><h2>↩️ Ajukan Refund</h2><p>Form ini hanya tersedia untuk Owner pada browser/perangkat yang menyimpan order checkout dan selama pembayaran masih berada dalam batas refund yang berlaku.</p></div>
-    <span class="badge tag" id="refundPolicyBadge">Memeriksa kebijakan…</span>
+    <div><div class="section-kicker">Pembayaran & Ketentuan LYNK.ID</div><h2>↩️ Refund LYNK.ID · Maksimal 24 Jam</h2><p>Form ini membantu mencatat permintaan refund berdasarkan ketentuan publik LYNK.ID untuk kondisi ketika lisensi/layanan yang sudah dibayar belum diterima. Pengajuan di LocDailyMar bukan pengiriman otomatis ke sistem refund LYNK.ID.</p></div>
+    <span class="badge tag" id="refundPolicyBadge">Memeriksa batas 24 jam…</span>
   </div>
-  <div id="refundContextMessage" class="refund-state info">Memeriksa transaksi pembayaran terakhir dan batas refund…</div>
+  <div class="notice" style="margin-bottom:12px"><strong>Dasar ketentuan:</strong> refund kepada LYNK.ID harus diajukan tidak lebih dari 24 jam setelah pembayaran dan hanya karena karya/konten/produk/layanan dari Kreator belum diterima. Jika lebih dari 24 jam atau masalahnya adalah ketidaksesuaian layanan yang sudah diterima, klaim dilakukan langsung kepada LocDailyMar. Nilai refund LYNK.ID dapat tidak termasuk biaya transaksi, jasa platform, dan pajak. <a href="https://www.lynk.id/terms" target="_blank" rel="noopener">Baca ketentuan publik LYNK.ID</a>.</div>
+  <div id="refundContextMessage" class="refund-state info">Memeriksa transaksi pembayaran terakhir dan batas 24 jam LYNK.ID…</div>
   <div id="refundInfoGrid" class="refund-info-grid" hidden>
     <div class="refund-info-item"><span>Order ID</span><strong id="refundOrderId">-</strong></div>
     <div class="refund-info-item"><span>Status Pembayaran</span><strong id="refundPaymentStatus">-</strong></div>
-    <div class="refund-info-item"><span>Nilai Pembayaran</span><strong id="refundPaymentAmount">-</strong></div>
-    <div class="refund-info-item"><span>Sisa Refundable</span><strong id="refundRemainingAmount">-</strong></div>
+    <div class="refund-info-item"><span>Nilai Transaksi</span><strong id="refundPaymentAmount">-</strong></div>
+    <div class="refund-info-item"><span>Nilai Pengajuan</span><strong id="refundRemainingAmount">-</strong></div>
     <div class="refund-info-item"><span>Dibayar</span><strong id="refundPaidAt">-</strong></div>
-    <div class="refund-info-item"><span>Batas Refund</span><strong id="refundDeadline">-</strong></div>
+    <div class="refund-info-item"><span>Batas LYNK.ID</span><strong id="refundDeadline">-</strong></div>
     <div class="refund-info-item"><span>Paket</span><strong id="refundPlan">-</strong></div>
-    <div class="refund-info-item"><span>Store</span><strong id="refundStore">-</strong></div>
+    <div class="refund-info-item"><span>Status Delivery</span><strong id="refundDeliveryStatus">-</strong></div>
   </div>
   <div id="refundExistingRequest" class="refund-status-panel" hidden></div>
-  <div id="refundExpiredNote" class="refund-expired-note" hidden><strong>Masa refund sudah berakhir.</strong><div id="refundExpiredText" style="margin-top:5px"></div></div>
+  <div id="refundExpiredNote" class="refund-expired-note" hidden><strong>Jalur refund LYNK.ID 24 jam sudah berakhir.</strong><div id="refundExpiredText" style="margin-top:5px"></div></div>
   <div id="refundRequestFormWrap" class="refund-form-shell" hidden>
     <div class="form-grid">
-      <div class="field"><label for="refundRequestType">Jenis refund</label><select id="refundRequestType"><option value="full">Refund Penuh</option><option value="partial">Refund Sebagian</option></select><span class="help">Refund penuh menggunakan seluruh sisa refundable. Partial refund hanya tersedia jika kebijakan mengizinkan.</span></div>
-      <div class="field"><label for="refundRequestAmount">Nominal refund</label><input id="refundRequestAmount" type="number" min="1" step="1"><span class="help" id="refundAmountHelp">Nominal akan mengikuti sisa refundable untuk refund penuh.</span></div>
-      <div class="field full-row"><label for="refundReasonCategory">Alasan utama</label><select id="refundReasonCategory"><option value="duplicate_payment">Pembayaran ganda</option><option value="wrong_plan">Salah memilih paket</option><option value="wrong_period">Salah memilih periode</option><option value="provisioning_issue">Masalah aktivasi / provisioning</option><option value="technical_issue">Masalah teknis aplikasi</option><option value="service_issue">Masalah layanan</option><option value="changed_mind">Berubah keputusan</option><option value="other">Lainnya</option></select></div>
-      <div class="field full-row"><label for="refundReasonDetail">Jelaskan alasan refund</label><textarea id="refundReasonDetail" maxlength="1500" placeholder="Jelaskan alasan secara jelas, misalnya pembayaran dilakukan dua kali untuk paket yang sama."></textarea><span class="help"><span id="refundReasonChars">0</span>/1500 karakter · minimum 20 karakter.</span></div>
+      <div class="field"><label>Jenis refund</label><input id="refundRequestTypeLabel" value="Refund pembelian penuh melalui ketentuan LYNK.ID" readonly><span class="help">Partial refund tidak digunakan pada mode ketentuan publik LYNK.ID ini.</span></div>
+      <div class="field"><label>Dasar pengajuan</label><input id="refundReasonCategoryLabel" value="Produk/layanan lisensi belum diterima" readonly><span class="help">Ini satu-satunya dasar refund kepada LYNK.ID yang dipakai oleh form ini.</span></div>
+      <input id="refundRequestType" type="hidden" value="full">
+      <input id="refundRequestAmount" type="hidden" value="0">
+      <input id="refundReasonCategory" type="hidden" value="not_delivered">
+      <div class="field full-row"><label for="refundReasonDetail">Jelaskan apa yang belum diterima</label><textarea id="refundReasonDetail" maxlength="1500" placeholder="Contoh: pembayaran berhasil tetapi License Key dan akses lisensi belum tersedia pada halaman License setelah status pembayaran terverifikasi."></textarea><span class="help"><span id="refundReasonChars">0</span>/1500 karakter · minimum 20 karakter. Jangan memasukkan password, OTP, atau secret.</span></div>
     </div>
-    <label class="refund-ack"><input id="refundRequestConfirm" type="checkbox"><span>Saya telah membaca kebijakan refund, memahami bahwa pengajuan tidak berarti refund otomatis disetujui, dan memastikan informasi yang diberikan benar. Eksekusi dana hanya dilakukan setelah Developer memverifikasi permintaan.</span></label>
-    <div class="actions"><button id="btnSubmitRefundRequest" class="btn btn-primary">↩️ Kirim Permintaan Refund</button><button id="btnRefreshRefundContext" class="btn btn-soft" type="button">↻ Cek Ulang Kelayakan</button></div>
+    <label class="refund-ack"><input id="refundRequestConfirm" type="checkbox"><span>Saya menyatakan bahwa produk/layanan lisensi yang dibayar belum saya terima, pengajuan masih dalam 24 jam sejak pembayaran, dan memahami bahwa keputusan serta jumlah refund mengikuti proses LYNK.ID. Biaya transaksi, jasa platform, dan pajak dapat tidak dikembalikan.</span></label>
+    <div class="actions"><button id="btnSubmitRefundRequest" class="btn btn-primary">↩️ Catat Permintaan Refund 24 Jam</button><button id="btnRefreshRefundContext" class="btn btn-soft" type="button">↻ Cek Ulang Kelayakan</button></div>
     <div id="refundRequestMessage" class="support-message"></div>
   </div>
 </section>
-
 <section class="card full">
   <div class="tickets-head"><div><h2>🎫 Riwayat Tiket Support</h2><p style="margin-bottom:0">Owner/Admin melihat tiket toko aktif. Kasir hanya melihat tiket yang dibuat oleh akunnya sendiri.</p></div><button id="btnReloadTicketList" class="btn btn-soft">↻ Muat Ulang</button></div>
   <div id="ticketListMessage" class="support-message"></div>
@@ -103,5 +105,5 @@
 <aside class="card"><h2>Bantuan Cepat</h2><div class="quick"><a href="setup-awal.html#stepDevice"><span>🖨️ Setup Printer, Scanner & Struk</span><span>›</span></a><a href="privacy-center.html"><span>🔐 Privacy Center</span><span>›</span></a><a href="panduan.html"><span>📘 Panduan Pengguna</span><span>›</span></a><a href="license.html"><span>🔑 Lisensi & Paket</span><span>›</span></a><a href="recovery-center.html"><span>🛟 Recovery Center</span><span>›</span></a></div><div class="notice"><strong>Catatan:</strong> laporan Support menyimpan metadata ringan untuk troubleshooting. Detail teknis penuh error tetap berada di Monitoring Error dan Developer Support.</div></aside>
 </div>
 </main>
-<script src="js/support-center.js?v=27.9.0-refund-request-v21"></script><script src="js/global-system-navigation.js?v=27.9.0-refund-request-v21"></script>
+<script src="js/support-center.js?v=27.9.0-v28.1-lynk-terms"></script><script src="js/global-system-navigation.js?v=27.9.0-refund-request-v21"></script>
 </body></html>
