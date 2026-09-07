@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.ldm-doku-reconcile]
 verify_jwt = false
+
+[functions.ldm-lynk-order]
+verify_jwt = false
+
+[functions.ldm-lynk-webhook]
+verify_jwt = false
