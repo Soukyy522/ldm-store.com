@@ -5,7 +5,7 @@
         serverUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-license-v2",
         checkoutUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-public-checkout-v2",
         lynkOrderUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-lynk-order",
-        developerWhatsApp:"6283117590286",
+        developerWhatsApp:"6287874352468",
 
         // V26.1: Lynk.id menjadi jalur pembayaran utama dengan pending order backend + webhook otomatis.
         // Hasil lisensi hanya ditampilkan di license.html. Tidak ada Resend atau pengiriman email otomatis.
@@ -23,7 +23,7 @@
             LIFETIME:Object.freeze({lifetime:""})
         }),
 
-        appVersion:"27.9.0-v26.1",
+        appVersion:"27.9.0-v26.2",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,
