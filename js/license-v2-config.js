@@ -7,32 +7,27 @@
         lynkOrderUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-lynk-order",
         developerWhatsApp:"6287874352468",
 
-        // V26.1: Lynk.id menjadi jalur pembayaran utama dengan pending order backend + webhook otomatis.
-        // Hasil lisensi hanya ditampilkan di license.html. Tidak ada Resend atau pengiriman email otomatis.
-        // Midtrans dan DOKU tetap tersimpan di source/backend, tetapi tidak ditampilkan ke customer.
+        // V27: Lynk.id adalah satu-satunya jalur pembayaran.
         checkoutMode:"lynk",
-        showPaymentGatewaySelector:false,
         manualPaymentLabel:"Bayar via Lynk.id",
 
-        // Tempel URL PRODUK/CHECKOUT Lynk.id milikmu di sini.
-        // Gunakan URL HTTPS dari lynk.id. Jangan menaruh password/API secret apa pun di file frontend ini.
+        // WAJIB DIISI dengan URL PRODUK/CHECKOUT Lynk.id milikmu.
+        // Buat 9 produk: 3 paket x 3 periode (bulanan, tahunan, 2 tahun).
         lynkCheckoutLinks:Object.freeze({
-            WARUNG_KECIL:Object.freeze({monthly:"",yearly:""}),
-            WARUNG_SEDERHANA:Object.freeze({monthly:"",yearly:""}),
-            TOKO:Object.freeze({monthly:"",yearly:""}),
-            LIFETIME:Object.freeze({lifetime:""})
+            WARUNG_KECIL:Object.freeze({monthly:"",yearly:"",two_year:""}),
+            WARUNG_SEDERHANA:Object.freeze({monthly:"",yearly:"",two_year:""}),
+            TOKO:Object.freeze({monthly:"",yearly:"",two_year:""})
         }),
 
-        appVersion:"27.9.0-v26.2",
+        appVersion:"27.9.0-v27",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,
         activationPage:"license.html",
         plans:Object.freeze({
-            WARUNG_KECIL:{name:"Warung Kecil",monthly:69000,yearly:699000,devices:2,stores:1},
-            WARUNG_SEDERHANA:{name:"Warung Sederhana",monthly:129000,yearly:1299000,devices:3,stores:1,trialDays:14},
-            TOKO:{name:"Toko",monthly:249000,yearly:2499000,devices:10,stores:5},
-            LIFETIME:{name:"Lifetime",lifetime:7499000,devices:15,stores:8}
+            WARUNG_KECIL:{name:"Warung Kecil",monthly:69000,yearly:699000,two_year:1398000,devices:2,stores:1},
+            WARUNG_SEDERHANA:{name:"Warung Sederhana",monthly:129000,yearly:1299000,two_year:2598000,devices:3,stores:1,trialDays:14},
+            TOKO:{name:"Toko",monthly:249000,yearly:2499000,two_year:4998000,devices:10,stores:5}
         })
     });
 })();

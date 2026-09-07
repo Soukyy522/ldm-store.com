@@ -138,7 +138,7 @@
     if(!refundRoleAllowed()){section.hidden=true;return}
     const last=readCheckoutContext();if(!last){section.hidden=true;return}
     section.hidden=false;$("refundContextMessage").className="refund-state info";$("refundContextMessage").textContent="Memeriksa transaksi pembayaran terakhir dan kebijakan refund…";$("refundRequestFormWrap").hidden=true;$("refundInfoGrid").hidden=true;$("refundExpiredNote").hidden=true;
-    try{const d=await callCheckout({action:"refund_context",order_id:last.order_id,status_token:last.status_token,sync_midtrans:true});renderRefundContext(d)}catch(e){$("refundContextMessage").className="refund-state off";$("refundContextMessage").textContent=e?.message||"Kelayakan refund belum dapat diperiksa.";$("refundRequestFormWrap").hidden=true}
+    try{const d=await callCheckout({action:"refund_context",order_id:last.order_id,status_token:last.status_token});renderRefundContext(d)}catch(e){$("refundContextMessage").className="refund-state off";$("refundContextMessage").textContent=e?.message||"Kelayakan refund belum dapat diperiksa.";$("refundRequestFormWrap").hidden=true}
   }
   async function submitRefundRequest(){
     if(!currentRefundContext?.eligibility?.eligible){setMsg("refundRequestMessage","Pembayaran tidak memenuhi syarat refund.","error");return}
