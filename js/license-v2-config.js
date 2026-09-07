@@ -14,9 +14,9 @@
         // WAJIB DIISI dengan URL PRODUK/CHECKOUT Lynk.id milikmu.
         // Buat 9 produk: 3 paket x 3 periode (bulanan, tahunan, 2 tahun).
         lynkCheckoutLinks:Object.freeze({
-            WARUNG_KECIL:Object.freeze({monthly:"http://lynk.id/locdaily/px0ed6p8jkk0",yearly:"http://lynk.id/locdaily/zk2leorw6332",two_year:"http://lynk.id/locdaily/nlke51p5079z"}),
-            WARUNG_SEDERHANA:Object.freeze({monthly:"http://lynk.id/locdaily/zo6jkyg7o67e",yearly:"http://lynk.id/locdaily/m0gjodzx3kn7",two_year:"http://lynk.id/locdaily/e36ojydz3z72"}),
-            TOKO:Object.freeze({monthly:"http://lynk.id/locdaily/9xro4wkxep8z",yearly:"http://lynk.id/locdaily/669ekq3znom1",two_year:"http://lynk.id/locdaily/jdm3revj0n7x"})
+            WARUNG_KECIL:Object.freeze({monthly:"http://lynk.id/locdaily/px0ed6p8jkk0/checkout",yearly:"http://lynk.id/locdaily/zk2leorw6332/checkout",two_year:"http://lynk.id/locdaily/nlke51p5079z/checkout"}),
+            WARUNG_SEDERHANA:Object.freeze({monthly:"http://lynk.id/locdaily/zo6jkyg7o67e/checkout",yearly:"http://lynk.id/locdaily/m0gjodzx3kn7/checkout",two_year:"http://lynk.id/locdaily/e36ojydz3z72/checkout"}),
+            TOKO:Object.freeze({monthly:"http://lynk.id/locdaily/9xro4wkxep8z/checkout",yearly:"http://lynk.id/locdaily/669ekq3znom1/checkout",two_year:"http://lynk.id/locdaily/jdm3revj0n7x/checkout"})
         }),
 
         appVersion:"27.9.0-v27",
