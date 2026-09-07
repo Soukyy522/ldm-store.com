@@ -146,6 +146,17 @@ export async function matchPendingOrder(admin: any, parsed: any) {
   if (paymentError) throw paymentError;
   const candidates = payments || [];
   if (candidates.length === 1) return { ok: true, status: "UNIQUE_EMAIL_AMOUNT_MATCH", order: candidates[0], candidates };
-  if (!candidates.length) return { ok: false, status: "NO_PENDING_MATCH", candidates };
-  return { ok: false, status: "AMBIGUOUS_MATCH", candidates };
+  if (candidates.length > 1) return { ok: false, status: "AMBIGUOUS_MATCH", candidates };
+
+  // V28: jika customer membatalkan order lokal tetapi tetap membayar pada tab Lynk.id,
+  // deteksi order CANCELLED unik agar webhook dapat ditandai NEEDS_REFUND_REVIEW.
+  const { data: cancelled, error: cancelledError } = await admin.from("ldm2_payments")
+    .select("id,license_id,order_id,provider,status,amount,plan_code,billing_cycle,created_at,provider_detail")
+    .eq("provider","lynk").in("license_id",ids).eq("status","cancelled")
+    .eq("amount",Math.round(parsed.amount)).gte("created_at",since).order("created_at",{ascending:false});
+  if (cancelledError) throw cancelledError;
+  const cancelledCandidates = cancelled || [];
+  if (cancelledCandidates.length === 1) return { ok: true, status: "UNIQUE_CANCELLED_EMAIL_AMOUNT_MATCH", order: cancelledCandidates[0], candidates: cancelledCandidates };
+  if (cancelledCandidates.length > 1) return { ok: false, status: "AMBIGUOUS_CANCELLED_MATCH", candidates: cancelledCandidates };
+  return { ok: false, status: "NO_PENDING_MATCH", candidates: [] };
 }

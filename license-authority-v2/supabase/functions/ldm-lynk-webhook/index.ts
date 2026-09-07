@@ -47,8 +47,14 @@ Deno.serve(async(req)=>{
     });
     if(applyError)throw applyError;
     if(applied?.ok===false){
-      await finishEvent(admin,{eventKey:event,orderId:match.order.order_id,success:false,matchStatus:"APPLY_REJECTED",error:`Payment apply ditolak: ${applied?.code||"UNKNOWN"}`});
-      return json({ok:true,captured:true,processed:false,apply:applied},202);
+      const code=String(applied?.code||"UNKNOWN");
+      const afterCancel=code==="ORDER_CANCELLED_PAYMENT_REVIEW";
+      await finishEvent(admin,{
+        eventKey:event,orderId:match.order.order_id,success:false,
+        matchStatus:afterCancel?"PAYMENT_AFTER_CANCEL_REVIEW":"APPLY_REJECTED",
+        error:afterCancel?"Pembayaran terdeteksi setelah customer membatalkan order. Jangan aktifkan lisensi; lakukan review/refund manual.":`Payment apply ditolak: ${code}`
+      });
+      return json({ok:true,captured:true,processed:false,review_required:afterCancel,apply:applied},202);
     }
 
     let provision:any=null;

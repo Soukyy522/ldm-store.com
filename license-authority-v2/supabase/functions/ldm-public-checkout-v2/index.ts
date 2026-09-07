@@ -29,7 +29,7 @@ Deno.serve(async(req)=>{
 
     if(action==="refund_policy"){
       const result=await admin.rpc("ldm2_get_refund_policy");
-      if(result.error&&/ldm2_get_refund_policy|does not exist|schema cache/i.test(result.error.message||""))return json(req,{ok:true,policy:{enabled:true,refund_window_days:3,allow_partial_refund:true,min_reason_length:10,policy_version:"fallback-v1"},migration_required:true});
+      if(result.error&&/ldm2_get_refund_policy|does not exist|schema cache/i.test(result.error.message||""))return json(req,{ok:true,policy:{enabled:true,refund_window_days:1,refund_window_hours:24,allow_partial_refund:false,min_reason_length:20,policy_version:"lynk-public-terms-fallback",policy_basis:"lynk_public_terms",policy_source_url:"https://www.lynk.id/terms",only_non_delivery:true,exclude_transaction_fees:true},migration_required:true});
       if(result.error)throw result.error;return json(req,{ok:true,policy:result.data,migration_required:false});
     }
 
@@ -39,7 +39,22 @@ Deno.serve(async(req)=>{
       if(payment.status==="paid"){try{receipt=await getPaidWebReceipt(admin,order)}catch(e){receiptError=clean((e as Error)?.message||"Data lisensi belum dapat ditampilkan.",500)}}
       else if(["cancelled","expired","failed"].includes(String(payment.status||"").toLowerCase())){try{await releaseApplicationOwnerReservation(admin,order)}catch(_e){}}
       const {data:license}=await admin.from("ldm2_licenses").select("status,plan_code,primary_store_code,primary_store_id,network_id,expires_at").eq("id",payment.license_id).maybeSingle();
-      return json(req,{ok:true,order_id:order,payment_status:payment.status,payment_gateway:"lynk",provider_status:payment.provider_status,redirect_url:payment.redirect_url||null,paid_at:payment.paid_at,license_status:license?.status||null,provision_status:receipt?.provision_status||delivery.provision_status,receipt,receipt_error:receiptError});
+      return json(req,{ok:true,order_id:order,payment_status:payment.status,payment_gateway:"lynk",provider_status:payment.provider_status,redirect_url:payment.redirect_url||null,paid_at:payment.paid_at,license_status:license?.status||null,provision_status:receipt?.provision_status||delivery.provision_status,receipt,receipt_error:receiptError,can_cancel:["pending","challenge"].includes(String(payment.status||"").toLowerCase()),can_refund:["paid","partially_refunded"].includes(String(payment.status||"").toLowerCase())});
+    }
+
+    if(action==="cancel_order"){
+      const order=clean(body.order_id,120),token=clean(body.status_token,200);
+      const {payment}=await verifiedPayment(admin,order,token);
+      if(["paid","partially_refunded","refunded"].includes(String(payment.status||"").toLowerCase())){
+        return json(req,{ok:false,code:"PAYMENT_ALREADY_PAID",message:"Pembayaran sudah terverifikasi sehingga order tidak dapat dibatalkan. Gunakan proses refund.",refund_available:true},409);
+      }
+      const cancelled=await admin.rpc("ldm2_cancel_public_order",{p_order_id:order});
+      if(cancelled.error){
+        if(/ldm2_cancel_public_order|does not exist|schema cache/i.test(cancelled.error.message||""))return json(req,{ok:false,code:"CANCEL_SQL_MISSING",message:"SQL Cancel Order V28 belum dijalankan pada License Authority."},503);
+        throw cancelled.error;
+      }
+      try{await releaseApplicationOwnerReservation(admin,order)}catch(_e){}
+      return json(req,{ok:true,message:"Order LocDailyMar berhasil dibatalkan. Tutup checkout Lynk.id dan jangan lakukan pembayaran pada order tersebut.",order_id:order,payment_status:"cancelled",result:cancelled.data});
     }
 
     if(["refund_context","refund_request_create","refund_request_cancel"].includes(action)){
@@ -54,8 +69,9 @@ Deno.serve(async(req)=>{
       if(action==="refund_request_create"){
         if(eligibility.eligible!==true)return json(req,{ok:false,code:"REFUND_NOT_ELIGIBLE",message:eligibility.reason||"Pembayaran tidak memenuhi kebijakan refund.",eligibility},409);
         if(existing&&["submitted","reviewing","waiting_customer","approved","processing"].includes(String(existing.status||"")))return json(req,{ok:false,code:"REFUND_REQUEST_ACTIVE",message:`Permintaan ${existing.request_code} masih aktif.`,request:existing},409);
-        const refundType=clean(body.refund_type,20).toLowerCase(),requestedAmount=Math.round(Number(body.amount||0)),category=clean(body.reason_category,40).toLowerCase(),detail=clean(body.reason_detail,1500),requestCode=`RFD-${new Date().toISOString().slice(0,10).replace(/-/g,"")}-${randomHex(5)}`;
-        const created=await admin.rpc("ldm2_create_customer_refund_request",{p_payment_id:payment.id,p_request_code:requestCode,p_refund_type:refundType,p_requested_amount:requestedAmount,p_reason_category:category,p_reason_detail:detail});if(created.error)throw created.error;return json(req,{ok:true,message:"Permintaan refund berhasil dikirim ke Developer Support.",request:created.data});
+        const refundType="full",requestedAmount=Math.round(Number(eligibility.remaining_refundable||payment.amount||0)),category="not_delivered",detail=clean(body.reason_detail,1500),requestCode=`RFD-${new Date().toISOString().slice(0,10).replace(/-/g,"")}-${randomHex(5)}`;
+        if(detail.length<20)return json(req,{ok:false,message:"Jelaskan produk/layanan yang belum diterima minimal 20 karakter."},400);
+        const created=await admin.rpc("ldm2_create_customer_refund_request",{p_payment_id:payment.id,p_request_code:requestCode,p_refund_type:refundType,p_requested_amount:requestedAmount,p_reason_category:category,p_reason_detail:detail});if(created.error)throw created.error;return json(req,{ok:true,message:"Permintaan refund 24 jam dicatat. Pengajuan ini adalah catatan internal LocDailyMar dan bukan pengiriman otomatis ke sistem refund LYNK.ID.",request:created.data,lynk_terms_url:"https://www.lynk.id/terms"});
       }
       const requestCode=clean(body.request_code,40).toUpperCase();if(!/^RFD-\d{8}-[A-F0-9]{10}$/.test(requestCode))return json(req,{ok:false,message:"Kode permintaan refund tidak valid."},400);
       const cancelled=await admin.rpc("ldm2_cancel_customer_refund_request",{p_payment_id:payment.id,p_request_code:requestCode});if(cancelled.error)throw cancelled.error;return json(req,{ok:true,message:"Permintaan refund dibatalkan.",request:cancelled.data});
