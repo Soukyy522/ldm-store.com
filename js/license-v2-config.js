@@ -19,7 +19,7 @@
             TOKO:Object.freeze({monthly:"https://lynk.id/locdaily/9xro4wkxep8z/checkout",yearly:"https://lynk.id/locdaily/669ekq3znom1/checkout",two_year:"https://lynk.id/locdaily/jdm3revj0n7x/checkout"})
         }),
 
-        appVersion:"27.9.0-v27",
+        appVersion:"27.9.0-v28.1",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,

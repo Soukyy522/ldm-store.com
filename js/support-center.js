@@ -2,7 +2,7 @@
   "use strict";
   const $=id=>document.getElementById(id);
   const APP_VERSION=String(window.LDM_APP_VERSION||"27.9.0");
-  const CHECKOUT_STORAGE_KEYS=["ldmPublicCheckoutV278","ldmPublicCheckoutV276","ldmPublicCheckoutV273","ldmPublicCheckoutV272"];
+  const CHECKOUT_STORAGE_KEYS=["ldmPublicCheckoutV281","ldmPublicCheckoutV28","ldmPublicCheckoutV27","ldmPublicCheckoutV261","ldmPublicCheckoutV26","ldmPublicCheckoutV25","ldmPublicCheckoutV278","ldmPublicCheckoutV276","ldmPublicCheckoutV273","ldmPublicCheckoutV272"];
   let currentRefundContext=null;
   function client(){
     if(window.ldmSupabase) return window.ldmSupabase;
@@ -89,18 +89,20 @@
   }
   async function copyText(value,msgId){if(!value)return;try{await navigator.clipboard.writeText(value);setMsg(msgId,`Kode ${value} disalin.`,`ok`)}catch{setMsg(msgId,"Clipboard tidak tersedia. Salin kode secara manual.","error")}}
   function refundRoleAllowed(){
+    // V28.1: refund dapat diajukan dari browser/perangkat yang menyimpan order_id + status_token.
+    // Owner login tetap didukung, tetapi public checkout token adalah otorisasi utama untuk order customer.
     const role=String((window.LDMCloudSession&&window.LDMCloudSession.getCurrentRole&&window.LDMCloudSession.getCurrentRole())||"").toLowerCase();
-    return role==="owner";
+    return role==="owner" || !!readCheckoutContext();
   }
   function setRefundInputsDisabled(disabled){
-    ["refundRequestType","refundRequestAmount","refundReasonCategory","refundReasonDetail","refundRequestConfirm","btnSubmitRefundRequest"].forEach(id=>{const n=$(id);if(n)n.disabled=disabled});
+    ["refundReasonDetail","refundRequestConfirm","btnSubmitRefundRequest"].forEach(id=>{const n=$(id);if(n)n.disabled=disabled});
   }
   function renderRefundRequestStatus(r){
     const box=$("refundExistingRequest");if(!box)return;
     if(!r){box.hidden=true;box.innerHTML="";return}
     const active=["submitted","reviewing","waiting_customer","approved","processing"].includes(String(r.status||""));
     box.hidden=false;
-    box.innerHTML=`<div class="ticket-top"><div><div class="refund-request-code">${esc(r.request_code||"-")}</div><div class="ticket-title">${esc(refundStatusLabel(r.status))}</div></div>${["submitted","waiting_customer"].includes(String(r.status||""))?`<button class="btn btn-soft" id="btnCancelRefundRequest">Batalkan Request</button>`:""}</div><div class="ticket-meta"><span class="badge tag">${esc(String(r.refund_type||"-").toUpperCase())}</span><span class="badge tag">${esc(money(r.requested_amount))}</span></div><div class="help" style="margin-top:8px">Diajukan ${esc(fmt(r.created_at))}${r.updated_at?` · Update ${esc(fmt(r.updated_at))}`:""}</div>${r.response_note?`<div class="ticket-note"><strong>Catatan Developer:</strong><br>${esc(r.response_note)}</div>`:""}`;
+    box.innerHTML=`<div class="ticket-top"><div><div class="refund-request-code">${esc(r.request_code||"-")}</div><div class="ticket-title">${esc(refundStatusLabel(r.status))}</div></div>${["submitted","waiting_customer"].includes(String(r.status||""))?`<button class="btn btn-soft" id="btnCancelRefundRequest">Batalkan Request</button>`:""}</div><div class="ticket-meta"><span class="badge tag">Refund LYNK.ID</span><span class="badge tag">${esc(money(r.requested_amount))}</span></div><div class="help" style="margin-top:8px">Diajukan ${esc(fmt(r.created_at))}${r.updated_at?` · Update ${esc(fmt(r.updated_at))}`:""}</div>${r.response_note?`<div class="ticket-note"><strong>Catatan Developer:</strong><br>${esc(r.response_note)}</div>`:""}`;
     const cancel=$("btnCancelRefundRequest");if(cancel)cancel.addEventListener("click",cancelRefundRequest);
     if(active)setRefundInputsDisabled(true);
   }
@@ -110,28 +112,40 @@
     if(!section)return;
     section.hidden=false;
     const p=d.payment||{},e=d.eligibility||{},l=d.license||{},r=d.request||null;
-    $("refundPolicyBadge").textContent=`Kebijakan ${Number(e.refund_window_days||3)} hari`;
-    $("refundOrderId").textContent=p.order_id||"-";$("refundPaymentStatus").textContent=String(p.status||"-").toUpperCase();$("refundPaymentAmount").textContent=money(p.amount);$("refundRemainingAmount").textContent=money(e.remaining_refundable||0);$("refundPaidAt").textContent=fmt(p.paid_at);$("refundDeadline").textContent=fmt(e.refund_deadline);$("refundPlan").textContent=l.plan_code||"-";$("refundStore").textContent=[l.store_name,l.store_code].filter(Boolean).join(" · ")||"-";info.hidden=false;
+    $("refundPolicyBadge").textContent=`Ketentuan LYNK.ID · ${Number(e.refund_window_hours||24)} jam`;
+    $("refundOrderId").textContent=p.order_id||"-";
+    $("refundPaymentStatus").textContent=String(p.status||"-").toUpperCase();
+    $("refundPaymentAmount").textContent=money(p.amount);
+    $("refundRemainingAmount").textContent=money(e.remaining_refundable||0);
+    $("refundPaidAt").textContent=fmt(p.paid_at);
+    $("refundDeadline").textContent=fmt(e.refund_deadline);
+    $("refundPlan").textContent=l.plan_code||"-";
+    const delivery=$("refundDeliveryStatus");if(delivery)delivery.textContent=String(e.delivery_provision_status||"belum diketahui").toUpperCase();
+    info.hidden=false;
     renderRefundRequestStatus(r);
     expired.hidden=true;
     if(e.eligible===true){
-      state.className="refund-state ok";state.textContent=`✅ Pembayaran masih berada dalam batas refund ${Number(e.refund_window_days||0)} hari. Form pengajuan tersedia sampai ${fmt(e.refund_deadline)}.`;
+      state.className="refund-state ok";
+      state.textContent=`✅ Masih dalam batas ${Number(e.refund_window_hours||24)} jam LYNK.ID. Form ini hanya untuk klaim bahwa lisensi/layanan belum diterima. Batas: ${fmt(e.refund_deadline)}.`;
       form.hidden=false;setRefundInputsDisabled(false);
-      const partialOption=$("refundRequestType").querySelector('option[value="partial"]');partialOption.disabled=e.allow_partial_refund===false;if(partialOption.disabled&&$("refundRequestType").value==="partial")$("refundRequestType").value="full";
-      $("refundRequestAmount").max=String(Number(e.remaining_refundable||0));
-      updateRefundAmountMode();
+      $("refundRequestAmount").value=String(Number(e.remaining_refundable||0));
+      if(e.delivery_evidence_available===true){
+        state.className="refund-state warn";
+        state.textContent+=` Sistem LocDailyMar mencatat status delivery ${String(e.delivery_provision_status||"ready").toUpperCase()}; LYNK.ID dapat meminta bukti penyerahan dari Kreator saat menilai klaim.`;
+      }
       if(r&&["submitted","reviewing","waiting_customer","approved","processing"].includes(String(r.status||"")))setRefundInputsDisabled(true);
     }else{
       form.hidden=true;
       const deadline=e.refund_deadline?new Date(e.refund_deadline).getTime():0;
       const isExpired=deadline&&Date.now()>deadline;
-      if(isExpired){state.className="refund-state warn";state.textContent="Masa pengajuan refund untuk pembayaran ini sudah berakhir.";expired.hidden=false;$("refundExpiredText").textContent=`Batas refund berakhir pada ${fmt(e.refund_deadline)}. ${e.reason||"Permintaan refund baru tidak dapat diajukan."}`}
-      else{state.className="refund-state off";state.textContent=e.reason||"Pembayaran ini tidak memenuhi syarat pengajuan refund."}
+      if(isExpired){state.className="refund-state warn";state.textContent="Batas refund kepada LYNK.ID sudah lewat 24 jam.";expired.hidden=false;$("refundExpiredText").textContent=`Batas LYNK.ID berakhir pada ${fmt(e.refund_deadline)}. Sesuai ketentuan publik LYNK.ID, klaim belum menerima produk/layanan setelah 24 jam harus disampaikan langsung kepada LocDailyMar sebagai Kreator.`}
+      else{state.className="refund-state off";state.textContent=e.reason||"Pembayaran ini tidak memenuhi jalur refund LYNK.ID."}
     }
   }
   function updateRefundAmountMode(){
-    if(!currentRefundContext)return;const e=currentRefundContext.eligibility||{},input=$("refundRequestAmount"),partial=$("refundRequestType").value==="partial";
-    input.disabled=!partial;input.value=String(Number(e.remaining_refundable||0));$("refundAmountHelp").textContent=partial?`Maksimal ${money(e.remaining_refundable||0)}.`:"Refund penuh otomatis menggunakan seluruh sisa refundable.";
+    if(!currentRefundContext)return;
+    const e=currentRefundContext.eligibility||{};
+    const input=$("refundRequestAmount");if(input)input.value=String(Number(e.remaining_refundable||0));
   }
   async function loadRefundContext(){
     const section=$("refundRequestSection");if(!section)return;
@@ -144,14 +158,13 @@
     if(!currentRefundContext?.eligibility?.eligible){setMsg("refundRequestMessage","Pembayaran tidak memenuhi syarat refund.","error");return}
     if(!$("refundRequestConfirm").checked){setMsg("refundRequestMessage","Centang persetujuan kebijakan refund terlebih dahulu.","error");return}
     const last=readCheckoutContext();if(!last){setMsg("refundRequestMessage","Data order checkout tidak ditemukan pada perangkat ini.","error");return}
-    const type=$("refundRequestType").value,detail=String($("refundReasonDetail").value||"").trim(),category=$("refundReasonCategory").value;
-    if(detail.length<20){setMsg("refundRequestMessage","Penjelasan refund minimal 20 karakter.","error");return}
-    const remaining=Number(currentRefundContext.eligibility.remaining_refundable||0);const amount=type==="full"?remaining:Math.round(Number($("refundRequestAmount").value||0));
-    if(type==="partial"&&(!Number.isSafeInteger(amount)||amount<=0||amount>remaining)){setMsg("refundRequestMessage",`Nominal partial refund harus antara Rp1 dan ${money(remaining)}.`,"error");return}
+    const type="full",detail=String($("refundReasonDetail").value||"").trim(),category="not_delivered";
+    if(detail.length<20){setMsg("refundRequestMessage","Jelaskan produk/layanan yang belum diterima minimal 20 karakter.","error");return}
+    const remaining=Number(currentRefundContext.eligibility.remaining_refundable||0);const amount=remaining;
     const btn=$("btnSubmitRefundRequest");btn.disabled=true;btn.textContent="Mengirim Permintaan…";setMsg("refundRequestMessage","Mengirim permintaan refund ke Developer Support…","");
     try{const d=await callCheckout({action:"refund_request_create",order_id:last.order_id,status_token:last.status_token,refund_type:type,amount,reason_category:category,reason_detail:detail});setMsg("refundRequestMessage",`Permintaan ${d.request?.request_code||"RFD"} berhasil dibuat. Pantau statusnya pada card ini.`,"ok");await loadRefundContext()}
     catch(e){setMsg("refundRequestMessage",e?.message||"Permintaan refund gagal dikirim.","error")}
-    finally{btn.disabled=false;btn.textContent="↩️ Kirim Permintaan Refund"}
+    finally{btn.disabled=false;btn.textContent="↩️ Catat Permintaan Refund 24 Jam"}
   }
   async function cancelRefundRequest(){
     const r=currentRefundContext?.request,last=readCheckoutContext();if(!r?.request_code||!last)return;if(!confirm(`Batalkan permintaan ${r.request_code}?`))return;
