@@ -6,19 +6,7 @@ verify_jwt = false
 [functions.ldm-license-admin-v2]
 verify_jwt = false
 
-[functions.ldm-midtrans-webhook]
-verify_jwt = false
-
 [functions.ldm-public-checkout-v2]
-verify_jwt = false
-
-[functions.ldm-midtrans-reconcile]
-verify_jwt = false
-
-[functions.ldm-doku-webhook]
-verify_jwt = false
-
-[functions.ldm-doku-reconcile]
 verify_jwt = false
 
 [functions.ldm-lynk-order]

@@ -67,7 +67,7 @@ alter table public.ldm2_checkout_attempts enable row level security;
 revoke all on public.ldm2_checkout_attempts from anon, authenticated;
 
 
--- Membuat ulang order Midtrans untuk lisensi pending_payment yang sama
+-- Membuat ulang order pembayaran untuk lisensi pending_payment yang sama
 -- tanpa membuat Store Code/License baru.
 create or replace function public.ldm2_create_retry_purchase_order(
     p_order_id text,
@@ -108,13 +108,13 @@ begin
 
     v_expected := public.ldm2_expected_price(v_license.plan_code,v_cycle);
     if p_amount<>v_expected then raise exception 'Nominal retry tidak sesuai harga resmi.'; end if;
-    v_months := case v_cycle when 'monthly' then 1 when 'yearly' then 12 when 'lifetime' then 0 else -1 end;
+    v_months := case v_cycle when 'monthly' then 1 when 'yearly' then 12 when 'two_year' then 24 else -1 end;
     if v_months<0 then raise exception 'Periode retry tidak valid.'; end if;
 
     insert into public.ldm2_payments(
-        order_id,license_id,payment_type,plan_code,billing_cycle,duration_months,amount,status
+        order_id,license_id,payment_type,plan_code,billing_cycle,duration_months,amount,provider,status
     ) values (
-        btrim(p_order_id),v_license.id,'purchase',v_license.plan_code,v_cycle,v_months,p_amount,'pending'
+        btrim(p_order_id),v_license.id,'purchase',v_license.plan_code,v_cycle,v_months,p_amount,'lynk','pending'
     ) returning id into v_payment_id;
 
     insert into public.ldm2_events(license_id,event_type,detail)

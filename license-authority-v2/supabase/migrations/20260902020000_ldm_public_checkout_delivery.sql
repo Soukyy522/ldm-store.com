@@ -1,7 +1,7 @@
 -- =====================================================================
 -- LocDailyMar License Authority V2.2
--- CHECKOUT PUBLIK MIDTRANS + PENGIRIMAN EMAIL/WHATSAPP
--- Jalankan pada project Supabase KHUSUS LISENSI setelah migration V2.1.
+-- CHECKOUT PUBLIK + DATA DELIVERY / LICENSE AUTHORITY
+-- Jalankan pada project Supabase KHUSUS LISENSI setelah fondasi payment/lisensi terpasang.
 -- =====================================================================
 
 begin;
@@ -11,7 +11,7 @@ begin
     if to_regclass('public.ldm2_payments') is null
        or to_regclass('public.ldm2_licenses') is null
        or to_regprocedure('public.ldm2_create_purchase_order(text,text,text,text,text,text,text,text,text,text,bigint,text)') is null then
-        raise exception 'Midtrans V2.1 belum terpasang. Jalankan migration 20260902010000 terlebih dahulu.';
+        raise exception 'Fondasi payment/lisensi belum terpasang. Pasang fondasi License Authority terlebih dahulu.';
     end if;
 end
 $$;

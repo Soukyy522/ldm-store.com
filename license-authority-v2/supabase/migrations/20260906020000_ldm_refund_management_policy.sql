@@ -2,7 +2,7 @@
 -- LocDailyMar 27.9.0 - COMMERCIAL #06
 -- REFUND MANAGEMENT + REFUND POLICY V20
 -- Jalankan HANYA pada Supabase PROJECT LICENSE AUTHORITY V2.
--- Prasyarat: SQL-41 / SQL-12 Midtrans Production Hardening V19 sudah terpasang.
+-- Prasyarat: fondasi payment/refund License Authority sudah terpasang.
 -- Aman dijalankan ulang (idempotent).
 -- ============================================================================
 
@@ -13,13 +13,13 @@ begin
     if to_regclass('public.ldm2_payments') is null
        or to_regclass('public.ldm2_licenses') is null
        or to_regclass('public.ldm2_admin_audit') is null then
-        raise exception 'Fondasi License Authority belum lengkap. Pasang migration Midtrans/Lisensi sebelumnya terlebih dahulu.';
+        raise exception 'Fondasi License Authority/payment belum lengkap. Pasang migration fondasi sebelumnya terlebih dahulu.';
     end if;
     if not exists(
         select 1 from information_schema.columns
         where table_schema='public' and table_name='ldm2_payments' and column_name='refund_amount'
     ) then
-        raise exception 'SQL-41 Midtrans Production Hardening V19 belum terpasang. Kolom refund_amount tidak ditemukan.';
+        raise exception 'Fondasi refund belum lengkap. Kolom refund_amount tidak ditemukan.';
     end if;
 end
 $$;
@@ -199,7 +199,7 @@ end;
 $$;
 
 -- --------------------------------------------------------------------------
--- 5. Reserve refund secara atomic sebelum request dikirim ke Midtrans.
+-- 5. Reserve refund secara atomic sebelum refund diproses oleh provider/prosedur merchant.
 --    Ini menutup race condition dua developer menekan Refund bersamaan.
 -- --------------------------------------------------------------------------
 create or replace function public.ldm2_prepare_refund(

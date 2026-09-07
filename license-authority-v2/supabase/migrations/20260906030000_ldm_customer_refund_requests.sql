@@ -25,7 +25,7 @@ $$;
 -- --------------------------------------------------------------------------
 -- 1. Permintaan refund customer. Ini berbeda dari ldm2_refunds:
 --    ldm2_refund_requests = permintaan/review customer (RFD-...)
---    ldm2_refunds          = eksekusi uang ke Midtrans oleh Developer
+--    ldm2_refunds          = pencatatan eksekusi refund oleh Developer
 -- --------------------------------------------------------------------------
 create table if not exists public.ldm2_refund_requests (
     id uuid primary key default extensions.gen_random_uuid(),
@@ -207,7 +207,7 @@ $$;
 
 -- --------------------------------------------------------------------------
 -- 4. Developer update status/catatan request. Eksekusi uang tetap melalui
---    ldm2_prepare_refund + Refund API Midtrans + ldm2_finish_refund.
+--    ldm2_prepare_refund + proses refund merchant/provider + ldm2_finish_refund.
 -- --------------------------------------------------------------------------
 create or replace function public.ldm2_update_refund_request(
     p_request_code text,

@@ -13,7 +13,7 @@ function allowedOrigin(req: Request) {
 }
 function cors(req: Request) { return {"Access-Control-Allow-Origin":allowedOrigin(req)||"null","Access-Control-Allow-Headers":"content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"}; }
 function json(req:Request,data:any,status=200){return new Response(JSON.stringify(data),{status,headers:{...cors(req),"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}});}
-function safePlanCycle(plan:string,cycle:string){return plan==="LIFETIME"?cycle==="lifetime":["monthly","yearly"].includes(cycle);}
+function safePlanCycle(plan:string,cycle:string){return ["WARUNG_KECIL","WARUNG_SEDERHANA","TOKO"].includes(plan) && ["monthly","yearly","two_year"].includes(cycle);}
 function safeLynkUrl(raw:string){try{const u=new URL(raw);const h=u.hostname.toLowerCase();return u.protocol==="https:"&&(h==="lynk.id"||h==="www.lynk.id")?u.href:""}catch{return ""}}
 
 Deno.serve(async(req)=>{
@@ -47,12 +47,12 @@ Deno.serve(async(req)=>{
       p_order_id:newOrderId,p_key_hash_hex:await sha256Hex(rawKey),p_key_prefix:rawKey.slice(0,18),
       p_customer_name:customerName,p_customer_email:customerEmail,p_customer_phone:customerPhone,
       p_plan_code:planCode,p_billing_cycle:billingCycle,p_store_code:storeCode,p_store_name:storeName,
-      p_amount:Number(amount),p_notes:"PUBLIC_CHECKOUT_V26_1_LYNK_LICENSE_PAGE_ONLY"
+      p_amount:Number(amount),p_notes:"PUBLIC_CHECKOUT_V27_LYNK_ONLY_3_PLAN"
     });
     if(orderError)throw orderError;
     const providerSet=await admin.rpc("ldm2_set_payment_provider",{p_order_id:newOrderId,p_provider:"lynk"});
     if(providerSet.error)throw providerSet.error;
-    const lynkSet=await admin.rpc("ldm2_set_lynk_order",{p_order_id:newOrderId,p_checkout_url:checkoutUrl,p_provider_detail:{source:"license_html_v26_1"}});
+    const lynkSet=await admin.rpc("ldm2_set_lynk_order",{p_order_id:newOrderId,p_checkout_url:checkoutUrl,p_provider_detail:{source:"license_html_v27_lynk_only"}});
     if(lynkSet.error)throw lynkSet.error;
     const {error:deliveryError}=await admin.from("ldm2_checkout_deliveries").insert({
       payment_id:order.payment_id,license_id:order.license_id,order_id:newOrderId,
