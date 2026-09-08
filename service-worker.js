@@ -1,9 +1,9 @@
-// Build: 27.9.0 internal-full-refund-v28.2.5
+// Build: 27.9.0 storage-retention-hardening-v28.2.6
 "use strict";
 
 const APP_VERSION = "27.9.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-internal-full-refund-shell-v28-2-5`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-storage-retention-v28-2-6`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-internal-full-refund-runtime-v28-2-5`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 

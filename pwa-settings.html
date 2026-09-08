@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <script src="js/storage-engine.js?v=27.7.1"></script>
+    <script src="js/storage-engine.js?v=27.9.0-storage-archive-v2826"></script>
     <script src="js/storage-quota-guard.js?v=27.7.1"></script>
     <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
 <script src="js/local-time.js?v=26.4.0"></script><meta name="referrer" content="strict-origin-when-cross-origin"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><script src="js/security-hardening.js?v=19.0"></script>    <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
@@ -61,10 +61,10 @@
                 <div class="row"><span>IndexedDB Storage Engine</span><span class="value" id="idbStatus">-</span></div>
                 <div class="row"><span>Snapshot IndexedDB</span><span class="value" id="idbSnapshots">-</span></div>
                 <div class="row"><span>Arsip transaksi lokal</span><span class="value" id="idbTransactions">-</span></div>
-                <div class="row"><span>Batas arsip transaksi</span><span class="value" id="idbTransactionLimit">50.000 / 365 hari</span></div>
+                <div class="row"><span>Batas arsip lokal IndexedDB</span><span class="value" id="idbTransactionLimit">50.000 / 365 hari</span></div><div class="row"><span>Transaksi lokal paling lama</span><span class="value" id="idbOldestTransaction">-</span></div><div class="row"><span>Pembersihan arsip lokal terakhir</span><span class="value" id="idbLastCleanup">-</span></div>
                 <div class="row"><span>Data snapshot</span><span class="value" id="idbBytes">-</span></div>
                 <div class="row"><span>Status kapasitas</span><span class="value" id="storageHealth">-</span></div>
-                <div class="buttons"><button class="btn navy" id="persistBtn">Aktifkan Storage Persisten</button><button class="btn primary" id="migrateStorageBtn">Migrasikan ke IndexedDB</button><button class="btn light" id="verifyStorageBtn">Verifikasi IndexedDB</button><button class="btn danger" id="clearBtn">Bersihkan Cache Aman</button></div>
+                <div class="notice" style="margin-top:12px;margin-bottom:0"><strong>Catatan:</strong> batas 50.000 / 365 hari hanya berlaku untuk <b>arsip transaksi lokal di browser/IndexedDB</b>. Transaksi Cloud di Supabase tidak dihapus oleh batas ini dan tetap dipertahankan sebagai histori bisnis.</div><div class="buttons"><button class="btn navy" id="persistBtn">Aktifkan Storage Persisten</button><button class="btn primary" id="migrateStorageBtn">Migrasikan ke IndexedDB</button><button class="btn light" id="verifyStorageBtn">Verifikasi IndexedDB</button><button class="btn light" id="cleanupArchiveBtn">Rapikan Arsip Lokal</button><button class="btn danger" id="clearBtn">Bersihkan Cache Aman</button></div>
             </section>
         </div>
         <div class="log" id="activityLog" role="status">Menyiapkan diagnostik Tahap 18…</div>
@@ -118,6 +118,10 @@
             byId("idbSnapshots").textContent=idbStats?String(idbStats.snapshots):"-";
             byId("idbTransactions").textContent=txStats?Number(txStats.count||0).toLocaleString("id-ID"):"-";
             byId("idbTransactionLimit").textContent=txStats?`${Number(txStats.maxRecords||50000).toLocaleString("id-ID")} / ${Number(txStats.retentionDays||365)} hari`:"50.000 / 365 hari";
+            byId("idbOldestTransaction").textContent=txStats?.oldestAt?new Date(txStats.oldestAt).toLocaleString("id-ID"):"-";
+            byId("idbLastCleanup").textContent=txStats?.lastCleanupAt
+                ?`${new Date(txStats.lastCleanupAt).toLocaleString("id-ID")} · hapus ${Number(txStats.lastCleanupRemoved||0).toLocaleString("id-ID")}`
+                :"Belum tercatat";
             byId("idbBytes").textContent=idbStats?bytes(idbStats.bytes):"-";
             const level=health?.level||"unknown";
             byId("storageHealth").textContent=level==="normal"?"Normal":level==="warning"?"Mulai tinggi":level==="high"?"Hampir penuh":level==="critical"?"KRITIS":"Tidak diketahui";
@@ -131,6 +135,12 @@
         byId("applyBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=await LDMPWA.applyUpdate();log(result.message);if(!result.ok)alert(result.message);await refresh();});
         byId("persistBtn").onclick=event=>busy(event.currentTarget,async()=>{const result=window.LDMStorageDB?await LDMStorageDB.requestPersistentStorage():await LDMPWA.requestPersistentStorage();log(result.message);await refresh();});
         byId("migrateStorageBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!window.LDMStorageDB)throw new Error("Storage Engine belum tersedia.");const result=await LDMStorageDB.migrateFromLocalStorage({force:true});log(`Migrasi IndexedDB selesai. ${result.migrated.length} key · ${bytes(result.bytes)} · gagal ${result.failed.length}.`);await refresh();});
+        byId("cleanupArchiveBtn").onclick=event=>busy(event.currentTarget,async()=>{
+            if(!window.LDMStorageDB||typeof LDMStorageDB.autoCleanupTransactions!=="function")throw new Error("Storage Engine cleanup belum tersedia.");
+            const result=await LDMStorageDB.autoCleanupTransactions({force:true});
+            log(`Arsip lokal dirapikan. Sebelum ${Number(result.before||0).toLocaleString("id-ID")} · sesudah ${Number(result.records||0).toLocaleString("id-ID")} · dihapus ${Number(result.removed||0).toLocaleString("id-ID")} (umur ${Number(result.removedByAge||0).toLocaleString("id-ID")}, batas jumlah ${Number(result.removedByLimit||0).toLocaleString("id-ID")}).`);
+            await refresh();
+        });
         byId("verifyStorageBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!window.LDMStorageDB)throw new Error("Storage Engine belum tersedia.");const result=await LDMStorageDB.verify();log(result.message);if(!result.ok)alert(result.message);await refresh();});
         byId("clearBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!confirm("Bersihkan hanya cache aplikasi? Data transaksi lokal tidak dihapus."))return;const result=await LDMPWA.clearCachesSafely();log(result.message);if(!result.ok)alert(result.message);await refresh();});
         byId("syncBtn").onclick=event=>busy(event.currentTarget,async()=>{if(!window.LDMOfflineQueue)throw new Error("Offline Queue belum tersedia.");const result=await LDMOfflineQueue.syncNow({force:true});log(`Sinkronisasi selesai. Sisa antrean: ${result.remaining}.`);await refresh();});

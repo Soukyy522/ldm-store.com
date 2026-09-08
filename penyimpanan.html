@@ -30,16 +30,28 @@
     </section>
 
     <section class="card full">
-      <div class="runtime-head"><div><h2>Kesiapan pembersihan</h2><p class="sub" style="margin-bottom:0">Memeriksa koneksi App Supabase, SQL cleanup plan, bucket Storage, dan Edge Function sebelum file dihapus.</p></div><span class="runtime-badge" id="runtimeBadge" data-state="neutral">Belum diperiksa</span></div>
+      <div class="runtime-head"><div><h2>Kesiapan pembersihan</h2><p class="sub" style="margin-bottom:0">Memeriksa koneksi App Supabase, SQL cleanup plan, bucket Storage, Edge Function, dan jadwal cleanup otomatis yang benar-benar aktif.</p></div><span class="runtime-badge" id="runtimeBadge" data-state="neutral">Belum diperiksa</span></div>
       <div class="runtime-grid" style="margin-top:13px">
-        <div><div class="notice" style="margin:0"><strong>Diagnostik aman.</strong> Pemeriksaan ini tidak menghapus data. Jika Edge Function belum dideploy atau SQL belum lengkap, halaman akan menunjukkan komponen yang perlu diperbaiki.</div><div class="btns"><button class="btn light" id="healthBtn">Periksa Kesiapan</button></div></div>
+        <div><div class="notice" style="margin:0"><strong>Diagnostik aman.</strong> Pemeriksaan ini tidak menghapus data. Jika Edge Function belum dideploy atau SQL belum lengkap, halaman akan menunjukkan komponen yang perlu diperbaiki.</div><div class="btns"><button class="btn light" id="healthBtn">Periksa Kesiapan</button><button class="btn primary" id="scheduleBtn">Aktifkan / Perbaiki Jadwal Otomatis</button></div></div>
         <div class="health-details" id="healthDetails"><div class="health-row"><span>Status</span><strong>Belum diperiksa</strong></div></div>
       </div>
     </section>
 
     <section class="card">
+      <h2>⏱️ Scheduler Cleanup Otomatis</h2>
+      <p class="sub">Status ini membaca job Cron yang benar-benar terpasang pada App Supabase, bukan hanya mengecek keberadaan secret.</p>
+      <div class="rows">
+        <div class="row"><span>Status scheduler</span><strong id="schedulerStatus">-</strong></div>
+        <div class="row"><span>Jadwal</span><strong id="schedulerSchedule">-</strong></div>
+        <div class="row"><span>Cron terakhir</span><strong id="schedulerLastRun">-</strong></div>
+        <div class="row"><span>Cleanup otomatis toko terakhir</span><strong id="schedulerLastStoreRun">-</strong></div>
+      </div>
+      <div class="notice" style="margin-top:12px"><strong>Catatan:</strong> cleanup Cloud dapat berjalan saat website/PWA sedang ditutup karena dijalankan oleh Supabase Cron + Edge Function. Ini berbeda dengan arsip transaksi lokal IndexedDB yang dirapikan saat aplikasi dibuka.</div>
+    </section>
+
+    <section class="card">
       <h2>Kebijakan pembersihan otomatis</h2><p class="sub">Batas waktu dapat diubah Owner. Ketika dinonaktifkan, tidak ada cleanup otomatis untuk toko ini.</p><p class="sub" id="policyRoleHint" style="margin-top:-7px">Hak akses kebijakan sedang diperiksa…</p>
-      <label class="check"><input type="checkbox" id="retentionEnabled" checked><span><strong>Aktifkan retensi otomatis</strong><br>Job terjadwal akan mengikuti batas waktu di bawah.</span></label>
+      <label class="check"><input type="checkbox" id="retentionEnabled" checked><span><strong>Aktifkan retensi otomatis</strong><br>Jika scheduler cloud aktif, cleanup berjalan harian sekitar 03:17 WITA. Bila scheduler belum terpasang, halaman akan menandainya sebagai belum siap.</span></label>
       <div class="form-grid" style="margin-top:11px">
         <div class="field"><label>Audit teknis</label><input id="auditDays" type="number" min="30" max="3650" value="180"><small>hari</small></div>
         <div class="field"><label>Foto absensi</label><input id="attendanceDays" type="number" min="30" max="3650" value="365"><small>hari</small></div>
@@ -72,7 +84,7 @@
 <script src="js/cloud-session.js?v=16.0"></script>
 <script src="js/cloud-session-guard.js?v=16.0"></script>
 <script src="js/edge-function-client.js?v=27.9.0-storage-v22"></script>
-<script src="js/storage-retention.js?v=27.9.0-storage-v22"></script>
+<script src="js/storage-retention.js?v=27.9.0-storage-retention-v2826"></script>
 
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
