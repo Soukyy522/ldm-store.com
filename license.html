@@ -141,7 +141,7 @@
 
     <section class="checkout-panel" id="publicCheckoutPanel" hidden>
       <div class="checkout-head">
-        <div><span class="tag">PEMBAYARAN LYNK.ID</span><h2>Pesan Lisensi LocDailyMar</h2><p>Isi data customer seperti biasa, lalu lanjutkan ke halaman pembayaran Lynk.id. Setelah pembayaran, webhook Lynk.id akan memberi tahu server LocDailyMar. Jika transaksi cocok, lisensi diproses otomatis dan hasil hanya ditampilkan di halaman License ini.</p></div>
+        <div><span class="tag">PEMBAYARAN LYNK.ID</span><h2>Pesan Lisensi LocDailyMar</h2><p>Isi data customer seperti biasa, lalu lanjutkan ke halaman pembayaran Lynk.id. Setelah pembayaran berhasil diverifikasi, lisensi diproses otomatis dan hasil ditampilkan di halaman License ini.</p></div>
         <button type="button" class="checkout-close" id="checkoutCloseBtn" aria-label="Tutup pembayaran">✕</button>
       </div>
       <div class="checkout-body">
@@ -152,14 +152,14 @@
             <div class="checkout-field"><label>Nomor kontak / WhatsApp</label><input id="checkoutPhone" inputmode="tel" autocomplete="tel" required placeholder="Contoh: 081234567890"></div>
             <div class="checkout-field"><label>Email Owner</label><input id="checkoutEmail" type="email" autocomplete="email" required placeholder="owner@email.com"></div>
             <div class="checkout-field"><label>Password Owner</label><div class="password-wrap"><input id="checkoutOwnerPassword" type="password" autocomplete="new-password" required minlength="8" maxlength="72" placeholder="Buat password untuk login"><button class="password-toggle" type="button" data-password-target="checkoutOwnerPassword">Lihat</button></div><div class="password-help">8-72 karakter, tanpa spasi, gunakan huruf besar, huruf kecil, dan angka.</div></div>
-            <div class="checkout-field"><label>Konfirmasi Password Owner</label><div class="password-wrap"><input id="checkoutOwnerPasswordConfirm" type="password" autocomplete="new-password" required minlength="8" maxlength="72" placeholder="Ulangi password"><button class="password-toggle" type="button" data-password-target="checkoutOwnerPasswordConfirm">Lihat</button></div><div class="password-help">Password tidak disimpan di License Authority atau localStorage. Gunakan password manager untuk menyimpannya.</div></div>
+            <div class="checkout-field"><label>Konfirmasi Password Owner</label><div class="password-wrap"><input id="checkoutOwnerPasswordConfirm" type="password" autocomplete="new-password" required minlength="8" maxlength="72" placeholder="Ulangi password"><button class="password-toggle" type="button" data-password-target="checkoutOwnerPasswordConfirm">Lihat</button></div><div class="password-help">Password tidak ditampilkan kembali setelah disimpan. Gunakan password manager pribadi untuk menyimpannya.</div></div>
             <div class="checkout-field"><label>Store Code</label><input id="checkoutStoreCode" required maxlength="30" autocomplete="off" placeholder="Contoh: TOKO-BUDI-01" style="text-transform:uppercase"></div>
             <div class="checkout-field"><label>Periode paket</label><select id="checkoutPeriod" required></select><div class="password-help" id="checkoutPeriodSaving" hidden></div></div>
             <div class="checkout-field" id="checkoutGatewayField" hidden><label>Payment Gateway</label><div class="password-help" id="checkoutGatewayHelp">Lynk.id adalah satu-satunya payment gateway aktif.</div></div>
             <div class="checkout-field full" id="checkoutWhatsAppNotice" hidden><div style="border:1px solid #bde3cc;background:#f1fbf5;border-radius:12px;padding:12px 13px;color:#215c39;font-size:12px;line-height:1.55"><strong>💬 Pembayaran sementara via WhatsApp</strong><br>Mode manual cadangan. Password Owner tidak pernah dimasukkan ke pesan WhatsApp.</div></div>
-            <div class="checkout-field full" id="checkoutLynkNotice" hidden><div style="border:1px solid #b8d8f6;background:#f2f8ff;border-radius:12px;padding:12px 13px;color:#214e75;font-size:12px;line-height:1.6"><strong>🔗 Pembayaran via Lynk.id</strong><br>Sebelum Lynk.id dibuka, LocDailyMar membuat <b>pending order</b> di server. Gunakan <b>Email Owner yang sama</b> saat checkout Lynk.id. Setelah pembayaran sukses, webhook Lynk.id akan dicocokkan dengan email + nominal order. Jika cocok unik, lisensi aktif otomatis. Data lisensi tetap tersedia di halaman ini, dan bila Resend sudah dikonfigurasi server akan mengirim email konfirmasi otomatis. Data sensitif tetap disamarkan dan dapat dibuka melalui <b>Data Lisensi Saya</b>.</div></div>
+            <div class="checkout-field full" id="checkoutLynkNotice" hidden><div style="border:1px solid #b8d8f6;background:#f2f8ff;border-radius:12px;padding:12px 13px;color:#214e75;font-size:12px;line-height:1.6"><strong>🔗 Pembayaran via Lynk.id</strong><br>Sebelum Lynk.id dibuka, LocDailyMar membuat <b>pending order</b> di server. Gunakan <b>Email Owner yang sama</b> saat checkout Lynk.id. Setelah pembayaran sukses, sistem mencocokkan transaksi dengan data order. Jika cocok, lisensi aktif otomatis. Data lisensi tetap tersedia di halaman ini dan email konfirmasi dapat dikirim oleh sistem. Data sensitif tetap disamarkan dan dapat dibuka melalui <b>Data Lisensi Saya</b>.</div></div>
           </div>
-          <label class="checkout-agree"><input type="checkbox" id="checkoutAgree"> <span>Saya memastikan Nama, Email Owner, nomor WhatsApp, Store Code, paket, dan periode sudah benar. Saya memahami pembayaran dilakukan melalui Lynk.id dan akses lisensi hanya diberikan setelah webhook pembayaran berhasil dicocokkan dan diverifikasi oleh server LocDailyMar.</span></label>
+          <label class="checkout-agree"><input type="checkbox" id="checkoutAgree"> <span>Saya memastikan Nama, Email Owner, nomor WhatsApp, Store Code, paket, dan periode sudah benar. Saya memahami pembayaran dilakukan melalui Lynk.id dan akses lisensi hanya diberikan setelah pembayaran berhasil dicocokkan dan diverifikasi oleh sistem LocDailyMar.</span></label>
           <div class="checkout-actions">
             <button class="btn primary" type="submit" id="checkoutPayBtn">Lanjut Bayar via Lynk.id</button>
             <button class="btn ghost" type="button" id="checkoutLynkConfirmBtn" hidden>Konfirmasi Manual via WhatsApp</button>
@@ -172,7 +172,7 @@
             <button class="btn danger-soft" type="button" id="checkoutCancelBtn">Batalkan Order Pembayaran</button>
           </div>
           <div class="checkout-status" id="publicCheckoutStatus"></div>
-          <div class="checkout-security"><b>Keamanan mode Lynk.id:</b> Halaman ini hanya mengarahkan customer ke URL produk/checkout Lynk.id yang sudah dikonfigurasi. Password Owner tidak dibaca pada mode ini, tidak dikirim ke Lynk.id, tidak dimasukkan ke WhatsApp, dan tidak disimpan ke localStorage. Status pembayaran hanya menjadi lunas setelah webhook Lynk.id lolos pencocokan backend. Hasil lisensi tidak dikirim melalui email; customer melihatnya melalui panel hasil dan tombol Cek Status Pembayaran di halaman ini.</div>
+          <div class="checkout-security"><b>Keamanan pembayaran Lynk.id:</b> Halaman ini mengarahkan customer ke checkout Lynk.id yang resmi. Password Owner tidak dikirim ke Lynk.id atau WhatsApp. Status pembayaran hanya menjadi lunas setelah transaksi berhasil diverifikasi oleh sistem. Hasil lisensi dapat dilihat kembali melalui panel hasil dan tombol Cek Status Pembayaran.</div>
           <div class="refund-policy-card" id="refundPolicyCard">
             <strong>↩ Kebijakan Refund LocDailyMar</strong>
             <ul>
@@ -191,7 +191,7 @@
           <span>Periode</span><strong id="checkoutPlanPeriod">-</strong>
           <span>Total resmi</span><strong class="checkout-total" id="checkoutPlanAmount">Rp0</strong>
           <span>Proses pembayaran</span><strong id="checkoutGatewaySummary">Lynk.id</strong>
-          <span>Setelah pembayaran</span><strong style="font-size:12px;line-height:1.5">Biarkan halaman LocDailyMar tetap terbuka. Server akan memantau status order; setelah webhook terverifikasi, lisensi tampil otomatis hanya pada halaman License ini.</strong>
+          <span>Setelah pembayaran</span><strong style="font-size:12px;line-height:1.5">Biarkan halaman LocDailyMar tetap terbuka. Sistem akan memantau status order; setelah pembayaran terverifikasi, lisensi tampil otomatis pada halaman License ini.</strong>
         </aside>
       </div>
           <section class="license-receipt" id="licenseReceipt" hidden aria-live="polite">
@@ -339,7 +339,7 @@
             </div>
             <button class="btn primary" id="ownerVaultLoginBtn" type="button">Masuk & Muat Data</button>
           </div>
-          <p class="note">Tombol <b>Lihat</b> hanya menampilkan password yang sedang kamu ketik di perangkat ini. Password Owner yang sudah tersimpan di Supabase <b>tidak dapat dibaca ulang</b>. Jika lupa, gunakan <a href="account-password-reset.html">Buat / Ganti Password Owner</a>.</p>
+          <p class="note">Tombol <b>Lihat</b> hanya menampilkan password yang sedang kamu ketik di perangkat ini. Password Owner yang sudah tersimpan pada sistem akun <b>tidak dapat dibaca ulang</b>. Jika lupa, gunakan <a href="account-password-reset.html">Buat / Ganti Password Owner</a>.</p>
         </div>
 
         <div id="ownerVaultDataBox" hidden>
@@ -455,5 +455,6 @@
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
 <script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
+<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
 </body>
 </html>

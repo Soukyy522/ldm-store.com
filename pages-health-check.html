@@ -7,7 +7,7 @@
 <script src="js/local-time.js?v=26.4.0"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LocDailyMar - GitHub Pages Health Check</title>
+<title>LocDailyMar - Pemeriksaan Ketersediaan Aplikasi</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182230;--muted:#667085;--border:#e4e7ec;--ok:#15803d;--bad:#b42318;--warn:#b54708;--primary:#0d2240}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
@@ -23,10 +23,10 @@ button,a.btn{min-height:42px;border:0;border-radius:9px;padding:9px 12px;font-we
 </head>
 <body>
 <div class="wrap">
-<div class="card"><h1>🧪 GitHub Pages Health Check</h1><p>Health Check file aplikasi. Pemeriksaan ini tidak mengubah data bisnis.</p><div class="grid" id="basicChecks"></div></div>
-<div class="card"><h2>📄 Pemeriksaan halaman aplikasi</h2><p>Memeriksa apakah halaman utama bisa dimuat dari alamat GitHub Pages.</p><div id="pageResults">Belum diperiksa.</div><div class="actions" style="margin-top:12px"><button onclick="checkPages()">Periksa Semua Halaman</button><a class="btn secondary" href="index.html">Buka Login</a></div></div>
+<div class="card"><h1>🧪 Pemeriksaan Ketersediaan Aplikasi</h1><p>Health Check file aplikasi. Pemeriksaan ini tidak mengubah data bisnis.</p><div class="grid" id="basicChecks"></div></div>
+<div class="card"><h2>📄 Pemeriksaan halaman aplikasi</h2><p>Memeriksa apakah halaman utama aplikasi dapat dimuat dengan baik.</p><div id="pageResults">Belum diperiksa.</div><div class="actions" style="margin-top:12px"><button onclick="checkPages()">Periksa Semua Halaman</button><a class="btn secondary" href="index.html">Buka Login</a></div></div>
 <div class="card"><h2>📷 Kamera / Secure Context</h2><p>Kamera tidak dibuka otomatis. Tekan tombol untuk meminta izin, lalu stream langsung dihentikan.</p><div class="actions"><button onclick="testCamera()">Tes Kamera</button></div><p id="cameraResult"></p></div>
-<div class="card"><div class="notice"><strong>Penting:</strong> Health Check hanya memeriksa ketersediaan file dan kemampuan browser. Status database, Auth, Storage, dan incident tetap diperiksa melalui halaman diagnostik/monitoring terkait.</div></div>
+<div class="card"><div class="notice"><strong>Penting:</strong> Pemeriksaan ini hanya memeriksa ketersediaan halaman dan kemampuan browser. Status akun, data, penyimpanan file, dan gangguan teknis ditangani melalui pemeriksaan sistem terkait.</div></div>
 </div>
 <script>
 const pages=["index.html","dashboard.html","barang.html","kasir.html","laporan.html","absensi.html","retur.html","shift-closing.html","eod.html","stock-opname.html","kartu-stok.html","supplier.html","Purchase-Order.html","goods.receipt.html","pengeluaran.html","backup%20%26%20restore.html","cloud-control-center.html","account-management.html","account-password-reset.html","device-management.html","multi-store.html","owner-control-center.html","pwa-settings.html","recovery-center.html","qa-security-performance.html","setup-awal.html","printer-scanner-setup.html","monitoring-error.html","support-center.html","privacy-center.html","developer-incident-support.html","penyimpanan.html","license.html","panduan.html"];
@@ -37,5 +37,6 @@ async function checkPages(){const root=document.getElementById('pageResults');ro
 async function testCamera(){const out=document.getElementById('cameraResult');if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){out.textContent='Camera API tidak tersedia pada browser/context ini.';return}try{const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});stream.getTracks().forEach(t=>t.stop());out.textContent='✅ Kamera berhasil diakses dan stream sudah dihentikan.'}catch(e){out.textContent='⚠️ Kamera belum dapat diakses: '+(e.name||'Error')}}
 renderBasic();
 </script>
+<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
 </body>
 </html>

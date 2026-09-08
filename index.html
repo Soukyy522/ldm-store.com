@@ -628,16 +628,16 @@
 
         <form id="formLogin" onsubmit="handleLogin(event)">
             <div class="input-group">
-                <label for="username">Email Auth Supabase</label>
+                <label for="username">Email Akun</label>
                 <div class="input-wrapper">
-                    <input type="email" id="username" placeholder="Masukkan email akun Supabase" required autocomplete="username">
+                    <input type="email" id="username" placeholder="Masukkan email akun" required autocomplete="username">
                 </div>
             </div>
 
             <div class="input-group">
                 <label for="password">Password</label>
                 <div class="input-wrapper">
-                    <input type="password" id="password" placeholder="Masukkan password Supabase Auth" required autocomplete="current-password">
+                    <input type="password" id="password" placeholder="Masukkan password akun" required autocomplete="current-password">
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
                 </div>
             </div>
@@ -651,7 +651,7 @@
     id="loginSecurityStatus"
     class="login-security-status"
 >
-    🔒 Supabase Auth aktif
+    🔒 Login Cloud aman
 </div>
 
             <button type="submit" class="btn-login">Masuk</button>
@@ -1204,7 +1204,7 @@ async function requestPasswordReset() {
     if (!email) {
         showAlert(
             "Email Diperlukan",
-            "Isi Email Auth Supabase terlebih dahulu, lalu tekan Lupa Password.",
+            "Isi Email Akun terlebih dahulu, lalu tekan Lupa Password.",
             "✉️"
         );
         return;
@@ -1755,5 +1755,6 @@ document.addEventListener(
 );
 </script>
 
+<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
 </body>
 </html>

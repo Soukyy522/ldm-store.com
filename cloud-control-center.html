@@ -26,7 +26,7 @@
 <body>
 <div class="wrap">
   <div class="card top">
-    <div><h1>🛡️ Cloud Control Center</h1><p>Health Check, Audit Trail, dan Cloud Snapshot.</p></div>
+    <div><h1>🛡️ Cloud Control Center</h1><p>Pemeriksaan Sistem, Riwayat Aktivitas, dan Cloud Snapshot.</p></div>
     <div class="actions">
       <button onclick="refreshAll()">↻ Refresh</button>
       <button id="btnExport" class="export" onclick="exportSnapshot()">⬇ Cloud Snapshot</button>
@@ -41,7 +41,7 @@
   </div>
 
   <div class="card">
-    <h2>Consistency & Security Checks</h2>
+    <h2>Pemeriksaan Konsistensi & Keamanan</h2>
     <div class="check-grid" id="checkGrid"></div>
   </div>
 
@@ -51,11 +51,11 @@
   </div>
 
   <div class="card">
-    <div class="notice"><strong>Cloud Snapshot bukan tombol time-machine.</strong> File JSON berisi data database dan manifest Storage, tetapi tidak berisi password, token, service_role, atau binary foto/nota. Restore cloud otomatis sengaja tidak disediakan karena bisa merusak relasi transaksi dan ledger stok.</div>
+    <div class="notice"><strong>Cloud Snapshot adalah salinan data untuk kebutuhan audit dan pemulihan terkontrol.</strong> File snapshot berisi data usaha dan daftar referensi file, tanpa password atau kredensial login. Pemulihan Cloud otomatis sengaja tidak disediakan agar relasi transaksi dan histori stok tidak rusak.</div>
   </div>
 
   <div class="card">
-    <div class="top"><div><h2>Audit Trail Terbaru</h2><p>Perubahan high-level business entity dicatat append-only.</p></div><span id="auditRealtime" class="muted">Realtime: menyambung...</span></div>
+    <div class="top"><div><h2>Audit Trail Terbaru</h2><p>Perubahan penting pada data usaha dicatat sebagai riwayat aktivitas yang tidak ditimpa.</p></div><span id="auditRealtime" class="muted">Realtime: menyambung...</span></div>
     <div class="table-wrap"><table><thead><tr><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Entity</th><th>Referensi</th><th>Detail</th></tr></thead><tbody id="auditBody"><tr><td colspan="6">Memuat...</td></tr></tbody></table></div>
   </div>
   <div id="errorBox" class="card error" style="display:none"></div>
@@ -141,5 +141,6 @@ async function boot(){
 document.addEventListener("DOMContentLoaded",boot);
 </script>
 <script src="js/global-system-navigation.js?v=27.9.0-privacy18"></script>
+<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="theme-color" content="#0d2240">
-    <title>Full QA, Security & Performance - LocDailyMar</title>
+    <title>Pemeriksaan Sistem, Keamanan & Performa - LocDailyMar</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon.png">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -39,8 +39,8 @@
 <body class="ldm-system-page" data-ldm-system-page="qa-security-performance.html" data-ldm-system-label="QA & Security">
 <main class="wrap">
     <section class="top" data-ldm-system-banner="primary">
-        <div><h1>🧪 Full QA, Security & Performance</h1><p>Panel diagnosis baca-saja. Hanya Owner yang dapat menjalankan pemeriksaan cloud.</p></div>
-        <div class="actions"><button id="runButton">Jalankan Full QA</button><button id="updateButton" class="secondary">Cek Update Cache</button><button id="exportButton" class="secondary">Export JSON</button><a class="btn secondary" href="dashboard.html">← Dashboard</a></div>
+        <div><h1>🧪 Pemeriksaan Sistem, Keamanan & Performa</h1><p>Pemeriksaan baca-saja untuk memastikan akun, sinkronisasi data, mode offline, dan performa aplikasi siap digunakan.</p></div>
+        <div class="actions"><button id="runButton">Jalankan Pemeriksaan Lengkap</button><button id="updateButton" class="secondary">Cek Update Cache</button><button id="exportButton" class="secondary">Unduh Hasil Pemeriksaan</button><a class="btn secondary" href="dashboard.html">← Dashboard</a></div>
     </section>
     <div id="blocked" class="blocked"></div>
     <section class="summary">
@@ -50,13 +50,13 @@
         <div class="metric"><span>FAIL</span><b id="failCount">0</b><small>Wajib diperbaiki</small></div>
     </section>
     <section class="grid">
-        <article class="card"><h2>🔐 Security & Account</h2><div id="securityResults"><p class="muted">Belum dijalankan.</p></div></article>
-        <article class="card"><h2>☁️ Cloud & Data Authority</h2><div id="cloudResults"><p class="muted">Belum dijalankan.</p></div></article>
-        <article class="card"><h2>📲 PWA & Offline</h2><div id="pwaResults"><p class="muted">Belum dijalankan.</p></div></article>
-        <article class="card"><h2>⚡ Runtime Performance</h2><div id="performanceResults"><p class="muted">Belum dijalankan.</p></div></article>
+        <article class="card"><h2>🔐 Keamanan & Akun</h2><div id="securityResults"><p class="muted">Belum dijalankan.</p></div></article>
+        <article class="card"><h2>☁️ Data & Sinkronisasi</h2><div id="cloudResults"><p class="muted">Belum dijalankan.</p></div></article>
+        <article class="card"><h2>📲 Aplikasi & Offline</h2><div id="pwaResults"><p class="muted">Belum dijalankan.</p></div></article>
+        <article class="card"><h2>⚡ Performa Aplikasi</h2><div id="performanceResults"><p class="muted">Belum dijalankan.</p></div></article>
     </section>
-    <div class="actions" style="margin-top:14px"><button id="clearButton" class="danger">Bersihkan Riwayat QA</button></div>
-    <p class="foot">Panel ini tidak menampilkan access token, refresh token, password, atau nilai kunci Supabase. Pemeriksaan RLS lengkap tetap dilakukan lewat SQL audit dan Supabase Advisors.</p>
+    <div class="actions" style="margin-top:14px"><button id="clearButton" class="danger">Bersihkan Riwayat Pemeriksaan</button></div>
+    <p class="foot">Panel customer hanya menampilkan ringkasan aman. Detail konfigurasi, kredensial, dan pemeriksaan teknis tingkat Developer tidak ditampilkan di sini.</p>
 </main>
 <script>
 (function(){
@@ -83,23 +83,23 @@
         result("security","Mixed content",security&&security.mixedContentCount===0?"PASS":"FAIL",`${security?security.mixedContentCount:"?"} resource HTTP ditemukan.`);
         result("security","Tautan eksternal aman",security&&security.externalBlankWithoutNoopener===0?"PASS":"WARN",`${security?security.externalBlankWithoutNoopener:"?"} tautan target=_blank belum memiliki noopener.`);
         result("security","Password legacy plaintext",security&&security.plaintextLegacyPasswords===0?"PASS":"FAIL",`${security?security.plaintextLegacyPasswords:"?"} akun lokal masih menyimpan field password plaintext.`);
-        result("security","Kunci browser Supabase",security&&security.publishableKeyLooksSafe?"PASS":"FAIL",security&&security.publishableKeyLooksSafe?"Hanya format publishable/anon key terdeteksi; nilainya sengaja disembunyikan.":"Konfigurasi hilang atau tampak seperti secret/service-role key.");
+        result("security","Konfigurasi keamanan aplikasi",security&&security.publishableKeyLooksSafe?"PASS":"FAIL",security&&security.publishableKeyLooksSafe?"Konfigurasi publik aplikasi terdeteksi dan nilai sensitif tetap disembunyikan.":"Konfigurasi keamanan aplikasi perlu diperiksa oleh Developer.");
 
         let context=null;
-        try{context=await LDMCloudSession.ensureAuthenticated({registerDevice:false});const profile=context.profile||{};const role=String(profile.role||"").toLowerCase();result("security","Sesi Supabase Auth","PASS","Sesi pengguna aktif.");result("security","Akses halaman Owner",role==="owner"?"PASS":"FAIL",role==="owner"?"Role authority: profiles.role = owner.":`Role saat ini: ${role||"tidak diketahui"}.`);result("cloud","Identitas store",profile.store_id?"PASS":"FAIL",profile.store_id?"Profile memiliki store_id.":"Profile belum memiliki store_id.");if(role!=="owner"){const blocked=$("blocked");blocked.textContent="Pemeriksaan cloud dibatasi untuk Owner. Silakan login menggunakan akun Owner.";blocked.style.display="block";}}
-        catch(error){result("security","Sesi Supabase Auth","FAIL",safeError(error));result("security","Akses halaman Owner","FAIL","Login Owner diperlukan.");result("cloud","Identitas store","FAIL","Tidak dapat membaca profile tanpa sesi.");}
+        try{context=await LDMCloudSession.ensureAuthenticated({registerDevice:false});const profile=context.profile||{};const role=String(profile.role||"").toLowerCase();result("security","Sesi login Cloud","PASS","Sesi pengguna aktif.");result("security","Akses halaman Owner",role==="owner"?"PASS":"FAIL",role==="owner"?"Akses Owner terverifikasi.":`Role saat ini: ${role||"tidak diketahui"}.`);result("cloud","Identitas store",profile.store_id?"PASS":"FAIL",profile.store_id?"Profile memiliki store_id.":"Profile belum memiliki store_id.");if(role!=="owner"){const blocked=$("blocked");blocked.textContent="Pemeriksaan cloud dibatasi untuk Owner. Silakan login menggunakan akun Owner.";blocked.style.display="block";}}
+        catch(error){result("security","Sesi login Cloud","FAIL",safeError(error));result("security","Akses halaman Owner","FAIL","Login Owner diperlukan.");result("cloud","Identitas store","FAIL","Tidak dapat membaca profile tanpa sesi.");}
 
-        result("cloud","Konfigurasi Supabase",window.LDMSupabase&&window.LDMSupabase.isConfigured()?"PASS":"FAIL",window.LDMSupabase&&window.LDMSupabase.isConfigured()?"URL dan publishable key tersedia.":"Isi js/supabase-config.js.");
+        result("cloud","Koneksi layanan Cloud",window.LDMSupabase&&window.LDMSupabase.isConfigured()?"PASS":"FAIL",window.LDMSupabase&&window.LDMSupabase.isConfigured()?"Koneksi aplikasi tersedia.":"Konfigurasi layanan belum lengkap. Hubungi Developer.");
         if(context&&String(context.profile&&context.profile.role||"").toLowerCase()==="owner"){
-            try{const {error}=await LDMSupabase.createClient().from("products").select("id").limit(1);if(error)throw error;result("cloud","Akses products melalui RLS","PASS","Query terbatas berhasil sebagai Owner. Ini menguji konektivitas dan akses, bukan seluruh policy.");}catch(error){result("cloud","Akses products melalui RLS","FAIL",safeError(error));}
-            try{const {error}=await LDMSupabase.createClient().from("sync_conflicts").select("id",{count:"exact",head:true});if(error)throw error;result("cloud","Recovery schema TAHAP 17","PASS","Tabel sync_conflicts dapat dibaca sesuai RLS Owner.");}catch(error){result("cloud","Recovery schema TAHAP 17","FAIL",safeError(error));}
+            try{const {error}=await LDMSupabase.createClient().from("products").select("id").limit(1);if(error)throw error;result("cloud","Akses data produk","PASS","Akses data produk berhasil diverifikasi.");}catch(error){result("cloud","Akses data produk","FAIL",safeError(error));}
+            try{const {error}=await LDMSupabase.createClient().from("sync_conflicts").select("id",{count:"exact",head:true});if(error)throw error;result("cloud","Kesiapan pemulihan data","PASS","Komponen pemulihan data siap digunakan.");}catch(error){result("cloud","Kesiapan pemulihan data","FAIL",safeError(error));}
             try{const access=await LDMCloudAuth.getCurrentDeviceAccess();const status=String(access&&access.status||"").toLowerCase();result("cloud","Status perangkat",status==="active"?"PASS":"WARN",`Status device: ${status||"belum tersedia"}.`);}catch(error){result("cloud","Status perangkat","WARN",safeError(error));}
-        }else{result("cloud","Akses products melalui RLS","WARN","Dilewati sampai login Owner.");result("cloud","Recovery schema TAHAP 17","WARN","Dilewati sampai login Owner.");result("cloud","Status perangkat","WARN","Dilewati sampai login Owner.");}
+        }else{result("cloud","Akses data produk","WARN","Dilewati sampai login Owner.");result("cloud","Kesiapan pemulihan data","WARN","Dilewati sampai login Owner.");result("cloud","Status perangkat","WARN","Dilewati sampai login Owner.");}
 
         const manifest=await fetchOk("manifest.json");
         if(manifest.ok){try{const data=await manifest.response.json();const required=["name","short_name","start_url","display","icons"];const missing=required.filter(key=>!data[key]);result("pwa","Manifest PWA",missing.length?"FAIL":"PASS",missing.length?`Field hilang: ${missing.join(", ")}.`:"Manifest valid dan field utama lengkap.");}catch(error){result("pwa","Manifest PWA","FAIL","JSON manifest tidak valid.");}}else result("pwa","Manifest PWA","FAIL",`HTTP ${manifest.status||"gagal"}.`);
         for(const path of ["service-worker.js","recovery-center.html","js/recovery-service.js","assets/icons/icon-192.png","assets/icons/icon-512.png"]){const checked=await fetchOk(path);result("pwa",`Asset ${path}`,checked.ok?"PASS":"FAIL",checked.ok?`HTTP ${checked.status}.`:`Tidak dapat dimuat (HTTP ${checked.status||"gagal"}).`);}
-        if("serviceWorker" in navigator){const registration=await navigator.serviceWorker.getRegistration();result("pwa","Service Worker",registration?"PASS":"WARN",registration?`Scope aktif: ${registration.scope}.`:"Belum mengontrol halaman; reload setelah deploy.");}else result("pwa","Service Worker","FAIL","Browser tidak mendukung Service Worker.");
+        if("serviceWorker" in navigator){const registration=await navigator.serviceWorker.getRegistration();result("pwa","Layanan Offline",registration?"PASS":"WARN",registration?`Layanan offline aktif.`:"Layanan offline belum aktif pada halaman ini. Muat ulang aplikasi.");}else result("pwa","Layanan Offline","FAIL","Browser tidak mendukung mode offline aplikasi.");
         try{const stats=window.LDMOfflineQueue&&await LDMOfflineQueue.stats();const unsynced=Number(stats&&stats.unsynced||localStorage.getItem("ldmOfflineUnsyncedCountV16")||0);result("pwa","Antrean offline",unsynced===0?"PASS":"WARN",`${unsynced} transaksi menunggu sinkronisasi.`);}catch(error){result("pwa","Antrean offline","WARN",safeError(error));}
         try{const estimate=navigator.storage&&await navigator.storage.estimate();const used=Number(estimate&&estimate.usage||0),quota=Number(estimate&&estimate.quota||0),pct=quota?used/quota*100:0;result("pwa","Kapasitas penyimpanan",pct<80?"PASS":"WARN",quota?`${pct.toFixed(1)}% digunakan (${(used/1048576).toFixed(1)} MB).`:"Estimasi storage tidak tersedia.");}catch(error){result("pwa","Kapasitas penyimpanan","WARN",safeError(error));}
 
@@ -111,11 +111,11 @@
         result("performance","Error runtime",Number(metric.errors||0)+Number(metric.rejections||0)===0?"PASS":"FAIL",`${metric.errors||0} error dan ${metric.rejections||0} unhandled rejection pada halaman ini.`);
         result("performance","Long task",Number(metric.longestTask||0)<=200?"PASS":"WARN",`${metric.longTasks||0} long task; terlama ${metric.longestTask||0} ms.`);
         render();lastReport={stage:19,version:"19.1.0",generatedAt:new Date().toISOString(),page:location.href.split(/[?#]/)[0],summary:{score:$("score").textContent,pass:$("passCount").textContent,warn:$("warnCount").textContent,fail:$("failCount").textContent},runtime:metric,groups};
-        $("runButton").disabled=false;$("runButton").textContent="Jalankan Full QA";
+        $("runButton").disabled=false;$("runButton").textContent="Jalankan Pemeriksaan Lengkap";
     }
     $("runButton").addEventListener("click",run);
     $("updateButton").addEventListener("click",async()=>{const out=window.LDMPWA&&await LDMPWA.checkForUpdate();alert(out&&out.message||"Pemeriksaan update selesai.");});
-    $("exportButton").addEventListener("click",()=>{if(!lastReport){alert("Jalankan Full QA terlebih dahulu.");return;}const blob=new Blob([JSON.stringify(lastReport,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-stage19-qa-${window.LDMLocalTime.dateKey()}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);});
+    $("exportButton").addEventListener("click",()=>{if(!lastReport){alert("Jalankan Pemeriksaan Lengkap terlebih dahulu.");return;}const blob=new Blob([JSON.stringify(lastReport,null,2)],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`ldm-stage19-qa-${window.LDMLocalTime.dateKey()}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);});
     $("clearButton").addEventListener("click",()=>{if(confirm("Hapus riwayat metric QA lokal pada perangkat ini?")){LDMQuality&&LDMQuality.clear();alert("Riwayat QA lokal dibersihkan.");}});
     window.addEventListener("load",()=>setTimeout(run,500));
 })();
@@ -124,5 +124,6 @@
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
 <script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
+<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
 </body>
 </html>

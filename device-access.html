@@ -10,4 +10,5 @@
 async function check(){try{await LDMCloudSession.ensureAuthenticated({registerDevice:true});const a=await LDMCloudAuth.getCurrentDeviceAccess();document.getElementById("code").textContent=a.client_device_id||"-";const s=String(a.status||"unknown").toLowerCase();document.getElementById("status").textContent=s.toUpperCase();document.getElementById("status").className="status "+s;if(s==="active"){document.getElementById("info").textContent="Perangkat sudah dihubungkan. Mengarahkan ke Dashboard...";setTimeout(()=>location.replace("dashboard.html"),600)}else if(s==="pending"){document.getElementById("info").textContent="Menunggu Owner membuka Perangkat Cloud di Device A lalu menekan Hubungkan pada Device ID ini."}else if(s==="revoked"){document.getElementById("info").textContent="Hubungan perangkat telah diputuskan oleh Owner. Owner dapat menghubungkannya kembali dari menu Perangkat Cloud."}else{document.getElementById("info").textContent="Status perangkat belum dikenali."}}catch(e){document.getElementById("info").textContent="Gagal membaca status: "+(e.message||String(e))}}
 async function logout(){await LDMCloudSession.logout("index.html")}
 document.addEventListener("DOMContentLoaded",()=>{check();setInterval(check,5000)});
-</script></body></html>
+</script><script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
+</body></html>
