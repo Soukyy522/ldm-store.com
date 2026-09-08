@@ -17,6 +17,9 @@
 <script src="js/license-v2-config.js?v=27.4.0"></script>
 <script src="js/license-v2-client.js?v=27.4.0"></script>
 <script defer src="js/license-v2-guard.js?v=27.4.0"></script>
+
+<link id="ldmSystemThemeFonts" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;500;600;700;800&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui20">
 </head>
 <body><div class="wrap">
 <div class="card top"><div><h1>👤 Management Akun</h1><p id="accessNote">Memuat hak akses...</p></div><div class="actions"><button onclick="refreshAll()">↻ Refresh</button><a class="btn secondary owner-only" href="device-management.html">🔗 Tautkan Perangkat</a><a class="btn secondary" href="dashboard.html">← Dashboard</a></div></div>
@@ -50,4 +53,4 @@ async function reactivateAt(i){const target=archivedAccounts[i];if(!target)retur
 async function changePassword(){const a=document.getElementById("ownPassword").value,b=document.getElementById("ownPassword2").value;if(a!==b){showMessage("❌ Konfirmasi password tidak sama.","error");return}try{await LDMAccounts.changeOwnPassword(a);document.getElementById("ownPassword").value=document.getElementById("ownPassword2").value="";showMessage("✅ Password akun sendiri berhasil diubah.")}catch(e){showMessage("❌ "+(e.message||String(e)),"error")}}
 async function boot(){await refreshAll();try{await LDMAccounts.startRealtime(async()=>refreshAll());document.getElementById("realtime").textContent="Realtime: aktif"}catch(e){document.getElementById("realtime").textContent="Realtime: gagal";console.warn(e)}}
 document.addEventListener("DOMContentLoaded",boot);
-</script><script src="js/global-system-navigation.js?v=27.9.0-refund-request-v21"></script></body></html>
+</script><script src="js/global-system-navigation.js?v=27.9.0-systemui20"></script></body></html>
