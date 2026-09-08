@@ -377,7 +377,7 @@
         const key = KEYS[section];
         const flag = FLAGS[section];
         if(!isEnabled(flag) && hasLegacy(key)){
-            throw new Error(`Data ${key} lama belum dimigrasikan. Jalankan halaman Migrasi Tahap 11 sebagai Owner terlebih dahulu.`);
+            throw new Error(`Data lama perlu disesuaikan sebelum digunakan. Hubungi Tim Support jika pesan ini tetap muncul.`);
         }
     }
 

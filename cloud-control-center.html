@@ -8,7 +8,7 @@
 <script defer src="js/qa-runtime.js?v=19.0"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Cloud Control Center - LocDailyMar</title>
+<title>Pusat Kontrol Data - LocDailyMar</title>
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--primary:#0d2240;--ok:#15803d;--warn:#b45309;--bad:#b91c1c}.secure-page-pending body{visibility:hidden!important}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}.wrap{width:min(1180px,calc(100% - 24px));margin:22px auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:12px;box-shadow:0 8px 24px rgba(16,24,40,.05)}h1{font-size:1.35rem;margin:0 0 5px}h2{font-size:.95rem;margin:0 0 10px}p{font-size:.76rem;color:var(--muted);line-height:1.55;margin:6px 0}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a.btn{border:0;border-radius:9px;min-height:40px;padding:9px 13px;font-weight:750;cursor:pointer;background:var(--primary);color:white;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.secondary{background:white!important;color:var(--text)!important;border:1px solid var(--line)!important}.export{background:#166534!important}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.stat{border:1px solid var(--line);border-radius:11px;padding:11px}.stat span{display:block;font-size:.66rem;color:var(--muted);margin-bottom:4px}.stat strong{font-size:.9rem;overflow-wrap:anywhere}.status{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:.7rem;font-weight:800}.healthy{background:#dcfce7;color:#166534}.warning{background:#fef3c7;color:#92400e}.critical{background:#fee2e2;color:#991b1b}.check-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.check{padding:10px;border:1px solid var(--line);border-radius:10px;font-size:.7rem}.check strong{display:block;font-size:.9rem;margin-top:4px}.table-wrap{overflow:auto;max-height:520px}table{width:100%;border-collapse:collapse;font-size:.7rem}th,td{border-bottom:1px solid var(--line);padding:9px 7px;text-align:left;vertical-align:top}th{position:sticky;top:0;background:#f8fafc;z-index:1}.muted{color:var(--muted)}.notice{border-left:4px solid #d97706;background:#fffbeb;padding:10px 12px;border-radius:8px;font-size:.72rem;line-height:1.5;color:#78350f}.error{white-space:pre-wrap;color:#991b1b;font-size:.74rem}.spin{opacity:.55;pointer-events:none}@media(max-width:850px){.grid,.check-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.grid,.check-grid{grid-template-columns:1fr}.actions{display:grid}.actions>*{width:100%}}
 </style>
@@ -26,10 +26,10 @@
 <body>
 <div class="wrap">
   <div class="card top">
-    <div><h1>🛡️ Cloud Control Center</h1><p>Pemeriksaan Sistem, Riwayat Aktivitas, dan Cloud Snapshot.</p></div>
+    <div><h1>🛡️ Pusat Kontrol Data</h1><p>Pemeriksaan Sistem, Riwayat Aktivitas, dan Cadangan Data Cloud.</p></div>
     <div class="actions">
       <button onclick="refreshAll()">↻ Refresh</button>
-      <button id="btnExport" class="export" onclick="exportSnapshot()">⬇ Cloud Snapshot</button>
+      <button id="btnExport" class="export" onclick="exportSnapshot()">⬇ Cadangan Data Cloud</button>
       <a class="btn secondary" href="backup%20%26%20restore.html">💾 Backup Cache Lokal</a>
       <a class="btn secondary" href="dashboard.html">← Dashboard</a>
     </div>
@@ -51,11 +51,11 @@
   </div>
 
   <div class="card">
-    <div class="notice"><strong>Cloud Snapshot adalah salinan data untuk kebutuhan audit dan pemulihan terkontrol.</strong> File snapshot berisi data usaha dan daftar referensi file, tanpa password atau kredensial login. Pemulihan Cloud otomatis sengaja tidak disediakan agar relasi transaksi dan histori stok tidak rusak.</div>
+    <div class="notice"><strong>Cadangan Data Cloud adalah salinan data untuk kebutuhan audit dan pemulihan terkontrol.</strong> File snapshot berisi data usaha dan daftar referensi file, tanpa password atau kredensial login. Pemulihan Cloud otomatis sengaja tidak disediakan agar relasi transaksi dan histori stok tidak rusak.</div>
   </div>
 
   <div class="card">
-    <div class="top"><div><h2>Audit Trail Terbaru</h2><p>Perubahan penting pada data usaha dicatat sebagai riwayat aktivitas yang tidak ditimpa.</p></div><span id="auditRealtime" class="muted">Realtime: menyambung...</span></div>
+    <div class="top"><div><h2>Riwayat Aktivitas Terbaru</h2><p>Perubahan penting pada data usaha dicatat sebagai riwayat aktivitas yang tidak ditimpa.</p></div><span id="auditRealtime" class="muted">Realtime: menyambung...</span></div>
     <div class="table-wrap"><table><thead><tr><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Entity</th><th>Referensi</th><th>Detail</th></tr></thead><tbody id="auditBody"><tr><td colspan="6">Memuat...</td></tr></tbody></table></div>
   </div>
   <div id="errorBox" class="card error" style="display:none"></div>
@@ -118,7 +118,7 @@ async function refreshAll(){
     document.body.classList.remove("spin");
   }
 }
-async function exportSnapshot(){clearError();const btn=document.getElementById("btnExport");const old=btn.textContent;btn.disabled=true;btn.textContent="Membuat Snapshot...";try{const r=await LDMProduction.exportSnapshot();alert(`Cloud Snapshot berhasil dibuat.\n\nFile: ${r.filename}\nUkuran JSON: ${(r.bytes/1024/1024).toFixed(2)} MB`);await refreshAll()}catch(e){showError(e)}finally{btn.disabled=false;btn.textContent=old}}
+async function exportSnapshot(){clearError();const btn=document.getElementById("btnExport");const old=btn.textContent;btn.disabled=true;btn.textContent="Membuat Snapshot...";try{const r=await LDMProduction.exportSnapshot();alert(`Cadangan Data Cloud berhasil dibuat.\n\nFile: ${r.filename}\nUkuran JSON: ${(r.bytes/1024/1024).toFixed(2)} MB`);await refreshAll()}catch(e){showError(e)}finally{btn.disabled=false;btn.textContent=old}}
 async function boot(){
   await refreshAll();
 
@@ -141,6 +141,6 @@ async function boot(){
 document.addEventListener("DOMContentLoaded",boot);
 </script>
 <script src="js/global-system-navigation.js?v=27.9.0-privacy18"></script>
-<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
+<script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body>
 </html>

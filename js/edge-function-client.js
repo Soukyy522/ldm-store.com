@@ -16,7 +16,7 @@
     }
 
     function deploymentHint(functionName){
-        return `Layanan server belum siap. Hubungi Developer bila masalah berlanjut.`;
+        return `Layanan server belum siap. Hubungi Tim Support bila masalah berlanjut.`;
     }
 
     async function invoke(functionName,{body={},timeoutMs=20000,requireAuth=true,headers={}}={}){
@@ -71,11 +71,11 @@
             payload=payload||{};
 
             if(!response.ok || payload.ok===false){
-                let message=String(payload.error||payload.message||`HTTP ${response.status}`);
+                let message=String(payload.error||payload.message||`gangguan layanan`);
                 if(response.status===404){
-                    message=`Layanan server ${name} belum tersedia. Hubungi Developer.`;
+                    message=`Layanan server belum tersedia. Hubungi Tim Support.`;
                 }else if(response.status===401){
-                    message=`Sesi login ditolak oleh layanan server. Login ulang. Jika tetap terjadi, hubungi Developer.`;
+                    message=`Sesi login ditolak oleh layanan server. Login ulang. Jika tetap terjadi, hubungi Tim Support.`;
                 }else if(response.status===403){
                     message=String(payload.error||payload.message||"Akun ini tidak mempunyai hak untuk menjalankan aksi tersebut.");
                 }else if(response.status>=500 && !payload.error && !payload.message){

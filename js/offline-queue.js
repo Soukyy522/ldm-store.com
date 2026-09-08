@@ -411,7 +411,7 @@
         };
 
         if(!item.client_transaction_id){
-            throw new Error("client_transaction_id antrean offline kosong.");
+            throw new Error("ID transaksi pada antrean offline kosong.");
         }
 
         try{

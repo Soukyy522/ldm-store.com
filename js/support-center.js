@@ -32,7 +32,7 @@
     return ({
       open:"Terbuka",
       investigating:"Sedang Diinvestigasi",
-      waiting_customer:"Menunggu Customer",
+      waiting_customer:"Menunggu Pengguna",
       resolved:"Selesai",
       closed:"Ditutup"
     })[v]||v;

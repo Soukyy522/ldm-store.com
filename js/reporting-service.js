@@ -913,7 +913,7 @@
                 try{
                     result.returns = await window.LDMReturns.refreshCache();
                 }catch(error){
-                    console.warn("Refresh Retur Tahap 12 dilewati:",error);
+                    console.warn("Pembaruan retur dilewati:",error);
                 }
             }
 

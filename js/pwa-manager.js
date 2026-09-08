@@ -108,13 +108,13 @@
                     scope:"./",updateViaCache:"none"
                 });
                 watchRegistration(reg);
-                state.message = reg.waiting ? "Versi baru siap dipasang." : "PWA aktif.";
+                state.message = reg.waiting ? "Versi baru siap dipasang." : "Aplikasi terpasang aktif.";
                 emit();
                 return reg;
             }catch(error){
-                state.message = `Pendaftaran PWA gagal: ${error.message || error}`;
+                state.message = `Pemasangan layanan aplikasi gagal: ${error.message || error}`;
                 emit();
-                console.warn("PWA Manager Tahap 19:", error);
+                console.warn("Pembaruan aplikasi:", error);
                 return null;
             }
         })();

@@ -33,14 +33,14 @@
         {page:"backup%20%26%20restore.html",icon:"💾",label:"Backup & Restore",group:"Closing & Data",roles:["owner","admin"],feature:"backup_restore"},
 
         {page:"account-management.html",icon:"👥",label:"Management Akun",group:"Sistem",roles:["owner"],feature:"cloud_accounts"},
-        {page:"device-management.html",icon:"💻",label:"Perangkat Cloud",group:"Sistem",roles:["owner"],feature:"cloud_devices"},
+        {page:"device-management.html",icon:"💻",label:"Perangkat Toko",group:"Sistem",roles:["owner"],feature:"cloud_devices"},
         {page:"pwa-settings.html",icon:"📲",label:"Aplikasi & Update",group:"Sistem",roles:["owner","admin","kasir"],feature:"app_update"},
         {page:"penyimpanan.html",icon:"🗄️",label:"Penyimpanan & Retensi",group:"Sistem",roles:["owner","admin"],feature:"app_update"},
-        {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"],feature:"recovery_center"},
-        {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"],feature:"qa_security"},
+        {page:"recovery-center.html",icon:"🛟",label:"Pemulihan & Sinkronisasi",group:"Sistem",roles:["owner","admin","kasir"],feature:"recovery_center"},
+        {page:"qa-security-performance.html",icon:"🧪",label:"Pemeriksaan Sistem & Keamanan",group:"Sistem",roles:["owner"],feature:"qa_security"},
         {page:"setup-awal.html",icon:"🚀",label:"Setup Awal",group:"Sistem",roles:["owner"],infrastructure:true},
         {page:"support-center.html",icon:"🛟",label:"Pusat Bantuan & Support",group:"Sistem",roles:["owner","admin","kasir"]},
-        {page:"privacy-center.html",icon:"🔐",label:"Privacy Center",group:"Sistem",roles:["owner","admin","kasir"],infrastructure:true},
+        {page:"privacy-center.html",icon:"🔐",label:"Privasi & Data",group:"Sistem",roles:["owner","admin","kasir"],infrastructure:true},
         {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"panduan.html",icon:"📘",label:"Panduan Pengguna",group:"Sistem",roles:["owner","admin","kasir"]}
     ];

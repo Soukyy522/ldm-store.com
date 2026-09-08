@@ -132,7 +132,7 @@
 
                 if(!productId){
                     throw new Error(
-                        `Barang ${item && item.nama ? item.nama : "-"} belum memiliki UUID cloud. Jalankan migrasi Master Barang Tahap 7.`
+                        `Barang ${item && item.nama ? item.nama : "-"} belum memiliki identitas data yang diperlukan. Hubungi Tim Support jika masalah berlanjut.`
                     );
                 }
 

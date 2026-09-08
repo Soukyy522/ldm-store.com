@@ -22,7 +22,7 @@
             const data=await window.LDMLicenseV2.check({force});
             const needed=feature();
             if(!window.LDMLicenseV2.hasFeature(needed,data)){
-                overlay("Fitur belum termasuk paket",`${LABEL[needed]||"Halaman ini"} dikunci pada paket ${data.plan_name||data.plan_code||"yang aktif"}. Hubungi developer untuk upgrade.`,"locked");return false;
+                overlay("Fitur belum termasuk paket",`${LABEL[needed]||"Halaman ini"} dikunci pada paket ${data.plan_name||data.plan_code||"yang aktif"}. Hubungi Tim Support untuk memperbarui paket.`,"locked");return false;
             }
             document.documentElement.dataset.ldmLicensePlan=data.plan_code||"";
             document.documentElement.dataset.ldmLicenseReady="true";

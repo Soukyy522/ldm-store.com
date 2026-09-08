@@ -123,7 +123,7 @@
       <h1>Pilih paket sesuai perkembangan toko</h1>
       <p>Klik salah satu card paket untuk melihat seluruh fitur yang dibuka, fitur yang dikunci, fungsi masing-masing fitur, kuota toko/perangkat, dan pilihan harga.</p>
       <p class="hero-note">Tersedia periode bulanan, tahunan, dan <strong>2 tahun</strong>. Paket 2 tahun dihitung sebesar 2× harga tahunan dan tetap lebih hemat dibanding membayar bulanan selama 24 bulan. <strong>Semua pembayaran sekarang menggunakan Lynk.id.</strong></p>
-      <p class="hero-note">Jika masa bulanan/tahunan/2 tahun berakhir, lisensi otomatis tidak dapat digunakan dan dianggap <strong>ditangguhkan sementara</strong>. Data toko tidak dihapus. Setelah developer memperpanjang periode, lisensi kembali aktif.</p>
+      <p class="hero-note">Jika masa bulanan/tahunan/2 tahun berakhir, lisensi otomatis tidak dapat digunakan dan dianggap <strong>ditangguhkan sementara</strong>. Data toko tidak dihapus. Setelah perpanjangan dikonfirmasi, lisensi kembali aktif.</p>
     </section>
 
     <section class="plans" id="plans"></section>
@@ -141,13 +141,13 @@
 
     <section class="checkout-panel" id="publicCheckoutPanel" hidden>
       <div class="checkout-head">
-        <div><span class="tag">PEMBAYARAN LYNK.ID</span><h2>Pesan Lisensi LocDailyMar</h2><p>Isi data customer seperti biasa, lalu lanjutkan ke halaman pembayaran Lynk.id. Setelah pembayaran berhasil diverifikasi, lisensi diproses otomatis dan hasil ditampilkan di halaman License ini.</p></div>
+        <div><span class="tag">PEMBAYARAN LYNK.ID</span><h2>Pesan Lisensi LocDailyMar</h2><p>Isi data pelanggan seperti biasa, lalu lanjutkan ke halaman pembayaran Lynk.id. Setelah pembayaran berhasil diverifikasi, lisensi diproses otomatis dan hasil ditampilkan di halaman License ini.</p></div>
         <button type="button" class="checkout-close" id="checkoutCloseBtn" aria-label="Tutup pembayaran">✕</button>
       </div>
       <div class="checkout-body">
         <form id="publicCheckoutForm">
           <div class="checkout-form-grid">
-            <div class="checkout-field"><label>Nama pemilik / customer</label><input id="checkoutName" autocomplete="name" required placeholder="Contoh: Budi Santoso"></div>
+            <div class="checkout-field"><label>Nama pemilik / pelanggan</label><input id="checkoutName" autocomplete="name" required placeholder="Contoh: Budi Santoso"></div>
             <div class="checkout-field"><label>Nama toko</label><input id="checkoutStoreName" required placeholder="Contoh: Warung Budi"></div>
             <div class="checkout-field"><label>Nomor kontak / WhatsApp</label><input id="checkoutPhone" inputmode="tel" autocomplete="tel" required placeholder="Contoh: 081234567890"></div>
             <div class="checkout-field"><label>Email Owner</label><input id="checkoutEmail" type="email" autocomplete="email" required placeholder="owner@email.com"></div>
@@ -172,13 +172,13 @@
             <button class="btn danger-soft" type="button" id="checkoutCancelBtn">Batalkan Order Pembayaran</button>
           </div>
           <div class="checkout-status" id="publicCheckoutStatus"></div>
-          <div class="checkout-security"><b>Keamanan pembayaran Lynk.id:</b> Halaman ini mengarahkan customer ke checkout Lynk.id yang resmi. Password Owner tidak dikirim ke Lynk.id atau WhatsApp. Status pembayaran hanya menjadi lunas setelah transaksi berhasil diverifikasi oleh sistem. Hasil lisensi dapat dilihat kembali melalui panel hasil dan tombol Cek Status Pembayaran.</div>
+          <div class="checkout-security"><b>Keamanan pembayaran Lynk.id:</b> Halaman ini mengarahkan pelanggan ke checkout Lynk.id yang resmi. Password Owner tidak dikirim ke Lynk.id atau WhatsApp. Status pembayaran hanya menjadi lunas setelah transaksi berhasil diverifikasi oleh sistem. Hasil lisensi dapat dilihat kembali melalui panel hasil dan tombol Cek Status Pembayaran.</div>
           <div class="refund-policy-card" id="refundPolicyCard">
             <strong>↩ Kebijakan Refund LocDailyMar</strong>
             <ul>
               <li>Refund hanya tersedia dalam bentuk <b>Refund Penuh</b>. Partial refund tidak tersedia.</li>
               <li>Pengajuan harus dilakukan maksimal <b id="refundPolicyDays">24 jam</b> setelah pembayaran terverifikasi.</li>
-              <li>Email refund wajib sama dengan email saat pembelian, dan customer wajib memilih kategori serta menuliskan alasan refund.</li>
+              <li>Email refund wajib sama dengan email saat pembelian, dan pelanggan wajib memilih kategori serta menuliskan alasan refund.</li>
               <li>Setelah request diterima, proses pemeriksaan dan pengembalian dana diperkirakan <b>2-3 hari kerja</b>.</li>
               <li>Jika batas 24 jam sudah lewat, form refund otomatis tidak ditampilkan.</li>
               <li>Order yang masih PENDING dibatalkan melalui tombol <b>Batalkan Order Pembayaran</b>, bukan melalui refund.</li>
@@ -352,17 +352,17 @@
     </section>
 
     <section class="section" id="activation">
-      <div class="section-head"><div><h2>Aktifkan License Key</h2><p>Isi Store Code persis seperti yang diberikan developer, lalu masukkan License Key.</p></div></div>
+      <div class="section-head"><div><h2>Aktifkan License Key</h2><p>Isi Store Code persis seperti yang diberikan saat aktivasi, lalu masukkan License Key.</p></div></div>
       <form id="activateForm" class="grid"><div class="field"><label>Store Code</label><input id="storeCode" autocomplete="off" placeholder="Contoh: LDM-TOKO-001" required></div><div class="field"><label>License Key</label><div class="password-wrap"><input id="licenseKey" type="password" autocomplete="off" placeholder="LDM2-WKECIL-..." required><button class="password-toggle" type="button" data-password-target="licenseKey" aria-pressed="false">Lihat</button></div><div class="password-help">License Key disamarkan untuk mencegah orang di sekitar melihatnya.</div></div><div class="field full"><label>Nama perangkat (opsional)</label><input id="deviceName" placeholder="Contoh: Kasir Utama"></div></form>
       <div class="actions"><button class="btn primary" id="activateBtn">Aktifkan lisensi</button><button class="btn ghost" id="checkBtn">Periksa ulang</button></div><div class="status" id="activateStatus"></div>
     </section>
 
     <section class="section">
-      <div class="section-head"><div><h2>Status perangkat ini</h2><p>Status lokal aktivasi. Tombol Periksa Ulang meminta status terbaru langsung ke server lisensi.</p></div></div>
+      <div class="section-head"><div><h2>Status perangkat ini</h2><p>Status aktivasi perangkat. Tombol Periksa Ulang mengambil status lisensi terbaru.</p></div></div>
       <div class="current" id="current"></div>
-      <div class="suspension-info"><div>⏳</div><div><strong>Periode habis = akses ditangguhkan sementara</strong><span>Aplikasi akan menolak akses setelah Periode paket habis. Customer tidak kehilangan data. Cukup melakukan renewal/perpanjangan dan status akan aktif kembali. Semua paket aktif memakai masa berlaku sesuai periode pembelian.</span></div></div>
+      <div class="suspension-info"><div>⏳</div><div><strong>Periode habis = akses ditangguhkan sementara</strong><span>Aplikasi akan menolak akses setelah Periode paket habis. Data pelanggan tidak dihapus. Cukup melakukan renewal/perpanjangan dan status akan aktif kembali. Semua paket aktif memakai masa berlaku sesuai periode pembelian.</span></div></div>
       <div class="actions"><button class="btn ghost" id="deactivateBtn">Lepaskan aktivasi perangkat</button></div>
-      <p class="note">Melepaskan perangkat akan mengosongkan satu slot. Data transaksi toko tidak dihapus. Untuk perangkat yang hilang, developer dapat menonaktifkannya melalui Developer Center.</p>
+      <p class="note">Melepaskan perangkat akan mengosongkan satu slot. Data transaksi toko tidak dihapus. Untuk perangkat yang hilang, hubungi Tim Support agar akses perangkat dapat dinonaktifkan.</p>
     </section>
   </main>
 
@@ -455,6 +455,6 @@
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
 <script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
-<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
+<script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body>
 </html>

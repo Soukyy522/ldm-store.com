@@ -198,7 +198,7 @@
             hasLegacyUnmigrated()
         ){
             throw new Error(
-                "Data Stock Opname lama belum dimigrasikan. Jalankan halaman Migrasi Tahap 10 sebagai Owner terlebih dahulu."
+                "Data Stock Opname lama perlu disesuaikan sebelum digunakan. Hubungi Tim Support jika pesan ini tetap muncul."
             );
         }
 

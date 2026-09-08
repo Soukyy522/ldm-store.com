@@ -36,7 +36,7 @@
         }
         const message=String(error && error.message || fallback);
         if(/Failed to send a request to the Edge Function|Failed to fetch|NetworkError/i.test(message)){
-            return "Layanan pengelolaan akun belum dapat dihubungi. Periksa koneksi lalu coba kembali. Jika tetap terjadi, hubungi Developer.";
+            return "Layanan pengelolaan akun belum dapat dihubungi. Periksa koneksi lalu coba kembali. Jika tetap terjadi, hubungi Tim Support.";
         }
         return message;
     }

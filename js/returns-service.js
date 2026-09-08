@@ -456,7 +456,7 @@
             hasLegacyUnmigrated()
         ){
             throw new Error(
-                "Data Retur lama belum dimigrasikan. Jalankan halaman Migrasi Tahap 10 sebagai Owner terlebih dahulu."
+                "Data retur lama perlu disesuaikan sebelum digunakan. Hubungi Tim Support jika pesan ini tetap muncul."
             );
         }
 
@@ -465,7 +465,7 @@
 
         if(!transactionId){
             throw new Error(
-                "Transaksi belum memiliki UUID cloud. Retur Tahap 10 hanya memproses transaksi cloud Tahap 8+."
+                "Transaksi lama belum memiliki identitas yang diperlukan untuk retur. Hubungi Tim Support jika transaksi ini harus diproses."
             );
         }
 

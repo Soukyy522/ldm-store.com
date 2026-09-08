@@ -23,7 +23,7 @@
 <main class="privacy-shell">
 <section class="privacy-hero" data-ldm-system-banner="primary">
   <h1>🔐 Privacy Center</h1>
-  <p>Pahami data yang digunakan LocDailyMar, tujuan pemrosesannya, dan ajukan permintaan terkait data pribadi Anda. Permintaan privasi dibuat sebagai request tercatat agar dapat diverifikasi dan ditindaklanjuti secara aman.</p>
+  <p>Pahami data yang digunakan LocDailyMar, tujuan pemrosesannya, dan ajukan permintaan terkait data pribadi Anda. Permintaan privasi dibuat sebagai permintaan tercatat agar dapat diverifikasi dan ditindaklanjuti secara aman.</p>
 </section>
 
 <div class="privacy-grid">
@@ -31,11 +31,11 @@
     <h2>Data yang Umumnya Diproses</h2>
     <p>Jenis data dapat berbeda tergantung fitur yang digunakan oleh toko dan akun Anda.</p>
     <div class="data-cards">
-      <div class="data-card"><strong>👤 Akun & Identitas</strong><small>Nama/display name, email akun, role, identitas teknis user dan informasi profil yang diperlukan untuk akses aplikasi.</small></div>
+      <div class="data-card"><strong>👤 Akun & Identitas</strong><small>Nama tampilan, email akun, hak akses, identitas akun, dan informasi profil yang diperlukan untuk menggunakan aplikasi.</small></div>
       <div class="data-card"><strong>📝 Absensi & Aktivitas</strong><small>Data absensi dan aktivitas operasional yang berkaitan dengan akun ketika fitur tersebut digunakan.</small></div>
       <div class="data-card"><strong>💻 Perangkat & Sesi</strong><small>Informasi perangkat, sesi, versi aplikasi, status koneksi, dan metadata teknis untuk keamanan serta pemulihan.</small></div>
-      <div class="data-card"><strong>🛟 Support & Keamanan</strong><small>Tiket Support, incident error, audit teknis, dan metadata troubleshooting yang diperlukan untuk penanganan masalah.</small></div>
-      <div class="data-card"><strong>🧾 Aktivitas Bisnis Terkait Akun</strong><small>Jejak tindakan seperti transaksi, approval, closing atau aktivitas lain ketika diperlukan untuk audit operasional toko.</small></div>
+      <div class="data-card"><strong>🛟 Support & Keamanan</strong><small>Tiket Support, catatan gangguan, riwayat keamanan, dan informasi pendukung yang diperlukan untuk penanganan masalah.</small></div>
+      <div class="data-card"><strong>🧾 Aktivitas Bisnis Terkait Akun</strong><small>Jejak tindakan seperti transaksi, persetujuan, closing, atau aktivitas lain ketika diperlukan untuk pemeriksaan operasional toko.</small></div>
       <div class="data-card"><strong>☁️ Cloud & Retensi</strong><small>Data aplikasi disimpan sesuai fungsi, konfigurasi retensi, kebutuhan keamanan, dan kewajiban yang berlaku.</small></div>
     </div>
   </section>
@@ -55,7 +55,7 @@
 
   <section class="privacy-card full">
     <h2>⏳ Retensi & Penghapusan</h2>
-    <div class="retention-box">Penghapusan tidak dilakukan otomatis saat tombol ditekan. Request akan diverifikasi karena sebagian data dapat terkait catatan bisnis, keamanan, hak pihak lain, proses hukum, atau kewajiban penyimpanan. Jika permintaan dapat dipenuhi, hasilnya akan dicatat pada request <b>PRV-...</b>.</div>
+    <div class="retention-box">Penghapusan tidak dilakukan otomatis saat tombol ditekan. Permintaan akan diverifikasi karena sebagian data dapat terkait catatan bisnis, keamanan, hak pihak lain, proses hukum, atau kewajiban penyimpanan. Jika permintaan dapat dipenuhi, hasilnya akan dicatat pada permintaan <b>PRV-...</b>.</div>
     <div class="quick-links"><a class="btn btn-soft" href="penyimpanan.html">🗄️ Lihat Penyimpanan & Retensi</a><a class="btn btn-soft" href="support-center.html">🛟 Pusat Bantuan & Support</a></div>
   </section>
 
@@ -71,11 +71,11 @@
     <div class="check-row"><input type="checkbox" id="privacyConfirm"><label for="privacyConfirm">Saya memahami bahwa permintaan ini perlu diverifikasi dan tidak selalu berarti data dapat langsung dihapus/diubah. Saya hanya mengajukan permintaan terkait data pribadi saya sendiri.</label></div>
     <div class="actions"><button id="btnSubmitPrivacy" class="btn btn-primary">🔐 Kirim Permintaan</button><button id="btnClearPrivacy" class="btn btn-soft" type="button">Bersihkan Form</button></div>
     <div id="privacyMessage" class="privacy-message"></div>
-    <div id="privacySuccess" class="success-box"><strong>Permintaan berhasil dibuat.</strong><div style="margin-top:6px">Kode request: <span id="createdPrivacyCode" class="request-code">-</span></div><div class="actions"><button id="btnCopyPrivacyCode" class="btn btn-soft" type="button">📋 Salin Kode</button></div></div>
+    <div id="privacySuccess" class="success-box"><strong>Permintaan berhasil dibuat.</strong><div style="margin-top:6px">Kode permintaan: <span id="createdPrivacyCode" class="request-code">-</span></div><div class="actions"><button id="btnCopyPrivacyCode" class="btn btn-soft" type="button">📋 Salin Kode</button></div></div>
   </section>
 
   <section class="privacy-card full">
-    <div class="requests-head"><div><h2>📂 Riwayat Permintaan Saya</h2><p>Hanya request yang dibuat oleh akun Anda yang ditampilkan di sini, termasuk jika Anda adalah Owner/Admin.</p></div><button id="btnRefreshPrivacy" class="btn btn-soft">↻ Refresh</button></div>
+    <div class="requests-head"><div><h2>📂 Riwayat Permintaan Saya</h2><p>Hanya permintaan yang dibuat oleh akun Anda yang ditampilkan di sini, termasuk jika Anda adalah Owner/Admin.</p></div><button id="btnRefreshPrivacy" class="btn btn-soft">↻ Refresh</button></div>
     <div id="privacyListMessage" class="privacy-message"></div>
     <div id="privacyRequestsList" class="request-list"><div class="empty">Memuat permintaan privasi...</div></div>
   </section>
@@ -88,6 +88,6 @@
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
 <script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
-<script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
+<script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body>
 </html>

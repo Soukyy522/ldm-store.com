@@ -29,7 +29,7 @@
     }
     async function call(action,payload={},options={}){
         if(!cfg().enabled)return {ok:true,bypass:true,features:["*"]};
-        if(!configured())throw Object.assign(new Error("Alamat server lisensi belum dikonfigurasi oleh developer."),{code:"LICENSE_CONFIG_REQUIRED"});
+        if(!configured())throw Object.assign(new Error("Layanan lisensi belum siap. Hubungi Tim Support."),{code:"LICENSE_CONFIG_REQUIRED"});
         const controller=new AbortController();
         const timer=setTimeout(()=>controller.abort(),Number(cfg().requestTimeoutMs)||8000);
         try{

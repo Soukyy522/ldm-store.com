@@ -53,7 +53,7 @@
       });
       const data=await response.json().catch(()=>({}));
       if(!response.ok||data?.ok===false){
-        const error=new Error(data?.message||`Refund HTTP ${response.status}`);
+        const error=new Error(data?.message||`Refund gagal diproses`);
         error.code=data?.code||"REFUND_REQUEST_FAILED";
         error.data=data;
         throw error;
@@ -199,7 +199,7 @@
         Diajukan ${esc(fmt(request.created_at))}
         ${request.processing_due_at?` · Estimasi selesai maksimal ${esc(fmt(request.processing_due_at))}`:" · Estimasi proses 2-3 hari kerja"}
       </div>
-      ${request.response_note?`<div class="refund-response-note"><strong>Catatan Developer:</strong><br>${esc(request.response_note)}</div>`:""}
+      ${request.response_note?`<div class="refund-response-note"><strong>Catatan Tim Support:</strong><br>${esc(request.response_note)}</div>`:""}
     `;
 
     const cancel=box.querySelector(".js-cancel-refund");

@@ -603,7 +603,7 @@
             hasLegacyUnmigrated()
         ){
             throw new Error(
-                "Data Absensi lama belum dimigrasikan. Jalankan halaman Migrasi Absensi Tahap 9 sebagai Owner terlebih dahulu."
+                "Data absensi lama perlu disesuaikan sebelum digunakan. Hubungi Tim Support jika pesan ini tetap muncul."
             );
         }
 

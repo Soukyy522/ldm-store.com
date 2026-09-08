@@ -264,7 +264,7 @@
             const message=String(error?.message||error);
             log(`Scheduler belum dapat diaktifkan: ${message}`,"error");
             alert(
-                message+"\n\nKonfigurasi jadwal otomatis belum siap. Hubungi Developer untuk menyelesaikan konfigurasi."
+                message+"\n\nKonfigurasi jadwal otomatis belum siap. Hubungi Tim Support untuk menyelesaikan konfigurasi."
             );
         }finally{
             if(button)button.disabled=false;

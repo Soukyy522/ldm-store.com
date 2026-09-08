@@ -198,7 +198,7 @@
 
         if(!context){
             throw new Error(
-                "Login berhasil, tetapi profil LocDailyMar belum tersedia. Hubungi Developer untuk menyiapkan profil akun."
+                "Login berhasil, tetapi profil akun belum tersedia. Hubungi Tim Support."
             );
         }
 

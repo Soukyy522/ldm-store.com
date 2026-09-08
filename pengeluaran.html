@@ -1790,7 +1790,7 @@
         </div>
 
         <div class="receipt-help">
-            Tombol <strong>Buka Kamera Browser</strong> memakai kamera langsung dari browser. Pada HP sistem mencoba kamera belakang. Jika browser tidak mendukung kamera langsung, fallback kamera perangkat tetap tersedia.
+            Tombol <strong>Buka Kamera Browser</strong> memakai kamera langsung dari browser. Pada HP sistem mencoba kamera belakang. Jika kamera langsung tidak didukung, aplikasi akan menawarkan opsi kamera perangkat yang tersedia.
         </div>
 
         <div class="receipt-preview-wrap" id="receiptPreviewWrap">
@@ -1834,7 +1834,7 @@
             <button type="button" class="btn-camera-action close" onclick="closeReceiptCamera()">Batal</button>
         </div>
         <div class="browser-camera-note">
-            Browser akan meminta izin kamera. Akses kamera langsung umumnya memerlukan <strong>HTTPS</strong> atau <strong>localhost</strong>. Jika diblokir, gunakan Upload dari Galeri/File atau fallback kamera perangkat.
+            Browser akan meminta izin kamera. Akses kamera langsung umumnya memerlukan <strong>Koneksi aman</strong> atau <strong>localhost</strong>. Jika akses kamera diblokir, gunakan Upload dari Galeri/File atau pilihan kamera perangkat.
         </div>
     </div>
 </div>
@@ -2083,7 +2083,7 @@ async function startReceiptCamera(){
         }else if(error?.name==='NotReadableError'){
             message='Kamera sedang dipakai aplikasi lain atau tidak dapat diakses.';
         }else if(!window.isSecureContext){
-            message='Browser memblokir kamera karena halaman tidak berjalan melalui HTTPS atau localhost.';
+            message='Browser memblokir kamera karena halaman tidak berjalan melalui Koneksi aman atau localhost.';
         }
 
         setReceiptCameraStatus(message);
@@ -3269,5 +3269,5 @@ window.addEventListener(
 })();
 </script>
 
-<script src="js/global-system-navigation.js?v=27.9.0-privacy18"></script><script src="js/customer-safe-copy-v2827.js?v=27.9.0-safe-copy-v2827"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-privacy18"></script><script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body></html>
