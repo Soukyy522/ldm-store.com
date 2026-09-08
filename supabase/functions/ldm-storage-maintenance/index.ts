@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const FUNCTION_VERSION = "27.9.0-storage-maintenance-v22";
+const FUNCTION_VERSION = "27.9.0-storage-maintenance-v2826";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -279,16 +279,48 @@ Deno.serve(async (req) => {
 
   try {
     if (cronMode) {
-      if (action && !["cleanup-all-stores", "health"].includes(action)) {
+      if (action && !["cleanup-all-stores", "health", "configure-auto-cleanup"].includes(action)) {
         return json({ ok: false, error: "Action Cron tidak dikenal." }, 400);
       }
 
       if (action === "health") {
+        const { data: scheduler } = await admin.rpc("ldm_storage_auto_cleanup_status");
         return json({
           ok: true,
           mode: "cron",
           version: FUNCTION_VERSION,
           cron_secret_configured: true,
+          scheduler: scheduler || null,
+        });
+      }
+
+      if (action === "configure-auto-cleanup") {
+        const functionUrl = `${url}/functions/v1/ldm-storage-maintenance`;
+        const { data: configured, error: configureError } = await admin.rpc(
+          "ldm_storage_configure_auto_cleanup",
+          {
+            p_function_url: functionUrl,
+            p_cron_secret: cronSecret,
+            p_schedule: "17 19 * * *",
+          },
+        );
+        if (configureError) {
+          const msg = String(configureError.message || configureError);
+          if (/ldm_storage_configure_auto_cleanup|schema cache|function/i.test(msg)) {
+            return json({
+              ok: false,
+              code: "STORAGE_SQL_45_REQUIRED",
+              error: "SQL-45 Storage Retention Auto Cleanup V28.2.6 belum dijalankan pada App Supabase.",
+              version: FUNCTION_VERSION,
+            }, 409);
+          }
+          throw configureError;
+        }
+        return json({
+          ok: true,
+          mode: "cron",
+          version: FUNCTION_VERSION,
+          scheduler: configured,
         });
       }
 
@@ -369,6 +401,47 @@ Deno.serve(async (req) => {
           cron_secret_ready: Boolean(cronSecret),
         },
         database: health || {},
+        scheduler: health?.scheduler || null,
+      });
+    }
+
+    if (action === "configure-auto-cleanup") {
+      if (role !== "owner") {
+        return json({ ok: false, error: "Hanya Owner yang dapat mengaktifkan scheduler otomatis." }, 403);
+      }
+      if (!cronSecret) {
+        return json({
+          ok: false,
+          code: "STORAGE_CRON_SECRET_MISSING",
+          error: "LDM_STORAGE_CRON_SECRET belum dikonfigurasi. Jalankan setup scheduler V28.2.6.",
+        }, 409);
+      }
+
+      const functionUrl = `${url}/functions/v1/ldm-storage-maintenance`;
+      const { data: configured, error: configureError } = await admin.rpc(
+        "ldm_storage_configure_auto_cleanup",
+        {
+          p_function_url: functionUrl,
+          p_cron_secret: cronSecret,
+          p_schedule: "17 19 * * *",
+        },
+      );
+      if (configureError) {
+        const msg = String(configureError.message || configureError);
+        if (/ldm_storage_configure_auto_cleanup|schema cache|function/i.test(msg)) {
+          return json({
+            ok: false,
+            code: "STORAGE_SQL_45_REQUIRED",
+            error: "SQL-45 Storage Retention Auto Cleanup V28.2.6 belum dijalankan pada App Supabase.",
+          }, 409);
+        }
+        throw configureError;
+      }
+      return json({
+        ok: true,
+        trigger: "owner-configure",
+        version: FUNCTION_VERSION,
+        scheduler: configured,
       });
     }
 
