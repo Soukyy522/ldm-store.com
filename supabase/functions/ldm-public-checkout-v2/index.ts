@@ -39,7 +39,22 @@ Deno.serve(async(req)=>{
       if(payment.status==="paid"){try{receipt=await getPaidWebReceipt(admin,order)}catch(e){receiptError=clean((e as Error)?.message||"Data lisensi belum dapat ditampilkan.",500)}}
       else if(["cancelled","expired","failed"].includes(String(payment.status||"").toLowerCase())){try{await releaseApplicationOwnerReservation(admin,order)}catch(_e){}}
       const {data:license}=await admin.from("ldm2_licenses").select("status,plan_code,primary_store_code,primary_store_id,network_id,expires_at").eq("id",payment.license_id).maybeSingle();
-      return json(req,{ok:true,order_id:order,payment_status:payment.status,payment_gateway:"lynk",provider_status:payment.provider_status,redirect_url:payment.redirect_url||null,paid_at:payment.paid_at,license_status:license?.status||null,provision_status:receipt?.provision_status||delivery.provision_status,receipt,receipt_error:receiptError});
+      return json(req,{ok:true,order_id:order,payment_status:payment.status,payment_gateway:"lynk",provider_status:payment.provider_status,redirect_url:payment.redirect_url||null,paid_at:payment.paid_at,license_status:license?.status||null,provision_status:receipt?.provision_status||delivery.provision_status,receipt,receipt_error:receiptError,can_cancel:["pending","challenge"].includes(String(payment.status||"").toLowerCase()),can_refund:["paid","partially_refunded"].includes(String(payment.status||"").toLowerCase())});
+    }
+
+    if(action==="cancel_order"){
+      const order=clean(body.order_id,120),token=clean(body.status_token,200);
+      const {payment}=await verifiedPayment(admin,order,token);
+      if(["paid","partially_refunded","refunded"].includes(String(payment.status||"").toLowerCase())){
+        return json(req,{ok:false,code:"PAYMENT_ALREADY_PAID",message:"Pembayaran sudah terverifikasi sehingga order tidak dapat dibatalkan. Gunakan proses refund.",refund_available:true},409);
+      }
+      const cancelled=await admin.rpc("ldm2_cancel_public_order",{p_order_id:order});
+      if(cancelled.error){
+        if(/ldm2_cancel_public_order|does not exist|schema cache/i.test(cancelled.error.message||""))return json(req,{ok:false,code:"CANCEL_SQL_MISSING",message:"SQL Cancel Order V28 belum dijalankan pada License Authority."},503);
+        throw cancelled.error;
+      }
+      try{await releaseApplicationOwnerReservation(admin,order)}catch(_e){}
+      return json(req,{ok:true,message:"Order LocDailyMar berhasil dibatalkan. Tutup checkout Lynk.id dan jangan lakukan pembayaran pada order tersebut.",order_id:order,payment_status:"cancelled",result:cancelled.data});
     }
 
     if(["refund_context","refund_request_create","refund_request_cancel"].includes(action)){
