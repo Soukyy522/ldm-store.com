@@ -86,7 +86,7 @@
     renderSummary();
     panel.hidden=false;
     panel.classList.add("open");
-    panel.scrollIntoView({behavior:"smooth",block:"start"});
+    panel.scrollIntoView({behavior:"smooth",block:"start"});window.dispatchEvent(new CustomEvent("ldm-paid-receipt-ready",{detail:{order_id:r.order_id||null}}));
     setStatus("Isi data customer, lalu lanjutkan pembayaran melalui Lynk.id. Order dapat dibatalkan selama pembayaran belum terverifikasi.","info");
   }
 
@@ -169,7 +169,7 @@
     setLink("receiptPasswordBtn",r.password_setup_url);
     setLink("receiptGuideBtn",r.guide_url);
     const refundBtn=el("receiptRefundBtn");
-    if(refundBtn){refundBtn.href="support-center.html#refundRequestSection";refundBtn.hidden=false;}
+    if(refundBtn){refundBtn.href="#licenseRefundSection";refundBtn.hidden=false;}
     const provision=el("receiptProvisionNote");
     if(provision){
       provision.textContent=r.provision_status==="ready"?"Lisensi dan akun Owner sudah siap digunakan.":`Lisensi aktif, tetapi provisioning akun belum selesai${r.provision_error?`: ${r.provision_error}`:"."}`;
@@ -201,7 +201,7 @@
     if(data.receipt)renderReceipt(data.receipt);
     updateManageActions(data);
     if(!quiet){
-      if(data.payment_status==="paid")setStatus("✅ Pembayaran Lynk.id sudah terverifikasi. Data lisensi tersedia di bawah. Jika perlu, refund dapat diajukan melalui Pusat Bantuan selama masih eligible.","success");
+      if(data.payment_status==="paid")setStatus("✅ Pembayaran Lynk.id sudah terverifikasi. Data lisensi tersedia di bawah. Form Refund Penuh akan tersedia selama transaksi masih berada dalam batas 24 jam.","success");
       else if(data.payment_status==="cancelled")setStatus("Order LocDailyMar sudah dibatalkan. Tutup halaman pembayaran Lynk.id dan jangan lanjutkan pembayaran pada order ini.","info");
       else if(["failed","expired"].includes(String(data.payment_status||"").toLowerCase()))setStatus(`Pembayaran berstatus ${data.payment_status}. Hubungi Support bila dana sudah terpotong.`,"error");
       else setStatus(`Status pembayaran Lynk.id: ${data.payment_status||"pending"}.`,"info");
@@ -292,7 +292,7 @@
       return data;
     }catch(e){
       if(e?.code==="PAYMENT_ALREADY_PAID"){
-        setStatus("Pembayaran sudah terverifikasi sehingga order tidak dapat dibatalkan. Gunakan tombol Ajukan Refund pada hasil lisensi atau buka Pusat Bantuan & Support.","error");
+        setStatus("Pembayaran sudah terverifikasi sehingga order tidak dapat dibatalkan. Gunakan form Refund Penuh pada hasil lisensi selama masih berada dalam batas 24 jam.","error");
       }else setStatus(`❌ ${e.message||e}`,"error");
       throw e;
     }finally{
@@ -313,8 +313,8 @@
       const d=await callStatus({action:"refund_policy"});
       const p=d.policy||{},hours=Math.max(1,Number(p.refund_window_hours||24));
       if(days)days.textContent=`${hours} jam`;
-      if(state)state.textContent=p.enabled===false?"Refund sedang dinonaktifkan sementara.":`Mengikuti ketentuan publik LYNK.ID · ${hours} jam · alasan non-delivery saja.`;
-    }catch(_e){if(days)days.textContent="24 jam";if(state)state.textContent="Ketentuan refund LYNK.ID belum dapat dimuat.";}
+      if(state)state.textContent=p.enabled===false?"Refund sedang dinonaktifkan sementara.":`Kebijakan internal LocDailyMar · Refund Penuh · maksimal ${hours} jam · proses 2-3 hari kerja.`;
+    }catch(_e){if(days)days.textContent="24 jam";if(state)state.textContent="Kebijakan refund LocDailyMar belum dapat dimuat.";}
   }
 
   function init(){

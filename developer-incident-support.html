@@ -41,7 +41,7 @@
     <div id="supportOverview" class="developer-nav-target" aria-hidden="true"></div>
     <section class="panel developer-nav-target" id="incidentLookupPanel">
       <h1>🔎 Support Incident Lookup</h1>
-      <p class="note">Masukkan <b>kode incident persis</b> yang dikirim customer. Sistem tidak menyediakan daftar global semua incident agar data antar-customer tidak terbuka tanpa kebutuhan support.</p>
+      <p class="note"><b>Monitoring Error sekarang khusus Developer.</b> Kode ERR tetap menjadi referensi teknis internal dan tidak ditampilkan sebagai menu customer. Gunakan pencarian ini saat investigasi teknis membutuhkan incident tertentu.</p>
       <div class="lookup">
         <div class="field" style="margin:0"><label>Kode Incident</label><input id="incidentCode" placeholder="ERR-20260905-A72C91D083" maxlength="40" spellcheck="false"></div>
         <button id="lookupBtn" class="btn primary">Cari Incident</button>
@@ -51,7 +51,7 @@
 
     <section id="result" class="panel result">
       <div style="display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap">
-        <div><h2 id="incidentTitle">Incident</h2><p id="storeTitle" class="note"></p></div>
+        <div><h2 id="incidentTitle">Monitoring Error · Incident Developer</h2><p id="storeTitle" class="note"></p></div>
         <button id="copySummaryBtn" class="btn soft">Salin Ringkasan</button>
       </div>
       <div class="statusline"><span id="severityBadge" class="badge"></span><span id="supportBadge" class="badge"></span><span id="resolvedBadge" class="badge"></span></div>

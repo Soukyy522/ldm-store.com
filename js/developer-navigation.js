@@ -4,7 +4,7 @@
   const routes=[
     {key:"overview",icon:"🏠",label:"Ringkasan",href:"developer-license-v2.html#developerOverview",page:"developer-license-v2.html",hash:"#developeroverview"},
     {key:"licenses",icon:"🔐",label:"Customer & Lisensi",href:"developer-license-v2.html#licenseManagement",page:"developer-license-v2.html",hash:"#licensemanagement"},
-    {key:"support",icon:"🛟",label:"Support Center",href:"developer-incident-support.html#supportOverview",page:"developer-incident-support.html",hash:"#supportoverview"}
+    {key:"support",icon:"🛟",label:"Support & Monitoring",href:"developer-incident-support.html#supportOverview",page:"developer-incident-support.html",hash:"#supportoverview"}
   ];
   const esc=s=>String(s??"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   function pageName(){return (location.pathname.split("/").pop()||"").toLowerCase()}

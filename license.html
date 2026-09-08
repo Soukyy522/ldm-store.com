@@ -85,7 +85,30 @@
     .owner-vault-empty{border:1px dashed #cbd7e5;border-radius:12px;padding:14px;text-align:center;color:#667085;font-size:11px}
     @media(max-width:820px){.owner-vault-summary{grid-template-columns:1fr 1fr}.owner-vault-login{grid-template-columns:1fr}.owner-vault-secret-grid{grid-template-columns:1fr}}
 
-  </style>
+  
+    .license-customer-refund{margin-top:16px;padding:16px;border:1px solid #e7c9c4;border-radius:14px;background:#fffafa}
+    .license-refund-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .license-refund-head h3{margin:5px 0 4px;font-size:16px}.license-refund-head p{margin:0;font-size:10.5px;line-height:1.55;color:#667085}
+    .license-refund-sla{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:#fff0ed;color:#b42318;font-size:9px;font-weight:900}
+    .license-refund-state,.license-refund-message{margin-top:11px;padding:10px 12px;border-radius:10px;font-size:10.5px;line-height:1.5}
+    .license-refund-state.info{background:#eef5ff;color:#315f91}.license-refund-state.warn{background:#fff7df;color:#7d5a00}
+    .license-refund-message:empty{display:none}.license-refund-message.ok{background:#e8f8f1;color:#076c4e}.license-refund-message.error{background:#fff0ed;color:#b42318}
+    .license-refund-info{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:11px}
+    .license-refund-info>div{padding:9px;border:1px solid #e1e8f0;border-radius:10px;background:#fff}
+    .license-refund-info span{display:block;font-size:8.5px;color:#667085;text-transform:uppercase}.license-refund-info strong{display:block;margin-top:3px;font-size:10.5px;word-break:break-word}
+    .license-refund-form{margin-top:12px;padding-top:12px;border-top:1px dashed #d8e0e9}
+    .license-refund-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.license-refund-grid .full{grid-column:1/-1}
+    .license-refund-grid textarea{min-height:100px;resize:vertical}
+    .license-refund-confirm{display:flex;gap:8px;align-items:flex-start;margin:11px 0;font-size:10px;line-height:1.55;color:#59697b}
+    .license-refund-confirm input{margin-top:3px}
+    .license-refund-existing{margin-top:11px;padding:12px;border:1px solid #d7e6df;border-radius:11px;background:#f5fcf8}
+    .refund-existing-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.refund-existing-head>div{display:grid;gap:4px}
+    .refund-request-code{font:800 10px ui-monospace,SFMono-Regular,Menlo,monospace;color:#087f5b}
+    .refund-existing-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.refund-existing-meta span{padding:4px 7px;border-radius:999px;background:#eef3f8;font-size:8.5px;font-weight:800;color:#52657b}
+    .refund-existing-note{margin-top:8px;font-size:9.5px;color:#667085}.refund-response-note{margin-top:9px;padding:9px;border-radius:9px;background:#fff7df;color:#765700;font-size:9.5px;line-height:1.5}
+    @media(max-width:820px){.license-refund-info{grid-template-columns:1fr 1fr}.license-refund-grid{grid-template-columns:1fr}.license-refund-grid .full{grid-column:auto}.license-refund-head{display:block}.license-refund-sla{display:inline-block;margin-top:8px}}
+
+</style>
 
 <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap">
 <link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui24">
@@ -101,7 +124,6 @@
       <p>Klik salah satu card paket untuk melihat seluruh fitur yang dibuka, fitur yang dikunci, fungsi masing-masing fitur, kuota toko/perangkat, dan pilihan harga.</p>
       <p class="hero-note">Tersedia periode bulanan, tahunan, dan <strong>2 tahun</strong>. Paket 2 tahun dihitung sebesar 2× harga tahunan dan tetap lebih hemat dibanding membayar bulanan selama 24 bulan. <strong>Semua pembayaran sekarang menggunakan Lynk.id.</strong></p>
       <p class="hero-note">Jika masa bulanan/tahunan/2 tahun berakhir, lisensi otomatis tidak dapat digunakan dan dianggap <strong>ditangguhkan sementara</strong>. Data toko tidak dihapus. Setelah developer memperpanjang periode, lisensi kembali aktif.</p>
-      <p class="hero-note"><strong>Pelanggan Lifetime lama tetap dilindungi.</strong> Paket Lifetime tidak dijual untuk pembelian baru, tetapi License Key Lifetime yang sudah diterbitkan sebelumnya tetap dapat digunakan tanpa tanggal kedaluwarsa selama lisensinya tidak dibatalkan.</p>
     </section>
 
     <section class="plans" id="plans"></section>
@@ -152,15 +174,16 @@
           <div class="checkout-status" id="publicCheckoutStatus"></div>
           <div class="checkout-security"><b>Keamanan mode Lynk.id:</b> Halaman ini hanya mengarahkan customer ke URL produk/checkout Lynk.id yang sudah dikonfigurasi. Password Owner tidak dibaca pada mode ini, tidak dikirim ke Lynk.id, tidak dimasukkan ke WhatsApp, dan tidak disimpan ke localStorage. Status pembayaran hanya menjadi lunas setelah webhook Lynk.id lolos pencocokan backend. Hasil lisensi tidak dikirim melalui email; customer melihatnya melalui panel hasil dan tombol Cek Status Pembayaran di halaman ini.</div>
           <div class="refund-policy-card" id="refundPolicyCard">
-            <strong>↩ Refund mengikuti Ketentuan Publik LYNK.ID</strong>
+            <strong>↩ Kebijakan Refund LocDailyMar</strong>
             <ul>
-              <li>Permohonan refund kepada <b>LYNK.ID</b> untuk transaksi LocDailyMar dapat diajukan paling lambat <b id="refundPolicyDays">24 jam</b> setelah pembayaran.</li>
-              <li>Dasar refund LYNK.ID yang dipakai di LocDailyMar hanya <b>produk/layanan lisensi belum diterima</b>. Salah paket, ketidaksesuaian layanan, atau komplain lain diarahkan langsung ke LocDailyMar sebagai Kreator.</li>
-              <li>Jika disetujui LYNK.ID, nilai yang dikembalikan dapat <b>tidak termasuk biaya transaksi, biaya jasa platform, dan pajak yang berlaku</b>.</li>
-              <li>Setelah lewat 24 jam, klaim belum menerima produk/layanan harus disampaikan langsung kepada LocDailyMar. <a href="support-center.html#refundRequestSection">Buka Pusat Bantuan & Support</a>.</li>
+              <li>Refund hanya tersedia dalam bentuk <b>Refund Penuh</b>. Partial refund tidak tersedia.</li>
+              <li>Pengajuan harus dilakukan maksimal <b id="refundPolicyDays">24 jam</b> setelah pembayaran terverifikasi.</li>
+              <li>Email refund wajib sama dengan email saat pembelian, dan customer wajib memilih kategori serta menuliskan alasan refund.</li>
+              <li>Setelah request diterima, proses pemeriksaan dan pengembalian dana diperkirakan <b>2-3 hari kerja</b>.</li>
+              <li>Jika batas 24 jam sudah lewat, form refund otomatis tidak ditampilkan.</li>
               <li>Order yang masih PENDING dibatalkan melalui tombol <b>Batalkan Order Pembayaran</b>, bukan melalui refund.</li>
             </ul>
-            <span id="refundPolicyState">Memuat ketentuan refund LYNK.ID…</span> · <a href="https://www.lynk.id/terms" target="_blank" rel="noopener">Baca Syarat & Ketentuan LYNK.ID</a>
+            <span id="refundPolicyState">Memuat kebijakan refund LocDailyMar…</span>
           </div>
         </form>
         <aside class="checkout-summary">
@@ -194,10 +217,87 @@
           <a class="btn primary receipt-link" id="receiptLoginBtn" target="_blank" rel="noopener noreferrer" hidden>Masuk Aplikasi sebagai Owner</a>
           <a class="btn ghost receipt-link" id="receiptPasswordBtn" target="_blank" rel="noopener noreferrer" hidden>Buat / Ganti Password Owner (Order Lama)</a>
           <a class="btn ghost receipt-link" id="receiptGuideBtn" target="_blank" rel="noopener noreferrer" hidden>Buka Panduan</a>
-          <a class="btn danger-soft receipt-link" id="receiptRefundBtn" href="support-center.html#refundRequestSection">Ajukan Refund</a>
+          <a class="btn danger-soft receipt-link" id="receiptRefundBtn" href="#licenseRefundSection">Ajukan Refund Penuh</a>
         </div>
         <p class="receipt-foot">Email Owner tetap dipakai sebagai identitas akun dan pencocokan pembayaran Lynk.id, bukan untuk pengiriman hasil. Setelah provisioning siap, gunakan tombol <b>Buat / Ganti Password Owner</b> bila tersedia, lalu login. Jika halaman ter-refresh, tekan <b>Cek Status Pembayaran</b> pada browser/perangkat yang sama untuk menampilkan kembali data lisensi.</p>
-      </section>
+      
+        <section class="license-customer-refund" id="licenseRefundSection" hidden>
+          <div class="license-refund-head">
+            <div>
+              <span class="tag">REFUND MANAGEMENT</span>
+              <h3>Ajukan Refund Penuh</h3>
+              <p>Form ini hanya muncul setelah pembayaran berhasil dan selama belum melewati 24 jam sejak pembayaran terverifikasi.</p>
+            </div>
+            <span class="license-refund-sla">2-3 Hari Kerja</span>
+          </div>
+
+          <div id="licenseRefundContextMessage" class="license-refund-state info">Memeriksa kelayakan refund…</div>
+
+          <div id="licenseRefundInfoGrid" class="license-refund-info" hidden>
+            <div><span>Order ID</span><strong id="licenseRefundOrderId">-</strong></div>
+            <div><span>Status</span><strong id="licenseRefundPaymentStatus">-</strong></div>
+            <div><span>Nilai Transaksi</span><strong id="licenseRefundPaymentAmount">-</strong></div>
+            <div><span>Refund Penuh</span><strong id="licenseRefundAmount">-</strong></div>
+            <div><span>Dibayar</span><strong id="licenseRefundPaidAt">-</strong></div>
+            <div><span>Batas Pengajuan</span><strong id="licenseRefundDeadline">-</strong></div>
+            <div><span>Paket</span><strong id="licenseRefundPlan">-</strong></div>
+            <div><span>Estimasi Proses</span><strong>2-3 hari kerja</strong></div>
+          </div>
+
+          <div id="licenseRefundExistingRequest" class="license-refund-existing" hidden></div>
+          <div id="licenseRefundExpiredNote" hidden><span id="licenseRefundExpiredText"></span></div>
+
+          <div id="licenseRefundFormWrap" class="license-refund-form" hidden>
+            <div class="license-refund-grid">
+              <div class="checkout-field">
+                <label for="licenseRefundType">Jenis refund</label>
+                <select id="licenseRefundType">
+                  <option value="full">Refund Penuh · 100% nilai transaksi</option>
+                </select>
+                <div class="password-help">Refund sebagian/partial tidak tersedia.</div>
+              </div>
+
+              <div class="checkout-field">
+                <label for="licenseRefundReasonCategory">Kategori alasan</label>
+                <select id="licenseRefundReasonCategory" required>
+                  <option value="">Pilih alasan</option>
+                  <option value="duplicate_payment">Pembayaran ganda / duplikat</option>
+                  <option value="wrong_plan">Salah memilih paket</option>
+                  <option value="wrong_period">Salah memilih periode</option>
+                  <option value="provisioning_issue">Kendala aktivasi / provisioning lisensi</option>
+                  <option value="technical_issue">Kendala teknis aplikasi</option>
+                  <option value="service_issue">Kendala layanan</option>
+                  <option value="changed_mind">Membatalkan pembelian</option>
+                  <option value="other">Alasan lainnya</option>
+                </select>
+              </div>
+
+              <div class="checkout-field full">
+                <label for="licenseRefundEmail">Email pembelian</label>
+                <input id="licenseRefundEmail" type="email" autocomplete="email" maxlength="320" placeholder="email yang digunakan saat membeli" required>
+                <div class="password-help">Email wajib sama dengan email pada transaksi pembelian.</div>
+              </div>
+
+              <div class="checkout-field full">
+                <label for="licenseRefundReasonDetail">Alasan refund</label>
+                <textarea id="licenseRefundReasonDetail" maxlength="1500" placeholder="Jelaskan alasan refund secara jelas, minimal 20 karakter." required></textarea>
+                <div class="password-help"><span id="licenseRefundReasonChars">0</span>/1500 karakter · minimum 20 karakter.</div>
+              </div>
+            </div>
+
+            <label class="license-refund-confirm">
+              <input id="licenseRefundConfirm" type="checkbox">
+              <span>Saya memahami bahwa refund hanya tersedia penuh, pengajuan maksimal 24 jam setelah pembayaran, dan proses diperkirakan 2-3 hari kerja.</span>
+            </label>
+
+            <div class="receipt-actions">
+              <button type="button" class="btn danger-soft" id="licenseRefundSubmit">↩️ Ajukan Refund Penuh</button>
+              <button type="button" class="btn ghost" id="licenseRefundRefresh">↻ Cek Ulang Kelayakan</button>
+            </div>
+            <div id="licenseRefundMessage" class="license-refund-message"></div>
+          </div>
+        </section>
+</section>
     </section>
 
 
@@ -279,6 +379,7 @@
   <script src="js/license-v2-config.js?v=27.9.0-v28.1.8"></script>
   <script src="js/license-v2-client.js?v=27.9.0-v28.1.8"></script>
   <script src="js/license-checkout-v2.js?v=27.9.0-v28.1.8"></script>
+<script src="js/customer-refund-v2825.js?v=27.9.0-refund-v2825"></script>
   <script src="js/license-owner-vault.js?v=27.9.0-v28.1.8"></script>
   <script>
     "use strict";

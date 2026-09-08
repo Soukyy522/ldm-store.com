@@ -39,7 +39,6 @@
         {page:"recovery-center.html",icon:"🛟",label:"Recovery Center",group:"Sistem",roles:["owner","admin","kasir"],feature:"recovery_center"},
         {page:"qa-security-performance.html",icon:"🧪",label:"QA & Security",group:"Sistem",roles:["owner"],feature:"qa_security"},
         {page:"setup-awal.html",icon:"🚀",label:"Setup Awal",group:"Sistem",roles:["owner"],infrastructure:true},
-        {page:"monitoring-error.html",icon:"🚨",label:"Monitoring Error",group:"Sistem",roles:["owner","admin"],infrastructure:true},
         {page:"support-center.html",icon:"🛟",label:"Pusat Bantuan & Support",group:"Sistem",roles:["owner","admin","kasir"]},
         {page:"privacy-center.html",icon:"🔐",label:"Privacy Center",group:"Sistem",roles:["owner","admin","kasir"],infrastructure:true},
         {page:"license.html",icon:"🔑",label:"Lisensi & Paket",group:"Sistem",roles:["owner","admin","kasir"]},

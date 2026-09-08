@@ -398,7 +398,7 @@ Deno.serve(async (req) => {
         throw refundError;
       }
       const { data: refundRequests, error: requestError } = await admin.from("ldm2_refund_requests")
-        .select("id,request_code,payment_id,license_id,order_id,refund_type,requested_amount,reason_category,reason_detail,requester_name,requester_email,status,response_note,linked_refund_key,refund_deadline,created_at,updated_at,completed_at,cancelled_at")
+        .select("id,request_code,payment_id,license_id,order_id,refund_type,requested_amount,reason_category,reason_detail,requester_name,requester_email,status,response_note,linked_refund_key,refund_deadline,processing_estimate_start_at,processing_due_at,created_at,updated_at,completed_at,cancelled_at")
         .order("created_at", { ascending: false }).limit(100);
       if (requestError) {
         if (/ldm2_refund_requests|does not exist|schema cache/i.test(requestError.message || "")) {
@@ -413,7 +413,7 @@ Deno.serve(async (req) => {
     if (action === "refund_policy_update") {
       const policyResult = await admin.rpc("ldm2_get_refund_policy");
       if (policyResult.error) throw policyResult.error;
-      return json(req,{ok:false,code:"LYNK_TERMS_POLICY_LOCKED",message:"Kebijakan refund platform dikunci mengikuti ketentuan publik LYNK.ID: maksimal 24 jam, alasan non-delivery saja, tanpa partial refund.",policy:policyResult.data},409);
+      return json(req,{ok:false,code:"INTERNAL_REFUND_POLICY_LOCKED",message:"Kebijakan refund customer saat ini: Refund Penuh, maksimal 24 jam sejak pembayaran, email dan alasan wajib, proses 2-3 hari kerja.",policy:policyResult.data},409);
     }
 
     if (action === "refund_request_update") {
@@ -479,19 +479,20 @@ Deno.serve(async (req) => {
       const manualConfirmed = body.manual_refund_confirmed === true;
 
       if (!manualConfirmed) {
-        return json(req,{ok:false,code:"MANUAL_REFUND_CONFIRM_REQUIRED",message:"Konfirmasi bahwa dana benar-benar sudah dikembalikan melalui prosedur Lynk.id/merchant sebelum menandai refund selesai."},409);
+        return json(req,{ok:false,code:"MANUAL_REFUND_CONFIRM_REQUIRED",message:"Konfirmasi bahwa dana benar-benar sudah dikembalikan kepada customer sebelum menandai refund selesai."},409);
       }
-      if (refundType !== "full") return json(req,{ok:false,message:"Mode ketentuan publik LYNK.ID hanya mencatat refund pembelian penuh."},400);
+      if (refundType !== "full") return json(req,{ok:false,message:"Refund baru hanya mendukung Refund Penuh."},400);
       if (!Number.isSafeInteger(amount) || amount <= 0) return json(req,{ok:false,message:"Nominal refund tidak valid."},400);
-      if (reason.length < 10) return json(req,{ok:false,message:"Alasan refund minimal 10 karakter."},400);
+      if (reason.length < 20) return json(req,{ok:false,message:"Catatan proses refund minimal 20 karakter."},400);
 
       const { data: payment, error: paymentError } = await admin.from("ldm2_payments")
         .select("id,license_id,order_id,status,provider,amount,refund_amount,paid_at")
-        .eq("license_id", licenseId).eq("provider","lynk")
-        .in("status",["paid","partially_refunded"])
+        .eq("license_id", licenseId)
+        .eq("status","paid")
         .order("created_at",{ascending:false}).limit(1).maybeSingle();
       if (paymentError) throw paymentError;
-      if (!payment) return json(req,{ok:false,message:"Pembayaran Lynk.id yang eligible tidak ditemukan."},404);
+      if (!payment) return json(req,{ok:false,message:"Pembayaran PAID yang dapat direfund tidak ditemukan."},404);
+      if (amount !== Number(payment.amount||0)) return json(req,{ok:false,message:"Nominal Refund Penuh harus sama dengan 100% nilai transaksi."},400);
 
       const refundKey = `RFL-${new Date().toISOString().slice(0,10).replace(/-/g,"")}-${randomHex(5)}`;
       const prepared = await admin.rpc("ldm2_prepare_refund",{
@@ -501,9 +502,9 @@ Deno.serve(async (req) => {
       if (prepared.error) throw prepared.error;
 
       const finished = await admin.rpc("ldm2_finish_refund",{
-        p_refund_key:refundKey, p_success:true, p_provider_status:"manual_refund_confirmed",
+        p_refund_key:refundKey, p_success:true, p_provider_status:"internal_manual_refund_confirmed",
         p_provider_transaction_id:refundReference || null,
-        p_provider_response:{provider:"lynk",mode:"lynk_public_terms_refund_record",reference:refundReference||null,confirmed_by:adminEmail,confirmed_at:new Date().toISOString(),fees_and_taxes_may_be_excluded:true,terms_url:"https://www.lynk.id/terms"},
+        p_provider_response:{provider:payment.provider||null,mode:"locdailymar_internal_full_refund_record",reference:refundReference||null,confirmed_by:adminEmail,confirmed_at:new Date().toISOString()},
         p_error:null, p_unknown:false
       });
       if (finished.error) throw finished.error;
@@ -518,14 +519,14 @@ Deno.serve(async (req) => {
       if (/^RFD-\d{8}-[A-F0-9]{10}$/.test(requestCode)) {
         const reqUpdate = await admin.rpc("ldm2_update_refund_request",{
           p_request_code:requestCode, p_status:"completed",
-          p_response_note:`Refund LYNK.ID dicatat selesai. Nominal aktual yang dikembalikan: ${amount}. Biaya transaksi/jasa platform/pajak dapat dikecualikan. Referensi: ${refundReference || refundKey}`,
+          p_response_note:`Refund Penuh dicatat selesai. Nominal yang dikembalikan: ${amount}. Referensi: ${refundReference || refundKey}`,
           p_linked_refund_key:refundKey
         });
         if (reqUpdate.error) throw reqUpdate.error;
       }
 
-      await audit("LYNK_MANUAL_REFUND_COMPLETE", licenseId, { order_id: payment.order_id, refund_key: refundKey, amount, refund_type: refundType, refund_reference: refundReference || null, request_code: requestCode || null });
-      return json(req,{ok:true,message:"Hasil refund LYNK.ID dicatat selesai. Nominal ledger adalah jumlah aktual yang benar-benar dikembalikan; biaya transaksi, jasa platform, dan pajak dapat tidak termasuk.",refund_key:refundKey,payment_status:finished.data?.payment_status||null,refund_total:finished.data?.refund_total||null});
+      await audit("INTERNAL_MANUAL_REFUND_COMPLETE", licenseId, { order_id: payment.order_id, refund_key: refundKey, amount, refund_type: refundType, refund_reference: refundReference || null, request_code: requestCode || null });
+      return json(req,{ok:true,message:"Refund Penuh LocDailyMar dicatat selesai.",refund_key:refundKey,payment_status:finished.data?.payment_status||null,refund_total:finished.data?.refund_total||null});
     }
 
     if (action === "dashboard") {
