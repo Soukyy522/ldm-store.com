@@ -1,0 +1,19 @@
+project_id = "vplweadbeujidsoponrl"
+
+[functions.ldm-license-v2]
+verify_jwt = false
+
+[functions.ldm-license-admin-v2]
+verify_jwt = false
+
+[functions.ldm-public-checkout-v2]
+verify_jwt = false
+
+[functions.ldm-lynk-order]
+verify_jwt = false
+
+[functions.ldm-lynk-webhook]
+verify_jwt = false
+
+[functions.ldm-resend-test]
+verify_jwt = false
