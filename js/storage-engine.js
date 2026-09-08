@@ -3,7 +3,7 @@
 
     if (window.LDMStorageDB) return;
 
-    const VERSION = '27.7.1';
+    const VERSION = '27.9.0-storage-archive-v2826';
     const DB_NAME = 'locdailymar-storage-v27';
     const DB_VERSION = 2;
     const SNAPSHOT_STORE = 'snapshots';
@@ -11,6 +11,8 @@
     const TRANSACTION_STORE = 'transactions';
     const TRANSACTION_ARCHIVE_MAX = 50000;
     const TRANSACTION_RETENTION_DAYS = 365;
+    const TRANSACTION_CLEANUP_INTERVAL_MS = 6 * 60 * 60 * 1000;
+    const TRANSACTION_CLEANUP_META_KEY = 'transaction-archive-cleanup-v2826';
     const MIGRATION_KEY = 'legacy-localstorage-migration-v27';
 
     /*
@@ -486,6 +488,7 @@
             if (oldest == null || value < oldest) oldest = value;
             if (newest == null || value > newest) newest = value;
         });
+        const cleanupMeta = await getMeta(TRANSACTION_CLEANUP_META_KEY, null).catch(() => null);
         return {
             database: DB_NAME,
             store: TRANSACTION_STORE,
@@ -493,14 +496,123 @@
             maxRecords: TRANSACTION_ARCHIVE_MAX,
             retentionDays: TRANSACTION_RETENTION_DAYS,
             oldestAt: oldest != null ? new Date(oldest).toISOString() : null,
-            newestAt: newest != null ? new Date(newest).toISOString() : null
+            newestAt: newest != null ? new Date(newest).toISOString() : null,
+            lastCleanupAt: cleanupMeta && cleanupMeta.cleaned_at || null,
+            lastCleanupRemoved: Number(cleanupMeta && cleanupMeta.removed || 0),
+            lastCleanupRemovedByAge: Number(cleanupMeta && cleanupMeta.removed_by_age || 0),
+            lastCleanupRemovedByLimit: Number(cleanupMeta && cleanupMeta.removed_by_limit || 0)
         };
     }
 
     async function cleanupTransactions(options = {}) {
         await ready();
-        const rows = await getTransactions({ limit: TRANSACTION_ARCHIVE_MAX, newestFirst: false });
-        return replaceTransactions(rows, options);
+
+        const maxRecords = Math.max(
+            1000,
+            Number(options.maxRecords || TRANSACTION_ARCHIVE_MAX) || TRANSACTION_ARCHIVE_MAX
+        );
+        const retentionDays = Math.max(
+            1,
+            Number(options.retentionDays || TRANSACTION_RETENTION_DAYS) || TRANSACTION_RETENTION_DAYS
+        );
+        const cutoff = Date.now() - retentionDays * 86400000;
+
+        /*
+         * PENTING:
+         * Baca SEMUA record IndexedDB terlebih dahulu. Versi lama menggunakan
+         * getTransactions(limit=50000), sehingga bila cache sempat >50.000
+         * record, record di luar limit tidak ikut evaluasi sebelum store.clear().
+         * V28.2.6 tidak lagi memiliki risiko tersebut.
+         */
+        const db = await openDatabase();
+        const tx = db.transaction(TRANSACTION_STORE, 'readonly');
+        const allRecords = await requestResult(
+            tx.objectStore(TRANSACTION_STORE).getAll(),
+            'Arsip transaksi IndexedDB gagal dibaca untuk cleanup.'
+        );
+        const source = Array.isArray(allRecords) ? allRecords : [];
+        const before = source.length;
+
+        let kept = source.filter(record =>
+            Number(record && record.transacted_at_ms || 0) >= cutoff
+        );
+        const removedByAge = before - kept.length;
+
+        kept.sort((a, b) =>
+            Number(a && a.transacted_at_ms || 0) - Number(b && b.transacted_at_ms || 0)
+        );
+
+        let removedByLimit = 0;
+        if (kept.length > maxRecords) {
+            removedByLimit = kept.length - maxRecords;
+            kept = kept.slice(-maxRecords);
+        }
+
+        await transact(TRANSACTION_STORE, 'readwrite', store => {
+            store.clear();
+            kept.forEach(record => store.put(record));
+        });
+
+        const cleanedAt = new Date().toISOString();
+        const result = {
+            before,
+            records: kept.length,
+            removed: removedByAge + removedByLimit,
+            removedByAge,
+            removedByLimit,
+            maxRecords,
+            retentionDays,
+            cleanedAt
+        };
+
+        await putMeta(TRANSACTION_CLEANUP_META_KEY, {
+            cleaned_at: cleanedAt,
+            before,
+            records: kept.length,
+            removed: result.removed,
+            removed_by_age: removedByAge,
+            removed_by_limit: removedByLimit,
+            max_records: maxRecords,
+            retention_days: retentionDays
+        });
+
+        await putMeta('transaction-archive-policy', {
+            version: VERSION,
+            max_records: maxRecords,
+            retention_days: retentionDays,
+            records: kept.length,
+            updated_at: cleanedAt
+        });
+
+        window.dispatchEvent(new CustomEvent('ldm:transaction-archive-cleaned', {
+            detail: result
+        }));
+        window.dispatchEvent(new CustomEvent('ldm:transaction-archive-updated', {
+            detail: { records: kept.length, maxRecords, retentionDays }
+        }));
+
+        return result;
+    }
+
+    async function autoCleanupTransactions(options = {}) {
+        await ready();
+        const force = options.force === true;
+        const meta = await getMeta(TRANSACTION_CLEANUP_META_KEY, null).catch(() => null);
+        const last = Date.parse(meta && meta.cleaned_at || '') || 0;
+
+        if (!force && last && Date.now() - last < TRANSACTION_CLEANUP_INTERVAL_MS) {
+            return {
+                skipped: true,
+                reason: 'interval',
+                lastCleanupAt: new Date(last).toISOString(),
+                nextCleanupAt: new Date(last + TRANSACTION_CLEANUP_INTERVAL_MS).toISOString()
+            };
+        }
+
+        return cleanupTransactions({
+            maxRecords: TRANSACTION_ARCHIVE_MAX,
+            retentionDays: TRANSACTION_RETENTION_DAYS
+        });
     }
 
     async function verify() {
@@ -528,6 +640,19 @@
         window.dispatchEvent(new CustomEvent('ldm:indexeddb-ready', {
             detail: { version: VERSION, migration, memoryKeys: memory.size }
         }));
+
+        /*
+         * Cleanup dijadwalkan setelah init selesai supaya tidak membuat
+         * ready() menunggu dirinya sendiri. Jika aplikasi lama tidak pernah
+         * membuka Laporan sekalipun, cache transaksi tetap dirapikan ketika
+         * aplikasi berikutnya dibuka.
+         */
+        setTimeout(() => {
+            autoCleanupTransactions().catch(error => {
+                console.warn('[LocDailyMar] Auto cleanup arsip transaksi lokal dilewati:', error);
+            });
+        }, 0);
+
         return { version: VERSION, migration, memoryKeys: memory.size };
     }
 
@@ -572,12 +697,32 @@
         getTransactions,
         transactionStats,
         cleanupTransactions,
+        autoCleanupTransactions,
         transactionArchiveMax: TRANSACTION_ARCHIVE_MAX,
         transactionRetentionDays: TRANSACTION_RETENTION_DAYS
     });
 
+    /*
+     * Browser tidak dapat menjalankan cleanup saat aplikasi benar-benar tutup.
+     * Karena itu cleanup lokal bersifat:
+     * - otomatis saat aplikasi dibuka,
+     * - otomatis maksimal setiap 6 jam selama aplikasi terbuka,
+     * - diperiksa lagi ketika tab kembali aktif.
+     */
+    window.setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            autoCleanupTransactions().catch(() => undefined);
+        }
+    }, TRANSACTION_CLEANUP_INTERVAL_MS);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            autoCleanupTransactions().catch(() => undefined);
+        }
+    });
+
     ready().catch(error => {
-        console.warn('[LocDailyMar] Storage Engine 27.7.1 tidak dapat diinisialisasi:', error);
+        console.warn('[LocDailyMar] Storage Engine 27.9.0-storage-archive-v2826 tidak dapat diinisialisasi:', error);
         window.dispatchEvent(new CustomEvent('ldm:indexeddb-error', {
             detail: { message: String(error && error.message || error) }
         }));

@@ -45,6 +45,11 @@
             save.style.display=canEdit?"inline-block":"none";
             save.disabled=!canEdit;
         }
+        const schedule=$("scheduleBtn");
+        if(schedule){
+            schedule.style.display=canEdit?"inline-block":"none";
+            schedule.disabled=!canEdit;
+        }
         const roleHint=$("policyRoleHint");
         if(roleHint){
             roleHint.textContent=canEdit
@@ -96,17 +101,57 @@
             const buckets=sqlHealth?.buckets||{};
             const allBuckets=Boolean(buckets.product_images&&buckets.attendance_proofs&&buckets.expense_receipts);
             const cronSecretReady=Boolean(edgeHealth?.runtime?.cron_secret_ready);
-            const allReady=Boolean(sqlHealth?.cleanup_plan_rpc_ready&&allBuckets&&edgeHealth?.ok);
+            const scheduler=sqlHealth?.scheduler||edgeHealth?.scheduler||{};
+            const schedulerReady=Boolean(scheduler?.configured&&scheduler?.active);
+            const manualReady=Boolean(
+                sqlHealth?.cleanup_plan_rpc_ready
+                &&sqlHealth?.database_cleanup_rpc_ready
+                &&sqlHealth?.settings_rpc_ready
+                &&sqlHealth?.overview_rpc_ready
+                &&allBuckets
+                &&edgeHealth?.ok
+            );
+            const allReady=Boolean(manualReady&&cronSecretReady&&schedulerReady);
 
-            setRuntimeBadge(allReady?"Siap":"Perlu perhatian",allReady?"good":"warn");
+            setRuntimeBadge(
+                allReady?"Siap Otomatis":manualReady?"Manual Siap · Auto Belum":"Perlu perhatian",
+                allReady?"good":manualReady?"warn":"bad"
+            );
+
             setHealthDetails([
                 {label:"Edge Function",value:edgeHealth?.version||"Tersambung",state:"good"},
-                {label:"SQL-44 cleanup plan",value:sqlHealth?.cleanup_plan_rpc_ready?"Siap":"Belum siap",state:sqlHealth?.cleanup_plan_rpc_ready?"good":"bad"},
+                {label:"SQL-45 fondasi retensi",value:sqlHealth?.database_cleanup_rpc_ready&&sqlHealth?.settings_rpc_ready&&sqlHealth?.overview_rpc_ready?"Siap":"Belum lengkap",state:sqlHealth?.database_cleanup_rpc_ready&&sqlHealth?.settings_rpc_ready&&sqlHealth?.overview_rpc_ready?"good":"bad"},
+                {label:"Cleanup plan",value:sqlHealth?.cleanup_plan_rpc_ready?"Siap":"Belum siap",state:sqlHealth?.cleanup_plan_rpc_ready?"good":"bad"},
                 {label:"Bucket Storage",value:allBuckets?"3/3 tersedia":"Ada bucket yang belum tersedia",state:allBuckets?"good":"bad"},
-                {label:"Cron secret",value:cronSecretReady?"Terkonfigurasi":"Belum dikonfigurasi (manual cleanup tetap bisa)",state:cronSecretReady?"good":"warn"}
+                {label:"Cron secret",value:cronSecretReady?"Terkonfigurasi":"Belum dikonfigurasi",state:cronSecretReady?"good":"warn"},
+                {label:"Scheduler harian",value:schedulerReady?"Aktif":"Belum aktif",state:schedulerReady?"good":"warn"}
             ]);
-            if(!silent) log(allReady?"Kesiapan pembersihan terverifikasi.":"Kesiapan pembersihan belum lengkap. Periksa rincian di atas.",allReady?"success":"warn");
-            return allReady;
+
+            const schedStatus=$("schedulerStatus");
+            const schedSchedule=$("schedulerSchedule");
+            const schedLast=$("schedulerLastRun");
+            const schedStore=$("schedulerLastStoreRun");
+            if(schedStatus)schedStatus.textContent=schedulerReady?"Aktif":"Belum aktif";
+            if(schedStatus)schedStatus.className=schedulerReady?"good":"warn";
+            if(schedSchedule)schedSchedule.textContent=scheduler?.schedule_label||scheduler?.schedule||"Belum dijadwalkan";
+            if(schedLast)schedLast.textContent=scheduler?.last_cron_started_at
+                ?`${new Date(scheduler.last_cron_started_at).toLocaleString("id-ID")} · ${scheduler.last_cron_status||"-"}`
+                :"Belum pernah berjalan";
+            if(schedStore)schedStore.textContent=scheduler?.last_store_cleanup_at
+                ?`${new Date(scheduler.last_store_cleanup_at).toLocaleString("id-ID")} · ${scheduler.last_store_cleanup_status||"-"}`
+                :"Belum pernah berjalan";
+
+            if(!silent){
+                log(
+                    allReady
+                        ?"Pembersihan manual dan scheduler otomatis terverifikasi."
+                        :manualReady
+                            ?"Pembersihan manual siap, tetapi scheduler otomatis belum aktif."
+                            :"Kesiapan pembersihan belum lengkap. Periksa rincian di atas.",
+                    allReady?"success":"warn"
+                );
+            }
+            return manualReady;
         }catch(error){
             setRuntimeBadge("Tidak tersambung","bad");
             setHealthDetails([{label:"Masalah",value:String(error?.message||error),state:"bad"}]);
@@ -192,6 +237,40 @@
         }
     }
 
+    async function configureScheduler(){
+        const button=$("scheduleBtn");
+        if(button)button.disabled=true;
+        log("Mengaktifkan scheduler cleanup otomatis…");
+        try{
+            await ensureSession();
+            if(!window.LDMEdgeFunctionClient || typeof window.LDMEdgeFunctionClient.invoke!=="function"){
+                throw new Error("Edge Function client helper belum tersedia.");
+            }
+
+            /*
+             * Browser tidak pernah menerima LDM_STORAGE_CRON_SECRET.
+             * Konfigurasi scheduler dari UI hanya tersedia jika Edge Function
+             * sudah punya secret dan action backend mengizinkan Owner.
+             */
+            const data=await window.LDMEdgeFunctionClient.invoke(FUNCTION_NAME,{
+                body:{action:"configure-auto-cleanup"},
+                timeoutMs:30000,
+                requireAuth:true
+            });
+
+            log(`Scheduler otomatis aktif. ${data?.scheduler?.schedule_label||"Cleanup harian dijadwalkan."}`,"success");
+            await checkHealth({silent:false});
+        }catch(error){
+            const message=String(error?.message||error);
+            log(`Scheduler belum dapat diaktifkan: ${message}`,"error");
+            alert(
+                message+"\n\nJika Cron secret belum ada, jalankan SETUP-STORAGE-AUTO-CLEANUP-V28.2.6.cmd dari paket FULL."
+            );
+        }finally{
+            if(button)button.disabled=false;
+        }
+    }
+
     async function cleanupNow(){
         const autoEnabled=Boolean($("retentionEnabled")?.checked);
         const autoNote=autoEnabled
@@ -226,6 +305,7 @@
         $("cleanupBtn").addEventListener("click",cleanupNow);
         $("refreshBtn").addEventListener("click",load);
         $("healthBtn").addEventListener("click",()=>checkHealth({silent:false}));
+        $("scheduleBtn")?.addEventListener("click",configureScheduler);
         addEventListener("ldm-store-mode-change",()=>{
             const mode=window.LDMStoreMode?.getConfig?.();
             if(mode) $("storeMode").textContent=`${mode.icon} ${mode.label}`;
