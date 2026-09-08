@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.9.0-systemui20";
+    const NAV_VERSION="27.9.0-systemui21";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -101,43 +101,14 @@
         if(!document.body)return;
         const route=systemRouteMeta();
         const active=Boolean(route);
-
         document.body.classList.toggle("ldm-system-page",active);
         document.documentElement.classList.toggle("ldm-system-page-root",active);
-
         if(!active){
             delete document.body.dataset.ldmSystemPage;
             return;
         }
-
         document.body.dataset.ldmSystemPage=currentPage();
         document.body.dataset.ldmSystemLabel=route.label||"Sistem";
-
-        const selectors=[
-            "body > header.top .top-inner",
-            "body > header.top .topin",
-            "body > header.hero .hero-in",
-            ".wrap > .top:first-child",
-            ".wrap > .card.top:first-child",
-            ".setup-shell > .hero:first-child .hero-top",
-            ".support-shell > .hero:first-child",
-            ".privacy-shell > .privacy-hero:first-child",
-            ".main-content > .help-hero:first-child"
-        ];
-
-        let host=null;
-        for(const selector of selectors){
-            const candidate=document.querySelector(selector);
-            if(candidate){host=candidate;break}
-        }
-
-        if(host&&!host.querySelector(":scope > .ldm-system-theme-chip")){
-            const chip=document.createElement("div");
-            chip.className="ldm-system-theme-chip";
-            chip.setAttribute("aria-label","Tema halaman mengikuti pengaturan Dashboard");
-            chip.innerHTML="<strong>🎨 Tema</strong><span>Mengikuti Dashboard</span>";
-            host.appendChild(chip);
-        }
     }
 
     /*
@@ -208,6 +179,10 @@
 
     let lastEodState=null;
     let eodPollTimer=0;
+    let resolvedCloudRole="";
+    let resolvedCloudName="";
+    let resolvedCloudStore="";
+    let cloudRoleResolving=false;
 
     function normalizeRole(value){
         const role=String(value||"").trim().toLowerCase();
@@ -224,7 +199,61 @@
                 if(role)return role;
             }
         }catch(error){}
-        return normalizeRole(localStorage.getItem("userRole")||localStorage.getItem("role"));
+
+        const direct=normalizeRole(
+            localStorage.getItem("userRole")
+            || localStorage.getItem("role")
+            || resolvedCloudRole
+        );
+        if(direct)return direct;
+
+        for(const key of ["currentUser","activeUser","ldmCurrentUser"]){
+            try{
+                const raw=localStorage.getItem(key);
+                if(!raw)continue;
+                const parsed=JSON.parse(raw);
+                const role=normalizeRole(parsed?.role||parsed?.profile?.role);
+                if(role)return role;
+            }catch(error){}
+        }
+
+        const contexts=[
+            window.LDM_CLOUD_CONTEXT,
+            window.LDMCloudContext,
+            window.LDM_CURRENT_CONTEXT,
+            window.currentContext
+        ];
+        for(const ctx of contexts){
+            const role=normalizeRole(ctx?.profile?.role||ctx?.role||ctx?.user?.role);
+            if(role)return role;
+        }
+        return "";
+    }
+
+    async function resolveCloudRole(){
+        if(currentRole()||cloudRoleResolving)return currentRole();
+        if(!window.LDMCloudSession||typeof window.LDMCloudSession.ensureAuthenticated!=="function")return "";
+        cloudRoleResolving=true;
+        try{
+            const context=await window.LDMCloudSession.ensureAuthenticated({registerDevice:false});
+            const profile=context?.profile||{};
+            resolvedCloudRole=normalizeRole(profile.role||context?.role||context?.user?.role);
+            resolvedCloudName=String(
+                profile.display_name||profile.username||context?.user?.email||""
+            ).trim();
+            resolvedCloudStore=String(
+                profile.store_name||context?.store?.name||""
+            ).trim();
+            if(resolvedCloudRole){
+                render();
+                return resolvedCloudRole;
+            }
+        }catch(error){
+            /* Halaman guard boleh menangani redirect. Navigasi tetap punya fallback. */
+        }finally{
+            cloudRoleResolving=false;
+        }
+        return "";
     }
 
     function currentPage(){
@@ -253,12 +282,13 @@
             localStorage.getItem("activeUsername")
             || localStorage.getItem("loggedInUser")
             || localStorage.getItem("username")
+            || resolvedCloudName
             || "Pengguna"
         );
     }
 
     function storeName(){
-        return String(localStorage.getItem("ldmCloudStoreName")||"Toko belum terhubung");
+        return String(localStorage.getItem("ldmCloudStoreName")||resolvedCloudStore||"Toko belum terhubung");
     }
 
     function readArray(key){
@@ -271,7 +301,23 @@
     }
 
     function witaDate(value){
-        return window.LDMLocalTime.dateKey(value);
+        try{
+            if(window.LDMLocalTime&&typeof window.LDMLocalTime.dateKey==="function"){
+                return window.LDMLocalTime.dateKey(value);
+            }
+        }catch(error){}
+        const date=value instanceof Date?value:new Date(value);
+        if(isNaN(date))return "";
+        try{
+            const parts=new Intl.DateTimeFormat("en-CA",{
+                timeZone:"Asia/Makassar",
+                year:"numeric",month:"2-digit",day:"2-digit"
+            }).formatToParts(date);
+            const map=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+            return `${map.year}-${map.month}-${map.day}`;
+        }catch(error){
+            return date.toISOString().slice(0,10);
+        }
     }
 
     function recordDate(item){
@@ -321,7 +367,9 @@
         if(!feature)return true;
         if(window.LDM_LICENSE_V2_CONFIG?.enabled===false)return true;
         const license=window.LDM_LICENSE_V2_STATE;
-        return Boolean(license&&window.LDMLicenseV2?.hasFeature(feature,license));
+        const api=window.LDMLicenseV2;
+        if(!license||!api||typeof api.hasFeature!=="function")return null;
+        return Boolean(api.hasFeature(feature,license));
     }
 
     function currentStoreMode(){
@@ -337,10 +385,25 @@
     function modeRouteKey(route){return normalizedPage(route&&route.page)}
 
     function routeAllowed(route,role,eodReady){
-        if(!route.roles.includes(role))return false;
-        // Fitur infrastructure (Monitoring/Support) tidak dipaketkan sebagai
-        // fitur berbayar. Role tetap membatasi siapa yang dapat melihatnya.
-        if(!route.infrastructure && !licenseFeatureAllowed(route.feature))return false;
+        if(!role||!route.roles.includes(role))return false;
+
+        const featureState=licenseFeatureAllowed(route.feature);
+        if(!route.infrastructure && featureState===false)return false;
+
+        /*
+         * Jika runtime lisensi belum dimuat pada halaman kecil, jangan membuat
+         * seluruh navigasi lenyap. Tampilkan route aman sementara:
+         * Dashboard, halaman saat ini, infrastructure, dan route tanpa feature.
+         * Begitu event lisensi siap masuk, render() membangun menu lengkap.
+         */
+        if(
+            !route.infrastructure
+            && featureState===null
+            && route.feature
+            && modeRouteKey(route)!=="dashboard.html"
+            && modeRouteKey(route)!==currentPage()
+        )return false;
+
         if(route.requiresEodReady && !eodReady)return false;
         const profile=modeProfile();
         if(profile.hidden.includes(modeRouteKey(route)))return false;
@@ -358,8 +421,17 @@
         return copy;
     }
 
+    function fallbackRoutes(){
+        const wanted=new Set(["dashboard.html",currentPage(),"support-center.html","license.html","panduan.html"]);
+        return ROUTES
+            .filter(route=>wanted.has(modeRouteKey(route)))
+            .map(routeForMode);
+    }
+
     function visibleRoutes(role,eodReady){
-        return ROUTES.filter(route=>routeAllowed(route,role,eodReady)).map(routeForMode);
+        if(!role)return fallbackRoutes();
+        const routes=ROUTES.filter(route=>routeAllowed(route,role,eodReady)).map(routeForMode);
+        return routes.length?routes:fallbackRoutes();
     }
 
     function modeGroupOrder(){
@@ -602,10 +674,7 @@
         shell.className="ldm-global-mega";
         shell.innerHTML=`<nav class="ldm-global-mega-bar" aria-label="Navigasi utama desktop"><button type="button" class="ldm-global-mega-trigger" aria-expanded="false" aria-controls="ldmGlobalMegaPanel"><span>☷</span><span>Menu</span><span class="ldm-global-mega-arrow">▼</span></button><div class="ldm-global-mega-quick">${quick}</div><div class="ldm-global-mega-session"><span class="ldm-global-mode-chip">${profile.icon} ${esc(profile.label)}</span><span class="ldm-global-store" data-ldm-store-name>${esc(storeName())}</span><span class="ldm-global-role">👤 ${esc(role)}</span></div><div class="ldm-global-mega-panel" id="ldmGlobalMegaPanel"><div class="ldm-global-panel-head"><div><strong>Navigasi ${profile.label}</strong><p>${esc(profile.tagline)} Menu tetap mengikuti role dan paket lisensi.</p></div><button type="button" class="ldm-global-panel-close">✕ Tutup</button></div><div class="ldm-global-mega-grid">${groupedHTML(routes,"desktop")}</div></div></nav>`;
 
-        const app=document.querySelector(".app-layout");
-        const main=app&&app.querySelector(".main-content");
-        if(app&&main)app.insertBefore(shell,main);
-        else document.body.insertAdjacentElement("afterbegin",shell);
+        document.body.insertAdjacentElement("afterbegin",shell);
 
         const trigger=shell.querySelector(".ldm-global-mega-trigger");
         const close=shell.querySelector(".ldm-global-panel-close");
@@ -722,21 +791,35 @@
         applyModeContext();
         decorateSystemPage();
         applySharedTheme();
-        const role=currentRole();
-        document.documentElement.dataset.ldmRole=role;
-        if(!role)return false;
 
-        const eodResult=calculateEodReadiness();
-        markLegacyEodLinks(eodResult);
+        const role=currentRole();
+        document.documentElement.dataset.ldmRole=role||"pending";
+
+        let eodResult={ready:false,activeAccounts:[],pendingAccounts:[],hasShift1:false,hasShift2:false,date:""};
+        try{
+            eodResult=calculateEodReadiness();
+            markLegacyEodLinks(eodResult);
+        }catch(error){
+            /*
+             * Navigasi tidak boleh hilang hanya karena helper waktu / data EOD
+             * belum dimuat pada halaman Sistem.
+             */
+        }
+
         const desktopReady=buildMega(role,eodResult.ready);
         const mobileReady=buildMobileDrawer(role,eodResult.ready);
-        syncBadges();
-        refreshContext();
-        initializePrimaryOwnerAccess();
+
+        try{syncBadges()}catch(error){}
+        try{refreshContext()}catch(error){}
+        try{initializePrimaryOwnerAccess()}catch(error){}
+
+        if(!role)resolveCloudRole();
 
         if(desktopReady&&mobileReady){
             document.documentElement.classList.add("ldm-global-nav-ready","ldm-global-mega-ready");
-            window.dispatchEvent(new CustomEvent("ldm-global-navigation-rendered",{detail:{role,eodReady:eodResult.ready}}));
+            window.dispatchEvent(new CustomEvent("ldm-global-navigation-rendered",{
+                detail:{role:role||"pending",eodReady:eodResult.ready,fallback:!role}
+            }));
             return true;
         }
         return false;
@@ -758,19 +841,21 @@
         let attempt=0;
         const run=()=>{
             attempt+=1;
-            if(render()||attempt>=16){
-                syncEodAvailability(false);
-                syncBadges();
+            render();
+            if(!currentRole()&&attempt<24){
+                resolveCloudRole();
+                setTimeout(run,250);
                 return;
             }
-            setTimeout(run,250);
+            syncEodAvailability(false);
+            try{syncBadges()}catch(error){}
         };
         run();
 
         if(!eodPollTimer){
             eodPollTimer=window.setInterval(()=>{
                 if(!document.hidden)syncEodAvailability(false);
-            },2000);
+            },2500);
         }
     }
 
@@ -779,7 +864,7 @@
 
     document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMobileDrawer()});
     window.addEventListener("storage",event=>{
-        if(["headerConfig","userRole","role","ldmCloudStoreName","ldmStoreOperationalMode"].includes(event.key))render();
+        if(["headerConfig","userRole","role","currentUser","activeUser","ldmCloudStoreName","ldmStoreOperationalMode"].includes(event.key))render();
         if(EOD_KEYS.includes(event.key))syncEodAvailability(false);
     });
     window.addEventListener("focus",()=>syncEodAvailability(false));
