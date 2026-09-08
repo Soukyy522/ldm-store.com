@@ -1,7 +1,9 @@
 (function(){
     "use strict";
 
-    const CHANNEL_NAME = "ldm-cloud-accounts-v15";
+    const CHANNEL_NAME = "ldm-cloud-accounts-v2829";
+    const DEFAULT_TIMEOUT_MS = 15000;
+    const CONTEXT_TIMEOUT_MS = 12000;
     let channel = null;
 
     function client(){
@@ -11,15 +13,49 @@
         return window.LDMSupabase.createClient();
     }
 
+    function withTimeout(task, ms, message){
+        let timer = null;
+        return Promise.race([
+            Promise.resolve(task),
+            new Promise((_, reject)=>{
+                timer = window.setTimeout(
+                    ()=>reject(new Error(message || "Permintaan terlalu lama diproses.")),
+                    Math.max(1000, Number(ms || DEFAULT_TIMEOUT_MS))
+                );
+            })
+        ]).finally(()=>{
+            if(timer !== null) window.clearTimeout(timer);
+        });
+    }
+
+    async function rpc(name, params, label){
+        const query = params === undefined
+            ? client().rpc(name)
+            : client().rpc(name, params);
+
+        const result = await withTimeout(
+            query,
+            DEFAULT_TIMEOUT_MS,
+            `${label || "Data akun"} terlalu lama dimuat. Periksa koneksi lalu coba kembali.`
+        );
+
+        if(result && result.error) throw result.error;
+        return result ? result.data : null;
+    }
+
     async function invokeAccountAdmin(body){
         if(!window.LDMEdgeFunctionClient || typeof window.LDMEdgeFunctionClient.invoke!=="function"){
-            throw new Error("Layanan server belum siap. Muat ulang aplikasi dan coba kembali.");
+            throw new Error("Layanan pengelolaan akun belum siap. Muat ulang aplikasi dan coba kembali.");
         }
-        return window.LDMEdgeFunctionClient.invoke("ldm-account-admin",{
-            body,
-            timeoutMs:25000,
-            requireAuth:true
-        });
+        return withTimeout(
+            window.LDMEdgeFunctionClient.invoke("ldm-account-admin",{
+                body,
+                timeoutMs:25000,
+                requireAuth:true
+            }),
+            28000,
+            "Layanan pengelolaan akun terlalu lama merespons. Coba kembali."
+        );
     }
 
     async function functionErrorMessage(error,fallback){
@@ -35,106 +71,122 @@
             }catch(_ignored){}
         }
         const message=String(error && error.message || fallback);
-        if(/Failed to send a request to the Edge Function|Failed to fetch|NetworkError/i.test(message)){
-            return "Layanan pengelolaan akun belum dapat dihubungi. Periksa koneksi lalu coba kembali. Jika tetap terjadi, hubungi Tim Support.";
+        if(/Failed to send a request|Failed to fetch|NetworkError/i.test(message)){
+            return "Layanan pengelolaan akun belum dapat dihubungi. Periksa koneksi lalu coba kembali.";
         }
         return message;
     }
 
     async function accountContext(){
-        if(!window.LDMCloudSession){
-            throw new Error("Cloud Session belum tersedia.");
+        if(!window.LDMCloudSession || typeof window.LDMCloudSession.ensureAuthenticated !== "function"){
+            throw new Error("Sesi akun belum siap. Muat ulang aplikasi dan login kembali.");
         }
-        const context = await window.LDMCloudSession.ensureAuthenticated({registerDevice:false});
-        const role = String(context.profile.role || "").toLowerCase();
+
+        const context = await withTimeout(
+            window.LDMCloudSession.ensureAuthenticated({registerDevice:false}),
+            CONTEXT_TIMEOUT_MS,
+            "Pemeriksaan sesi akun terlalu lama. Muat ulang aplikasi lalu coba kembali."
+        );
+
+        const role = String(context?.profile?.role || "").toLowerCase();
         if(!["owner","admin","kasir"].includes(role)){
-            throw new Error("Role akun cloud tidak valid.");
+            throw new Error("Hak akses akun tidak valid.");
         }
         return context;
     }
 
-    async function ownerContext(){
-        const context = await accountContext();
-        if(String(context.profile.role || "").toLowerCase() !== "owner"){
+    async function ownerContext(context){
+        const current = context || await accountContext();
+        if(String(current?.profile?.role || "").toLowerCase() !== "owner"){
             throw new Error("Aksi ini hanya untuk Owner.");
         }
-        return context;
+        return current;
     }
 
-    async function listAccounts(){
-        await accountContext();
-        const {data,error} = await client().rpc("ldm_account_list");
-        if(error) throw error;
+    async function listAccounts(context){
+        if(!context) await accountContext();
+        const data = await rpc("ldm_account_list", undefined, "Daftar akun");
         return Array.isArray(data) ? data : [];
     }
 
-    async function listArchivedAccounts(){
-        await ownerContext();
-        const {data,error} = await client().rpc("ldm_account_archived_list");
-        if(error) throw error;
+    async function listArchivedAccounts(context){
+        await ownerContext(context);
+        const data = await rpc("ldm_account_archived_list", undefined, "Daftar akun dinonaktifkan");
         return Array.isArray(data) ? data : [];
     }
 
-    async function health(){
-        await accountContext();
-        const {data,error} = await client().rpc("ldm_account_health");
-        if(error) throw error;
+    async function health(context){
+        if(!context) await accountContext();
+        const data = await rpc("ldm_account_health", undefined, "Ringkasan akun");
         return data || {};
     }
 
     async function createAccount({email,password,username,displayName,role}){
         await ownerContext();
-        const data = await invokeAccountAdmin({
-            action:"create",
-            email:String(email||"").trim().toLowerCase(),
-            password:String(password||""),
-            username:String(username||"").trim(),
-            display_name:String(displayName||"").trim() || null,
-            role:String(role||"kasir").trim().toLowerCase()
-        });
-        localStorage.removeItem("ldmAttendanceProfiles");
-        window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
-        return data;
+        try{
+            const data = await invokeAccountAdmin({
+                action:"create",
+                email:String(email||"").trim().toLowerCase(),
+                password:String(password||""),
+                username:String(username||"").trim(),
+                display_name:String(displayName||"").trim() || null,
+                role:String(role||"kasir").trim().toLowerCase()
+            });
+            localStorage.removeItem("ldmAttendanceProfiles");
+            window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
+            return data;
+        }catch(error){
+            throw new Error(await functionErrorMessage(error,"Akun gagal dibuat."));
+        }
     }
 
     async function deleteAccount(userId){
         await ownerContext();
-        const data = await invokeAccountAdmin({action:"delete",user_id:userId});
-        localStorage.removeItem("ldmAttendanceProfiles");
-        window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
-        return data;
+        try{
+            const data = await invokeAccountAdmin({action:"delete",user_id:userId});
+            localStorage.removeItem("ldmAttendanceProfiles");
+            window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
+            return data;
+        }catch(error){
+            throw new Error(await functionErrorMessage(error,"Akun gagal dihapus."));
+        }
     }
 
     async function reactivateAccount(userId){
         await ownerContext();
-        const data = await invokeAccountAdmin({action:"reactivate",user_id:String(userId||"").trim()});
-        localStorage.removeItem("ldmAttendanceProfiles");
-        window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
-        return data;
+        try{
+            const data = await invokeAccountAdmin({
+                action:"reactivate",
+                user_id:String(userId||"").trim()
+            });
+            localStorage.removeItem("ldmAttendanceProfiles");
+            window.dispatchEvent(new CustomEvent("ldm-cloud-accounts-updated"));
+            return data;
+        }catch(error){
+            throw new Error(await functionErrorMessage(error,"Akun gagal diaktifkan kembali."));
+        }
     }
 
     async function linkExistingAuth({email,username,displayName,role}){
         await ownerContext();
-        const {data,error} = await client().rpc("ldm_account_link_existing_auth",{
+        return rpc("ldm_account_link_existing_auth",{
             p_email:String(email||"").trim().toLowerCase(),
             p_username:String(username||"").trim(),
             p_display_name:String(displayName||"").trim() || null,
             p_role:String(role||"kasir").trim().toLowerCase()
-        });
-        if(error) throw error;
-        return data;
+        },"Penautan akun");
     }
 
     async function updateProfile({userId,username,displayName,role,active}){
         const context = await ownerContext();
-        const {data,error} = await client().rpc("ldm_account_update_profile",{
+        const data = await rpc("ldm_account_update_profile",{
             p_user_id:userId,
             p_username:String(username||"").trim(),
             p_display_name:String(displayName||"").trim() || null,
             p_role:String(role||"kasir").trim().toLowerCase(),
             p_active:Boolean(active)
-        });
-        if(error) throw error;
+        },"Pembaruan akun");
+
         if(context.user && context.user.id===userId){
             await window.LDMCloudSession.ensureAuthenticated({registerDevice:false});
         }
@@ -145,9 +197,14 @@
     async function changeOwnPassword(newPassword){
         const password = String(newPassword||"");
         if(password.length<8) throw new Error("Password baru minimal 8 karakter.");
-        const {data,error} = await client().auth.updateUser({password});
-        if(error) throw error;
-        return data;
+
+        const result = await withTimeout(
+            client().auth.updateUser({password}),
+            DEFAULT_TIMEOUT_MS,
+            "Perubahan password terlalu lama diproses."
+        );
+        if(result?.error) throw result.error;
+        return result?.data;
     }
 
     function recoveryRedirectURL(){
@@ -158,32 +215,56 @@
         await ownerContext();
         const normalized=String(email||"").trim().toLowerCase();
         if(!normalized) throw new Error("Email wajib diisi.");
-        const {data,error}=await client().auth.resetPasswordForEmail(normalized,{redirectTo:recoveryRedirectURL()});
-        if(error) throw error;
-        return data;
+
+        const result=await withTimeout(
+            client().auth.resetPasswordForEmail(normalized,{
+                redirectTo:recoveryRedirectURL()
+            }),
+            DEFAULT_TIMEOUT_MS,
+            "Permintaan reset password terlalu lama diproses."
+        );
+        if(result?.error) throw result.error;
+        return result?.data;
     }
 
-    async function startRealtime(callback){
+    async function startRealtime(callback, context){
         if(channel) return channel;
-        const context=await accountContext();
-        const storeId=context.profile.store_id;
+
+        const current=context || await accountContext();
+        const storeId=current.profile.store_id;
         const supabase=client();
+
         channel=supabase.channel(CHANNEL_NAME).on("postgres_changes",{
-            event:"*",schema:"public",table:"profiles",filter:`store_id=eq.${storeId}`
-        },payload=>{if(typeof callback==="function") callback(payload)}).subscribe();
+            event:"*",
+            schema:"public",
+            table:"profiles",
+            filter:`store_id=eq.${storeId}`
+        },payload=>{
+            if(typeof callback==="function") callback(payload);
+        }).subscribe(status=>{
+            window.dispatchEvent(new CustomEvent("ldm-account-realtime-status",{
+                detail:{status:String(status||"")}
+            }));
+        });
+
         return channel;
     }
 
     async function stopRealtime(){
         if(!channel)return;
         const supabase=client();
-        try{await supabase.removeChannel(channel)}finally{channel=null}
+        try{
+            await supabase.removeChannel(channel);
+        }finally{
+            channel=null;
+        }
     }
 
     window.LDMAccounts=Object.freeze({
         accountContext,ownerContext,listAccounts,listArchivedAccounts,health,
         createAccount,deleteAccount,reactivateAccount,
         linkExistingAuth,updateProfile,changeOwnPassword,sendPasswordReset,
-        recoveryRedirectURL,startRealtime,stopRealtime
+        recoveryRedirectURL,startRealtime,stopRealtime,
+        withTimeout
     });
 })();
