@@ -27,15 +27,18 @@
         window.dispatchEvent(new CustomEvent("ldm-license-v2-ready",{detail:data}));
         return data;
     }
-    async function call(action,payload={}){
+    async function call(action,payload={},options={}){
         if(!cfg().enabled)return {ok:true,bypass:true,features:["*"]};
         if(!configured())throw Object.assign(new Error("Alamat server lisensi belum dikonfigurasi oleh developer."),{code:"LICENSE_CONFIG_REQUIRED"});
         const controller=new AbortController();
         const timer=setTimeout(()=>controller.abort(),Number(cfg().requestTimeoutMs)||8000);
         try{
-            const response=await fetch(cfg().serverUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+            const headers={"Content-Type":"application/json"};
+            const bearer=String(options.authorization||"").trim();
+            if(bearer)headers.Authorization=`Bearer ${bearer.replace(/^Bearer\s+/i,"")}`;
+            const response=await fetch(cfg().serverUrl,{method:"POST",headers,body:JSON.stringify({
                 action,device_id:deviceId(),device_name:deviceName(),store_code:String(payload.store_code||storeCode()).trim().toUpperCase(),app_version:cfg().appVersion||"",...payload
-            }),signal:controller.signal,cache:"no-store"});
+            }),signal:controller.signal,cache:"no-store",credentials:"omit"});
             const data=await response.json().catch(()=>({ok:false,code:"INVALID_SERVER_RESPONSE",message:"Jawaban server lisensi tidak valid."}));
             if(!response.ok||data.ok===false){const error=new Error(data.message||`Server lisensi merespons ${response.status}.`);error.code=data.code||`HTTP_${response.status}`;error.status=response.status;error.data=data;throw error}
             return data;

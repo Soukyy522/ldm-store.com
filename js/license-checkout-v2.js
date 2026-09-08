@@ -58,6 +58,8 @@
 
   let currentPlan=null;
   let currentReceipt=null;
+  let receiptSensitiveRevealed=false;
+  let receiptHideTimer=null;
 
   function renderSummary(){
     if(!currentPlan)return;
@@ -119,6 +121,21 @@
 
   function setText(id,v){const n=el(id);if(n)n.textContent=v??"-";}
   function setLink(id,url){const n=el(id);if(!n)return;if(url){n.href=url;n.hidden=false;}else{n.removeAttribute("href");n.hidden=true;}}
+  function masked(v,keep=4){const s=String(v||"");if(!s)return "-";if(s.length<=keep)return "••••";return `${"•".repeat(Math.min(12,Math.max(6,s.length-keep)))}${s.slice(-keep)}`;}
+  function setReceiptSensitive(reveal){
+    receiptSensitiveRevealed=Boolean(reveal);
+    const r=currentReceipt||{};
+    setText("receiptLicenseKey",receiptSensitiveRevealed?(r.license_key||"-"):"••••••••••••••••••••");
+    setText("receiptStoreCode",receiptSensitiveRevealed?(r.store_code||"-"):masked(r.store_code,3));
+    setText("receiptStoreId",receiptSensitiveRevealed?(r.store_id||"-"):masked(r.store_id,6));
+    setText("receiptNetworkId",receiptSensitiveRevealed?(r.network_id||"-"):masked(r.network_id,6));
+    const revealBtn=el("receiptRevealBtn");if(revealBtn)revealBtn.textContent=receiptSensitiveRevealed?"Sembunyikan Data Penting":"Reveal Data Penting";
+    ["receiptCopyAllBtn","receiptCopyKeyBtn","receiptActivateBtn"].forEach(id=>{const b=el(id);if(b)b.disabled=!receiptSensitiveRevealed;});
+    if(receiptHideTimer){clearTimeout(receiptHideTimer);receiptHideTimer=null;}
+    if(receiptSensitiveRevealed){
+      receiptHideTimer=setTimeout(()=>setReceiptSensitive(false),90000);
+    }
+  }
 
   function receiptText(r){return [
     "LOCDailyMar — DATA LISENSI",
@@ -144,10 +161,7 @@
     const panel=el("licenseReceipt");if(!panel)return;
     setText("receiptOrderId",r.order_id);
     setText("receiptPlan",`${r.plan_name||r.plan_code||"-"} · ${r.period_label||cycleLabel(r.billing_cycle)}`);
-    setText("receiptLicenseKey",r.license_key);
-    setText("receiptStoreCode",r.store_code);
-    setText("receiptStoreId",r.store_id);
-    setText("receiptNetworkId",r.network_id);
+    setReceiptSensitive(false);
     setText("receiptOwnerEmail",r.owner_email);
     setText("receiptExpires",tanggal(r.expires_at));
     setText("receiptPasswordState",r.credentials_source==="customer_checkout"?"Gunakan kredensial Owner yang sudah dibuat":"Gunakan tombol Buat / Ganti Password Owner");
@@ -321,9 +335,10 @@
     check?.addEventListener("click",async()=>{try{await checkLast();}catch(err){setStatus(`❌ ${err.message||err}`,"error");}});
     el("checkoutCancelBtn")?.addEventListener("click",()=>{cancelOrder().catch(()=>{});});
     el("checkoutLynkHelpBtn")?.addEventListener("click",()=>{try{helpWhatsApp();}catch(err){setStatus(`❌ ${err.message||err}`,"error");}});
-    el("receiptCopyAllBtn")?.addEventListener("click",async()=>{if(currentReceipt)await copyText(receiptText(currentReceipt));});
-    el("receiptCopyKeyBtn")?.addEventListener("click",async()=>{if(currentReceipt?.license_key)await copyText(currentReceipt.license_key);});
-    el("receiptActivateBtn")?.addEventListener("click",()=>{if(!currentReceipt)return;const sc=el("storeCode"),lk=el("licenseKey");if(sc)sc.value=currentReceipt.store_code||"";if(lk)lk.value=currentReceipt.license_key||"";el("activation")?.scrollIntoView({behavior:"smooth",block:"start"});});
+    el("receiptRevealBtn")?.addEventListener("click",()=>setReceiptSensitive(!receiptSensitiveRevealed));
+    el("receiptCopyAllBtn")?.addEventListener("click",async()=>{if(currentReceipt&&receiptSensitiveRevealed)await copyText(receiptText(currentReceipt));});
+    el("receiptCopyKeyBtn")?.addEventListener("click",async()=>{if(currentReceipt?.license_key&&receiptSensitiveRevealed)await copyText(currentReceipt.license_key);});
+    el("receiptActivateBtn")?.addEventListener("click",()=>{if(!currentReceipt||!receiptSensitiveRevealed)return;const sc=el("storeCode"),lk=el("licenseKey");if(sc)sc.value=currentReceipt.store_code||"";if(lk){lk.value=currentReceipt.license_key||"";lk.type="password";}el("activation")?.scrollIntoView({behavior:"smooth",block:"start"});});
     loadRefundPolicy();
     const params=new URLSearchParams(location.search);
     if(params.get("payment")==="return"&&last?.order_id)setTimeout(()=>status(last.order_id,last.status_token,false).catch(()=>{}),700);
