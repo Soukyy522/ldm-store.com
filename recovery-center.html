@@ -1,49 +1,47 @@
 <!DOCTYPE html>
-<html lang="id" class="secure-page-pending">
+
+<html class="secure-page-pending" lang="id">
 <head>
-    <script src="js/storage-engine.js?v=27.7.1"></script>
-    <script src="js/storage-quota-guard.js?v=27.7.1"></script>
-    <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
+<script src="js/storage-engine.js?v=27.7.1"></script>
+<script src="js/storage-quota-guard.js?v=27.7.1"></script>
+<script defer="" src="js/storage-health-monitor.js?v=27.7.1"></script>
 <script src="js/local-time.js?v=26.4.0"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="theme-color" content="#0d2240">
-    <title>Sync Conflict & Recovery Center - LocDailyMar</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/icons/icon-192.png">
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="strict-origin-when-cross-origin" name="referrer"/>
+<meta content="#0d2240" name="theme-color"/>
+<title>Sync Conflict &amp; Recovery Center - LocDailyMar</title>
+<link href="manifest.json" rel="manifest"/>
+<link href="assets/icons/icon-192.png" rel="icon"/>
+<style>
         *{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#172033;font:14px/1.5 Inter,system-ui,sans-serif}.wrap{width:min(1220px,calc(100% - 28px));margin:22px auto 50px}.top,.card{background:#fff;border:1px solid #dfe6ef;border-radius:17px;box-shadow:0 9px 28px #0f234512}.top{padding:22px;display:flex;align-items:center;justify-content:space-between;gap:16px}.top h1{font-size:clamp(1.3rem,3vw,1.9rem);margin:0 0 4px}.muted{color:#64748b}.actions{display:flex;gap:8px;flex-wrap:wrap}button,.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer;text-decoration:none;background:#0d2240;color:#fff}.green{background:#0f9d58}.light{background:#e8eef7;color:#0d2240}.danger{background:#fee2e2;color:#991b1b}.warn{background:#fef3c7;color:#92400e}button:disabled{opacity:.5;cursor:not-allowed}.notice{margin:14px 0;padding:13px 15px;border:1px solid #f2c66d;background:#fff9e8;border-radius:12px}.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}.metric{padding:14px;background:#fff;border:1px solid #dfe6ef;border-radius:13px}.metric b{display:block;font-size:1.45rem}.card{padding:18px;margin-top:14px}.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.card h2{font-size:1.05rem;margin:0}.table-wrap{overflow:auto;border:1px solid #e6ebf2;border-radius:11px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:10px;border-bottom:1px solid #edf1f5;vertical-align:top}th{background:#f7f9fc;font-size:.74rem;color:#475569;position:sticky;top:0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.7rem;font-weight:900;text-transform:uppercase}.pending,.retry_requested{background:#dbeafe;color:#1d4ed8}.syncing{background:#e0f2fe;color:#0369a1}.synced,.resolved{background:#dcfce7;color:#166534}.conflict,.open{background:#fef3c7;color:#92400e}.failed,.blocked{background:#fee2e2;color:#991b1b}.discarded{background:#e5e7eb;color:#475569}.error{max-width:340px;color:#991b1b;white-space:normal}.small{font-size:.76rem}.empty{text-align:center;padding:26px;color:#64748b}.message{display:none;margin-top:13px;padding:12px;border-radius:10px;white-space:pre-wrap}.message.show{display:block}.message.ok{background:#dcfce7;color:#166534}.message.bad{background:#fee2e2;color:#991b1b}@media(max-width:800px){.top{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr 1fr}.card-head{align-items:flex-start;flex-direction:column}}@media(max-width:430px){.summary{grid-template-columns:1fr}}
     </style>
-    <script src="js/security-hardening.js?v=19.0"></script>
-        <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
-<script defer src="js/qa-runtime.js?v=19.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/supabase-client.js"></script>
-    <script src="js/cloud-auth.js?v=15.0"></script>
-    <script src="js/cloud-session.js?v=16.0"></script>
-    <script src="js/cloud-session-guard.js?v=16.0"></script>
-    <script src="js/offline-queue.js?v=17.0"></script>
-    <script src="js/recovery-service.js?v=17.0"></script>
-    <script src="js/pwa-manager.js?v=19.1"></script>
+<script src="js/security-hardening.js?v=19.0"></script>
+<script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
+<script defer="" src="js/qa-runtime.js?v=19.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=16.0"></script>
+<script src="js/cloud-session-guard.js?v=16.0"></script>
+<script src="js/offline-queue.js?v=17.0"></script>
+<script src="js/recovery-service.js?v=17.0"></script>
+<script src="js/pwa-manager.js?v=19.1"></script>
 <script src="js/license-v2-config.js?v=25.2.0"></script>
 <script src="js/license-v2-client.js?v=25.2.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
-
-<link id="ldmSystemThemeFonts" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;500;600;700;800&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui20">
-</head>
-<body>
-<main class="wrap">
-    <section class="top"><div><h1>🛟 Sync Conflict & Recovery Center</h1><div class="muted" id="identity">Memuat sesi cloud…</div></div><div class="actions"><button class="green" id="refreshBtn">↻ Refresh</button><button id="syncBtn">Sinkronkan Queue</button><button class="light" id="exportBtn">Export Recovery JSON</button><a class="btn light" href="dashboard.html">← Dashboard</a></div></section>
-    <div class="notice"><strong>Aturan aman:</strong> Retry tidak membuat transaksi ganda karena tetap memakai <code>client_transaction_id</code>. Discard hanya dapat dilakukan Owner, wajib online, wajib memiliki alasan, tercatat di cloud, dan diblokir kembali oleh server.</div>
-    <section class="summary"><div class="metric"><span>Queue lokal</span><b id="localTotal">0</b></div><div class="metric"><span>Belum sinkron</span><b id="unsynced">0</b></div><div class="metric"><span>Conflict cloud</span><b id="cloudOpen">0</b></div><div class="metric"><span>Resolved</span><b id="resolved">0</b></div><div class="metric"><span>Discarded</span><b id="discarded">0</b></div></section>
-    <div class="message" id="message"></div>
-
-    <section class="card"><div class="card-head"><div><h2>Antrean pada akun + perangkat ini</h2><span class="muted small">Retry tersedia untuk pemilik queue. Discard lokal hanya Owner.</span></div></div><div class="table-wrap"><table><thead><tr><th>Transaksi</th><th>Status</th><th>Waktu</th><th>Total</th><th>Percobaan</th><th>Error terakhir</th><th>Aksi</th></tr></thead><tbody id="localBody"></tbody></table></div></section>
-
-    <section class="card"><div class="card-head"><div><h2>Conflict cloud dalam store</h2><span class="muted small" id="cloudScope">Owner/Admin melihat store; Kasir hanya conflict miliknya.</span></div><select id="statusFilter"><option value="all">Semua status</option><option value="open">Open</option><option value="retry_requested">Retry requested</option><option value="resolved">Resolved</option><option value="discarded">Discarded</option></select></div><div class="table-wrap"><table><thead><tr><th>Transaksi</th><th>Tipe/Status</th><th>User/Device</th><th>Ringkasan</th><th>Error</th><th>Terakhir</th><th>Recovery</th></tr></thead><tbody id="cloudBody"></tbody></table></div></section>
+<script defer="" src="js/license-v2-guard.js?v=25.2.0"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&amp;family=Fira+Code:wght@500;700&amp;family=Fredoka:wght@600;700&amp;family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;family=Lato:wght@400;700&amp;family=Lobster&amp;family=Merriweather:wght@400;700&amp;family=Montserrat:wght@400;500;600;700&amp;family=Nunito:wght@400;600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;family=Oswald:wght@500;700&amp;family=Pacifico&amp;family=Playfair+Display:wght@600;800&amp;family=Poppins:wght@400;500;600;700;800&amp;family=Raleway:wght@500;700&amp;family=Roboto:wght@400;500;700&amp;display=swap" id="ldmSystemThemeFonts" rel="stylesheet"/>
+<link href="css/system-dashboard-ui.css?v=27.9.0-systemui21" id="ldmSystemDashboardUICSS" rel="stylesheet"/>
+<link href="css/global-responsive-navigation.css?v=27.9.0-systemui21" id="ldmGlobalNavigationCSS" rel="stylesheet"/></head>
+<body class="ldm-system-page" data-ldm-system-label="Recovery Center" data-ldm-system-page="recovery-center.html">
+<main class="wrap"><div aria-label="Breadcrumb" class="ldm-system-breadcrumb"><a href="dashboard.html">Dashboard</a><span class="sep">›</span><span>Sistem</span><span class="sep">›</span><strong>Recovery Center</strong></div>
+<section class="top ldm-system-primary-hero"><div><h1>🛟 Sync Conflict &amp; Recovery Center</h1><div class="muted" id="identity">Memuat sesi cloud…</div></div><div class="actions"><button class="green" id="refreshBtn">↻ Refresh</button><button id="syncBtn">Sinkronkan Queue</button><button class="light" id="exportBtn">Export Recovery JSON</button><a class="btn light" href="dashboard.html">← Dashboard</a></div></section>
+<div class="notice"><strong>Aturan aman:</strong> Retry tidak membuat transaksi ganda karena tetap memakai <code>client_transaction_id</code>. Discard hanya dapat dilakukan Owner, wajib online, wajib memiliki alasan, tercatat di cloud, dan diblokir kembali oleh server.</div>
+<section class="summary"><div class="metric"><span>Queue lokal</span><b id="localTotal">0</b></div><div class="metric"><span>Belum sinkron</span><b id="unsynced">0</b></div><div class="metric"><span>Conflict cloud</span><b id="cloudOpen">0</b></div><div class="metric"><span>Resolved</span><b id="resolved">0</b></div><div class="metric"><span>Discarded</span><b id="discarded">0</b></div></section>
+<div class="message" id="message"></div>
+<section class="card"><div class="card-head"><div><h2>Antrean pada akun + perangkat ini</h2><span class="muted small">Retry tersedia untuk pemilik queue. Discard lokal hanya Owner.</span></div></div><div class="table-wrap"><table><thead><tr><th>Transaksi</th><th>Status</th><th>Waktu</th><th>Total</th><th>Percobaan</th><th>Error terakhir</th><th>Aksi</th></tr></thead><tbody id="localBody"></tbody></table></div></section>
+<section class="card"><div class="card-head"><div><h2>Conflict cloud dalam store</h2><span class="muted small" id="cloudScope">Owner/Admin melihat store; Kasir hanya conflict miliknya.</span></div><select id="statusFilter"><option value="all">Semua status</option><option value="open">Open</option><option value="retry_requested">Retry requested</option><option value="resolved">Resolved</option><option value="discarded">Discarded</option></select></div><div class="table-wrap"><table><thead><tr><th>Transaksi</th><th>Tipe/Status</th><th>User/Device</th><th>Ringkasan</th><th>Error</th><th>Terakhir</th><th>Recovery</th></tr></thead><tbody id="cloudBody"></tbody></table></div></section>
 </main>
 <script>
 (function(){
@@ -91,6 +89,6 @@
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",refresh,{once:true});else refresh();
 })();
 </script>
-<script src="js/global-system-navigation.js?v=27.9.0-systemui20"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-systemui21"></script>
 </body>
 </html>

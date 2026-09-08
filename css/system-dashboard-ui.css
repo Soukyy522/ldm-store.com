@@ -1,0 +1,436 @@
+/* ==========================================================================
+   LocDailyMar V28.2.1
+   System pages visual redesign.
+   ========================================================================== */
+:root{
+  --system-navy:var(--nav-desktop-bg,#0d2240);
+  --system-card:var(--bg-secondary,#fff);
+  --system-bg:var(--bg-primary,#f4f6f9);
+  --system-text:var(--text-color,#334155);
+  --system-heading:var(--heading-color,#0d2240);
+  --system-line:var(--border-color,#e2e8f0);
+  --system-muted:#64748b;
+  --system-accent:var(--accent-color,#ffc107);
+  --system-green:#0f9d58;
+  --system-blue:#1767d2;
+  --system-red:#dc2626;
+  --system-radius:18px;
+}
+
+html.ldm-system-page-root,
+body.ldm-system-page{background:var(--system-bg)!important}
+
+body.ldm-system-page{
+  margin:0!important;
+  min-height:100vh;
+  color:var(--system-text)!important;
+  font-family:var(--app-font,'Poppins',sans-serif)!important;
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--system-navy) 5%,transparent),transparent 280px),
+    var(--system-bg)!important;
+}
+
+body.ldm-system-page *,
+body.ldm-system-page *::before,
+body.ldm-system-page *::after{box-sizing:border-box}
+
+body.ldm-system-page h1,
+body.ldm-system-page h2,
+body.ldm-system-page h3,
+body.ldm-system-page h4{
+  color:var(--system-heading)!important;
+  font-family:var(--app-font,'Poppins',sans-serif)!important;
+}
+body.ldm-system-page p,
+body.ldm-system-page small,
+body.ldm-system-page .muted,
+body.ldm-system-page .sub,
+body.ldm-system-page .foot{
+  color:var(--system-muted)!important;
+}
+
+/* Breadcrumb baru. Ini sengaja statis agar tampilan tetap berubah walau JS menu gagal. */
+.ldm-system-breadcrumb{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+  margin:0 0 12px;
+  color:var(--system-muted);
+  font-size:.68rem;
+  font-weight:650;
+}
+.ldm-system-breadcrumb a{
+  color:var(--system-green);
+  text-decoration:none;
+  font-weight:800;
+}
+.ldm-system-breadcrumb strong{color:var(--system-heading)}
+.ldm-system-breadcrumb .sep{opacity:.45}
+
+/* Shell */
+body.ldm-system-page .wrap,
+body.ldm-system-page .setup-shell,
+body.ldm-system-page .support-shell,
+body.ldm-system-page .privacy-shell,
+body.ldm-system-page .main-content{
+  width:min(1220px,calc(100% - 32px))!important;
+  max-width:1220px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+body.ldm-system-page .wrap,
+body.ldm-system-page .setup-shell,
+body.ldm-system-page .support-shell,
+body.ldm-system-page .privacy-shell,
+body.ldm-system-page .main-content{
+  padding-top:18px!important;
+  padding-bottom:72px!important;
+}
+
+/* HERO: selector eksplisit + class statis */
+body.ldm-system-page .ldm-system-primary-hero{
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  min-height:132px!important;
+  margin:0 0 15px!important;
+  padding:22px 23px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:
+    linear-gradient(125deg,
+      color-mix(in srgb,var(--system-navy) 94%,#000 6%),
+      var(--system-navy) 58%,
+      color-mix(in srgb,var(--system-navy) 78%,var(--system-green) 22%)
+    )!important;
+  color:#fff!important;
+  box-shadow:0 16px 38px color-mix(in srgb,var(--system-navy) 22%,transparent)!important;
+}
+body.ldm-system-page .ldm-system-primary-hero::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:255px;
+  height:255px;
+  right:-95px;
+  top:-125px;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--system-accent) 18%,transparent);
+  box-shadow:
+    -155px 190px 0 -25px color-mix(in srgb,#fff 6%,transparent),
+    -60px 275px 0 -55px color-mix(in srgb,var(--system-green) 25%,transparent);
+}
+body.ldm-system-page .ldm-system-primary-hero h1,
+body.ldm-system-page .ldm-system-primary-hero h2,
+body.ldm-system-page .ldm-system-primary-hero .brand{
+  color:#fff!important;
+  margin-top:0!important;
+}
+body.ldm-system-page .ldm-system-primary-hero p,
+body.ldm-system-page .ldm-system-primary-hero small,
+body.ldm-system-page .ldm-system-primary-hero .sub,
+body.ldm-system-page .ldm-system-primary-hero .store-context{
+  color:rgba(255,255,255,.80)!important;
+}
+body.ldm-system-page .ldm-system-primary-hero button,
+body.ldm-system-page .ldm-system-primary-hero a.btn,
+body.ldm-system-page .ldm-system-primary-hero .btn{
+  border:1px solid rgba(255,255,255,.17)!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+body.ldm-system-page .ldm-system-primary-hero button:hover,
+body.ldm-system-page .ldm-system-primary-hero a.btn:hover{
+  background:rgba(255,255,255,.17)!important;
+}
+
+/* Card system. Dibuat lebih tegas dari V28.2.0. */
+body.ldm-system-page .card,
+body.ldm-system-page .section,
+body.ldm-system-page .setup-step,
+body.ldm-system-page .privacy-card,
+body.ldm-system-page .help-section,
+body.ldm-system-page .trial-compact,
+body.ldm-system-page .owner-vault-shell,
+body.ldm-system-page .payment-manage,
+body.ldm-system-page .checkout-panel,
+body.ldm-system-page .refund-policy-card{
+  position:relative;
+  border:1px solid var(--system-line)!important;
+  border-radius:var(--system-radius)!important;
+  background:var(--system-card)!important;
+  color:var(--system-text)!important;
+  box-shadow:0 8px 24px rgba(15,23,42,.055)!important;
+}
+
+body.ldm-system-page .card:not(.ldm-system-primary-hero),
+body.ldm-system-page .section,
+body.ldm-system-page .privacy-card,
+body.ldm-system-page .help-section,
+body.ldm-system-page .checkout-panel{
+  overflow:hidden;
+}
+body.ldm-system-page .card:not(.ldm-system-primary-hero)::before,
+body.ldm-system-page .section::before,
+body.ldm-system-page .privacy-card::before,
+body.ldm-system-page .help-section::before,
+body.ldm-system-page .checkout-panel::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:3px;
+  background:linear-gradient(var(--system-green),color-mix(in srgb,var(--system-blue) 65%,var(--system-green)));
+  opacity:.72;
+}
+body.ldm-system-page .card:not(.ldm-system-primary-hero):hover,
+body.ldm-system-page .privacy-card:hover,
+body.ldm-system-page .help-section:hover{
+  box-shadow:0 14px 34px rgba(15,23,42,.09)!important;
+}
+
+/* Summary cards */
+body.ldm-system-page .summary,
+body.ldm-system-page .stats,
+body.ldm-system-page #stats.grid,
+body.ldm-system-page .support-summary-strip{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;
+  gap:10px!important;
+}
+body.ldm-system-page .summary > *,
+body.ldm-system-page .stats > *,
+body.ldm-system-page #stats.grid > *,
+body.ldm-system-page .support-summary-strip > *{
+  position:relative;
+  overflow:hidden;
+  min-height:88px;
+  padding:14px!important;
+  border:1px solid var(--system-line)!important;
+  border-radius:15px!important;
+  background:
+    linear-gradient(145deg,var(--system-card),color-mix(in srgb,var(--system-accent) 5%,var(--system-card)))!important;
+  color:var(--system-text)!important;
+  box-shadow:0 6px 18px rgba(15,23,42,.045)!important;
+}
+body.ldm-system-page .summary > *::after,
+body.ldm-system-page .stats > *::after,
+body.ldm-system-page #stats.grid > *::after{
+  content:"";
+  position:absolute;
+  width:50px;
+  height:50px;
+  right:-16px;
+  top:-17px;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--system-accent) 18%,transparent);
+}
+body.ldm-system-page .summary > *:nth-child(2n)::after,
+body.ldm-system-page .stats > *:nth-child(2n)::after{background:color-mix(in srgb,var(--system-green) 16%,transparent)}
+body.ldm-system-page .summary > *:nth-child(3n)::after,
+body.ldm-system-page .stats > *:nth-child(3n)::after{background:color-mix(in srgb,var(--system-blue) 13%,transparent)}
+
+/* Form */
+body.ldm-system-page input,
+body.ldm-system-page select,
+body.ldm-system-page textarea{
+  min-height:40px;
+  border:1px solid var(--system-line)!important;
+  border-radius:10px!important;
+  background:var(--input-bg,var(--system-card))!important;
+  color:var(--system-text)!important;
+  outline:none!important;
+}
+body.ldm-system-page input:focus,
+body.ldm-system-page select:focus,
+body.ldm-system-page textarea:focus{
+  border-color:var(--system-green)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--system-green) 13%,transparent)!important;
+}
+body.ldm-system-page label{
+  color:var(--system-heading)!important;
+  font-weight:750!important;
+}
+
+/* Buttons */
+body.ldm-system-page button,
+body.ldm-system-page .btn,
+body.ldm-system-page a.btn{
+  border-radius:10px!important;
+  font-family:var(--app-font,'Poppins',sans-serif)!important;
+}
+body.ldm-system-page .primary,
+body.ldm-system-page .btn-primary,
+body.ldm-system-page .success,
+body.ldm-system-page .green{
+  background:var(--system-green)!important;
+  color:#fff!important;
+}
+body.ldm-system-page .secondary,
+body.ldm-system-page .ghost,
+body.ldm-system-page .light,
+body.ldm-system-page .btn-soft{
+  border:1px solid var(--system-line)!important;
+  background:var(--system-card)!important;
+  color:var(--system-heading)!important;
+}
+
+/* Table */
+body.ldm-system-page .table-wrap,
+body.ldm-system-page .table{
+  overflow:auto;
+  border:1px solid var(--system-line)!important;
+  border-radius:14px!important;
+  background:var(--system-card)!important;
+}
+body.ldm-system-page table{
+  background:var(--system-card)!important;
+  color:var(--system-text)!important;
+}
+body.ldm-system-page th{
+  background:color-mix(in srgb,var(--system-bg) 75%,var(--system-card))!important;
+  color:var(--system-heading)!important;
+  border-color:var(--system-line)!important;
+}
+body.ldm-system-page td{border-color:var(--system-line)!important}
+body.ldm-system-page tbody tr:hover{background:color-mix(in srgb,var(--system-accent) 5%,transparent)!important}
+
+/* PWA / storage top headers yang berada di luar shell */
+body.ldm-system-page > header.ldm-system-primary-hero{
+  width:min(1220px,calc(100% - 32px))!important;
+  margin:18px auto 0!important;
+}
+
+/* Setup wizard */
+body.ldm-system-page .setup-step{
+  padding:18px 19px!important;
+  border-left:4px solid color-mix(in srgb,var(--system-green) 60%,var(--system-line))!important;
+}
+body.ldm-system-page .setup-step.done{
+  background:color-mix(in srgb,var(--system-green) 5%,var(--system-card))!important;
+}
+body.ldm-system-page .mode-card{
+  border:1px solid var(--system-line)!important;
+  border-radius:14px!important;
+  background:var(--system-card)!important;
+}
+body.ldm-system-page .mode-card.selected{
+  border-color:var(--system-green)!important;
+  background:color-mix(in srgb,var(--system-green) 7%,var(--system-card))!important;
+}
+
+/* Support / Privacy / Guide */
+body.ldm-system-page .grid,
+body.ldm-system-page .privacy-grid{
+  gap:14px!important;
+}
+body.ldm-system-page .help-card{
+  border:1px solid var(--system-line)!important;
+  border-radius:15px!important;
+  background:var(--system-card)!important;
+  overflow:hidden;
+}
+body.ldm-system-page .help-card summary{
+  background:var(--system-card)!important;
+  color:var(--system-heading)!important;
+}
+body.ldm-system-page .help-card[open] summary{
+  background:color-mix(in srgb,var(--system-green) 5%,var(--system-card))!important;
+}
+body.ldm-system-page .help-card-body{
+  background:color-mix(in srgb,var(--system-bg) 35%,var(--system-card))!important;
+  color:var(--system-text)!important;
+  border-color:var(--system-line)!important;
+}
+
+/* License */
+body.ldm-system-page .plans{gap:14px!important}
+body.ldm-system-page .plan{
+  border:1px solid var(--system-line)!important;
+  border-radius:18px!important;
+  background:var(--system-card)!important;
+  color:var(--system-text)!important;
+  box-shadow:0 8px 24px rgba(15,23,42,.055)!important;
+}
+body.ldm-system-page .plan:hover{
+  transform:translateY(-2px);
+  border-color:color-mix(in srgb,var(--system-green) 45%,var(--system-line))!important;
+  box-shadow:0 15px 35px rgba(15,23,42,.10)!important;
+}
+body.ldm-system-page .feature-box,
+body.ldm-system-page .receipt-item,
+body.ldm-system-page .owner-vault-login,
+body.ldm-system-page .owner-vault-auth,
+body.ldm-system-page .owner-vault-list{
+  border-color:var(--system-line)!important;
+  background:color-mix(in srgb,var(--system-bg) 38%,var(--system-card))!important;
+  color:var(--system-text)!important;
+}
+
+/* Notices */
+body.ldm-system-page .notice,
+body.ldm-system-page .banner,
+body.ldm-system-page .legal-note,
+body.ldm-system-page .privacy-note,
+body.ldm-system-page .help-note,
+body.ldm-system-page .retention-box{
+  border-radius:13px!important;
+  border-color:var(--system-line)!important;
+}
+
+/* Dark mode */
+body.ldm-system-page.dark-mode{--system-muted:#94a3b8}
+body.ldm-system-page.dark-mode .card,
+body.ldm-system-page.dark-mode .section,
+body.ldm-system-page.dark-mode .plan,
+body.ldm-system-page.dark-mode .help-card{
+  box-shadow:0 8px 24px rgba(0,0,0,.20)!important;
+}
+
+/* Mobile */
+@media(max-width:899px){
+  body.ldm-system-page .wrap,
+  body.ldm-system-page .setup-shell,
+  body.ldm-system-page .support-shell,
+  body.ldm-system-page .privacy-shell,
+  body.ldm-system-page .main-content,
+  body.ldm-system-page > header.ldm-system-primary-hero{
+    width:min(100% - 22px,1220px)!important;
+  }
+  body.ldm-system-page .wrap,
+  body.ldm-system-page .setup-shell,
+  body.ldm-system-page .support-shell,
+  body.ldm-system-page .privacy-shell,
+  body.ldm-system-page .main-content{
+    padding-top:66px!important;
+  }
+  body.ldm-system-page > header.ldm-system-primary-hero{margin-top:66px!important}
+  body.ldm-system-page .ldm-system-primary-hero{
+    display:block!important;
+    min-height:0!important;
+    padding:18px!important;
+  }
+  .ldm-system-breadcrumb{margin-top:0}
+}
+@media(max-width:620px){
+  body.ldm-system-page .wrap,
+  body.ldm-system-page .setup-shell,
+  body.ldm-system-page .support-shell,
+  body.ldm-system-page .privacy-shell,
+  body.ldm-system-page .main-content,
+  body.ldm-system-page > header.ldm-system-primary-hero{
+    width:min(100% - 18px,1220px)!important;
+  }
+  body.ldm-system-page .card,
+  body.ldm-system-page .section,
+  body.ldm-system-page .plan{border-radius:14px!important}
+}

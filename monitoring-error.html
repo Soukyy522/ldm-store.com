@@ -1,21 +1,22 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
-    <script src="js/storage-engine.js?v=27.7.1"></script>
-    <script src="js/storage-quota-guard.js?v=27.7.1"></script>
-    <script defer src="js/storage-health-monitor.js?v=27.7.1"></script>
-    <script src="js/local-time.js?v=26.4.0"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="theme-color" content="#0d2240">
-    <title>Monitoring Error - LocDailyMar</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon.png">
-    <link rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0">
-    <link rel="stylesheet" href="css/store-modes.css?v=27.9.0">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <style>
+<script src="js/storage-engine.js?v=27.7.1"></script>
+<script src="js/storage-quota-guard.js?v=27.7.1"></script>
+<script defer="" src="js/storage-health-monitor.js?v=27.7.1"></script>
+<script src="js/local-time.js?v=26.4.0"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="strict-origin-when-cross-origin" name="referrer"/>
+<meta content="#0d2240" name="theme-color"/>
+<title>Monitoring Error - LocDailyMar</title>
+<link href="manifest.json" rel="manifest"/>
+<link href="icon.png" rel="icon"/>
+<link href="css/global-responsive-navigation.css?v=27.9.0" rel="stylesheet"/>
+<link href="css/store-modes.css?v=27.9.0" rel="stylesheet"/>
+<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<style>
         *{box-sizing:border-box}
         body{margin:0;background:#f3f6fb;color:#14213d;font:15px/1.5 Inter,Arial,sans-serif}
         .wrap{width:min(1280px,calc(100% - 28px));margin:24px auto 60px}
@@ -47,84 +48,79 @@
         @media(max-width:900px){.top{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr 1fr}.monitor-status{margin-left:0;width:100%}}
         @media(max-width:520px){.summary{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.wrap{width:min(100% - 18px,1280px);margin-top:14px}}
     </style>
-    <script src="js/security-hardening.js?v=19.0"></script>
-    <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/supabase-client.js"></script>
-    <script src="js/cloud-auth.js?v=15.0"></script>
-    <script src="js/cloud-session.js?v=16.0"></script>
-    <script src="js/cloud-session-guard.js?v=15.0"></script>
-    <script src="js/store-mode.js?v=27.9.0-mode1"></script>
-    <script src="js/license-v2-config.js?v=27.4.0"></script>
-    <script src="js/license-v2-client.js?v=27.4.0"></script>
-    <script defer src="js/license-v2-guard.js?v=27.4.0"></script>
-
-<link id="ldmSystemThemeFonts" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;500;600;700;800&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui20">
-</head>
-<body>
-<main class="wrap">
-    <section class="top">
-        <div>
-            <h1>🚨 Monitoring Error</h1>
-            <p>Mencatat error teknis aplikasi per toko agar masalah lebih cepat ditemukan. Hanya Owner/Admin yang dapat melihat incident.</p>
-        </div>
-        <div class="actions">
-            <button id="btnTestError" class="warning">Buat Error Uji</button>
-            <button id="btnRefresh">Refresh</button>
-            <a class="btn secondary" href="dashboard.html">← Dashboard</a>
-        </div>
-    </section>
-
-    <section class="summary">
-        <div class="metric"><span>Incident terbuka</span><b id="statOpen">—</b><small>Belum ditandai selesai</small></div>
-        <div class="metric"><span>24 jam terakhir</span><b id="stat24h">—</b><small>Error unik yang terlihat</small></div>
-        <div class="metric"><span>7 hari terakhir</span><b id="stat7d">—</b><small>Untuk melihat tren masalah</small></div>
-        <div class="metric"><span>Storage tabel</span><b id="statStorage">—</b><small id="retentionText">Retensi: 30 hari</small></div>
-    </section>
-
-    <section class="card">
-        <div class="toolbar">
-            <label>Status
-                <select id="filterStatus">
-                    <option value="open">Terbuka</option>
-                    <option value="resolved">Selesai</option>
-                    <option value="all">Semua</option>
-                </select>
-            </label>
-            <label>Periode
-                <select id="filterDays">
-                    <option value="1">24 jam</option>
-                    <option value="7">7 hari</option>
-                    <option value="30" selected>30 hari</option>
-                    <option value="90">90 hari</option>
-                </select>
-            </label>
-            <div id="monitorStatus" class="monitor-status">Belum dimuat.</div>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead><tr>
-                    <th>Incident</th><th>Level</th><th>Halaman/Aksi</th><th>Pesan</th><th>Terjadi</th><th>User</th><th>Terakhir</th><th>Aksi</th>
-                </tr></thead>
-                <tbody id="monitorTableBody"><tr><td colspan="8" class="empty-cell">Memuat...</td></tr></tbody>
-            </table>
-        </div>
-        <div class="privacy-note">
-            <strong>Privasi:</strong> Monitoring ini hanya menyimpan metadata teknis yang dibatasi seperti halaman, jenis error, versi aplikasi, browser, dan waktu. Password, isi form, data customer, serta isi transaksi tidak dikirim oleh modul monitoring. Jika kode incident diberikan ke LocDailyMar Support, status tindak lanjut Support dapat terlihat pada incident tanpa menampilkan identitas developer.
-        </div>
-    </section>
-</main>
-
-<div class="modal" id="detailModal" aria-hidden="true">
-    <div class="modal-card">
-        <div class="modal-head"><h3>Detail Incident</h3><button class="secondary" data-close-detail>✕ Tutup</button></div>
-        <div id="detailContent"></div>
-    </div>
+<script src="js/security-hardening.js?v=19.0"></script>
+<script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/cloud-auth.js?v=15.0"></script>
+<script src="js/cloud-session.js?v=16.0"></script>
+<script src="js/cloud-session-guard.js?v=15.0"></script>
+<script src="js/store-mode.js?v=27.9.0-mode1"></script>
+<script src="js/license-v2-config.js?v=27.4.0"></script>
+<script src="js/license-v2-client.js?v=27.4.0"></script>
+<script defer="" src="js/license-v2-guard.js?v=27.4.0"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&amp;family=Fira+Code:wght@500;700&amp;family=Fredoka:wght@600;700&amp;family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;family=Lato:wght@400;700&amp;family=Lobster&amp;family=Merriweather:wght@400;700&amp;family=Montserrat:wght@400;500;600;700&amp;family=Nunito:wght@400;600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;family=Oswald:wght@500;700&amp;family=Pacifico&amp;family=Playfair+Display:wght@600;800&amp;family=Poppins:wght@400;500;600;700;800&amp;family=Raleway:wght@500;700&amp;family=Roboto:wght@400;500;700&amp;display=swap" id="ldmSystemThemeFonts" rel="stylesheet"/>
+<link href="css/system-dashboard-ui.css?v=27.9.0-systemui21" id="ldmSystemDashboardUICSS" rel="stylesheet"/>
+<link href="css/global-responsive-navigation.css?v=27.9.0-systemui21" id="ldmGlobalNavigationCSS" rel="stylesheet"/></head>
+<body class="ldm-system-page" data-ldm-system-label="Monitoring Error" data-ldm-system-page="monitoring-error.html">
+<main class="wrap"><div aria-label="Breadcrumb" class="ldm-system-breadcrumb"><a href="dashboard.html">Dashboard</a><span class="sep">›</span><span>Sistem</span><span class="sep">›</span><strong>Monitoring Error</strong></div>
+<section class="top ldm-system-primary-hero">
+<div>
+<h1>🚨 Monitoring Error</h1>
+<p>Mencatat error teknis aplikasi per toko agar masalah lebih cepat ditemukan. Hanya Owner/Admin yang dapat melihat incident.</p>
 </div>
-
+<div class="actions">
+<button class="warning" id="btnTestError">Buat Error Uji</button>
+<button id="btnRefresh">Refresh</button>
+<a class="btn secondary" href="dashboard.html">← Dashboard</a>
+</div>
+</section>
+<section class="summary">
+<div class="metric"><span>Incident terbuka</span><b id="statOpen">—</b><small>Belum ditandai selesai</small></div>
+<div class="metric"><span>24 jam terakhir</span><b id="stat24h">—</b><small>Error unik yang terlihat</small></div>
+<div class="metric"><span>7 hari terakhir</span><b id="stat7d">—</b><small>Untuk melihat tren masalah</small></div>
+<div class="metric"><span>Storage tabel</span><b id="statStorage">—</b><small id="retentionText">Retensi: 30 hari</small></div>
+</section>
+<section class="card">
+<div class="toolbar">
+<label>Status
+                <select id="filterStatus">
+<option value="open">Terbuka</option>
+<option value="resolved">Selesai</option>
+<option value="all">Semua</option>
+</select>
+</label>
+<label>Periode
+                <select id="filterDays">
+<option value="1">24 jam</option>
+<option value="7">7 hari</option>
+<option selected="" value="30">30 hari</option>
+<option value="90">90 hari</option>
+</select>
+</label>
+<div class="monitor-status" id="monitorStatus">Belum dimuat.</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr>
+<th>Incident</th><th>Level</th><th>Halaman/Aksi</th><th>Pesan</th><th>Terjadi</th><th>User</th><th>Terakhir</th><th>Aksi</th>
+</tr></thead>
+<tbody id="monitorTableBody"><tr><td class="empty-cell" colspan="8">Memuat...</td></tr></tbody>
+</table>
+</div>
+<div class="privacy-note">
+<strong>Privasi:</strong> Monitoring ini hanya menyimpan metadata teknis yang dibatasi seperti halaman, jenis error, versi aplikasi, browser, dan waktu. Password, isi form, data customer, serta isi transaksi tidak dikirim oleh modul monitoring. Jika kode incident diberikan ke LocDailyMar Support, status tindak lanjut Support dapat terlihat pada incident tanpa menampilkan identitas developer.
+        </div>
+</section>
+</main>
+<div aria-hidden="true" class="modal" id="detailModal">
+<div class="modal-card">
+<div class="modal-head"><h3>Detail Incident</h3><button class="secondary" data-close-detail="">✕ Tutup</button></div>
+<div id="detailContent"></div>
+</div>
+</div>
 <script src="js/error-monitor-admin.js?v=27.9.0-monitor4"></script>
-<script src="js/global-system-navigation.js?v=27.9.0-systemui20"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-systemui21"></script>
 </body>
 </html>
