@@ -24,15 +24,15 @@
 <script defer="" src="js/license-v2-guard.js?v=27.4.0"></script>
 
 <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap">
-<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui23">
-<link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui23">
-<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui23">
+<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui24">
+<link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui24">
+<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui24">
 </head>
 <body class="ldm-system-page" data-ldm-system-page="panduan.html" data-ldm-system-label="Panduan Pengguna">
 <div class="app-layout">
 <main class="main-content">
 <div class="help-shell">
-<section class="help-hero">
+<section class="help-hero" data-ldm-system-banner="primary">
 <span class="help-eyebrow">📘 Pusat Panduan LocDailyMar</span>
 <h1>Panduan LocDailyMar yang jelas, dari pertama masuk sampai operasional harian.</h1>
 <p>Gunakan halaman ini untuk memahami fungsi setiap menu, kapan menu dipakai, urutan kerja yang disarankan, serta hal penting yang perlu diperiksa agar data toko tetap konsisten. Hak akses tetap mengikuti role akun dan paket lisensi.</p>
@@ -137,6 +137,28 @@
 <div class="help-empty" id="guideEmpty">Tidak ada panduan yang cocok dengan pencarian tersebut.</div>
 <div class="help-note"><strong>Catatan:</strong> menu yang terlihat pada aplikasi mengikuti role akun, paket lisensi, status perangkat, dan kondisi operasional. Jadi dua akun dapat melihat menu berbeda walaupun memakai aplikasi yang sama.</div>
 </section>
+<section class="help-section help-resource-section" id="panduanPrivasiSupport">
+<div class="help-section-head">
+  <div>
+    <h2>Privasi & Bantuan</h2>
+    <p>Akses cepat ke pengelolaan privasi dan dukungan teknis tanpa meninggalkan alur panduan.</p>
+  </div>
+</div>
+<div class="help-resource-grid">
+  <article class="help-resource-card" id="privacy-center">
+    <span class="help-resource-icon" aria-hidden="true">🔐</span>
+    <h2>Privacy Center</h2>
+    <p>Gunakan <a href="privacy-center.html">Privacy Center</a> untuk memahami kategori data yang diproses dan mengajukan permintaan terkait data pribadi milik akun Anda.</p><ol><li>Pilih jenis request: akses/salinan, koreksi, pembatasan, penghapusan, penarikan persetujuan, portabilitas, atau jenis lain yang relevan.</li><li>Pilih ruang lingkup data dan jelaskan permintaan secara spesifik.</li><li>Untuk koreksi, tuliskan data yang seharusnya.</li><li>Setelah dikirim, simpan kode <b>PRV-YYYYMMDD-XXXXXXXXXX</b>.</li><li>Pantau status request di bagian <b>Riwayat Permintaan Saya</b>. Riwayat ini hanya dapat dilihat oleh akun yang membuat request tersebut.</li></ol><p>Permintaan penghapusan tidak langsung menghapus data bisnis dari browser. Request perlu diverifikasi karena data dapat berkaitan dengan keamanan, hak pihak lain, catatan bisnis, atau kewajiban penyimpanan yang berlaku.</p>
+    <a class="help-resource-action" href="privacy-center.html">Buka Privacy Center →</a>
+  </article>
+  <article class="help-resource-card" id="pusat-bantuan-support">
+    <span class="help-resource-icon" aria-hidden="true">🛟</span>
+    <h2>Pusat Bantuan &amp; Support</h2>
+    <p>Gunakan <a href="support-center.html">Pusat Bantuan & Support</a> untuk <strong>melaporkan masalah langsung dari aplikasi</strong>, melihat riwayat tiket, dan mengecek status kode incident.</p><ol><li>Pilih jenis laporan dan kategori masalah.</li><li>Isi judul serta deskripsi yang menjelaskan apa yang dilakukan, apa yang seharusnya terjadi, dan apa yang muncul.</li><li>Jika Monitoring Error memberi kode seperti <strong>ERR-20260905-A72C91D083</strong>, lampirkan kode tersebut pada form secara opsional.</li><li>Setelah dikirim, simpan kode tiket <strong>SUP-YYYYMMDD-XXXXXXXXXX</strong>.</li><li>Pantau status di bagian <b>Riwayat Tiket Support</b>: Terbuka, Investigasi, Menunggu Customer, Selesai, atau Ditutup.</li></ol><p>Owner/Admin dapat melihat tiket pada toko aktif. Kasir hanya dapat melihat tiket yang dibuat oleh akunnya sendiri. Jangan pernah mengirim password, OTP, Supabase Service Role Key, Lynk.id Server Key, atau secret lain melalui form Support.</p>
+    <a class="help-resource-action" href="support-center.html">Buka Pusat Bantuan →</a>
+  </article>
+</div>
+</section>
 </div>
 </main>
 </div>
@@ -149,11 +171,11 @@
 <script src="js/cloud-session-guard.js?v=16.0"></script>
 <script src="js/user-guide.js?v=27.4"></script>
 <script>(function(){if(!window.LDM_PUBLIC_GUIDE_MODE)return;document.documentElement.classList.add("ldm-public-guide");document.addEventListener("click",function(e){const a=e.target.closest("a[href]");if(!a)return;let u;try{u=new URL(a.getAttribute("href"),location.href)}catch(_){return}const file=decodeURIComponent(u.pathname.split("/").pop()||"").toLowerCase();if(file.endsWith(".html")&&!['homepage.html','panduan.html'].includes(file)){e.preventDefault();alert("Mode Panduan Publik hanya untuk membaca panduan. Kembali ke Homepage lalu pilih Masuk Aplikasi untuk membuka halaman operasional.")}},true)})();</script>
-<section class="guide-section" id="privacy-center"><h2>🔐 Privacy Center</h2><p>Gunakan <a href="privacy-center.html">Privacy Center</a> untuk memahami kategori data yang diproses dan mengajukan permintaan terkait data pribadi milik akun Anda.</p><ol><li>Pilih jenis request: akses/salinan, koreksi, pembatasan, penghapusan, penarikan persetujuan, portabilitas, atau jenis lain yang relevan.</li><li>Pilih ruang lingkup data dan jelaskan permintaan secara spesifik.</li><li>Untuk koreksi, tuliskan data yang seharusnya.</li><li>Setelah dikirim, simpan kode <b>PRV-YYYYMMDD-XXXXXXXXXX</b>.</li><li>Pantau status request di bagian <b>Riwayat Permintaan Saya</b>. Riwayat ini hanya dapat dilihat oleh akun yang membuat request tersebut.</li></ol><p>Permintaan penghapusan tidak langsung menghapus data bisnis dari browser. Request perlu diverifikasi karena data dapat berkaitan dengan keamanan, hak pihak lain, catatan bisnis, atau kewajiban penyimpanan yang berlaku.</p></section>
-<section class="guide-section" id="pusat-bantuan-support"><h2>🛟 Pusat Bantuan & Support</h2><p>Gunakan <a href="support-center.html">Pusat Bantuan & Support</a> untuk <strong>melaporkan masalah langsung dari aplikasi</strong>, melihat riwayat tiket, dan mengecek status kode incident.</p><ol><li>Pilih jenis laporan dan kategori masalah.</li><li>Isi judul serta deskripsi yang menjelaskan apa yang dilakukan, apa yang seharusnya terjadi, dan apa yang muncul.</li><li>Jika Monitoring Error memberi kode seperti <strong>ERR-20260905-A72C91D083</strong>, lampirkan kode tersebut pada form secara opsional.</li><li>Setelah dikirim, simpan kode tiket <strong>SUP-YYYYMMDD-XXXXXXXXXX</strong>.</li><li>Pantau status di bagian <b>Riwayat Tiket Support</b>: Terbuka, Investigasi, Menunggu Customer, Selesai, atau Ditutup.</li></ol><p>Owner/Admin dapat melihat tiket pada toko aktif. Kasir hanya dapat melihat tiket yang dibuat oleh akunnya sendiri. Jangan pernah mengirim password, OTP, Supabase Service Role Key, Lynk.id Server Key, atau secret lain melalui form Support.</p></section>
 
-<script src="js/store-mode.js?v=27.9.0-systemui23"></script>
-<script src="js/system-theme-sync-v2823.js?v=27.9.0-systemui23"></script>
-<script src="js/global-system-navigation.js?v=27.9.0-systemui23"></script>
+
+
+<script src="js/store-mode.js?v=27.9.0-systemui24"></script>
+<script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
 </body>
 </html>

@@ -10,11 +10,11 @@ body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}.wra
 <script defer src="js/license-v2-guard.js?v=27.4.0"></script>
 
 <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap">
-<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui23">
-<link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui23">
-<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui23">
+<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui24">
+<link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui24">
+<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui24">
 </head><body class="ldm-system-page" data-ldm-system-page="device-management.html" data-ldm-system-label="Perangkat Cloud"><div class="wrap">
-<div class="card top"><div><h1>🔗 Tautkan Perangkat</h1><p>Owner-only. Perangkat baru Admin/Kasir masuk status PENDING hingga Owner menghubungkannya.</p></div><div class="row"><button onclick="refreshAll()">↻ Refresh</button><a class="secondary" href="dashboard.html">← Dashboard</a></div></div>
+<div class="card top" data-ldm-system-banner="primary"><div><h1>🔗 Tautkan Perangkat</h1><p>Owner-only. Perangkat baru Admin/Kasir masuk status PENDING hingga Owner menghubungkannya.</p></div><div class="row"><button onclick="refreshAll()">↻ Refresh</button><a class="secondary" href="dashboard.html">← Dashboard</a></div></div>
 <div class="card"><h2>Buat Grup Perangkat</h2><div class="row"><input id="groupName" placeholder="Contoh: Kasir Toko Utama" style="flex:1"><button class="success" onclick="createGroup()">+ Buat Grup</button></div><div id="groups" style="margin-top:12px"></div></div>
 <div class="card"><div class="top"><div><h2>Daftar Perangkat</h2><p>Approve = menghubungkan perangkat ke cloud app. Putuskan = status REVOKED dan tidak bisa masuk aplikasi sampai Owner approve kembali.</p></div><span id="rt" class="muted">Realtime...</span></div><div class="table"><table><thead><tr><th>Device ID</th><th>User</th><th>Perangkat</th><th>Status</th><th>Grup</th><th>Last Seen</th><th>Aksi</th></tr></thead><tbody id="body"><tr><td colspan="7">Memuat...</td></tr></tbody></table></div></div><div id="msg" class="card msg" style="display:none"></div></div>
 <script>
@@ -30,7 +30,7 @@ async function revoke(i){if(devices[i].client_device_id===currentId&&!confirm("I
 document.addEventListener("DOMContentLoaded",async()=>{await refreshAll();try{await LDMDevices.startRealtime(refreshAll);document.getElementById("rt").textContent="Realtime: aktif"}catch(e){document.getElementById("rt").textContent="Realtime: gagal"}});
 </script>
 
-<script src="js/store-mode.js?v=27.9.0-systemui23"></script>
-<script src="js/system-theme-sync-v2823.js?v=27.9.0-systemui23"></script>
-<script src="js/global-system-navigation.js?v=27.9.0-systemui23"></script>
+<script src="js/store-mode.js?v=27.9.0-systemui24"></script>
+<script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
 </body></html>

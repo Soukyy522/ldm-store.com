@@ -19,12 +19,12 @@
 <script defer src="js/license-v2-guard.js?v=27.4.0"></script>
 
 <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap">
-<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui23">
-<link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui23">
-<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui23">
+<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui24">
+<link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui24">
+<link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui24">
 </head>
 <body class="ldm-system-page" data-ldm-system-page="account-management.html" data-ldm-system-label="Management Akun"><div class="wrap">
-<div class="card top"><div><h1>👤 Management Akun</h1><p id="accessNote">Memuat hak akses...</p></div><div class="actions"><button onclick="refreshAll()">↻ Refresh</button><a class="btn secondary owner-only" href="device-management.html">🔗 Tautkan Perangkat</a><a class="btn secondary" href="dashboard.html">← Dashboard</a></div></div>
+<div class="card top" data-ldm-system-banner="primary"><div><h1>👤 Management Akun</h1><p id="accessNote">Memuat hak akses...</p></div><div class="actions"><button onclick="refreshAll()">↻ Refresh</button><a class="btn secondary owner-only" href="device-management.html">🔗 Tautkan Perangkat</a><a class="btn secondary" href="dashboard.html">← Dashboard</a></div></div>
 <div class="card"><h2>Account Health</h2><p id="identity">Memuat...</p><div class="grid" id="stats"></div></div>
 <div class="card owner-only" id="createCard"><h2>➕ Buat Akun Baru</h2><div class="notice"><strong>Otomatis ke Supabase Auth.</strong> Password dikirim ke Edge Function lewat HTTPS dan tidak disimpan di localStorage. NIK Karyawan 11 digit dibuat otomatis dengan format <strong>YYMMDDSSNNN</strong> dan tidak perlu diketik manual.</div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Email</label><input id="newEmail" type="email" placeholder="kasir@example.com"></div><div class="field"><label>Password Awal</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password"></div><div class="field"><label>Username</label><input id="newUsername" maxlength="50" placeholder="kasir1"></div><div class="field"><label>Nama Tampilan</label><input id="newDisplay" placeholder="Opsional"></div><div class="field"><label>Role</label><select id="newRole"><option value="kasir">Kasir</option><option value="admin">Admin</option><option value="owner">Owner</option></select></div><div class="field" style="justify-content:end"><button class="success" id="btnCreate" onclick="createAccount()">Buat Akun</button></div></div></div>
 <div class="card"><div class="top"><div><h2>Daftar Akun</h2><p id="listNote">Memuat...</p></div><span id="realtime" class="muted">Realtime: menyambung...</span></div><div class="table-wrap"><table><thead><tr><th>Username</th><th>NIK Karyawan</th><th>Email Auth</th><th>Role</th><th>Status</th><th>Last Sign In</th><th>Version</th><th>Aksi</th></tr></thead><tbody id="accountBody"><tr><td colspan="8">Memuat...</td></tr></tbody></table></div></div>
@@ -57,7 +57,7 @@ async function boot(){await refreshAll();try{await LDMAccounts.startRealtime(asy
 document.addEventListener("DOMContentLoaded",boot);
 </script>
 
-<script src="js/store-mode.js?v=27.9.0-systemui23"></script>
-<script src="js/system-theme-sync-v2823.js?v=27.9.0-systemui23"></script>
-<script src="js/global-system-navigation.js?v=27.9.0-systemui23"></script>
+<script src="js/store-mode.js?v=27.9.0-systemui24"></script>
+<script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
 </body></html>

@@ -1,30 +1,42 @@
 /* ==========================================================================
-   LocDailyMar V28.2.3
-   SYSTEM UI STABLE
+   LocDailyMar V28.2.4
+   SYSTEM UI · DYNAMIC TEXT CONTRAST
    ========================================================================== */
+
 :root{
     --sys-bg:var(--bg-primary,#f4f6f9);
     --sys-card:var(--bg-secondary,#fff);
-    --sys-text:var(--text-color,#334155);
-    --sys-heading:var(--heading-color,#0d2240);
-    --sys-muted:var(--muted-color,#64748b);
-    --sys-line:var(--border-color,#e2e8f0);
+    --sys-page-text:var(--system-page-text,#334155);
+    --sys-page-muted:var(--system-page-muted,#64748b);
+    --sys-card-text:var(--system-card-text,#334155);
+    --sys-card-muted:var(--system-card-muted,#64748b);
     --sys-input:var(--input-bg,#fff);
+    --sys-input-text:var(--system-input-text,#334155);
+    --sys-line:var(--border-color,#e2e8f0);
     --sys-nav:var(--nav-desktop-bg,#0d2240);
     --sys-accent:var(--accent-color,#ffc107);
+    --sys-banner-text:var(--system-banner-text,#fff);
+    --sys-banner-muted:var(--system-banner-muted,rgba(255,255,255,.78));
+    --sys-banner-soft:var(--system-banner-soft,rgba(255,255,255,.12));
+    --sys-banner-border:var(--system-banner-border,rgba(255,255,255,.20));
+    --sys-banner-hover:var(--system-banner-hover,rgba(255,255,255,.17));
+    --sys-banner-accent:var(--system-banner-accent,#ffc107);
+    --sys-accent-text:var(--system-accent-text,#0f172a);
     --sys-green:#0f9d58;
-    --sys-blue:#2563eb;
     --sys-radius:15px;
     --sys-shadow:0 7px 22px rgba(15,23,42,.06);
 }
 
+/* --------------------------------------------------------------------------
+   Base text follows actual configured background, not merely darkMode.
+   -------------------------------------------------------------------------- */
 body.ldm-system-page{
     min-height:100vh;
     background:
         radial-gradient(circle at 8% -6%,color-mix(in srgb,var(--sys-accent) 7%,transparent),transparent 26rem),
         radial-gradient(circle at 100% 10%,color-mix(in srgb,var(--sys-green) 5%,transparent),transparent 24rem),
         var(--sys-bg)!important;
-    color:var(--sys-text)!important;
+    color:var(--sys-page-text)!important;
     font-family:var(--app-font,'Poppins',sans-serif)!important;
 }
 
@@ -32,21 +44,21 @@ body.ldm-system-page *,
 body.ldm-system-page *::before,
 body.ldm-system-page *::after{box-sizing:border-box}
 
-body.ldm-system-page h1,
-body.ldm-system-page h2,
-body.ldm-system-page h3,
-body.ldm-system-page h4{
-    color:var(--sys-heading);
+body.ldm-system-page > :is(main,div,section) h1,
+body.ldm-system-page > :is(main,div,section) h2,
+body.ldm-system-page > :is(main,div,section) h3,
+body.ldm-system-page > :is(main,div,section) h4{
+    color:var(--sys-page-text);
 }
 
-body.ldm-system-page p,
-body.ldm-system-page small,
-body.ldm-system-page .muted,
-body.ldm-system-page .sub{
-    color:var(--sys-muted);
+body.ldm-system-page > :is(main,div,section) p,
+body.ldm-system-page > :is(main,div,section) small{
+    color:var(--sys-page-muted);
 }
 
-/* Kartu/surface. Hanya warna/border/shadow/radius. */
+/* --------------------------------------------------------------------------
+   Card text follows Latar Kartu independently of page background.
+   -------------------------------------------------------------------------- */
 body.ldm-system-page .card,
 body.ldm-system-page .section,
 body.ldm-system-page .setup-step,
@@ -62,7 +74,7 @@ body.ldm-system-page .plan,
 body.ldm-system-page .data-card{
     border-color:var(--sys-line)!important;
     background:var(--sys-card)!important;
-    color:var(--sys-text)!important;
+    color:var(--sys-card-text)!important;
     box-shadow:var(--sys-shadow)!important;
 }
 
@@ -79,58 +91,119 @@ body.ldm-system-page .plan{
     border-radius:var(--sys-radius)!important;
 }
 
-/* Header/hero, tanpa mengubah layout internal. */
-body.ldm-system-page[data-ldm-system-page="account-management.html"] .wrap > .top:first-child,
-body.ldm-system-page[data-ldm-system-page="device-management.html"] .wrap > .top:first-child,
-body.ldm-system-page[data-ldm-system-page="recovery-center.html"] .wrap > .top:first-child,
-body.ldm-system-page[data-ldm-system-page="qa-security-performance.html"] .wrap > .top:first-child,
-body.ldm-system-page[data-ldm-system-page="monitoring-error.html"] .wrap > .top:first-child,
-body.ldm-system-page[data-ldm-system-page="setup-awal.html"] .setup-shell > .hero:first-child,
-body.ldm-system-page[data-ldm-system-page="support-center.html"] .support-shell > .hero:first-child,
-body.ldm-system-page[data-ldm-system-page="privacy-center.html"] .privacy-shell > .privacy-hero:first-child,
-body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-shell > .help-hero:first-child{
+body.ldm-system-page :is(
+    .card,.section,.setup-step,.finish-card,.privacy-card,.help-section,
+    .help-card,.trial-compact,.checkout-panel,.owner-vault-shell,
+    .payment-manage,.plan,.data-card
+) :is(h1,h2,h3,h4,strong){
+    color:var(--sys-card-text);
+}
+
+body.ldm-system-page :is(
+    .card,.section,.setup-step,.finish-card,.privacy-card,.help-section,
+    .help-card,.trial-compact,.checkout-panel,.owner-vault-shell,
+    .payment-manage,.plan,.data-card
+) :is(p,small,.muted,.sub,.foot){
+    color:var(--sys-card-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Primary banner text contrast.
+   data-ldm-system-banner dipasang pada setiap banner utama halaman Sistem.
+   -------------------------------------------------------------------------- */
+body.ldm-system-page [data-ldm-system-banner="primary"]{
     border-color:color-mix(in srgb,var(--sys-nav) 72%,#fff 28%)!important;
     background:
-        linear-gradient(125deg,
+        linear-gradient(
+            125deg,
             color-mix(in srgb,var(--sys-nav) 96%,#000 4%),
             var(--sys-nav) 72%,
             color-mix(in srgb,var(--sys-nav) 85%,var(--sys-green) 15%)
         )!important;
-    color:#fff!important;
+    color:var(--sys-banner-text)!important;
     box-shadow:0 11px 28px color-mix(in srgb,var(--sys-nav) 20%,transparent)!important;
 }
 
-body.ldm-system-page[data-ldm-system-page="pwa-settings.html"] > header.top,
-body.ldm-system-page[data-ldm-system-page="penyimpanan.html"] > header.hero{
-    background:
-        linear-gradient(125deg,
-            color-mix(in srgb,var(--sys-nav) 96%,#000 4%),
-            var(--sys-nav) 72%,
-            color-mix(in srgb,var(--sys-nav) 85%,var(--sys-green) 15%)
-        )!important;
-    color:#fff!important;
-    box-shadow:0 11px 28px color-mix(in srgb,var(--sys-nav) 20%,transparent)!important;
+body.ldm-system-page [data-ldm-system-banner="primary"] :is(
+    h1,h2,h3,h4,.brand
+){
+    color:var(--sys-banner-text)!important;
 }
 
-body.ldm-system-page :is(.top,.hero,.privacy-hero,.help-hero) h1,
-body.ldm-system-page :is(.top,.hero,.privacy-hero,.help-hero) h2,
-body.ldm-system-page :is(.top,.hero,.privacy-hero,.help-hero) h3{
-    color:inherit;
+body.ldm-system-page [data-ldm-system-banner="primary"] :is(
+    p,small,.muted,.sub,.store-context
+){
+    color:var(--sys-banner-muted)!important;
 }
 
-/* License: pertahankan dua tingkat header asli. */
-body.ldm-system-page[data-ldm-system-page="license.html"] > header.top{
-    background:var(--sys-nav)!important;
-    color:#fff!important;
+/* Elemen identitas/soft control di dalam banner ikut kontras banner. */
+body.ldm-system-page [data-ldm-system-banner="primary"] :is(
+    .pill,.help-eyebrow,.help-chip
+){
+    border-color:var(--sys-banner-border)!important;
+    background:var(--sys-banner-soft)!important;
+    color:var(--sys-banner-text)!important;
 }
+
+body.ldm-system-page [data-ldm-system-banner="primary"] .help-chip strong{
+    color:var(--sys-banner-text)!important;
+}
+
+body.ldm-system-page [data-ldm-system-banner="primary"] .help-btn-soft,
+body.ldm-system-page [data-ldm-system-banner="primary"] .top-actions a{
+    border-color:var(--sys-banner-border)!important;
+    background:var(--sys-banner-soft)!important;
+    color:var(--sys-banner-text)!important;
+}
+
+body.ldm-system-page [data-ldm-system-banner="primary"] .help-btn-soft:hover,
+body.ldm-system-page [data-ldm-system-banner="primary"] .top-actions a:hover{
+    background:var(--sys-banner-hover)!important;
+}
+
+body.ldm-system-page [data-ldm-system-banner="primary"] .help-btn-primary{
+    background:var(--sys-accent)!important;
+    color:var(--sys-accent-text)!important;
+}
+
+/* Support summary chips punya background card sendiri, jangan diwarisi banner. */
+body.ldm-system-page [data-ldm-system-banner="primary"] .summary-chip{
+    border-color:var(--sys-line)!important;
+    background:var(--sys-card)!important;
+    color:var(--sys-card-text)!important;
+}
+
+body.ldm-system-page [data-ldm-system-banner="primary"] .summary-chip strong{
+    color:var(--sys-card-text)!important;
+}
+body.ldm-system-page [data-ldm-system-banner="primary"] .summary-chip span{
+    color:var(--sys-card-muted)!important;
+}
+
+/* --------------------------------------------------------------------------
+   License secondary hero remains card/surface and therefore follows card text.
+   -------------------------------------------------------------------------- */
 body.ldm-system-page[data-ldm-system-page="license.html"] .wrap > .hero:first-child{
     border-color:var(--sys-line)!important;
     background:
-        linear-gradient(145deg,var(--sys-card),color-mix(in srgb,var(--sys-accent) 4%,var(--sys-card)))!important;
+        linear-gradient(
+            145deg,
+            var(--sys-card),
+            color-mix(in srgb,var(--sys-accent) 4%,var(--sys-card))
+        )!important;
+    color:var(--sys-card-text)!important;
     box-shadow:var(--sys-shadow)!important;
 }
+body.ldm-system-page[data-ldm-system-page="license.html"] .wrap > .hero:first-child :is(h1,h2,h3,strong){
+    color:var(--sys-card-text)!important;
+}
+body.ldm-system-page[data-ldm-system-page="license.html"] .wrap > .hero:first-child :is(p,small,.hero-note){
+    color:var(--sys-card-muted)!important;
+}
 
-/* Metrics/stat, layout asli tidak disentuh. */
+/* --------------------------------------------------------------------------
+   Metrics/stat.
+   -------------------------------------------------------------------------- */
 body.ldm-system-page .summary > *,
 body.ldm-system-page .stats > *,
 body.ldm-system-page #stats.grid > *,
@@ -138,18 +211,35 @@ body.ldm-system-page .support-summary-strip > *{
     border-color:var(--sys-line)!important;
     border-radius:12px!important;
     background:
-        linear-gradient(145deg,var(--sys-card),color-mix(in srgb,var(--sys-accent) 4%,var(--sys-card)))!important;
-    color:var(--sys-text)!important;
+        linear-gradient(
+            145deg,
+            var(--sys-card),
+            color-mix(in srgb,var(--sys-accent) 4%,var(--sys-card))
+        )!important;
+    color:var(--sys-card-text)!important;
     box-shadow:0 4px 14px rgba(15,23,42,.045)!important;
 }
+body.ldm-system-page :is(.summary,.stats,#stats.grid,.support-summary-strip) :is(b,strong,h3){
+    color:var(--sys-card-text)!important;
+}
+body.ldm-system-page :is(.summary,.stats,#stats.grid,.support-summary-strip) :is(span,small){
+    color:var(--sys-card-muted)!important;
+}
 
-/* Form */
+/* --------------------------------------------------------------------------
+   Forms use actual input background contrast.
+   -------------------------------------------------------------------------- */
 body.ldm-system-page input,
 body.ldm-system-page select,
 body.ldm-system-page textarea{
     border-color:var(--sys-line)!important;
     background:var(--sys-input)!important;
-    color:var(--sys-text)!important;
+    color:var(--sys-input-text)!important;
+}
+
+body.ldm-system-page input::placeholder,
+body.ldm-system-page textarea::placeholder{
+    color:color-mix(in srgb,var(--sys-input-text) 58%,transparent)!important;
 }
 
 body.ldm-system-page input:focus,
@@ -160,21 +250,33 @@ body.ldm-system-page textarea:focus{
     box-shadow:0 0 0 3px color-mix(in srgb,var(--sys-green) 11%,transparent)!important;
 }
 
-/* Table */
-body.ldm-system-page table{color:var(--sys-text)!important}
+/* --------------------------------------------------------------------------
+   Tables.
+   -------------------------------------------------------------------------- */
+body.ldm-system-page table{
+    color:var(--sys-card-text)!important;
+}
+
 body.ldm-system-page th{
     border-color:var(--sys-line)!important;
-    background:color-mix(in srgb,var(--sys-bg) 72%,var(--sys-card))!important;
-    color:var(--sys-heading)!important;
+    background:color-mix(in srgb,var(--sys-bg) 38%,var(--sys-card) 62%)!important;
+    color:var(--sys-card-text)!important;
 }
-body.ldm-system-page td{border-color:var(--sys-line)!important;color:var(--sys-text)!important}
+
+body.ldm-system-page td{
+    border-color:var(--sys-line)!important;
+    color:var(--sys-card-text)!important;
+}
+
 body.ldm-system-page .table-wrap,
 body.ldm-system-page .ms-table-wrap{
     border-color:var(--sys-line)!important;
     background:var(--sys-card)!important;
 }
 
-/* Soft surfaces */
+/* --------------------------------------------------------------------------
+   Soft surfaces.
+   -------------------------------------------------------------------------- */
 body.ldm-system-page .mode-card,
 body.ldm-system-page .result-item,
 body.ldm-system-page .right-row,
@@ -186,7 +288,7 @@ body.ldm-system-page .owner-vault-auth,
 body.ldm-system-page .owner-vault-list{
     border-color:var(--sys-line)!important;
     background:color-mix(in srgb,var(--sys-bg) 34%,var(--sys-card))!important;
-    color:var(--sys-text)!important;
+    color:var(--sys-card-text)!important;
 }
 
 body.ldm-system-page .notice,
@@ -199,10 +301,12 @@ body.ldm-system-page .message{
     border-color:var(--sys-line)!important;
 }
 
-/* Panduan: jangan paksa .app-layout/.main-content. */
+/* --------------------------------------------------------------------------
+   Panduan: Privacy Center + Support dibuat menjadi grid card yang rapi.
+   -------------------------------------------------------------------------- */
 body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-card summary{
     background:var(--sys-card)!important;
-    color:var(--sys-heading)!important;
+    color:var(--sys-card-text)!important;
 }
 body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-card[open] summary{
     background:color-mix(in srgb,var(--sys-green) 5%,var(--sys-card))!important;
@@ -210,16 +314,112 @@ body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-card[open] summa
 body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-card-body{
     border-color:var(--sys-line)!important;
     background:color-mix(in srgb,var(--sys-bg) 30%,var(--sys-card))!important;
-    color:var(--sys-text)!important;
+    color:var(--sys-card-text)!important;
 }
 
-/* Dark */
-body.ldm-system-page.dark-mode{--sys-shadow:0 7px 22px rgba(0,0,0,.22)}
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-section{
+    margin-top:24px;
+}
 
-/* Floating menu HP tidak boleh menimpa konten paling atas. */
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+    align-items:stretch;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card{
+    min-width:0;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    padding:20px;
+    border:1px solid var(--sys-line);
+    border-radius:17px;
+    background:
+        linear-gradient(
+            145deg,
+            var(--sys-card),
+            color-mix(in srgb,var(--sys-accent) 3%,var(--sys-card))
+        );
+    color:var(--sys-card-text);
+    box-shadow:var(--sys-shadow);
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card h2{
+    margin:0 0 8px;
+    color:var(--sys-card-text)!important;
+    font-size:1.05rem;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card p,
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card li{
+    color:var(--sys-card-muted)!important;
+    line-height:1.65;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card p{
+    margin:0 0 12px;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card ol{
+    margin:4px 0 14px;
+    padding-left:20px;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card li+li{
+    margin-top:6px;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-card a:not(.help-resource-action){
+    color:var(--sys-green)!important;
+    font-weight:750;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-action{
+    margin-top:auto;
+    align-self:flex-start;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    min-height:38px;
+    padding:9px 12px;
+    border:1px solid color-mix(in srgb,var(--sys-green) 28%,var(--sys-line));
+    border-radius:10px;
+    background:color-mix(in srgb,var(--sys-green) 8%,var(--sys-card));
+    color:var(--sys-green)!important;
+    text-decoration:none;
+    font-size:.78rem;
+    font-weight:800;
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-action:hover{
+    background:color-mix(in srgb,var(--sys-green) 13%,var(--sys-card));
+}
+
+body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-icon{
+    display:inline-grid;
+    place-items:center;
+    width:38px;
+    height:38px;
+    margin-bottom:12px;
+    border-radius:11px;
+    background:color-mix(in srgb,var(--sys-green) 9%,var(--sys-card));
+    font-size:1.1rem;
+}
+
+/* Dark shadow */
+body.ldm-system-page.dark-mode{
+    --sys-shadow:0 7px 22px rgba(0,0,0,.22);
+}
+
+/* Mobile */
 @media(max-width:899px){
     body.ldm-system-page{
         padding-top:58px!important;
+    }
+    body.ldm-system-page[data-ldm-system-page="panduan.html"] .help-resource-grid{
+        grid-template-columns:1fr;
     }
     body.ldm-system-page > .ldm-global-mobile-drawer,
     body.ldm-system-page > .ldm-global-mobile-overlay{
@@ -236,7 +436,8 @@ body.ldm-system-page.dark-mode{--sys-shadow:0 7px 22px rgba(0,0,0,.22)}
     }
     body.ldm-system-page .card,
     body.ldm-system-page .section,
-    body.ldm-system-page .plan{
+    body.ldm-system-page .plan,
+    body.ldm-system-page .help-resource-card{
         box-shadow:none!important;
     }
 }
