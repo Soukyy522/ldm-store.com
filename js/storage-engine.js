@@ -64,7 +64,7 @@
 
         dbPromise = new Promise((resolve, reject) => {
             if (!('indexedDB' in window)) {
-                reject(new Error('IndexedDB tidak didukung browser ini.'));
+                reject(new Error('Penyimpanan lokal tingkat lanjut tidak didukung browser ini.'));
                 return;
             }
 
@@ -98,8 +98,8 @@
                 db.onversionchange = () => db.close();
                 resolve(db);
             };
-            request.onerror = () => reject(request.error || new Error('IndexedDB gagal dibuka.'));
-            request.onblocked = () => reject(new Error('Upgrade IndexedDB terblokir tab LocDailyMar lain. Tutup tab lain lalu coba kembali.'));
+            request.onerror = () => reject(request.error || new Error('Penyimpanan lokal gagal dibuka.'));
+            request.onblocked = () => reject(new Error('Pembaruan penyimpanan lokal terhalang tab LocDailyMar lain. Tutup tab lain lalu coba kembali.'));
         });
 
         return dbPromise;
@@ -113,8 +113,8 @@
             let result;
 
             tx.oncomplete = () => resolve(result);
-            tx.onerror = () => reject(tx.error || new Error('Transaksi IndexedDB gagal.'));
-            tx.onabort = () => reject(tx.error || new Error('Transaksi IndexedDB dibatalkan.'));
+            tx.onerror = () => reject(tx.error || new Error('Operasi penyimpanan lokal gagal.'));
+            tx.onabort = () => reject(tx.error || new Error('Operasi penyimpanan lokal dibatalkan.'));
 
             try {
                 result = executor(store, tx);
@@ -128,7 +128,7 @@
     async function requestResult(request, fallbackMessage) {
         return new Promise((resolve, reject) => {
             request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error || new Error(fallbackMessage || 'IndexedDB request gagal.'));
+            request.onerror = () => reject(request.error || new Error(fallbackMessage || 'Permintaan penyimpanan lokal gagal.'));
         });
     }
 
@@ -142,7 +142,7 @@
     async function getMeta(key, fallback = null) {
         const db = await openDatabase();
         const tx = db.transaction(META_STORE, 'readonly');
-        const result = await requestResult(tx.objectStore(META_STORE).get(String(key)), 'Metadata IndexedDB gagal dibaca.');
+        const result = await requestResult(tx.objectStore(META_STORE).get(String(key)), 'Informasi penyimpanan lokal gagal dibaca.');
         return result && Object.prototype.hasOwnProperty.call(result, 'value') ? result.value : fallback;
     }
 
@@ -179,7 +179,7 @@
         const storageKey = String(key);
         const db = await openDatabase();
         const tx = db.transaction(SNAPSHOT_STORE, 'readonly');
-        const result = await requestResult(tx.objectStore(SNAPSHOT_STORE).get(storageKey), 'Snapshot IndexedDB gagal dibaca.');
+        const result = await requestResult(tx.objectStore(SNAPSHOT_STORE).get(storageKey), 'Snapshot penyimpanan lokal gagal dibaca.');
         if (result && typeof result.value === 'string') memory.set(storageKey, result.value);
         return result || null;
     }
@@ -218,7 +218,7 @@
     async function list() {
         const db = await openDatabase();
         const tx = db.transaction(SNAPSHOT_STORE, 'readonly');
-        const rows = await requestResult(tx.objectStore(SNAPSHOT_STORE).getAll(), 'Daftar snapshot IndexedDB gagal dibaca.');
+        const rows = await requestResult(tx.objectStore(SNAPSHOT_STORE).getAll(), 'Daftar snapshot penyimpanan lokal gagal dibaca.');
         return (Array.isArray(rows) ? rows : []).map(row => ({
             key: row.key,
             bytes: Number(row.bytes || 0),
@@ -276,7 +276,7 @@
             persisted,
             message: persisted
                 ? 'Penyimpanan persisten aktif. Browser akan lebih melindungi data aplikasi dari eviction otomatis.'
-                : 'Browser belum memberikan penyimpanan persisten. Aplikasi tetap dapat memakai IndexedDB.'
+                : 'Browser belum memberikan penyimpanan persisten. Aplikasi tetap dapat memakai penyimpanan lokal.'
         };
     }
 
@@ -318,7 +318,7 @@
     async function hydrateMemory() {
         const db = await openDatabase();
         const tx = db.transaction(SNAPSHOT_STORE, 'readonly');
-        const rows = await requestResult(tx.objectStore(SNAPSHOT_STORE).getAll(), 'IndexedDB gagal dimuat ke memory cache.');
+        const rows = await requestResult(tx.objectStore(SNAPSHOT_STORE).getAll(), 'Penyimpanan lokal gagal dimuat ke cache aplikasi.');
         (Array.isArray(rows) ? rows : []).forEach(row => {
             if (row && typeof row.key === 'string' && typeof row.value === 'string') {
                 memory.set(row.key, row.value);
@@ -447,7 +447,7 @@
         const tx = db.transaction(TRANSACTION_STORE, 'readonly');
         const records = await requestResult(
             tx.objectStore(TRANSACTION_STORE).getAll(),
-            'Arsip transaksi IndexedDB gagal dibaca.'
+            'Arsip transaksi lokal gagal dibaca.'
         );
 
         const fromDate = String(options.fromDate || '').slice(0, 10);
@@ -528,7 +528,7 @@
         const tx = db.transaction(TRANSACTION_STORE, 'readonly');
         const allRecords = await requestResult(
             tx.objectStore(TRANSACTION_STORE).getAll(),
-            'Arsip transaksi IndexedDB gagal dibaca untuk cleanup.'
+            'Arsip transaksi lokal gagal dibaca untuk pembersihan.'
         );
         const source = Array.isArray(allRecords) ? allRecords : [];
         const before = source.length;
@@ -624,8 +624,8 @@
         return {
             ok: readBack === token,
             message: readBack === token
-                ? 'IndexedDB baca/tulis berhasil.'
-                : 'Verifikasi IndexedDB gagal.'
+                ? 'Penyimpanan lokal baca/tulis berhasil.'
+                : 'Verifikasi penyimpanan lokal gagal.'
         };
     }
 
@@ -667,7 +667,7 @@
         return ready()
             .then(() => putRaw(storageKey, value, options))
             .catch(error => {
-                console.warn('[LocDailyMar] Mirror IndexedDB gagal:', storageKey, error);
+                console.warn('[LocDailyMar] Sinkronisasi penyimpanan lokal gagal:', storageKey, error);
                 return null;
             });
     }

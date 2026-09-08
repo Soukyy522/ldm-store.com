@@ -13,7 +13,7 @@
                 "function"
         ){
             throw new Error(
-                "Supabase client belum tersedia."
+                "Layanan Cloud belum siap."
             );
         }
 
@@ -299,7 +299,7 @@
             throw error;
         }
         if(!data || !data.id){
-            throw new Error("Supabase tidak mengembalikan transaksi yang valid.");
+            throw new Error("Layanan Cloud tidak mengembalikan data transaksi yang valid.");
         }
         return data;
     }
@@ -307,7 +307,7 @@
     async function checkout(options){
         if(!options){
             throw new Error(
-                "Payload checkout kosong."
+                "Data checkout kosong."
             );
         }
 

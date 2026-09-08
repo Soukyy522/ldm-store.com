@@ -5,7 +5,7 @@
   function client(){
     if(window.ldmSupabase)return window.ldmSupabase;
     if(window.LDMSupabase&&window.LDMSupabase.isConfigured&&window.LDMSupabase.isConfigured())return window.LDMSupabase.createClient();
-    throw new Error("Supabase belum dikonfigurasi.");
+    throw new Error("Layanan Cloud belum dikonfigurasi.");
   }
   function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
   function fmt(v){if(!v)return "-";const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);return new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Makassar"}).format(d)}

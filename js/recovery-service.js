@@ -5,7 +5,7 @@
     let channel=null;
 
     function client(){
-        if(!window.LDMSupabase) throw new Error("Supabase client belum tersedia.");
+        if(!window.LDMSupabase) throw new Error("Layanan Cloud belum siap.");
         return window.LDMSupabase.createClient();
     }
 

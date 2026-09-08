@@ -28,7 +28,7 @@
                 "function"
         ){
             throw new Error(
-                "Supabase client belum tersedia."
+                "Layanan Cloud belum siap."
             );
         }
 
@@ -622,7 +622,7 @@
 
         if(!target){
             throw new Error(
-                "Profile akun presensi tidak ditemukan di Supabase."
+                "Profil akun presensi belum tersedia pada layanan Cloud."
             );
         }
 

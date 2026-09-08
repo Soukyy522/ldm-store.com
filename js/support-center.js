@@ -9,7 +9,7 @@
     if(window.LDMSupabase&&window.LDMSupabase.isConfigured&&window.LDMSupabase.isConfigured()){
       return window.LDMSupabase.createClient();
     }
-    throw new Error("Supabase belum dikonfigurasi.");
+    throw new Error("Layanan Cloud belum dikonfigurasi.");
   }
 
   function esc(v){

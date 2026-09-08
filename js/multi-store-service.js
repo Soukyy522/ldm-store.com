@@ -4,7 +4,7 @@
     let channel = null;
 
     function client(){
-        if(!window.LDMSupabase) throw new Error("Supabase client belum tersedia.");
+        if(!window.LDMSupabase) throw new Error("Layanan Cloud belum siap.");
         return window.LDMSupabase.createClient();
     }
 
@@ -46,7 +46,7 @@
             const data=await rpc("ldm_my_network_stores_v2");
             return Array.isArray(data) ? data : [];
         }catch(error){
-            console.warn("Multi-Store V2 belum tersedia, memakai RPC lama:",error);
+            console.warn("Layanan Multi-Toko terbaru belum siap, sistem memakai mode kompatibilitas:",error);
             const data=await rpc("ldm_my_network_stores");
             return Array.isArray(data) ? data : [];
         }

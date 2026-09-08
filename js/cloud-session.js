@@ -136,7 +136,7 @@
             !context.profile
         ){
             throw new Error(
-                "Context Auth cloud tidak lengkap."
+                "Data sesi login Cloud belum lengkap."
             );
         }
 
@@ -304,7 +304,7 @@
                 "function"
         ){
             throw new Error(
-                "Helper Supabase Auth belum termuat."
+                "Layanan login Cloud belum siap."
             );
         }
     }
@@ -320,7 +320,7 @@
 
         if(!context){
             throw new Error(
-                "Session Supabase Auth tidak ditemukan."
+                "Sesi login Cloud tidak ditemukan."
             );
         }
 
@@ -368,7 +368,7 @@
                     .signOut();
             }catch(signOutError){
                 console.warn(
-                    "Rollback Auth gagal:",
+                    "Pemulihan sesi login gagal:",
                     signOutError
                 );
             }
@@ -393,7 +393,7 @@
             }
         }catch(error){
             console.warn(
-                "Supabase signOut gagal, cache lokal tetap dibersihkan:",
+                "Proses keluar dari layanan Cloud gagal, tetapi cache lokal tetap dibersihkan:",
                 error
             );
         }finally{

@@ -37,7 +37,7 @@
   }
 
   async function post(url,payload){
-    if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/functions\/v1\/[a-z0-9-]+$/i.test(url))throw new Error("URL backend belum dikonfigurasi.");
+    if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/functions\/v1\/[a-z0-9-]+$/i.test(url))throw new Error("Layanan pembayaran belum dikonfigurasi.");
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),20000);
     try{
@@ -258,7 +258,7 @@
     const button=el("checkoutPayBtn");
     button.disabled=true;button.textContent="Membuat order Lynk.id…";
     try{
-      setStatus("Membuat pending order di License Authority…","info");
+      setStatus("Menyiapkan order pembayaran…","info");
       const data=await callOrder({
         plan_code:currentPlan.planCode,
         billing_cycle:cycle,

@@ -4,7 +4,7 @@
     let contextPromise=null;
 
     function client(){
-        if(!window.LDMSupabase?.createClient)throw new Error("Supabase client belum tersedia.");
+        if(!window.LDMSupabase?.createClient)throw new Error("Layanan Cloud belum siap.");
         return window.LDMSupabase.createClient();
     }
     async function auth(){

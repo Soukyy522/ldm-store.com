@@ -109,7 +109,7 @@
         }
 
         throw lastError || new Error(
-            "Cloud Auth Guard gagal setelah retry PGRST303."
+            "Pemeriksaan sesi Cloud gagal setelah beberapa percobaan."
         );
     }
 
@@ -181,7 +181,7 @@
 
         const finalMessage =
             transientJwtClockFailure
-                ? "Supabase Data API sementara menolak JWT karena sinkronisasi waktu (PGRST303). Muat ulang halaman beberapa saat lagi. Session lokal tidak dihapus."
+                ? "Sesi Cloud sedang mengalami gangguan sinkronisasi waktu. Muat ulang halaman beberapa saat lagi. Sesi lokal tidak dihapus."
                 : (
                     error && error.message
                         ? error.message
@@ -250,7 +250,7 @@
                 .isConfigured()
         ){
             throw new Error(
-                "Supabase belum dikonfigurasi."
+                "Layanan Cloud belum dikonfigurasi."
             );
         }
 

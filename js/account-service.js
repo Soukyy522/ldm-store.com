@@ -6,14 +6,14 @@
 
     function client(){
         if(!window.LDMSupabase || typeof window.LDMSupabase.createClient !== "function"){
-            throw new Error("Supabase client belum tersedia.");
+            throw new Error("Layanan Cloud belum siap. Muat ulang aplikasi dan coba kembali.");
         }
         return window.LDMSupabase.createClient();
     }
 
     async function invokeAccountAdmin(body){
         if(!window.LDMEdgeFunctionClient || typeof window.LDMEdgeFunctionClient.invoke!=="function"){
-            throw new Error("Edge Function client helper belum tersedia. Muat ulang aplikasi V22.");
+            throw new Error("Layanan server belum siap. Muat ulang aplikasi dan coba kembali.");
         }
         return window.LDMEdgeFunctionClient.invoke("ldm-account-admin",{
             body,
@@ -36,7 +36,7 @@
         }
         const message=String(error && error.message || fallback);
         if(/Failed to send a request to the Edge Function|Failed to fetch|NetworkError/i.test(message)){
-            return "Tidak dapat menghubungi Edge Function ldm-account-admin. Pastikan function sudah dideploy pada App Supabase, CORS V22 sudah terpasang, dan periksa Functions > ldm-account-admin > Invocations/Logs.";
+            return "Layanan pengelolaan akun belum dapat dihubungi. Periksa koneksi lalu coba kembali. Jika tetap terjadi, hubungi Developer.";
         }
         return message;
     }

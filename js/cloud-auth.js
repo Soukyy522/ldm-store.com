@@ -10,7 +10,7 @@
             typeof window.LDMSupabase.createClient !== "function"
         ){
             throw new Error(
-                "LDMSupabase belum tersedia."
+                "Layanan login Cloud belum siap."
             );
         }
 
@@ -123,7 +123,7 @@
             !data.user
         ){
             throw new Error(
-                "Supabase tidak mengembalikan user setelah login."
+                "Sistem login belum mengembalikan data akun. Coba login ulang."
             );
         }
 
@@ -198,7 +198,7 @@
 
         if(!context){
             throw new Error(
-                "Auth berhasil, tetapi profile LocDailyMar belum ditemukan. Jalankan bootstrap Owner/Profile."
+                "Login berhasil, tetapi profil LocDailyMar belum tersedia. Hubungi Developer untuk menyiapkan profil akun."
             );
         }
 

@@ -99,7 +99,7 @@
         bootPromise = (async () => {
             state.installed = isInstalled();
             if(!state.supported || !/^https?:$/.test(location.protocol)){
-                state.message = "Service Worker membutuhkan HTTPS atau localhost.";
+                state.message = "Layanan offline membutuhkan koneksi aplikasi yang aman.";
                 emit();
                 return null;
             }
@@ -203,7 +203,7 @@
         if(window.LDMStorage && typeof window.LDMStorage.reclaimSpace === "function"){
             try{ localCompacted = window.LDMStorage.reclaimSpace() === true; }catch(error){}
         }
-        return {ok:true,deleted:targets,localCompacted,message:`${targets.length} runtime cache dibersihkan${localCompacted?" dan cache localStorage lama diperkecil":""}. App shell, IndexedDB, dan transaksi offline tidak dihapus.`};
+        return {ok:true,deleted:targets,localCompacted,message:`${targets.length} cache aplikasi dibersihkan${localCompacted?" dan cache browser lama diperkecil":""}. Komponen inti aplikasi, arsip lokal, dan transaksi offline tidak dihapus.`};
     }
 
     function ensureStyle(){

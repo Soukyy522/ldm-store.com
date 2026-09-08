@@ -23,7 +23,7 @@
             !window.LDMSupabase ||
             typeof window.LDMSupabase.createClient !== "function"
         ){
-            throw new Error("Supabase client belum tersedia.");
+            throw new Error("Layanan Cloud belum siap.");
         }
 
         return window.LDMSupabase.createClient();
@@ -420,7 +420,7 @@
                 onProgress:options.onProgress
             });
         }catch(error){
-            console.warn("RPC laporan 27.7.1 belum tersedia, memakai fallback lama:",error);
+            console.warn("Layanan laporan terbaru belum siap, memakai mode kompatibilitas:",error);
             cloudRows = await fetchTransactionsLegacyFallback();
             if(options.fromDate || options.toDate){
                 cloudRows = cloudRows.filter(row => {
@@ -558,7 +558,7 @@
             });
         }catch(error){
             console.warn(
-                "RPC laporan paginated 27.7.1 belum terpasang. Memakai fallback kompatibilitas.",
+                "Layanan laporan bertahap belum siap. Sistem memakai mode kompatibilitas.",
                 error
             );
             cloudRows = await fetchTransactionsLegacyFallback();
@@ -577,7 +577,7 @@
                     retentionDays:365
                 });
             }catch(error){
-                console.warn("Arsip transaksi IndexedDB gagal diperbarui:",error);
+                console.warn("Arsip transaksi lokal gagal diperbarui:",error);
             }
         }
 

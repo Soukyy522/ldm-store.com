@@ -26,7 +26,7 @@
                 "function"
         ){
             throw new Error(
-                "Supabase client belum tersedia."
+                "Layanan Cloud belum siap."
             );
         }
 

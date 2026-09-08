@@ -21,7 +21,7 @@
     }
 
     function client(){
-        if(!window.LDMSupabase) throw new Error("Supabase client belum tersedia.");
+        if(!window.LDMSupabase) throw new Error("Layanan Cloud belum siap.");
         return window.LDMSupabase.createClient();
     }
 
@@ -82,7 +82,7 @@
     async function edgeInvoke(action){
         await ensureSession();
         if(!window.LDMEdgeFunctionClient || typeof window.LDMEdgeFunctionClient.invoke!=="function"){
-            throw new Error("Edge Function client helper belum tersedia.");
+            throw new Error("Layanan server belum siap.");
         }
         return window.LDMEdgeFunctionClient.invoke(FUNCTION_NAME,{
             body:{action},
@@ -119,11 +119,11 @@
             );
 
             setHealthDetails([
-                {label:"Edge Function",value:edgeHealth?.version||"Tersambung",state:"good"},
-                {label:"SQL-45 fondasi retensi",value:sqlHealth?.database_cleanup_rpc_ready&&sqlHealth?.settings_rpc_ready&&sqlHealth?.overview_rpc_ready?"Siap":"Belum lengkap",state:sqlHealth?.database_cleanup_rpc_ready&&sqlHealth?.settings_rpc_ready&&sqlHealth?.overview_rpc_ready?"good":"bad"},
+                {label:"Layanan Pembersihan",value:edgeHealth?.version||"Tersambung",state:"good"},
+                {label:"Konfigurasi Retensi",value:sqlHealth?.database_cleanup_rpc_ready&&sqlHealth?.settings_rpc_ready&&sqlHealth?.overview_rpc_ready?"Siap":"Belum lengkap",state:sqlHealth?.database_cleanup_rpc_ready&&sqlHealth?.settings_rpc_ready&&sqlHealth?.overview_rpc_ready?"good":"bad"},
                 {label:"Cleanup plan",value:sqlHealth?.cleanup_plan_rpc_ready?"Siap":"Belum siap",state:sqlHealth?.cleanup_plan_rpc_ready?"good":"bad"},
-                {label:"Bucket Storage",value:allBuckets?"3/3 tersedia":"Ada bucket yang belum tersedia",state:allBuckets?"good":"bad"},
-                {label:"Cron secret",value:cronSecretReady?"Terkonfigurasi":"Belum dikonfigurasi",state:cronSecretReady?"good":"warn"},
+                {label:"Penyimpanan File",value:allBuckets?"3/3 tersedia":"Ada ruang penyimpanan file yang belum tersedia",state:allBuckets?"good":"bad"},
+                {label:"Kredensial Jadwal",value:cronSecretReady?"Terkonfigurasi":"Belum dikonfigurasi",state:cronSecretReady?"good":"warn"},
                 {label:"Scheduler harian",value:schedulerReady?"Aktif":"Belum aktif",state:schedulerReady?"good":"warn"}
             ]);
 
@@ -244,7 +244,7 @@
         try{
             await ensureSession();
             if(!window.LDMEdgeFunctionClient || typeof window.LDMEdgeFunctionClient.invoke!=="function"){
-                throw new Error("Edge Function client helper belum tersedia.");
+                throw new Error("Layanan server belum siap.");
             }
 
             /*
@@ -264,7 +264,7 @@
             const message=String(error?.message||error);
             log(`Scheduler belum dapat diaktifkan: ${message}`,"error");
             alert(
-                message+"\n\nJika Cron secret belum ada, jalankan SETUP-STORAGE-AUTO-CLEANUP-V28.2.6.cmd dari paket FULL."
+                message+"\n\nKonfigurasi jadwal otomatis belum siap. Hubungi Developer untuk menyelesaikan konfigurasi."
             );
         }finally{
             if(button)button.disabled=false;
@@ -280,7 +280,7 @@
 
         const button=$("cleanupBtn");
         button.disabled=true;
-        log("Memeriksa kesiapan Edge Function sebelum cleanup…");
+        log("Memeriksa kesiapan layanan pembersihan sebelum proses dimulai…");
         try{
             const ready=await checkHealth({silent:true});
             if(!ready){
@@ -289,7 +289,7 @@
 
             const data=await edgeInvoke("cleanup-current-store");
             const result=Array.isArray(data?.results)?data.results[0]:null;
-            log(`Pembersihan selesai. DB: ${fmt(result?.database_rows_deleted)} record, Storage: ${fmt(result?.storage_objects_deleted)} file (${bytes(result?.storage_bytes_deleted)}).`,"success");
+            log(`Pembersihan selesai. Data teknis: ${fmt(result?.database_rows_deleted)} item, file: ${fmt(result?.storage_objects_deleted)} (${bytes(result?.storage_bytes_deleted)}).`,"success");
             await load();
         }catch(error){
             const message=String(error?.message||error);

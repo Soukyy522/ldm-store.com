@@ -62,8 +62,8 @@
             };
 
             request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error || new Error("IndexedDB tidak dapat dibuka."));
-            request.onblocked = () => reject(new Error("Upgrade IndexedDB terblokir tab lain. Tutup tab LocDailyMar lain lalu coba lagi."));
+            request.onerror = () => reject(request.error || new Error("Penyimpanan lokal tidak dapat dibuka."));
+            request.onblocked = () => reject(new Error("Pembaruan penyimpanan lokal terhalang tab lain. Tutup tab LocDailyMar lain lalu coba lagi."));
         });
 
         return dbPromise;
@@ -77,8 +77,8 @@
             let result;
 
             transaction.oncomplete = () => resolve(result);
-            transaction.onerror = () => reject(transaction.error || new Error("Operasi IndexedDB gagal."));
-            transaction.onabort = () => reject(transaction.error || new Error("Operasi IndexedDB dibatalkan."));
+            transaction.onerror = () => reject(transaction.error || new Error("Operasi penyimpanan lokal gagal."));
+            transaction.onabort = () => reject(transaction.error || new Error("Operasi penyimpanan lokal dibatalkan."));
 
             try{
                 result = executor(store, transaction);
@@ -567,7 +567,7 @@
             throw new Error("Perangkat masih offline.");
         }
         if(!window.LDMCloudSession || !window.LDMCloudAuth){
-            throw new Error("Helper Cloud Auth belum tersedia.");
+            throw new Error("Layanan login Cloud belum siap.");
         }
 
         const context = await window.LDMCloudSession.ensureAuthenticated({registerDevice:false});

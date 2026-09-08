@@ -5,7 +5,7 @@
 
     function client(){
         if(!window.LDMSupabase || typeof window.LDMSupabase.createClient !== "function"){
-            throw new Error("Supabase client belum tersedia.");
+            throw new Error("Layanan Cloud belum siap.");
         }
         return window.LDMSupabase.createClient();
     }

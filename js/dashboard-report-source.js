@@ -61,7 +61,7 @@
 
     async function indexedDbRows(fromDate, toDate){
         if(!window.LDMStorageDB || typeof window.LDMStorageDB.getTransactions !== "function"){
-            throw new Error("IndexedDB transaksi belum siap.");
+            throw new Error("Arsip transaksi lokal belum siap.");
         }
         await window.LDMStorageDB.ready();
         return window.LDMStorageDB.getTransactions({
@@ -78,7 +78,7 @@
         try{
             await window.LDMStorageDB.putTransactions(rows, { cleanup: false });
         }catch(error){
-            console.warn("[LocDailyMar] Dashboard tidak dapat memperbarui arsip IndexedDB:", error);
+            console.warn("[LocDailyMar] Dashboard tidak dapat memperbarui arsip lokal:", error);
         }
     }
 
@@ -95,7 +95,7 @@
                 return { rows, source: "cloud", fromDate, toDate };
             }catch(error){
                 cloudError = error;
-                console.warn("[LocDailyMar] Dashboard Cloud Reporting gagal, fallback IndexedDB:", error);
+                console.warn("[LocDailyMar] Laporan Cloud gagal, memakai arsip lokal sementara:", error);
             }
         }
 
@@ -105,7 +105,7 @@
                 return { rows, source: "indexeddb", fromDate, toDate, cloudError };
             }
         }catch(error){
-            console.warn("[LocDailyMar] Dashboard IndexedDB gagal, fallback localStorage:", error);
+            console.warn("[LocDailyMar] Arsip lokal utama gagal, memakai cache browser sementara:", error);
         }
 
         return {
