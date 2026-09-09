@@ -6,6 +6,10 @@
         checkoutUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-public-checkout-v2",
         lynkOrderUrl:"https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-lynk-order",
         developerWhatsApp:"6287874352468",
+        publicAppUrl:"https://locdaily.github.io",
+        loginUrl:"https://locdaily.github.io/index.html",
+        guideUrl:"https://locdaily.github.io/panduan.html",
+        passwordResetUrl:"https://locdaily.github.io/account-password-reset.html",
 
         // V27: Lynk.id adalah satu-satunya jalur pembayaran.
         checkoutMode:"lynk",
@@ -19,7 +23,7 @@
             TOKO:Object.freeze({monthly:"https://lynk.id/locdaily/9xro4wkxep8z/checkout",yearly:"https://lynk.id/locdaily/669ekq3znom1/checkout",two_year:"https://lynk.id/locdaily/jdm3revj0n7x/checkout"})
         }),
 
-        appVersion:"27.9.0-v28.1.8",
+        appVersion:"27.9.0-v28.3.6",
         requestTimeoutMs:8000,
         onlineCacheMinutes:2,
         offlineGraceHours:24,

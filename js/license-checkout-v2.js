@@ -11,6 +11,9 @@
       statusUrl:String(base.checkoutUrl||"").trim(),
       orderUrl:String(base.lynkOrderUrl||"").trim(),
       whatsapp:String(base.developerWhatsApp||"").replace(/\D/g,""),
+      publicAppUrl:String(base.publicAppUrl||"https://locdaily.github.io").replace(/\/+$/,""),
+      loginUrl:String(base.loginUrl||"").trim(),
+      guideUrl:String(base.guideUrl||"").trim(),
       links:base.lynkCheckoutLinks||{}
     };
   }
@@ -19,6 +22,17 @@
   const rupiah=n=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n||0));
   const tanggal=v=>v?new Date(v).toLocaleString("id-ID"):"-";
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+  function safePublicAppLink(raw,fallbackPath){
+    const base=cfg().publicAppUrl||"https://locdaily.github.io";
+    const fallback=`${base}/${String(fallbackPath||"").replace(/^\/+/, "")}`;
+    try{
+      const expected=new URL(base);
+      const candidate=new URL(String(raw||fallback));
+      if(candidate.protocol!=="https:"||candidate.origin!==expected.origin)return fallback;
+      return candidate.href;
+    }catch(_e){return fallback;}
+  }
 
   function setStatus(text,type="info"){
     const node=el("publicCheckoutStatus");
@@ -86,7 +100,7 @@
     renderSummary();
     panel.hidden=false;
     panel.classList.add("open");
-    panel.scrollIntoView({behavior:"smooth",block:"start"});window.dispatchEvent(new CustomEvent("ldm-paid-receipt-ready",{detail:{order_id:r.order_id||null}}));
+    panel.scrollIntoView({behavior:"smooth",block:"start"});
     setStatus("Isi data customer, lalu lanjutkan pembayaran melalui Lynk.id. Order dapat dibatalkan selama pembayaran belum terverifikasi.","info");
   }
 
@@ -165,9 +179,9 @@
     setText("receiptOwnerEmail",r.owner_email);
     setText("receiptExpires",tanggal(r.expires_at));
     setText("receiptPasswordState",r.credentials_source==="customer_checkout"?"Gunakan kredensial Owner yang sudah dibuat":"Gunakan tombol Buat / Ganti Password Owner");
-    setLink("receiptLoginBtn",r.login_url);
+    setLink("receiptLoginBtn",safePublicAppLink(r.login_url,"index.html"));
     setLink("receiptPasswordBtn",r.password_setup_url);
-    setLink("receiptGuideBtn",r.guide_url);
+    setLink("receiptGuideBtn",safePublicAppLink(r.guide_url,"panduan.html"));
     const refundBtn=el("receiptRefundBtn");
     if(refundBtn){refundBtn.href="#licenseRefundSection";refundBtn.hidden=false;}
     const provision=el("receiptProvisionNote");
@@ -177,6 +191,7 @@
     }
     panel.hidden=false;
     panel.scrollIntoView({behavior:"smooth",block:"start"});
+    window.dispatchEvent(new CustomEvent("ldm-paid-receipt-ready",{detail:{order_id:r.order_id||null}}));
   }
 
   function updateManageActions(data){
