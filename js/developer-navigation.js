@@ -1,10 +1,11 @@
 (function(){
   "use strict";
-  const VERSION="27.9.0-commercial-12-devnav-v15";
+  const VERSION="27.9.0-contact-customizer-v2831";
   const routes=[
     {key:"overview",icon:"🏠",label:"Ringkasan",href:"developer-license-v2.html#developerOverview",page:"developer-license-v2.html",hash:"#developeroverview"},
     {key:"licenses",icon:"🔐",label:"Customer & Lisensi",href:"developer-license-v2.html#licenseManagement",page:"developer-license-v2.html",hash:"#licensemanagement"},
-    {key:"support",icon:"🛟",label:"Support & Monitoring",href:"developer-incident-support.html#supportOverview",page:"developer-incident-support.html",hash:"#supportoverview"}
+    {key:"support",icon:"🛟",label:"Support & Monitoring",href:"developer-incident-support.html#supportOverview",page:"developer-incident-support.html",hash:"#supportoverview"},
+    {key:"contacts",icon:"📇",label:"Kontak Publik",href:"developer-contact-settings.html",page:"developer-contact-settings.html",hash:""}
   ];
   const esc=s=>String(s??"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   function pageName(){return (location.pathname.split("/").pop()||"").toLowerCase()}
@@ -12,6 +13,7 @@
     const page=pageName(),hash=(location.hash||"").toLowerCase();
     if(page==="developer-license-v2.html") return hash==="#licensemanagement"?"licenses":"overview";
     if(page==="developer-incident-support.html") return "support";
+    if(page==="developer-contact-settings.html") return "contacts";
     return "";
   }
   function build(){

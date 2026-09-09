@@ -260,6 +260,7 @@
 
               <div class="feedback-actions">
                 <button class="button primary" id="feedbackWhatsAppBtn" type="submit">Kirim via WhatsApp</button>
+                <button class="button light" id="feedbackEmailBtn" type="button" hidden>Kirim via Email</button>
                 <button class="button light" id="feedbackSupportBtn" type="button">Lanjut ke Pusat Bantuan</button>
               </div>
               <div class="feedback-message" id="feedbackMessageBox" role="status" aria-live="polite"></div>
@@ -273,28 +274,33 @@
             <div class="contact-list">
               <a class="contact-item" id="contactWhatsAppLink" href="https://wa.me/6287874352468" target="_blank" rel="noopener">
                 <span class="contact-icon">💬</span>
-                <span><strong>WhatsApp Support</strong><span>Hubungi Tim LocDailyMar melalui WhatsApp.</span></span>
+                <span><strong id="contactWhatsAppLabel">WhatsApp Support</strong><span>Hubungi Tim LocDailyMar melalui WhatsApp.</span></span>
                 <span class="contact-arrow">›</span>
               </a>
-              <a class="contact-item" href="support-center.html">
+              <a class="contact-item" id="contactEmailLink" href="#" hidden>
+                <span class="contact-icon">✉️</span>
+                <span><strong id="contactEmailLabel">Email Support</strong><span id="contactEmailAddress">Hubungi Tim LocDailyMar melalui email.</span></span>
+                <span class="contact-arrow">›</span>
+              </a>
+              <a class="contact-item" id="contactSupportLink" href="support-center.html">
                 <span class="contact-icon">🛟</span>
-                <span><strong>Pusat Bantuan & Support</strong><span>Buat tiket bantuan dan pantau status penanganannya.</span></span>
+                <span><strong id="contactSupportLabel">Pusat Bantuan & Support</strong><span>Buat tiket bantuan dan pantau status penanganannya.</span></span>
                 <span class="contact-arrow">›</span>
               </a>
-              <a class="contact-item" href="panduan.html?public=1">
+              <a class="contact-item" id="contactGuideLink" href="panduan.html?public=1">
                 <span class="contact-icon">📘</span>
-                <span><strong>Panduan Pengguna</strong><span>Cari langkah penggunaan fitur sebelum menghubungi Support.</span></span>
+                <span><strong id="contactGuideLabel">Panduan Pengguna</strong><span>Cari langkah penggunaan fitur sebelum menghubungi Support.</span></span>
                 <span class="contact-arrow">›</span>
               </a>
-              <a class="contact-item" href="license.html">
+              <a class="contact-item" id="contactLicenseLink" href="license.html">
                 <span class="contact-icon">🔑</span>
-                <span><strong>Lisensi & Paket</strong><span>Lihat paket, periode, pembayaran, dan status lisensi.</span></span>
+                <span><strong id="contactLicenseLabel">Lisensi & Paket</strong><span>Lihat paket, periode, pembayaran, dan status lisensi.</span></span>
                 <span class="contact-arrow">›</span>
               </a>
             </div>
 
-            <div class="contact-number">
-              <div><span>WhatsApp resmi</span><strong>+62 878-7435-2468</strong></div>
+            <div class="contact-number" id="contactNumberBox">
+              <div><span>WhatsApp resmi</span><strong id="contactWhatsAppNumber">+62 878-7435-2468</strong></div>
               <button id="copyContactNumber" type="button">Salin Nomor</button>
             </div>
             <div class="contact-note">Untuk keamanan, jangan pernah mengirim password, OTP, token, kunci rahasia, atau License Key lengkap melalui pesan umum.</div>
@@ -393,7 +399,8 @@
       if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("visible");observer.unobserve(entry.target)}}),{threshold:.12});targets.forEach(el=>observer.observe(el))}else targets.forEach(el=>el.classList.add("visible"));
     })();
   </script>
-<script src="js/homepage-feedback-contact-v2830.js?v=27.9.0-feedback-contact-v2830"></script>
+<script src="js/public-contact-config.js?v=27.9.0-contact-customizer-v2831"></script>
+<script src="js/homepage-feedback-contact-v2831.js?v=27.9.0-contact-customizer-v2831"></script>
 <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body>
 </html>

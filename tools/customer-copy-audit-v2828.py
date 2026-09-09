@@ -7,6 +7,7 @@ DEVELOPER={
     "developer-license.html",
     "developer-license-v2.html",
     "developer-incident-support.html",
+    "developer-contact-settings.html",
 }
 PATTERNS={
     "vendor/backend": re.compile(r"\b(Supabase|Edge Function|SQL(?:-\d+)?|RPC|RLS|IndexedDB|Service Worker|localStorage|schema cache|pg_cron|pg_net|service[_-]?role|JWT|webhook|backend|frontend)\b",re.I),

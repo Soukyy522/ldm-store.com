@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Developer Center · Kontak Publik LocDailyMar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/developer-navigation.css?v=27.9.0-devnav15">
+  <style>
+    :root{--navy:#0d2544;--blue:#1464cc;--bg:#edf2f7;--ink:#132844;--muted:#6a788c;--line:#dae3ee;--green:#07865f;--red:#b42318}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Poppins,system-ui,sans-serif;color:var(--ink)}button,input,textarea{font:inherit}
+    .top{height:68px;background:linear-gradient(110deg,#0b203b,#174472);color:#fff;display:flex;align-items:center;padding:0 24px;justify-content:space-between}
+    .top strong{font-size:18px}.top span{font-size:11px;color:#bfd1e7;display:block}.top button{border:1px solid #ffffff40;color:#fff;background:transparent;border-radius:9px;padding:8px 12px;cursor:pointer}
+    .wrap{max-width:1220px;margin:auto;padding:24px}.login{max-width:430px;margin:60px auto;background:#fff;border-radius:20px;padding:28px;box-shadow:0 18px 55px #1e3d5d20}
+    .login h1{font-size:23px;margin:0 0 7px}.note,.sub{font-size:12px;color:var(--muted);line-height:1.7}.app{display:none}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 25px #263e5910;margin-bottom:16px}.panel h2{margin:0;font-size:19px}.panel h3{margin:0 0 4px;font-size:15px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700}
+    .field input,.field textarea{border:1px solid #cbd8e6;border-radius:10px;padding:11px;outline:none}.field textarea{min-height:90px;resize:vertical}
+    .toggle{display:flex;gap:9px;align-items:center;font-size:12px;font-weight:700;margin:8px 0 14px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+    .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:#fff}.soft{background:#eaf1f9;color:#183c65}.success{background:#e6f7f0;color:var(--green)}.danger{background:#ffebe8;color:var(--red)}
+    .message{display:none;margin-top:12px;padding:11px;border-radius:10px;font-size:12px;white-space:pre-line}.message.show{display:block}.message.ok{background:#e9f8f1;color:#087254}.message.err{background:#fff0ed;color:#a23a2e}
+    .preview{display:grid;grid-template-columns:1fr 1fr;gap:12px}.preview-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fbfcfd}.preview-card b{display:block;font-size:13px}.preview-card span{display:block;font-size:11px;color:var(--muted);margin-top:4px;word-break:break-word}
+    .filebox{background:#0b1830;color:#cfe0f2;border-radius:13px;padding:14px;overflow:auto;max-height:320px;white-space:pre-wrap;font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}
+    code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px}@media(max-width:760px){.grid,.preview{grid-template-columns:1fr}.field.full{grid-column:auto}}
+  </style>
+</head>
+<body data-ldm-developer-raw="true">
+  <div id="app">
+    <div class="top"><div><strong>LocDailyMar Developer Center</strong><span>Pengaturan Kontak Publik</span></div><button id="logoutBtn" type="button" style="display:none">Logout</button></div>
+    <div class="wrap">
+      <section class="login" id="loginBox">
+        <h1>Login Developer</h1>
+        <p class="note">Masuk dengan akun Developer Center untuk mengatur file konfigurasi kontak publik.</p>
+        <div class="field"><label>Email Developer</label><input id="email" type="email" autocomplete="username"></div>
+        <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+        <button class="btn primary" id="loginBtn" type="button" style="width:100%;margin-top:17px">Masuk</button>
+        <div class="message err" id="loginMessage"></div>
+      </section>
+
+      <main class="app" id="developerContactApp">
+        <section class="panel">
+          <h2>📇 Kontak Publik Homepage</h2>
+          <p class="sub">Atur nomor WhatsApp, email Support, label kontak, dan jalur yang ingin ditampilkan kepada customer. Perubahan global diterapkan dengan mengganti satu file <code>js/public-contact-config.js</code> pada repository.</p>
+        </section>
+
+        <section class="panel">
+          <h3>WhatsApp Support</h3>
+          <label class="toggle"><input id="waEnabled" type="checkbox"> Tampilkan WhatsApp pada Homepage</label>
+          <div class="grid">
+            <div class="field"><label>Nomor WhatsApp internasional</label><input id="waNumber" maxlength="20" placeholder="628123456789"></div>
+            <div class="field"><label>Tampilan nomor</label><input id="waDisplay" maxlength="40" placeholder="+62 812-3456-7890"></div>
+            <div class="field"><label>Label</label><input id="waLabel" maxlength="60" placeholder="WhatsApp Support"></div>
+            <div class="field full"><label>Pesan pembuka Contact Us</label><textarea id="waGreeting" maxlength="240"></textarea></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Email Support</h3>
+          <label class="toggle"><input id="emailEnabled" type="checkbox"> Tampilkan Email pada Homepage</label>
+          <div class="grid">
+            <div class="field"><label>Alamat email</label><input id="supportEmail" type="email" maxlength="160" placeholder="support@domain.com"></div>
+            <div class="field"><label>Label</label><input id="emailLabel" maxlength="60" placeholder="Email Support"></div>
+            <div class="field full"><label>Subjek awal email</label><input id="emailSubject" maxlength="160" placeholder="Pertanyaan mengenai LocDailyMar"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Jalur Lain di Contact Us</h3>
+          <div class="grid">
+            <div><label class="toggle"><input id="supportEnabled" type="checkbox"> Tampilkan Pusat Bantuan</label><div class="field"><label>Label</label><input id="supportLabel" maxlength="70"></div></div>
+            <div><label class="toggle"><input id="guideEnabled" type="checkbox"> Tampilkan Panduan</label><div class="field"><label>Label</label><input id="guideLabel" maxlength="70"></div></div>
+            <div><label class="toggle"><input id="licenseEnabled" type="checkbox"> Tampilkan Lisensi & Paket</label><div class="field"><label>Label</label><input id="licenseLabel" maxlength="70"></div></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Preview Kontak</h3>
+          <div class="preview" id="contactPreview"></div>
+          <div class="actions">
+            <button class="btn soft" id="previewBtn" type="button">Perbarui Preview</button>
+            <button class="btn success" id="downloadBtn" type="button">Download public-contact-config.js</button>
+            <button class="btn soft" id="copyBtn" type="button">Salin Isi Konfigurasi</button>
+            <button class="btn danger" id="resetBtn" type="button">Kembalikan Default</button>
+          </div>
+          <div class="message" id="message"></div>
+        </section>
+
+        <section class="panel">
+          <h3>File yang akan diterapkan</h3>
+          <p class="sub">Setelah download, replace file <code>js/public-contact-config.js</code> pada project GitHub lalu Commit & Push. Halaman customer tidak perlu diubah satu per satu.</p>
+          <pre class="filebox" id="configPreview"></pre>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/developer-navigation.js?v=27.9.0-contact-customizer-v2831"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/license-v2-admin-config.js?v=27.8.1"></script>
+  <script src="js/license-v2-admin.js?v=27.9.0-v28.1-lynk-terms"></script>
+  <script src="js/public-contact-config.js?v=27.9.0-contact-customizer-v2831"></script>
+  <script src="js/developer-contact-settings-v2831.js?v=27.9.0-contact-customizer-v2831"></script>
+</body>
+</html>
