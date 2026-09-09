@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 const encoder = new TextEncoder();
-const ADMIN_API_VERSION = "27.9.0-v28-lynk-cancel-refund";
+const ADMIN_API_VERSION = "27.9.0-v28.3.2-public-contact";
 
 function env(name: string) { return String(Deno.env.get(name) || "").trim(); }
 function clean(value: unknown, max = 200) { return String(value || "").trim().slice(0, max); }
@@ -80,6 +80,77 @@ function validPrivacyRequestCode(value: unknown) {
   }
   return code;
 }
+function validEmailAddress(value: unknown) {
+  const email = clean(value, 160).toLowerCase();
+  return !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+function publicContactConfigFromRow(row: Record<string, any>) {
+  return {
+    version: "1.0",
+    revision: Number(row.revision || 1),
+    updated_at: row.updated_at || null,
+    whatsapp: {
+      enabled: row.whatsapp_enabled === true,
+      number: clean(row.whatsapp_number, 20).replace(/\D/g, ""),
+      display: clean(row.whatsapp_display, 40),
+      label: clean(row.whatsapp_label, 60),
+      greeting: clean(row.whatsapp_greeting, 240),
+    },
+    email: {
+      enabled: row.email_enabled === true,
+      address: clean(row.email_address, 160).toLowerCase(),
+      label: clean(row.email_label, 60),
+      subject: clean(row.email_subject, 160),
+    },
+    support_center: { enabled: row.support_center_enabled === true, label: clean(row.support_center_label, 70) },
+    guide: { enabled: row.guide_enabled === true, label: clean(row.guide_label, 70) },
+    license: { enabled: row.license_enabled === true, label: clean(row.license_label, 70) },
+  };
+}
+function normalizePublicContactInput(value: unknown) {
+  const input = (value && typeof value === "object" ? value : {}) as Record<string, any>;
+  const whatsapp = (input.whatsapp && typeof input.whatsapp === "object" ? input.whatsapp : {}) as Record<string, any>;
+  const email = (input.email && typeof input.email === "object" ? input.email : {}) as Record<string, any>;
+  const support = (input.support_center && typeof input.support_center === "object" ? input.support_center : {}) as Record<string, any>;
+  const guide = (input.guide && typeof input.guide === "object" ? input.guide : {}) as Record<string, any>;
+  const license = (input.license && typeof input.license === "object" ? input.license : {}) as Record<string, any>;
+
+  const result = {
+    whatsapp: {
+      enabled: whatsapp.enabled === true,
+      number: clean(whatsapp.number, 20).replace(/\D/g, ""),
+      display: clean(whatsapp.display, 40),
+      label: clean(whatsapp.label, 60),
+      greeting: clean(whatsapp.greeting, 240),
+    },
+    email: {
+      enabled: email.enabled === true,
+      address: clean(email.address, 160).toLowerCase(),
+      label: clean(email.label, 60),
+      subject: clean(email.subject, 160),
+    },
+    support_center: { enabled: support.enabled === true, label: clean(support.label, 70) },
+    guide: { enabled: guide.enabled === true, label: clean(guide.label, 70) },
+    license: { enabled: license.enabled === true, label: clean(license.label, 70) },
+  };
+
+  if (result.whatsapp.enabled && !/^\d{8,20}$/.test(result.whatsapp.number)) {
+    throw Object.assign(new Error("Nomor WhatsApp harus 8-20 digit format internasional, contoh 628123456789."), { status: 400 });
+  }
+  if (result.email.enabled && (!result.email.address || !validEmailAddress(result.email.address))) {
+    throw Object.assign(new Error("Alamat Email Support tidak valid."), { status: 400 });
+  }
+  if (!result.whatsapp.enabled && !result.email.enabled && !result.support_center.enabled && !result.guide.enabled && !result.license.enabled) {
+    throw Object.assign(new Error("Aktifkan minimal satu jalur kontak publik."), { status: 400 });
+  }
+  if (result.whatsapp.enabled && (!result.whatsapp.label || !result.whatsapp.greeting)) {
+    throw Object.assign(new Error("Label dan pesan pembuka WhatsApp wajib diisi saat WhatsApp aktif."), { status: 400 });
+  }
+  if (result.email.enabled && (!result.email.label || !result.email.subject)) {
+    throw Object.assign(new Error("Label dan subjek Email wajib diisi saat Email aktif."), { status: 400 });
+  }
+  return result;
+}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   if (req.method !== "POST") return json(req, { ok: false, message: "Gunakan POST." }, 405);
@@ -121,6 +192,62 @@ Deno.serve(async (req) => {
         detail,
       });
     };
+    if (action === "public_contact_get") {
+      const { data, error } = await admin.from("ldm2_public_contact_settings")
+        .select("whatsapp_enabled,whatsapp_number,whatsapp_display,whatsapp_label,whatsapp_greeting,email_enabled,email_address,email_label,email_subject,support_center_enabled,support_center_label,guide_enabled,guide_label,license_enabled,license_label,revision,updated_at,updated_by_email")
+        .eq("id", "global").maybeSingle();
+      if (error) {
+        if (/ldm2_public_contact_settings|does not exist|schema cache/i.test(error.message || "")) {
+          throw Object.assign(new Error("SQL-19 Public Contact Settings V28.3.2 belum dijalankan pada License Authority."), { status: 503 });
+        }
+        throw error;
+      }
+      if (!data) throw Object.assign(new Error("Konfigurasi kontak publik belum tersedia."), { status: 404 });
+      return json(req, {
+        ok: true,
+        config: publicContactConfigFromRow(data),
+        updated_by_email: clean(data.updated_by_email, 160) || null,
+      });
+    }
+
+    if (action === "public_contact_update") {
+      const config = normalizePublicContactInput(body.config);
+      const saved = await admin.rpc("ldm2_update_public_contact_settings", {
+        p_whatsapp_enabled: config.whatsapp.enabled,
+        p_whatsapp_number: config.whatsapp.number,
+        p_whatsapp_display: config.whatsapp.display,
+        p_whatsapp_label: config.whatsapp.label,
+        p_whatsapp_greeting: config.whatsapp.greeting,
+        p_email_enabled: config.email.enabled,
+        p_email_address: config.email.address,
+        p_email_label: config.email.label,
+        p_email_subject: config.email.subject,
+        p_support_center_enabled: config.support_center.enabled,
+        p_support_center_label: config.support_center.label,
+        p_guide_enabled: config.guide.enabled,
+        p_guide_label: config.guide.label,
+        p_license_enabled: config.license.enabled,
+        p_license_label: config.license.label,
+        p_updated_by_user_id: authData.user.id,
+        p_updated_by_email: adminEmail,
+      });
+      if (saved.error) {
+        if (/ldm2_update_public_contact_settings|does not exist|schema cache/i.test(saved.error.message || "")) {
+          throw Object.assign(new Error("SQL-19 Public Contact Settings V28.3.2 belum dijalankan pada License Authority."), { status: 503 });
+        }
+        throw saved.error;
+      }
+      await audit("PUBLIC_CONTACT_UPDATE", null, {
+        revision: Number(saved.data?.revision || 0),
+        whatsapp_enabled: config.whatsapp.enabled,
+        email_enabled: config.email.enabled,
+        support_center_enabled: config.support_center.enabled,
+        guide_enabled: config.guide.enabled,
+        license_enabled: config.license.enabled,
+      });
+      return json(req, { ok:true, message:"Pengaturan kontak publik berhasil disimpan.", config:saved.data });
+    }
+
     if (action === "incident_support_info") {
       return json(req, {
         ok: true,
@@ -128,7 +255,8 @@ Deno.serve(async (req) => {
         actions: [
           "incident_lookup", "incident_support_update",
           "support_ticket_queue", "support_ticket_lookup", "support_ticket_update",
-          "privacy_request_queue", "privacy_request_lookup", "privacy_request_update"
+          "privacy_request_queue", "privacy_request_lookup", "privacy_request_update",
+          "public_contact_get", "public_contact_update"
         ]
       });
     }

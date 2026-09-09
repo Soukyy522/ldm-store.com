@@ -1,6 +1,6 @@
 (function(){
   "use strict";
-  const VERSION="27.9.0-contact-customizer-v2831";
+  const VERSION="27.9.0-server-contact-v2832";
   const routes=[
     {key:"overview",icon:"🏠",label:"Ringkasan",href:"developer-license-v2.html#developerOverview",page:"developer-license-v2.html",hash:"#developeroverview"},
     {key:"licenses",icon:"🔐",label:"Customer & Lisensi",href:"developer-license-v2.html#licenseManagement",page:"developer-license-v2.html",hash:"#licensemanagement"},

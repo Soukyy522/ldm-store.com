@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.ldm-resend-test]
 verify_jwt = false
+
+[functions.ldm-public-contact]
+verify_jwt = false

@@ -27,7 +27,7 @@
 </head>
 <body data-ldm-developer-raw="true">
   <div id="app">
-    <div class="top"><div><strong>LocDailyMar Developer Center</strong><span>Pengaturan Kontak Publik</span></div><button id="logoutBtn" type="button" style="display:none">Logout</button></div>
+    <div class="top"><div><strong>LocDailyMar Developer Center</strong><span>Pengaturan Kontak Publik · Server</span></div><button id="logoutBtn" type="button" style="display:none">Logout</button></div>
     <div class="wrap">
       <section class="login" id="loginBox">
         <h1>Login Developer</h1>
@@ -41,7 +41,7 @@
       <main class="app" id="developerContactApp">
         <section class="panel">
           <h2>📇 Kontak Publik Homepage</h2>
-          <p class="sub">Atur nomor WhatsApp, email Support, label kontak, dan jalur yang ingin ditampilkan kepada customer. Perubahan global diterapkan dengan mengganti satu file <code>js/public-contact-config.js</code> pada repository.</p>
+          <p class="sub">Atur nomor WhatsApp, email Support, label kontak, dan jalur yang ditampilkan kepada customer. Tombol Simpan menyimpan konfigurasi global ke server sehingga Homepage mengambil perubahan terbaru secara otomatis.</p>
         </section>
 
         <section class="panel">
@@ -79,27 +79,28 @@
           <div class="preview" id="contactPreview"></div>
           <div class="actions">
             <button class="btn soft" id="previewBtn" type="button">Perbarui Preview</button>
-            <button class="btn success" id="downloadBtn" type="button">Download public-contact-config.js</button>
-            <button class="btn soft" id="copyBtn" type="button">Salin Isi Konfigurasi</button>
-            <button class="btn danger" id="resetBtn" type="button">Kembalikan Default</button>
+            <button class="btn success" id="saveBtn" type="button">Simpan Pengaturan</button>
+            <button class="btn soft" id="reloadBtn" type="button">Muat Ulang dari Server</button>
+            <button class="btn soft" id="testPublicBtn" type="button">Uji Kontak Publik</button>
+            <button class="btn danger" id="resetBtn" type="button">Isi Default</button>
           </div>
           <div class="message" id="message"></div>
         </section>
 
         <section class="panel">
-          <h3>File yang akan diterapkan</h3>
-          <p class="sub">Setelah download, replace file <code>js/public-contact-config.js</code> pada project GitHub lalu Commit & Push. Halaman customer tidak perlu diubah satu per satu.</p>
+          <h3>Status Sinkronisasi</h3>
+          <p class="sub" id="serverStatus">Belum memuat konfigurasi server.</p>
           <pre class="filebox" id="configPreview"></pre>
         </section>
       </main>
     </div>
   </div>
 
-  <script src="js/developer-navigation.js?v=27.9.0-contact-customizer-v2831"></script>
+  <script src="js/developer-navigation.js?v=27.9.0-server-contact-v2832"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/license-v2-admin-config.js?v=27.8.1"></script>
   <script src="js/license-v2-admin.js?v=27.9.0-v28.1-lynk-terms"></script>
-  <script src="js/public-contact-config.js?v=27.9.0-contact-customizer-v2831"></script>
-  <script src="js/developer-contact-settings-v2831.js?v=27.9.0-contact-customizer-v2831"></script>
+  <script src="js/public-contact-config.js?v=27.9.0-server-contact-v2832"></script>
+  <script src="js/developer-contact-settings-v2832.js?v=27.9.0-server-contact-v2832"></script>
 </body>
 </html>
