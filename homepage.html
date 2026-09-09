@@ -45,6 +45,35 @@
     .audience-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.audience-card{border:1px solid var(--line);border-radius:20px;padding:24px;background:#fff}.audience-art{height:130px;border-radius:16px;background:linear-gradient(145deg,#eff5fb,#eaf8f1);display:flex;align-items:flex-end;justify-content:center;gap:8px;padding:19px;overflow:hidden}.shop{width:120px}.awning{height:22px;background:repeating-linear-gradient(90deg,var(--green) 0 18px,#fff 18px 36px);border-radius:6px 6px 2px 2px;border:1px solid #b9d5c8}.shop-body{height:66px;background:#fff;border:1px solid #cedbe7;border-top:0;display:grid;grid-template-columns:1fr 32px;gap:8px;padding:10px}.shop-window{background:#dcecf9;border-radius:3px}.shop-door{background:var(--navy);border-radius:3px 3px 0 0}.branch{width:55px;height:70px;background:#fff;border:1px solid #cedbe7;border-radius:8px 8px 2px 2px;position:relative}.branch:before{content:"";position:absolute;left:8px;right:8px;top:13px;height:19px;background:#dcecf9}.audience-card h3{font-size:16px;color:var(--navy);margin:17px 0 7px}.audience-card p{font-size:12px;color:var(--muted);margin:0}
     .faq{background:var(--wash)}.faq-list{max-width:850px;margin:auto;display:grid;gap:10px}.faq details{background:#fff;border:1px solid var(--line);border-radius:15px;padding:0 17px}.faq summary{cursor:pointer;list-style:none;padding:17px 30px 17px 0;font-size:13px;font-weight:700;position:relative}.faq summary::-webkit-details-marker{display:none}.faq summary:after{content:"+";position:absolute;right:0;top:14px;color:var(--green);font-size:21px}.faq details[open] summary:after{content:"−"}.faq details p{font-size:12px;color:var(--muted);margin:0;padding:0 0 17px}
     .cta{padding:65px 0}.cta-box{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--navy),#184c7e);border-radius:29px;padding:48px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:30px}.cta-box:after{content:"";position:absolute;width:270px;height:270px;border-radius:50%;right:-90px;top:-130px;background:rgba(15,157,88,.28)}.cta-copy{position:relative;z-index:1}.cta-copy h2{font-size:clamp(26px,4vw,41px);line-height:1.16;margin:0 0 11px}.cta-copy p{color:#bed0e2;font-size:13px;margin:0}.cta-actions{position:relative;z-index:1;display:flex;gap:9px;flex-wrap:wrap}.cta .primary{background:var(--yellow);color:var(--navy);box-shadow:none}
+
+    .feedback-contact{background:linear-gradient(180deg,#f7faf9 0%,#fff 100%)}
+    .feedback-contact-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(320px,.88fr);gap:18px;align-items:stretch}
+    .feedback-panel,.contact-panel{background:#fff;border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 12px 34px rgba(13,34,64,.06)}
+    .feedback-panel h3,.contact-panel h3{margin:0;color:var(--navy);font-size:21px;letter-spacing:-.35px}
+    .feedback-panel>p,.contact-panel>p{margin:8px 0 18px;color:var(--muted);font-size:12px;line-height:1.75}
+    .feedback-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .feedback-field{display:grid;gap:6px}.feedback-field.full{grid-column:1/-1}
+    .feedback-field label{font-size:10px;font-weight:900;color:#334a61;text-transform:uppercase;letter-spacing:.06em}
+    .feedback-field input,.feedback-field select,.feedback-field textarea{width:100%;border:1px solid #d8e1e9;background:#fbfcfd;color:#172b3d;border-radius:12px;padding:11px 12px;font:inherit;font-size:12px;outline:none;transition:border-color .18s,box-shadow .18s}
+    .feedback-field textarea{min-height:126px;resize:vertical;line-height:1.6}
+    .feedback-field input:focus,.feedback-field select:focus,.feedback-field textarea:focus{border-color:#0f9d58;box-shadow:0 0 0 3px rgba(15,157,88,.12)}
+    .feedback-help{font-size:9.5px;color:#718195;line-height:1.5}
+    .feedback-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+    .feedback-message{display:none;margin-top:12px;padding:10px 12px;border-radius:11px;font-size:11px;line-height:1.55}
+    .feedback-message.show{display:block}.feedback-message.error{background:#fff0ed;color:#a23a2e}.feedback-message.ok{background:#eaf8f1;color:#087254}.feedback-message.info{background:#edf5ff;color:#315f91}
+    .contact-list{display:grid;gap:10px}
+    .contact-item{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid #e1e8ee;border-radius:15px;background:#fbfcfd;text-decoration:none;color:inherit;transition:transform .18s,border-color .18s,box-shadow .18s}
+    .contact-item:hover{transform:translateY(-2px);border-color:#bdd9cc;box-shadow:0 10px 22px rgba(13,34,64,.06)}
+    .contact-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#e9f7f0;font-size:20px;flex:0 0 auto}
+    .contact-item strong{display:block;color:var(--navy);font-size:12px}.contact-item span{display:block;color:var(--muted);font-size:10px;line-height:1.45;margin-top:3px}
+    .contact-item .contact-arrow{margin-left:auto;color:#0f9d58;font-size:18px;font-weight:900}
+    .contact-number{margin-top:13px;padding:12px 14px;border-radius:13px;background:#0d2240;color:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .contact-number span{font-size:10px;color:#bbcbda}.contact-number strong{display:block;margin-top:3px;font-size:13px;letter-spacing:.02em}
+    .contact-number button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:10px;padding:8px 10px;font:inherit;font-size:10px;font-weight:800;cursor:pointer}
+    .contact-note{margin-top:12px;font-size:10px;line-height:1.65;color:#718195}
+    @media(max-width:1280px) and (min-width:1101px){.navlinks .nav-optional{display:none}}
+    @media(max-width:900px){.feedback-contact-grid{grid-template-columns:1fr}.feedback-form-grid{grid-template-columns:1fr}.feedback-field.full{grid-column:auto}}
+
     footer{background:#08182d;color:#b8c7d8;padding:40px 0 24px}.footer-grid{display:flex;justify-content:space-between;gap:35px;align-items:flex-start}.footer-logo-row{display:flex;align-items:center;gap:13px}.footer-logo-row img{width:66px;height:66px;object-fit:contain;border:0;border-radius:0;background:#fff;box-shadow:none}.footer-wordmark{display:grid;line-height:1.05}.footer-wordmark strong{font-size:22px;color:#fff;letter-spacing:-.5px}.footer-wordmark small{margin-top:7px;font-size:8px;font-weight:700;letter-spacing:.16em;color:#9eb2c8;text-transform:uppercase}.footer-brand p{max-width:430px;font-size:11px;margin:13px 0 0}.footer-links{display:flex;gap:16px;flex-wrap:wrap}.footer-links a{font-size:11px;text-decoration:none;color:#d2dce7}.copyright{margin-top:29px;padding-top:18px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;display:flex;justify-content:space-between;gap:15px}
     [data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}[data-reveal].visible{opacity:1;transform:none}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}[data-reveal]{opacity:1;transform:none}}
 
@@ -75,9 +104,9 @@
   <header class="topbar">
     <div class="container topbar-inner">
       <a class="brand" href="homepage.html" aria-label="LocDailyMar Homepage"><img src="assets/brand/locdailymar-logo.png" alt="Logo LocDailyMar"><span class="brand-copy"><strong>LocDailyMar</strong><small>Retail Operating System</small></span></a>
-      <nav class="navlinks" aria-label="Pengarah bagian homepage"><a href="#fitur">Fitur</a><a href="#demo">Coba Demo</a><a href="#cara-kerja">Cara Kerja</a><a href="#paket">Paket</a><a href="#cocok-untuk">Cocok Untuk</a><a href="#faq">FAQ</a><a href="panduan.html?public=1">Panduan</a></nav>
+      <nav class="navlinks" aria-label="Pengarah bagian homepage"><a href="#fitur">Fitur</a><a href="#demo">Coba Demo</a><a href="#cara-kerja">Cara Kerja</a><a href="#paket">Paket</a><a href="#cocok-untuk">Cocok Untuk</a><a href="#faq">FAQ</a><a class="nav-optional" href="#feedback">Feedback</a><a class="nav-optional" href="#contact-us">Contact Us</a><a href="panduan.html?public=1">Panduan</a></nav>
       <div class="top-actions"><a class="button outline" href="index.html">Masuk</a><a class="button secondary" href="license.html">Lihat Paket</a><button class="menu-btn" id="menuBtn" aria-label="Buka menu" aria-expanded="false">☰</button></div>
-      <nav class="mobile-menu" id="mobileMenu" aria-label="Navigasi homepage mobile"><a href="#fitur">Fitur</a><a href="#demo">Coba Demo</a><a href="#cara-kerja">Cara Kerja</a><a href="#paket">Paket</a><a href="#cocok-untuk">Cocok Untuk</a><a href="#faq">FAQ</a><a href="panduan.html?public=1">Panduan</a><a class="button light" href="index.html">Masuk Aplikasi</a><a class="button primary" href="license.html">Lihat Lisensi & Paket</a></nav>
+      <nav class="mobile-menu" id="mobileMenu" aria-label="Navigasi homepage mobile"><a href="#fitur">Fitur</a><a href="#demo">Coba Demo</a><a href="#cara-kerja">Cara Kerja</a><a href="#paket">Paket</a><a href="#cocok-untuk">Cocok Untuk</a><a href="#faq">FAQ</a><a href="#feedback">Feedback & Masukan</a><a href="#contact-us">Contact Us</a><a href="panduan.html?public=1">Panduan</a><a class="button light" href="index.html">Masuk Aplikasi</a><a class="button primary" href="license.html">Lihat Lisensi & Paket</a></nav>
     </div>
   </header>
 
@@ -188,10 +217,96 @@
       <details data-reveal><summary>Bagaimana proses pembeliannya?</summary><p>Pilih paket pada halaman Lisensi, isi data pelanggan, lalu bayar melalui Lynk.id. Setelah pembayaran terverifikasi, License Key, Store Code, Store UUID, dan Network ID ditampilkan langsung pada halaman untuk disimpan pelanggan.</p></details>
     </div></div></section>
 
+
+    <section class="content feedback-contact" id="feedback-contact">
+      <div class="container">
+        <div class="section-head" data-reveal>
+          <span class="section-kicker">Bantuan & komunikasi</span>
+          <h2>Feedback, masukan, dan Contact Us</h2>
+          <p>Punya ide untuk LocDailyMar atau membutuhkan bantuan? Kirim masukan melalui WhatsApp, lanjutkan ke Pusat Bantuan, atau hubungi layanan yang tersedia.</p>
+        </div>
+
+        <div class="feedback-contact-grid">
+          <article class="feedback-panel" id="feedback" data-reveal>
+            <h3>💬 Feedback & Masukan</h3>
+            <p>Bagikan saran fitur, pengalaman penggunaan, atau hal yang menurut Anda dapat dibuat lebih baik. Masukan tidak langsung mengubah data toko.</p>
+
+            <form id="homepageFeedbackForm" novalidate>
+              <div class="feedback-form-grid">
+                <div class="feedback-field">
+                  <label for="feedbackName">Nama</label>
+                  <input id="feedbackName" type="text" maxlength="80" autocomplete="name" placeholder="Nama Anda (opsional)">
+                </div>
+                <div class="feedback-field">
+                  <label for="feedbackCategory">Kategori</label>
+                  <select id="feedbackCategory">
+                    <option value="saran_fitur">Saran Fitur</option>
+                    <option value="tampilan">Tampilan & Kemudahan</option>
+                    <option value="operasional">Alur Operasional</option>
+                    <option value="paket">Paket & Lisensi</option>
+                    <option value="lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div class="feedback-field full">
+                  <label for="feedbackSubject">Judul singkat</label>
+                  <input id="feedbackSubject" type="text" maxlength="120" placeholder="Contoh: Saran filter laporan mingguan">
+                </div>
+                <div class="feedback-field full">
+                  <label for="feedbackMessage">Masukan</label>
+                  <textarea id="feedbackMessage" maxlength="1500" placeholder="Tuliskan masukan atau saran Anda dengan jelas."></textarea>
+                  <div class="feedback-help"><span id="feedbackChars">0</span>/1500 karakter · minimal 10 karakter. Jangan masukkan password, OTP, token, License Key, atau data rahasia.</div>
+                </div>
+              </div>
+
+              <div class="feedback-actions">
+                <button class="button primary" id="feedbackWhatsAppBtn" type="submit">Kirim via WhatsApp</button>
+                <button class="button light" id="feedbackSupportBtn" type="button">Lanjut ke Pusat Bantuan</button>
+              </div>
+              <div class="feedback-message" id="feedbackMessageBox" role="status" aria-live="polite"></div>
+            </form>
+          </article>
+
+          <aside class="contact-panel" id="contact-us" data-reveal>
+            <h3>📞 Contact Us · Hubungi Kami</h3>
+            <p>Gunakan jalur yang paling sesuai untuk pertanyaan penggunaan aplikasi, lisensi, pembayaran, atau bantuan operasional.</p>
+
+            <div class="contact-list">
+              <a class="contact-item" id="contactWhatsAppLink" href="https://wa.me/6287874352468" target="_blank" rel="noopener">
+                <span class="contact-icon">💬</span>
+                <span><strong>WhatsApp Support</strong><span>Hubungi Tim LocDailyMar melalui WhatsApp.</span></span>
+                <span class="contact-arrow">›</span>
+              </a>
+              <a class="contact-item" href="support-center.html">
+                <span class="contact-icon">🛟</span>
+                <span><strong>Pusat Bantuan & Support</strong><span>Buat tiket bantuan dan pantau status penanganannya.</span></span>
+                <span class="contact-arrow">›</span>
+              </a>
+              <a class="contact-item" href="panduan.html?public=1">
+                <span class="contact-icon">📘</span>
+                <span><strong>Panduan Pengguna</strong><span>Cari langkah penggunaan fitur sebelum menghubungi Support.</span></span>
+                <span class="contact-arrow">›</span>
+              </a>
+              <a class="contact-item" href="license.html">
+                <span class="contact-icon">🔑</span>
+                <span><strong>Lisensi & Paket</strong><span>Lihat paket, periode, pembayaran, dan status lisensi.</span></span>
+                <span class="contact-arrow">›</span>
+              </a>
+            </div>
+
+            <div class="contact-number">
+              <div><span>WhatsApp resmi</span><strong>+62 878-7435-2468</strong></div>
+              <button id="copyContactNumber" type="button">Salin Nomor</button>
+            </div>
+            <div class="contact-note">Untuk keamanan, jangan pernah mengirim password, OTP, token, kunci rahasia, atau License Key lengkap melalui pesan umum.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
     <section class="cta"><div class="container"><div class="cta-box" data-reveal><div class="cta-copy"><h2>Siap membuat operasional toko lebih tertata?</h2><p>Lihat detail paket, kuota perangkat, kuota toko, serta seluruh fitur yang tersedia.</p></div><div class="cta-actions"><a class="button primary" href="license.html">Lihat Lisensi & Paket</a><a class="button outline" href="index.html">Masuk Aplikasi</a></div></div></div></section>
   </main>
 
-  <footer><div class="container"><div class="footer-grid"><div class="footer-brand"><div class="footer-logo-row"><img src="assets/brand/locdailymar-logo.png" alt="Logo LocDailyMar"><span class="footer-wordmark"><strong>LocDailyMar</strong><small>Retail Operating System</small></span></div><p>Sistem operasional ritel untuk membantu transaksi, stok, laporan, karyawan, pembelian, dan pengelolaan cabang menjadi lebih teratur.</p></div><div class="footer-links"><a href="#fitur">Fitur</a><a href="#demo">Coba Demo</a><a href="#cara-kerja">Cara Kerja</a><a href="#paket">Paket</a><a href="license.html">Lisensi</a><a href="panduan.html?public=1">Panduan</a><a href="index.html">Masuk</a></div></div><div class="copyright"><span>© <span id="year"></span> LocDailyMar. Seluruh hak dilindungi.</span><span>Retail Operating System</span></div></div></footer>
+  <footer><div class="container"><div class="footer-grid"><div class="footer-brand"><div class="footer-logo-row"><img src="assets/brand/locdailymar-logo.png" alt="Logo LocDailyMar"><span class="footer-wordmark"><strong>LocDailyMar</strong><small>Retail Operating System</small></span></div><p>Sistem operasional ritel untuk membantu transaksi, stok, laporan, karyawan, pembelian, dan pengelolaan cabang menjadi lebih teratur.</p></div><div class="footer-links"><a href="#fitur">Fitur</a><a href="#demo">Coba Demo</a><a href="#cara-kerja">Cara Kerja</a><a href="#paket">Paket</a><a href="license.html">Lisensi</a><a href="panduan.html?public=1">Panduan</a><a href="#feedback">Feedback & Masukan</a><a href="#contact-us">Contact Us</a><a href="index.html">Masuk</a></div></div><div class="copyright"><span>© <span id="year"></span> LocDailyMar. Seluruh hak dilindungi.</span><span>Retail Operating System</span></div></div></footer>
 
   <script src="js/license-v2-config.js?v=27.4.0"></script>
   <script>
@@ -278,6 +393,7 @@
       if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("visible");observer.unobserve(entry.target)}}),{threshold:.12});targets.forEach(el=>observer.observe(el))}else targets.forEach(el=>el.classList.add("visible"));
     })();
   </script>
+<script src="js/homepage-feedback-contact-v2830.js?v=27.9.0-feedback-contact-v2830"></script>
 <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body>
 </html>
