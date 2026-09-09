@@ -25,7 +25,7 @@
     .diagGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.diagCard{border:1px solid var(--line);border-radius:12px;padding:12px;background:#f8fafc}.diagCard b{display:block;font-size:11px}.diagCard span{font-size:11px;color:var(--muted)}.diagOk{color:var(--green)!important}.diagBad{color:var(--red)!important}.diagTable{width:100%;min-width:760px}.diagTable th,.diagTable td{font-size:10px;padding:8px}.diagNote{font-size:11px;line-height:1.6;color:var(--muted)}.refundInfo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}.refundInfo>div{padding:10px;border:1px solid var(--line);border-radius:10px;background:#f8fafc}.refundInfo span{display:block;font-size:9px;color:var(--muted);text-transform:uppercase}.refundInfo b{display:block;font-size:12px;margin-top:3px}.refundPolicyBox{padding:13px;border:1px solid #efd39b;background:#fff8e8;border-radius:12px;color:#684b08;font-size:11px;line-height:1.6}.refundHistory{margin-top:14px}.refundHistory table{min-width:780px}.refundEligible{background:#eafaf0;color:#116536;padding:10px;border-radius:10px;font-size:11px}.refundBlocked{background:#fff0ef;color:#9c3028;padding:10px;border-radius:10px;font-size:11px}.refundAck{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:11px;line-height:1.5;color:#4b5b70}.refundAck input{margin-top:3px}.refundRequestQueue{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:14px;background:#fbfdff}.refundRequestQueue h3{margin:0 0 5px}.refundRequestQueue p{margin:0 0 12px;font-size:10px;color:var(--muted)}.refundRequestQueue table{min-width:1100px}.requestCode{font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;color:#0b5e46}.requestDetail{max-width:260px;white-space:normal;line-height:1.45}.refundOverviewModalWide{width:min(1120px,100%)}
     @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.wrap{padding:14px}.top{padding:0 14px}}
   </style>
-  <script defer src="js/developer-navigation.js?v=27.9.0-github-origin-v2835"></script>
+  <script defer src="js/developer-navigation.js?v=27.9.0-v28.3.8"></script>
 </head>
 <body data-ldm-developer-raw="true">
 <div class="developer-raw-notice" style="margin:10px 0;padding:9px 11px;border:1px solid #d7e1ec;border-radius:10px;background:#f8fbff;font-size:11px;color:#52657b"><strong>Mode Developer:</strong> halaman ini boleh menampilkan istilah implementasi, kode diagnostik, nama layanan server, dan referensi teknis karena hanya ditujukan untuk pengelola sistem.</div>
@@ -50,7 +50,7 @@
         <div class="stat"><span>DITANGGUHKAN</span><strong id="sSuspended">0</strong></div>
         <div class="stat"><span>KEDALUWARSA</span><strong id="sExpired">0</strong></div><div class="stat"><span>DIARSIPKAN</span><strong id="sArchived">0</strong></div>
       </div>
-      <div class="toolbar developer-nav-target" id="licenseManagement"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn soft" id="refundOverviewBtn">Refund Management</button><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">Buka Checkout Lynk.id</button></div></div>
+      <div class="toolbar developer-nav-target" id="licenseManagement"><div><h2>Customer & Lisensi</h2><small id="adminIdentity"></small></div><div class="right filters"><input id="searchBox" type="search" placeholder="Cari customer / email / Store Code"><select id="scopeFilter"><option value="normal">Aktif & nonarsip</option><option value="archived">Hanya arsip</option><option value="all">Semua termasuk arsip</option></select><button class="btn success" id="testTransactionBtn">🧪 Transaksi Test</button><button class="btn soft" id="refundOverviewBtn">Refund Management</button><button class="btn soft" id="refreshBtn">Perbarui</button><button class="btn primary" id="newBtn">Buka Checkout Lynk.id</button></div></div>
       <div class="warningBox"><b>Penghapusan aman:</b> gunakan <b>Arsipkan</b> untuk customer/lisensi yang sudah tidak digunakan. <b>Hapus Permanen</b> hanya diizinkan untuk lisensi yang benar-benar belum pernah dipakai, tidak pernah dibayar/refund, tidak pernah klaim trial, tidak pernah diaktivasi perangkat, dan belum diprovision ke Cloud Data Toko. <b>Refund:</b> transaksi PAID tunduk pada batas hari kebijakan aktif. Permintaan customer RFD masuk ke Refund Management untuk diverifikasi sebelum dana diproses.</div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Toko utama</th><th>Paket</th><th>Status lisensi</th><th>Pembayaran</th><th>Periode</th><th>Perangkat/toko</th><th>Key</th><th>Tindakan</th></tr></thead><tbody id="rows"></tbody></table></div></section>
     </section>
   </main>
@@ -74,6 +74,23 @@
 
   </div>
   </div>
+
+  <div class="modal" id="testTransactionModal"><div class="modalcard">
+    <div class="modalhead"><h2>🧪 Transaksi Test · Tanpa Uang Nyata</h2><button class="close" data-close>✕</button></div>
+    <div class="warningBox"><b>SIMULASI AMAN:</b> fitur ini tidak membuka Lynk.id, tidak memproses uang, tidak membuat payment/lisensi produksi, tidak membuat akun Owner, dan tidak menambah toko. Sistem hanya membuat data lisensi palsu berlabel TEST untuk menguji receipt di <b>license.html</b> dan, bila dipilih, pengiriman email Resend.</div>
+    <div class="formgrid">
+      <div class="field"><label>Nama customer test</label><input id="testCustomerName" value="Customer Test"></div>
+      <div class="field"><label>Email penerima test</label><input id="testCustomerEmail" type="email" placeholder="Gunakan email Developer yang sedang login"></div>
+      <div class="field"><label>Nama toko simulasi</label><input id="testStoreName" value="Toko Simulasi LocDailyMar"></div>
+      <div class="field"><label>Paket</label><select id="testPlan"><option value="WARUNG_KECIL">Warung Kecil</option><option value="WARUNG_SEDERHANA">Warung Sederhana</option><option value="TOKO">Toko</option></select></div>
+      <div class="field"><label>Periode</label><select id="testCycle"><option value="monthly">Bulanan</option><option value="yearly">Tahunan</option><option value="two_year">2 Tahun</option></select></div>
+      <div class="field"><label>Email Resend</label><select id="testSendEmail"><option value="yes">Kirim email simulasi</option><option value="no">Jangan kirim email</option></select></div>
+    </div>
+    <div class="note" style="margin-top:12px">Untuk keamanan, server hanya mengizinkan email akun Developer yang sedang login atau alamat <code>LDM_RESEND_TEST_TO</code>. Receipt simulasi berlaku 15 menit pada browser/origin yang sama.</div>
+    <div class="rowactions" style="margin-top:14px"><button class="btn success" id="runTestTransactionBtn">Jalankan Simulasi</button><button class="btn soft" data-close>Tutup</button></div>
+    <div class="result" id="testTransactionResult"></div>
+  </div></div>
+
   <div class="modal" id="refundOverviewModal"><div class="modalcard refundOverviewModalWide">
     <div class="modalhead"><h2>Refund Management & Customer Requests</h2><button class="close" data-close>✕</button></div>
     <div class="refundPolicyBox"><b>Refund Management Internal LocDailyMar</b><br>Customer hanya dapat mengajukan <b>Refund Penuh</b> maksimal <b>24 jam setelah pembayaran terverifikasi</b>. Email, kategori alasan, dan penjelasan wajib dicantumkan. Request yang diterima diproses sekitar <b>2-3 hari kerja</b>. Partial refund tidak tersedia untuk request baru.</div>
@@ -101,10 +118,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/license-v2-admin-config.js?v=27.8.1"></script>
-  <script src="js/license-v2-admin.js?v=27.9.0-v28.1-lynk-terms"></script>
+  <script src="js/license-v2-admin.js?v=27.9.0-v28.3.8-simulator"></script>
   <script>
     const $=id=>document.getElementById(id);
-    let licenses=[],lastDelivery="";
+    let licenses=[],lastDelivery="",currentAdminEmail="";
     const dt=v=>v?new Date(v).toLocaleString("id-ID"):"Tidak terbatas";
     const money=v=>"Rp "+Number(v||0).toLocaleString("id-ID");
     const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
@@ -117,10 +134,10 @@
 
     async function load(){
       try{
-        const d=await LDMLicenseV2Admin.call("dashboard",{include_archived:true});licenses=d.licenses||[];
+        const d=await LDMLicenseV2Admin.call("dashboard",{include_archived:true});licenses=d.licenses||[];currentAdminEmail=String(d.admin_email||"").toLowerCase();
         $("sTotal").textContent=d.summary.total??0;$("sActive").textContent=d.summary.active??0;$("sTrial").textContent=d.summary.trial??0;
         $("sPayment").textContent=d.summary.payment_pending||0;$("sSuspended").textContent=d.summary.suspended??0;$("sExpired").textContent=d.summary.expired??0;$("sArchived").textContent=d.summary.archived??0;
-        $("adminIdentity").textContent=d.admin_email;render();
+        $("adminIdentity").textContent=d.admin_email;if($("testCustomerEmail")&&!$("testCustomerEmail").value)$("testCustomerEmail").value=currentAdminEmail;render();
       }catch(e){alert(e.message);if(e.status===401)showApp(false)}
     }
     function filteredLicenses(){
@@ -218,10 +235,31 @@ Pastikan dana sudah benar-benar dikembalikan kepada customer sebelum melanjutkan
     function renderRefundOverview(d){currentRefundPolicy=d.policy||{};const p=currentRefundPolicy;const v=$("refundPolicyVersion");if(v)v.value=p.policy_version||"-";renderRefundRequestRows(d.requests||[]);const rows=(d.refunds||[]);$("refundOverviewRows").innerHTML=rows.length?rows.map(r=>`<tr><td><code>${esc(r.refund_key||'-')}</code></td><td>${esc(r.order_id||'-')}</td><td>${esc(r.refund_type||'-')}</td><td>${money(r.amount)}</td><td>${esc(r.status||'-')}</td><td>${esc(r.requested_by_email||'-')}</td><td>${dt(r.requested_at)}</td><td>${esc(r.error_message||'')}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">Belum ada refund.</td></tr>'}
     async function refundOverview(){open("refundOverviewModal");$("refundRequestRows").innerHTML='<tr><td colspan="10" class="empty">Memuat permintaan customer…</td></tr>';$("refundOverviewRows").innerHTML='<tr><td colspan="8" class="empty">Memuat…</td></tr>';try{const d=await LDMLicenseV2Admin.call("refund_overview");renderRefundOverview(d)}catch(e){$("refundOverviewRows").innerHTML=`<tr><td colspan="8" class="empty">${esc(e.message||String(e))}</td></tr>`}}
 
+
+    const TEST_RECEIPT_KEY="ldmLicenseDeliverySimulationV2838";
+    async function runTestTransaction(){
+      const btn=$("runTestTransactionBtn"),box=$("testTransactionResult");
+      const email=String($("testCustomerEmail").value||"").trim().toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert("Email test tidak valid.");return}
+      btn.disabled=true;btn.textContent="Menjalankan simulasi…";box.className="result";box.textContent="";
+      try{
+        const d=await LDMLicenseV2Admin.call("simulate_license_delivery",{
+          customer_name:$("testCustomerName").value.trim(),customer_email:email,store_name:$("testStoreName").value.trim(),
+          plan_code:$("testPlan").value,billing_cycle:$("testCycle").value,send_email:$("testSendEmail").value==="yes"
+        });
+        const expiresAt=Date.now()+Math.max(60,Number(d.expires_in_seconds||900))*1000;
+        localStorage.setItem(TEST_RECEIPT_KEY,JSON.stringify({simulation:true,receipt:d.receipt,created_at:Date.now(),expires_at:expiresAt}));
+        const emailState=String(d.email?.status||d.receipt?.email_status||"skipped");
+        box.innerHTML=`<b>Simulasi berhasil.</b><br>Tidak ada uang nyata dan tidak ada lisensi produksi dibuat.<br>Receipt test sudah disiapkan untuk <code>license.html</code>.<br>Status email: <b>${esc(emailState)}</b><br><br><a class="btn success" href="license.html?ldm_test_receipt=1" target="_blank" rel="noopener">Buka Receipt Simulasi</a>`;
+        box.className="result show";
+        try{window.open("license.html?ldm_test_receipt=1","_blank","noopener")}catch(_e){}
+      }catch(e){box.textContent=e.message||String(e);box.className="result show";}finally{btn.disabled=false;btn.textContent="Jalankan Simulasi"}
+    }
+
     window.reviewRefundRequest=reviewRefundRequest;window.rejectRefundRequest=rejectRefundRequest;window.processRefundRequest=processRefundRequest;
     $("loginBtn").onclick=async()=>{try{$("loginMessage").textContent="";await LDMLicenseV2Admin.login($("email").value,$("password").value);showApp(true);await load()}catch(e){$("loginMessage").textContent=e.message}};
     $("logoutBtn").onclick=async()=>{await LDMLicenseV2Admin.logout();showApp(false)};
-    $("refundOverviewBtn").onclick=refundOverview;$("processRefundBtn").onclick=processRefund;$("refreshBtn").onclick=load;$("newBtn").onclick=()=>window.open("license.html","_blank","noopener");
+    $("testTransactionBtn").onclick=()=>{if($("testCustomerEmail")&&!$("testCustomerEmail").value)$("testCustomerEmail").value=currentAdminEmail;open("testTransactionModal")};$("runTestTransactionBtn").onclick=runTestTransaction;$("refundOverviewBtn").onclick=refundOverview;$("processRefundBtn").onclick=processRefund;$("refreshBtn").onclick=load;$("newBtn").onclick=()=>window.open("license.html","_blank","noopener");
     $("searchBox").addEventListener("input",render);$("scopeFilter").addEventListener("change",render);
         $("issueBtn").onclick=()=>window.open("license.html","_blank","noopener");
     async function statusLicense(id,status){const reason=prompt(status==="suspended"?"Alasan penangguhan:":"Catatan pengaktifan kembali:","");if(reason===null)return;try{await LDMLicenseV2Admin.call("set_status",{license_id:id,status,reason});await load()}catch(e){alert(e.message)}}

@@ -1,3 +1,10 @@
+# LocDailyMar 27.9.0 V28.3.8
+
+Production origin: `https://locdaily.github.io`
+
+## Fitur baru: Developer License Test Simulator
+Developer Center memiliki tombol **Transaksi Test** untuk menguji receipt `license.html` dan Resend tanpa uang nyata. Simulasi tidak berinteraksi dengan Lynk.id dan tidak membuat data produksi. Deploy backend dengan `DEPLOY-LICENSE-TEST-SIMULATOR-V28.3.8.cmd`. Tidak ada SQL baru.
+
 # LocDailyMar POS — Build 27.9.0 V28.3.7
 
 > Production origin: `https://locdaily.github.io`  

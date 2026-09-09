@@ -1,10 +1,10 @@
-// Build: 27.9.0 License Delivery Origin Hardening V28.3.6
+// Build: 27.9.0 Developer License Test Simulator V28.3.8
 "use strict";
 
-const APP_VERSION = "27.9.0-v28.3.7";
+const APP_VERSION = "27.9.0-v28.3.8";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-license-receipt-recovery-v28-3-7`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-license-receipt-recovery-runtime-v28-3-7`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-license-test-simulator-v28-3-8`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-license-test-simulator-runtime-v28-3-8`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

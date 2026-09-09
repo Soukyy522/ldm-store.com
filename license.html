@@ -195,7 +195,8 @@
         </aside>
       </div>
           <section class="license-receipt" id="licenseReceipt" hidden aria-live="polite">
-        <div class="receipt-title"><div style="font-size:24px">✅</div><div><h3>Pembayaran Berhasil · Serah Terima Data Lisensi</h3><p>Data di bawah ini adalah identitas akses toko yang dibuat dari transaksi terverifikasi.</p></div></div>
+          <div id="receiptSimulationBanner" hidden style="margin-bottom:12px;padding:12px 14px;border-radius:12px;background:#fff6d8;border:1px solid #e7bd49;color:#6b4c00;font-size:12px;line-height:1.55"><b>🧪 MODE SIMULASI · TANPA UANG NYATA</b><br>Data di bawah adalah data TEST. Tidak ada pembayaran Lynk.id, lisensi produksi, akun Owner, atau toko produksi yang dibuat.</div>
+        <div class="receipt-title"><div style="font-size:24px">✅</div><div><h3 id="receiptTitleText">Pembayaran Berhasil · Serah Terima Data Lisensi</h3><p id="receiptTitleDesc">Data di bawah ini adalah identitas akses toko yang dibuat dari transaksi terverifikasi.</p></div></div>
         <div class="receipt-alert"><strong>⚠️ SANGAT PENTING</strong><br>License Key, Store Code, Store UUID, dan Network ID disembunyikan secara default. Tekan <b>Reveal Data Penting</b> hanya saat diperlukan dan jangan membagikan screenshot atau menyalin data tersebut ke tempat publik. Data akan disembunyikan lagi otomatis setelah 90 detik. Password Owner yang sudah tersimpan tidak dapat ditampilkan ulang; gunakan reset password bila lupa.</div>
         <div class="receipt-grid">
           <div class="receipt-item"><span>Order ID</span><strong id="receiptOrderId">-</strong></div>
@@ -220,7 +221,7 @@
           <a class="btn primary receipt-link" id="receiptLoginBtn" target="_blank" rel="noopener noreferrer" hidden>Masuk Aplikasi sebagai Owner</a>
           <a class="btn ghost receipt-link" id="receiptPasswordBtn" target="_blank" rel="noopener noreferrer" hidden>Buat / Ganti Password Owner (Order Lama)</a>
           <a class="btn ghost receipt-link" id="receiptGuideBtn" target="_blank" rel="noopener noreferrer" hidden>Buka Panduan</a>
-          <a class="btn ghost receipt-link" href="#ownerLicenseVault">Data Lisensi Saya</a>
+          <a class="btn ghost receipt-link" id="receiptVaultBtn" href="#ownerLicenseVault">Data Lisensi Saya</a>
           <a class="btn danger-soft receipt-link" id="receiptRefundBtn" href="#licenseRefundSection">Ajukan Refund Penuh</a>
         </div>
         <p class="receipt-foot">Email Owner digunakan untuk identitas akun, pencocokan pembayaran Lynk.id, dan tujuan email serah-terima apabila Resend production aktif. Data lisensi juga tetap tersedia di halaman ini. Jika halaman ter-refresh, sistem akan mencoba memulihkan hasil transaksi otomatis pada browser/perangkat yang sama; bila perlu gunakan <b>Cek Status Pembayaran</b> atau login ke <b>Data Lisensi Saya</b>.</p>
@@ -380,11 +381,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js?v=28.1.8"></script>
   <script src="js/supabase-client.js?v=28.1.8"></script>
-  <script src="js/license-v2-config.js?v=27.9.0-v28.3.7"></script>
-  <script src="js/license-v2-client.js?v=27.9.0-v28.3.7"></script>
-  <script src="js/license-checkout-v2.js?v=27.9.0-v28.3.7"></script>
+  <script src="js/license-v2-config.js?v=27.9.0-v28.3.8"></script>
+  <script src="js/license-v2-client.js?v=27.9.0-v28.3.8"></script>
+  <script src="js/license-checkout-v2.js?v=27.9.0-v28.3.8"></script>
 <script src="js/customer-refund-v2825.js?v=27.9.0-refund-v2825"></script>
-  <script src="js/license-owner-vault.js?v=27.9.0-v28.3.7"></script>
+  <script src="js/license-owner-vault.js?v=27.9.0-v28.3.8"></script>
   <script>
     "use strict";
     const $=id=>document.getElementById(id);
