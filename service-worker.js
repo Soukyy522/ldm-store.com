@@ -1,10 +1,10 @@
-// Build: 27.9.0 GitHub Pages Origin Hardening V28.3.5
+// Build: 27.9.0 License Delivery Origin Hardening V28.3.6
 "use strict";
 
-const APP_VERSION = "27.9.0-v28.3.5";
+const APP_VERSION = "27.9.0-v28.3.6";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-github-origin-v28-3-5`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-github-origin-runtime-v28-3-5`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-license-delivery-origin-v28-3-6`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-license-delivery-origin-runtime-v28-3-6`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

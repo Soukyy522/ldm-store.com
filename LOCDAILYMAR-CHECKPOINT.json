@@ -1,0 +1,44 @@
+{
+  "product": "LocDailyMar",
+  "app_version": "27.9.0",
+  "build": "V28.3.6",
+  "build_name": "License Delivery Origin Hardening",
+  "production_origin": "https://locdaily.github.io",
+  "public_app_url": "https://locdaily.github.io",
+  "license_authority_project_ref": "vplweadbeujidsoponrl",
+  "auth": {
+    "site_url": "https://locdaily.github.io",
+    "password_reset_redirect": "https://locdaily.github.io/account-password-reset.html"
+  },
+  "cors_secrets": {
+    "LDM2_ALLOWED_ORIGINS": "https://locdaily.github.io",
+    "LDM2_CHECKOUT_ALLOWED_ORIGINS": "https://locdaily.github.io",
+    "LDM2_ADMIN_ALLOWED_ORIGINS": "https://locdaily.github.io",
+    "LDM2_PUBLIC_CONTACT_ALLOWED_ORIGINS": "https://locdaily.github.io",
+    "LDM2_ALLOW_NULL_ORIGIN": "false",
+    "LDM2_PUBLIC_CONTACT_ALLOW_NULL_ORIGIN": "false",
+    "LDM_APP_PUBLIC_URL": "https://locdaily.github.io",
+    "LDM_PUBLIC_APP_URL": "https://locdaily.github.io",
+    "LDM_GUIDE_URL": "https://locdaily.github.io/panduan.html"
+  },
+  "license_delivery": {
+    "canonical_origin": "https://locdaily.github.io",
+    "login_url": "https://locdaily.github.io/index.html",
+    "guide_url": "https://locdaily.github.io/panduan.html",
+    "password_reset_url": "https://locdaily.github.io/account-password-reset.html",
+    "delivery_channels": [
+      "license_page_receipt",
+      "resend_email"
+    ],
+    "automatic_whatsapp_delivery": false,
+    "backend_guard": "Reject known legacy public origins and fallback to canonical/current trusted origin.",
+    "shared_file": "license-authority-v2/supabase/functions/_shared/ldm-license-delivery.ts"
+  },
+  "security_audit": {
+    "real_secret_literals_found": false,
+    "publishable_keys_present": true,
+    "publishable_keys_are_browser_safe": true,
+    "git_history_scanned": false
+  },
+  "maintenance_rule": "On every origin/domain change, update CORS secrets, public app URLs, App Supabase Auth URL config, payment return URLs if configured, redeploy all functions bundling license-delivery, bump PWA cache, audit secrets, cleanup, and update checkpoint."
+}

@@ -1,17 +1,18 @@
-# LocDailyMar POS — Build 27.9.0 V28.3.5
+# LocDailyMar POS — Build 27.9.0 V28.3.6
 
 > Production origin: `https://locdaily.github.io`  
-> GitHub Pages build: origin/CORS/PWA hardening + security cleanup.
+> GitHub Pages build: license-delivery origin hardening + CORS/PWA/security cleanup.
 
 
 Build produksi LocDailyMar dengan arsitektur HTML/CSS/JavaScript + Supabase.
 
 
-## GitHub Pages V28.3.5
+## GitHub Pages V28.3.6
 - Upload paket **GITHUB-PAGES-PRODUCTION** untuk website publik.
 - Source Supabase, SQL, dan tool deployment dipisahkan ke paket **MAINTENANCE-SOURCE** dan tidak diperlukan oleh browser.
 - CORS License Authority menggunakan origin `https://locdaily.github.io`.
 - Supabase Auth Site URL harus `https://locdaily.github.io` dan redirect reset password harus `https://locdaily.github.io/account-password-reset.html`.
+- Serah-terima lisensi memakai `LDM_APP_PUBLIC_URL` / `LDM_PUBLIC_APP_URL`, tetapi V28.3.6 menolak origin legacy dan fallback aman ke `https://locdaily.github.io`.
 - File `.nojekyll` dipertahankan di root GitHub Pages.
 - Publishable key Supabase memang boleh berada di frontend; `service_role`, webhook token, Resend API Key, password database, dan secret provider tidak boleh berada di repository publik.
 
@@ -25,7 +26,7 @@ Build produksi LocDailyMar dengan arsitektur HTML/CSS/JavaScript + Supabase.
 - Laporan harian + filter Dari Tanggal / Sampai Tanggal.
 - Closing Shift, EOD, Absensi, Akun Cloud, Perangkat Cloud.
 - Penyimpanan & Retensi dengan Supabase Storage.
-- Lisensi V2 + checkout Midtrans pada `license.html`.
+- Lisensi V2 + checkout Lynk.id pada `license.html`; serah-terima lisensi melalui receipt aman + email Resend.
 - PWA, Offline Queue, Recovery Center, QA & Security.
 - Sandbox ringan hanya di `homepage.html`; tidak menyimpan transaksi/data demo.
 
