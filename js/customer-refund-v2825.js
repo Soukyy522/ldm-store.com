@@ -237,7 +237,7 @@
 
   function paidReceiptReady(){
     const receipt=$("licenseReceipt");
-    return Boolean(receipt && !receipt.hidden);
+    return Boolean(receipt && !receipt.hidden && receipt.dataset.simulation!=="true");
   }
 
   function render(cfg,data){

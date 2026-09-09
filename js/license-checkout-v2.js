@@ -4,6 +4,7 @@
   const STORAGE_KEY="ldmPublicCheckoutV281";
   const LEGACY_KEYS=["ldmPublicCheckoutV28","ldmPublicCheckoutV27","ldmPublicCheckoutV261","ldmPublicCheckoutV26","ldmPublicCheckoutV25"];
   const LYNK_PENDING_KEY="ldmLynkPendingV28";
+  const TEST_RECEIPT_KEY="ldmLicenseDeliverySimulationV2838";
 
   function cfg(){
     const base=window.LDM_LICENSE_V2_CONFIG||{};
@@ -155,7 +156,8 @@
     setText("receiptStoreId",r.store_id?(receiptSensitiveRevealed?r.store_id:masked(r.store_id,6)):"Belum tersedia");
     setText("receiptNetworkId",r.network_id?(receiptSensitiveRevealed?r.network_id:masked(r.network_id,6)):"Belum tersedia");
     const revealBtn=el("receiptRevealBtn");if(revealBtn){revealBtn.textContent=receiptSensitiveRevealed?"Sembunyikan Data Penting":"Reveal Data Penting";revealBtn.disabled=!hasKey;}
-    ["receiptCopyAllBtn","receiptCopyKeyBtn","receiptActivateBtn"].forEach(id=>{const b=el(id);if(b)b.disabled=!(receiptSensitiveRevealed&&hasKey);});
+    ["receiptCopyAllBtn","receiptCopyKeyBtn"].forEach(id=>{const b=el(id);if(b)b.disabled=!(receiptSensitiveRevealed&&hasKey);});
+    const activateBtn=el("receiptActivateBtn");if(activateBtn)activateBtn.disabled=!(receiptSensitiveRevealed&&hasKey)||r.simulation===true;
     if(receiptHideTimer){clearTimeout(receiptHideTimer);receiptHideTimer=null;}
     if(receiptSensitiveRevealed){
       receiptHideTimer=setTimeout(()=>setReceiptSensitive(false),90000);
@@ -163,7 +165,7 @@
   }
 
   function receiptText(r){return [
-    "LOCDailyMar — DATA LISENSI",
+    r.simulation===true?"LOCDailyMar — DATA LISENSI SIMULASI":"LOCDailyMar — DATA LISENSI",
     `Order ID: ${r.order_id||"-"}`,
     `Paket: ${r.plan_name||r.plan_code||"-"}`,
     `Periode: ${r.period_label||cycleLabel(r.billing_cycle)}`,
@@ -185,25 +187,30 @@
     currentReceipt=r;
     const checkoutPanel=el("publicCheckoutPanel");
     if(checkoutPanel){checkoutPanel.hidden=false;checkoutPanel.classList.add("open");}
-    const body=el("publicCheckoutBody");if(body)body.hidden=false;
-    const panel=el("licenseReceipt");if(!panel)return false;
+    const body=el("publicCheckoutBody");if(body)body.hidden=r.simulation===true;
+    const panel=el("licenseReceipt");if(!panel)return false;panel.dataset.simulation=r.simulation===true?"true":"false";
+    setText("receiptTitleText",r.simulation===true?"🧪 Simulasi Serah Terima Data Lisensi":"Pembayaran Berhasil · Serah Terima Data Lisensi");
+    setText("receiptTitleDesc",r.simulation===true?"Receipt ini dibuat oleh Developer Center untuk pengujian tanpa transaksi Lynk.id dan tanpa uang nyata.":"Data di bawah ini adalah identitas akses toko yang dibuat dari transaksi terverifikasi.");
     setText("receiptOrderId",r.order_id);
     setText("receiptPlan",`${r.plan_name||r.plan_code||"-"} · ${r.period_label||cycleLabel(r.billing_cycle)}`);
-    setText("receiptPaymentState","PAID · TERVERIFIKASI");
+    setText("receiptPaymentState",r.simulation===true?"SIMULASI PAID · TANPA UANG NYATA":"PAID · TERVERIFIKASI");
     setText("receiptPaidAt",tanggal(r.paid_at));
     setReceiptSensitive(false);
     setText("receiptOwnerEmail",r.owner_email);
     setText("receiptExpires",tanggal(r.expires_at));
-    setText("receiptPasswordState",r.credentials_source==="customer_checkout"?"Gunakan kredensial Owner yang sudah dibuat":"Gunakan tombol Buat / Ganti Password Owner");
+    setText("receiptPasswordState",r.simulation===true?"SIMULASI · akun Owner tidak dibuat":(r.credentials_source==="customer_checkout"?"Gunakan kredensial Owner yang sudah dibuat":"Gunakan tombol Buat / Ganti Password Owner"));
     setLink("receiptLoginBtn",safePublicAppLink(r.login_url,"index.html"));
     setLink("receiptPasswordBtn",r.password_setup_url);
     setLink("receiptGuideBtn",safePublicAppLink(r.guide_url,"panduan.html"));
     const refundBtn=el("receiptRefundBtn");
-    if(refundBtn){refundBtn.href="#licenseRefundSection";refundBtn.hidden=false;}
+    if(refundBtn){refundBtn.href="#licenseRefundSection";refundBtn.hidden=r.simulation===true;}
+    const simBanner=el("receiptSimulationBanner");if(simBanner)simBanner.hidden=r.simulation!==true;
+    const vaultBtn=el("receiptVaultBtn");if(vaultBtn)vaultBtn.hidden=r.simulation===true;
     const provision=el("receiptProvisionNote");
     if(provision){
-      const ready=r.provision_status==="ready"&&Boolean(r.license_key);
-      provision.textContent=ready?"Lisensi dan akun Owner sudah siap digunakan.":`Pembayaran sudah terverifikasi, tetapi data lisensi/provisioning belum sepenuhnya siap${r.provision_error?`: ${r.provision_error}`:". Sistem dapat mencoba memulihkannya lagi melalui Cek Status Pembayaran."}`;
+      const simulated=r.simulation===true;
+      const ready=(r.provision_status==="ready"||r.provision_status==="simulation_ready")&&Boolean(r.license_key);
+      provision.textContent=simulated?"Simulasi receipt berhasil dibuat. Tidak ada lisensi produksi, akun Owner, Store, atau payment nyata yang dibuat.":(ready?"Lisensi dan akun Owner sudah siap digunakan.":`Pembayaran sudah terverifikasi, tetapi data lisensi/provisioning belum sepenuhnya siap${r.provision_error?`: ${r.provision_error}`:". Sistem dapat mencoba memulihkannya lagi melalui Cek Status Pembayaran."}`);
       provision.className="receipt-provision "+(ready?"ok":"warn");
     }
     const delivery=el("receiptDeliveryNote");
@@ -213,13 +220,24 @@
       else if(["pending","retrying"].includes(st)){delivery.textContent="Email serah-terima sedang diproses. Data lisensi tetap tersedia pada halaman ini tanpa menunggu email.";delivery.className="receipt-delivery warn";}
       else if(st==="failed"){delivery.textContent=`Email serah-terima gagal dikirim${r.email_error?`: ${r.email_error}`:""}. Pembayaran dan lisensi tetap sah; gunakan data pada halaman ini dan coba Cek Status Pembayaran untuk retry.`;delivery.className="receipt-delivery err";}
       else if(st==="not_configured"){delivery.textContent="Pengiriman email Resend belum dikonfigurasi pada server. Data lisensi tetap tersedia pada halaman ini.";delivery.className="receipt-delivery warn";}
+      else if(st==="skipped"&&r.simulation===true){delivery.textContent="Email simulasi tidak diminta. Receipt TEST tetap berhasil dibuat pada halaman ini.";delivery.className="receipt-delivery warn";}
       else {delivery.textContent="Status email serah-terima belum tersedia. Data lisensi tetap tersedia pada halaman ini.";delivery.className="receipt-delivery warn";}
     }
     panel.hidden=false;
     panel.classList.add("show");
     panel.scrollIntoView({behavior:"smooth",block:"start"});
-    window.dispatchEvent(new CustomEvent("ldm-paid-receipt-ready",{detail:{order_id:r.order_id||null}}));
+    window.dispatchEvent(new CustomEvent(r.simulation===true?"ldm-test-receipt-ready":"ldm-paid-receipt-ready",{detail:{order_id:r.order_id||null,simulation:r.simulation===true}}));
     return true;
+  }
+
+
+  function readSimulationReceipt(){
+    try{
+      const data=JSON.parse(localStorage.getItem(TEST_RECEIPT_KEY)||"null");
+      if(!data||data.simulation!==true||!data.receipt||data.receipt.simulation!==true)return null;
+      if(Number(data.expires_at||0)<=Date.now()){localStorage.removeItem(TEST_RECEIPT_KEY);return null;}
+      return data.receipt;
+    }catch(_e){localStorage.removeItem(TEST_RECEIPT_KEY);return null;}
   }
 
   function updateManageActions(data){
@@ -407,8 +425,19 @@
     el("receiptCopyAllBtn")?.addEventListener("click",async()=>{if(currentReceipt&&receiptSensitiveRevealed)await copyText(receiptText(currentReceipt));});
     el("receiptCopyKeyBtn")?.addEventListener("click",async()=>{if(currentReceipt?.license_key&&receiptSensitiveRevealed)await copyText(currentReceipt.license_key);});
     el("receiptActivateBtn")?.addEventListener("click",()=>{if(!currentReceipt||!receiptSensitiveRevealed)return;const sc=el("storeCode"),lk=el("licenseKey");if(sc)sc.value=currentReceipt.store_code||"";if(lk){lk.value=currentReceipt.license_key||"";lk.type="password";}el("activation")?.scrollIntoView({behavior:"smooth",block:"start"});});
-    loadRefundPolicy();
     const params=new URLSearchParams(location.search);
+    if(params.get("ldm_test_receipt")==="1"){
+      const simulation=readSimulationReceipt();
+      if(simulation){
+        renderReceipt(simulation);
+        updateManageActions({});
+        setStatus("🧪 Simulasi serah-terima berhasil dimuat. Data TEST ini tidak berasal dari transaksi Lynk.id dan tidak dapat digunakan untuk aktivasi.","success");
+      }else{
+        setStatus("Receipt simulasi tidak ditemukan atau sudah kedaluwarsa. Jalankan Transaksi Test lagi dari Developer Center.","error");
+      }
+      return;
+    }
+    loadRefundPolicy();
     if(params.get("payment")==="return"&&last?.order_id)setTimeout(()=>recoverPaidReceipt(last.order_id,last.status_token,false).catch(e=>setStatus(`❌ Gagal memulihkan hasil transaksi: ${e.message||e}`,"error")),700);
     else if(last?.order_id)setTimeout(()=>recoverPaidReceipt(last.order_id,last.status_token,false).catch(e=>setStatus(`❌ Gagal memulihkan status transaksi: ${e.message||e}`,"error")),500);
   }
