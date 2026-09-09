@@ -1,18 +1,20 @@
-# LocDailyMar POS — Build 27.9.0 V28.3.6
+# LocDailyMar POS — Build 27.9.0 V28.3.7
 
 > Production origin: `https://locdaily.github.io`  
-> GitHub Pages build: license-delivery origin hardening + CORS/PWA/security cleanup.
+> GitHub Pages build: license receipt recovery hardening + origin/CORS/PWA/security cleanup.
 
 
 Build produksi LocDailyMar dengan arsitektur HTML/CSS/JavaScript + Supabase.
 
 
-## GitHub Pages V28.3.6
+## GitHub Pages V28.3.7
 - Upload paket **GITHUB-PAGES-PRODUCTION** untuk website publik.
 - Source Supabase, SQL, dan tool deployment dipisahkan ke paket **MAINTENANCE-SOURCE** dan tidak diperlukan oleh browser.
 - CORS License Authority menggunakan origin `https://locdaily.github.io`.
 - Supabase Auth Site URL harus `https://locdaily.github.io` dan redirect reset password harus `https://locdaily.github.io/account-password-reset.html`.
-- Serah-terima lisensi memakai `LDM_APP_PUBLIC_URL` / `LDM_PUBLIC_APP_URL`, tetapi V28.3.6 menolak origin legacy dan fallback aman ke `https://locdaily.github.io`.
+- Serah-terima lisensi memakai `LDM_APP_PUBLIC_URL` / `LDM_PUBLIC_APP_URL`; origin legacy tetap ditolak dan fallback aman tetap `https://locdaily.github.io`.
+- V28.3.7 memperbaiki pemulihan receipt setelah refresh/return dari Lynk.id: panel checkout otomatis dibuka kembali untuk order terakhir dan receipt PAID dapat diretry sampai data lisensi siap.
+- Receipt `license.html` kini menampilkan status pembayaran, waktu pembayaran, status provisioning, dan status email Resend tanpa menyimpan License Key ke localStorage.
 - File `.nojekyll` dipertahankan di root GitHub Pages.
 - Publishable key Supabase memang boleh berada di frontend; `service_role`, webhook token, Resend API Key, password database, dan secret provider tidak boleh berada di repository publik.
 
