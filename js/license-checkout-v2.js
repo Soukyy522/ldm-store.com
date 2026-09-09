@@ -106,7 +106,17 @@
 
   function close(){
     const panel=el("publicCheckoutPanel");
-    if(panel){panel.hidden=true;panel.classList.remove("open");}
+    if(!panel)return;
+    if(currentReceipt){
+      const body=el("publicCheckoutBody");
+      if(body)body.hidden=true;
+      panel.hidden=false;
+      panel.classList.add("open");
+      el("licenseReceipt")?.scrollIntoView({behavior:"smooth",block:"start"});
+      return;
+    }
+    panel.hidden=true;
+    panel.classList.remove("open");
   }
 
   function saveLast(data){
@@ -137,14 +147,15 @@
   function setLink(id,url){const n=el(id);if(!n)return;if(url){n.href=url;n.hidden=false;}else{n.removeAttribute("href");n.hidden=true;}}
   function masked(v,keep=4){const s=String(v||"");if(!s)return "-";if(s.length<=keep)return "••••";return `${"•".repeat(Math.min(12,Math.max(6,s.length-keep)))}${s.slice(-keep)}`;}
   function setReceiptSensitive(reveal){
-    receiptSensitiveRevealed=Boolean(reveal);
     const r=currentReceipt||{};
-    setText("receiptLicenseKey",receiptSensitiveRevealed?(r.license_key||"-"):"••••••••••••••••••••");
-    setText("receiptStoreCode",receiptSensitiveRevealed?(r.store_code||"-"):masked(r.store_code,3));
-    setText("receiptStoreId",receiptSensitiveRevealed?(r.store_id||"-"):masked(r.store_id,6));
-    setText("receiptNetworkId",receiptSensitiveRevealed?(r.network_id||"-"):masked(r.network_id,6));
-    const revealBtn=el("receiptRevealBtn");if(revealBtn)revealBtn.textContent=receiptSensitiveRevealed?"Sembunyikan Data Penting":"Reveal Data Penting";
-    ["receiptCopyAllBtn","receiptCopyKeyBtn","receiptActivateBtn"].forEach(id=>{const b=el(id);if(b)b.disabled=!receiptSensitiveRevealed;});
+    const hasKey=Boolean(r.license_key);
+    receiptSensitiveRevealed=Boolean(reveal&&hasKey);
+    setText("receiptLicenseKey",hasKey?(receiptSensitiveRevealed?r.license_key:"••••••••••••••••••••"):"Belum tersedia");
+    setText("receiptStoreCode",r.store_code?(receiptSensitiveRevealed?r.store_code:masked(r.store_code,3)):"Belum tersedia");
+    setText("receiptStoreId",r.store_id?(receiptSensitiveRevealed?r.store_id:masked(r.store_id,6)):"Belum tersedia");
+    setText("receiptNetworkId",r.network_id?(receiptSensitiveRevealed?r.network_id:masked(r.network_id,6)):"Belum tersedia");
+    const revealBtn=el("receiptRevealBtn");if(revealBtn){revealBtn.textContent=receiptSensitiveRevealed?"Sembunyikan Data Penting":"Reveal Data Penting";revealBtn.disabled=!hasKey;}
+    ["receiptCopyAllBtn","receiptCopyKeyBtn","receiptActivateBtn"].forEach(id=>{const b=el(id);if(b)b.disabled=!(receiptSensitiveRevealed&&hasKey);});
     if(receiptHideTimer){clearTimeout(receiptHideTimer);receiptHideTimer=null;}
     if(receiptSensitiveRevealed){
       receiptHideTimer=setTimeout(()=>setReceiptSensitive(false),90000);
@@ -170,11 +181,16 @@
   }
 
   function renderReceipt(r){
-    if(!r?.license_key)return;
+    if(!r||typeof r!=="object")return false;
     currentReceipt=r;
-    const panel=el("licenseReceipt");if(!panel)return;
+    const checkoutPanel=el("publicCheckoutPanel");
+    if(checkoutPanel){checkoutPanel.hidden=false;checkoutPanel.classList.add("open");}
+    const body=el("publicCheckoutBody");if(body)body.hidden=false;
+    const panel=el("licenseReceipt");if(!panel)return false;
     setText("receiptOrderId",r.order_id);
     setText("receiptPlan",`${r.plan_name||r.plan_code||"-"} · ${r.period_label||cycleLabel(r.billing_cycle)}`);
+    setText("receiptPaymentState","PAID · TERVERIFIKASI");
+    setText("receiptPaidAt",tanggal(r.paid_at));
     setReceiptSensitive(false);
     setText("receiptOwnerEmail",r.owner_email);
     setText("receiptExpires",tanggal(r.expires_at));
@@ -186,12 +202,24 @@
     if(refundBtn){refundBtn.href="#licenseRefundSection";refundBtn.hidden=false;}
     const provision=el("receiptProvisionNote");
     if(provision){
-      provision.textContent=r.provision_status==="ready"?"Lisensi dan akun Owner sudah siap digunakan.":`Lisensi aktif, tetapi provisioning akun belum selesai${r.provision_error?`: ${r.provision_error}`:"."}`;
-      provision.className="receipt-provision "+(r.provision_status==="ready"?"ok":"warn");
+      const ready=r.provision_status==="ready"&&Boolean(r.license_key);
+      provision.textContent=ready?"Lisensi dan akun Owner sudah siap digunakan.":`Pembayaran sudah terverifikasi, tetapi data lisensi/provisioning belum sepenuhnya siap${r.provision_error?`: ${r.provision_error}`:". Sistem dapat mencoba memulihkannya lagi melalui Cek Status Pembayaran."}`;
+      provision.className="receipt-provision "+(ready?"ok":"warn");
+    }
+    const delivery=el("receiptDeliveryNote");
+    if(delivery){
+      const st=String(r.email_status||"").toLowerCase();
+      if(st==="sent"){delivery.textContent=`Email serah-terima lisensi sudah dikirim${r.email_to?` ke ${r.email_to}`:""}. Data pada halaman ini tetap menjadi salinan utama yang dapat disimpan customer.`;delivery.className="receipt-delivery ok";}
+      else if(["pending","retrying"].includes(st)){delivery.textContent="Email serah-terima sedang diproses. Data lisensi tetap tersedia pada halaman ini tanpa menunggu email.";delivery.className="receipt-delivery warn";}
+      else if(st==="failed"){delivery.textContent=`Email serah-terima gagal dikirim${r.email_error?`: ${r.email_error}`:""}. Pembayaran dan lisensi tetap sah; gunakan data pada halaman ini dan coba Cek Status Pembayaran untuk retry.`;delivery.className="receipt-delivery err";}
+      else if(st==="not_configured"){delivery.textContent="Pengiriman email Resend belum dikonfigurasi pada server. Data lisensi tetap tersedia pada halaman ini.";delivery.className="receipt-delivery warn";}
+      else {delivery.textContent="Status email serah-terima belum tersedia. Data lisensi tetap tersedia pada halaman ini.";delivery.className="receipt-delivery warn";}
     }
     panel.hidden=false;
+    panel.classList.add("show");
     panel.scrollIntoView({behavior:"smooth",block:"start"});
     window.dispatchEvent(new CustomEvent("ldm-paid-receipt-ready",{detail:{order_id:r.order_id||null}}));
+    return true;
   }
 
   function updateManageActions(data){
@@ -213,10 +241,11 @@
 
   async function status(orderId,statusToken,quiet=false){
     const data=await callStatus({action:"status",order_id:orderId,status_token:statusToken});
-    if(data.receipt)renderReceipt(data.receipt);
+    const rendered=data.receipt?renderReceipt(data.receipt):false;
     updateManageActions(data);
     if(!quiet){
-      if(data.payment_status==="paid")setStatus("✅ Pembayaran Lynk.id sudah terverifikasi. Data lisensi tersedia di bawah. Form Refund Penuh akan tersedia selama transaksi masih berada dalam batas 24 jam.","success");
+      if(data.payment_status==="paid"&&rendered)setStatus("✅ Pembayaran Lynk.id sudah terverifikasi. Data lisensi dan status serah-terima tersedia di bawah. Form Refund Penuh tersedia selama masih dalam batas waktu kebijakan.","success");
+      else if(data.payment_status==="paid")setStatus(`⚠️ Pembayaran sudah terverifikasi, tetapi data lisensi belum dapat ditampilkan${data.receipt_error?`: ${data.receipt_error}`:""}. Sistem akan mencoba memulihkannya lagi; jangan membuat pembayaran kedua.`,"error");
       else if(data.payment_status==="cancelled")setStatus("Order LocDailyMar sudah dibatalkan. Tutup halaman pembayaran Lynk.id dan jangan lanjutkan pembayaran pada order ini.","info");
       else if(["failed","expired"].includes(String(data.payment_status||"").toLowerCase()))setStatus(`Pembayaran berstatus ${data.payment_status}. Hubungi Support bila dana sudah terpotong.`,"error");
       else setStatus(`Status pembayaran Lynk.id: ${data.payment_status||"pending"}.`,"info");
@@ -224,11 +253,30 @@
     return data;
   }
 
+  async function recoverPaidReceipt(orderId,statusToken,quiet=false){
+    let data=await status(orderId,statusToken,quiet);
+    if(String(data.payment_status||"").toLowerCase()!=="paid"||data.receipt)return data;
+    for(let i=0;i<5;i++){
+      if(!quiet)setStatus(`✅ Pembayaran terverifikasi. Menyiapkan data lisensi… percobaan ${i+1}/5. Jangan lakukan pembayaran ulang.`,"info");
+      await wait(i===0?1800:3000);
+      data=await status(orderId,statusToken,true);
+      if(data.receipt){
+        setStatus("✅ Pembayaran terverifikasi dan data lisensi berhasil dipulihkan. Data serah-terima tampil di bawah.","success");
+        return data;
+      }
+    }
+    if(!quiet)setStatus(`⚠️ Pembayaran sudah PAID, tetapi receipt lisensi belum siap${data.receipt_error?`: ${data.receipt_error}`:""}. Jangan membayar ulang. Coba Cek Status Pembayaran beberapa saat lagi atau gunakan Support.`,"error");
+    return data;
+  }
+
   async function poll(orderId,statusToken){
     for(let i=0;i<90;i++){
       await wait(i===0?2200:4000);
       const data=await status(orderId,statusToken,true);
-      if(data.payment_status==="paid"){setStatus("✅ Pembayaran Lynk.id terverifikasi dan lisensi sudah diproses.","success");return data;}
+      if(data.payment_status==="paid"){
+        if(data.receipt){setStatus("✅ Pembayaran Lynk.id terverifikasi. Data lisensi dan status serah-terima sudah ditampilkan.","success");return data;}
+        return recoverPaidReceipt(orderId,statusToken,false);
+      }
       if(["failed","expired","cancelled"].includes(String(data.payment_status||"").toLowerCase()))return data;
     }
     setStatus("Pembayaran belum terkonfirmasi otomatis. Gunakan tombol Cek Status Pembayaran atau Bantuan WhatsApp.","info");
@@ -318,7 +366,7 @@
   async function checkLast(){
     const last=readLast();
     if(!last?.order_id||!last?.status_token)throw new Error("Belum ada order Lynk.id pada perangkat ini.");
-    return status(last.order_id,last.status_token,false);
+    return recoverPaidReceipt(last.order_id,last.status_token,false);
   }
 
   async function loadRefundPolicy(){
@@ -342,7 +390,12 @@
     const manual=el("checkoutLynkConfirmBtn");if(manual)manual.hidden=true;
     const hideSnap=el("checkoutHideSnapBtn");if(hideSnap)hideSnap.hidden=true;
     const reopen=el("checkoutReopenBtn");if(reopen)reopen.hidden=true;
-    const last=readLast();if(last?.order_id)updateManageActions({order_id:last.order_id,payment_status:"pending"});
+    const last=readLast();
+    if(last?.order_id){
+      updateManageActions({order_id:last.order_id,payment_status:"pending"});
+      const panel=el("publicCheckoutPanel");if(panel){panel.hidden=false;panel.classList.add("open");}
+      setStatus(`Memulihkan status transaksi terakhir ${last.order_id}… Jangan membuat pembayaran baru sebelum status order ini diketahui.`,"info");
+    }
 
     el("checkoutPeriod")?.addEventListener("change",renderSummary);
     el("checkoutCloseBtn")?.addEventListener("click",close);
@@ -356,8 +409,8 @@
     el("receiptActivateBtn")?.addEventListener("click",()=>{if(!currentReceipt||!receiptSensitiveRevealed)return;const sc=el("storeCode"),lk=el("licenseKey");if(sc)sc.value=currentReceipt.store_code||"";if(lk){lk.value=currentReceipt.license_key||"";lk.type="password";}el("activation")?.scrollIntoView({behavior:"smooth",block:"start"});});
     loadRefundPolicy();
     const params=new URLSearchParams(location.search);
-    if(params.get("payment")==="return"&&last?.order_id)setTimeout(()=>status(last.order_id,last.status_token,false).catch(()=>{}),700);
-    else if(last?.order_id)setTimeout(()=>status(last.order_id,last.status_token,true).catch(()=>{}),500);
+    if(params.get("payment")==="return"&&last?.order_id)setTimeout(()=>recoverPaidReceipt(last.order_id,last.status_token,false).catch(e=>setStatus(`❌ Gagal memulihkan hasil transaksi: ${e.message||e}`,"error")),700);
+    else if(last?.order_id)setTimeout(()=>recoverPaidReceipt(last.order_id,last.status_token,false).catch(e=>setStatus(`❌ Gagal memulihkan status transaksi: ${e.message||e}`,"error")),500);
   }
 
   window.LDMCheckoutV2=Object.freeze({open,close,checkLast,cancelOrder,init});
