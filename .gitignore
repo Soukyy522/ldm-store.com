@@ -1,0 +1,18 @@
+# LocDailyMar - jangan commit secret lokal
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.token
+*secret*.txt
+*credentials*.json
+.ldm-resend-test-token
+.supabase/
+node_modules/
+.DS_Store
+Thumbs.db

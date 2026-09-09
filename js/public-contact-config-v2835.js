@@ -2,6 +2,8 @@
   "use strict";
 
   const DEFAULT_PUBLIC_CONTACT_URL = "https://vplweadbeujidsoponrl.supabase.co/functions/v1/ldm-public-contact";
+  const PRODUCTION_ORIGIN = "https://locdaily.github.io";
+  const PUBLIC_APP_URL = "https://locdaily.github.io";
 
   function cleanUrl(value){
     const raw=String(value||"").trim();
@@ -31,7 +33,7 @@
 
   window.LDMPublicContactConfig = Object.freeze({
     version: "1.1",
-    build: "27.9.0-v28.3.3",
+    build: "27.9.0-v28.3.5",
     remote: Object.freeze({
       enabled: true,
       url: DEFAULT_PUBLIC_CONTACT_URL,
@@ -56,7 +58,10 @@
   });
 
   window.LDMPublicContactRuntime = Object.freeze({
-    version:"28.3.3",
+    version:"28.3.5",
+    productionOrigin:PRODUCTION_ORIGIN,
+    publicAppUrl:PUBLIC_APP_URL,
+    isExpectedOrigin:()=>window.location.origin===PRODUCTION_ORIGIN,
     defaultUrl:DEFAULT_PUBLIC_CONTACT_URL,
     resolveUrl:resolvePublicContactUrl
   });

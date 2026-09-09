@@ -1,3 +1,0 @@
-const fs=require('fs'); const ts=require('typescript'); const files=process.argv.slice(2); let bad=0;
-for(const file of files){const src=fs.readFileSync(file,'utf8');const r=ts.transpileModule(src,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext},reportDiagnostics:true,fileName:file});const ds=(r.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error);if(ds.length){bad++;console.error(file);for(const d of ds)console.error(ts.flattenDiagnosticMessageText(d.messageText,' '));}}
-if(bad)process.exit(1); console.log(`TS syntax audit LULUS: ${files.length} file`);

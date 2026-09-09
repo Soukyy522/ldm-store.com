@@ -1,6 +1,19 @@
-# LocDailyMar POS — Clean Production Build 27.9.0
+# LocDailyMar POS — Build 27.9.0 V28.3.5
+
+> Production origin: `https://locdaily.github.io`  
+> GitHub Pages build: origin/CORS/PWA hardening + security cleanup.
+
 
 Build produksi LocDailyMar dengan arsitektur HTML/CSS/JavaScript + Supabase.
+
+
+## GitHub Pages V28.3.5
+- Upload paket **GITHUB-PAGES-PRODUCTION** untuk website publik.
+- Source Supabase, SQL, dan tool deployment dipisahkan ke paket **MAINTENANCE-SOURCE** dan tidak diperlukan oleh browser.
+- CORS License Authority menggunakan origin `https://locdaily.github.io`.
+- Supabase Auth Site URL harus `https://locdaily.github.io` dan redirect reset password harus `https://locdaily.github.io/account-password-reset.html`.
+- File `.nojekyll` dipertahankan di root GitHub Pages.
+- Publishable key Supabase memang boleh berada di frontend; `service_role`, webhook token, Resend API Key, password database, dan secret provider tidak boleh berada di repository publik.
 
 ## Fitur utama saat ini
 - 3 Mode Operasional per cabang: Kafe, Warung, Toko Ritel.
