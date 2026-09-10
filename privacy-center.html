@@ -6,23 +6,23 @@
 <script src="js/storage-engine.js?v=27.9.0-storage-archive-v2826"></script>
 <script src="js/storage-quota-guard.js?v=27.7.1"></script>
 <script src="js/local-time.js?v=26.4.0"></script>
-<link rel="stylesheet" href="css/privacy-center.css?v=27.9.0-privacy-license-v2840">
+<link rel="stylesheet" href="css/privacy-center.css?v=27.9.0-privacy-hotfix-v2841">
 <script src="js/security-hardening.js?v=19.0"></script>
 <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script>
 <script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=16.0"></script><script src="js/cloud-session-guard.js?v=17.0"></script>
-<script src="js/license-v2-config.js?v=27.9.0-v2840"></script><script src="js/license-v2-client.js?v=27.9.0-v2840"></script>
+<script src="js/license-v2-config.js?v=27.9.0-v2841"></script><script src="js/license-v2-client.js?v=27.9.0-v2841"></script>
 
 <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap">
-<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui24">
+<link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui25-v2841">
 <link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui24">
 <link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui24">
 </head>
 <body class="ldm-system-page" data-ldm-system-page="privacy-center.html" data-ldm-system-label="Privacy Center">
 <main class="privacy-shell">
 <section class="privacy-hero" data-ldm-system-banner="primary">
-  <h1>🔐 Privacy Center</h1>
+  <div class="privacy-hero-heading"><button type="button" class="privacy-mobile-menu" data-ldm-menu-toggle aria-label="Buka menu navigasi" aria-expanded="false">☰</button><h1>🔐 Privacy Center</h1></div>
   <p>Pahami data yang digunakan LocDailyMar, tujuan pemrosesannya, dan ajukan permintaan terkait data pribadi Anda. Permintaan privasi dibuat sebagai permintaan tercatat agar dapat diverifikasi dan ditindaklanjuti secara aman.</p>
 </section>
 
@@ -80,7 +80,7 @@
         <div class="snapshot-item"><span>Paket lisensi</span><strong id="pcLicensePlan">-</strong></div>
         <div class="snapshot-item"><span>Status lisensi</span><strong id="pcLicenseStatus">-</strong></div>
         <div class="snapshot-item"><span>Berlaku sampai</span><strong id="pcLicenseExpiry">-</strong></div>
-        <div class="snapshot-item"><span>Sinkron kuota</span><strong id="pcQuotaSyncedAt">-</strong></div>
+        <div class="snapshot-item"><span>Terakhir diperbarui</span><strong id="pcQuotaSyncedAt">-</strong></div>
       </div>
       <div class="quota-grid">
         <div class="quota-card">
@@ -161,11 +161,12 @@
 
 <div class="legal-note"><strong>Privasi & keamanan:</strong> Permintaan terkait data pribadi akan diverifikasi sebelum diproses. Beberapa data dapat tetap disimpan apabila diperlukan untuk keamanan akun, catatan transaksi, pemenuhan layanan, atau kewajiban yang berlaku.</div>
 </main>
-<script src="js/privacy-center.js?v=27.9.0-privacy-license-v2840"></script>
+<script src="js/license-quota-sync-v2841.js?v=27.9.0-v2841"></script>
+<script src="js/privacy-center.js?v=27.9.0-privacy-hotfix-v2841"></script>
 
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
-<script src="js/global-system-navigation.js?v=27.9.0-systemui24"></script>
+<script src="js/global-system-navigation.js?v=27.9.0-systemui25-v2841"></script>
 <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body>
 </html>

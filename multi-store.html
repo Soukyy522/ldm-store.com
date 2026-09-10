@@ -42,10 +42,11 @@
     <script src="js/cloud-session.js?v=22.0"></script>
     <script src="js/cloud-session-guard.js?v=22.0"></script>
     <script src="js/primary-owner-service.js?v=25.1"></script>
-    <script src="js/multi-store-service.js?v=27.9.0-quota-v2839"></script>
-<script src="js/license-v2-config.js?v=27.9.0-quota-v2839"></script>
-<script src="js/license-v2-client.js?v=27.9.0-quota-v2839"></script>
-<script defer src="js/license-v2-guard.js?v=27.9.0-quota-v2839"></script>
+    <script src="js/license-v2-config.js?v=27.9.0-v2841"></script>
+<script src="js/license-v2-client.js?v=27.9.0-v2841"></script>
+<script src="js/license-quota-sync-v2841.js?v=27.9.0-v2841"></script>
+<script src="js/multi-store-service.js?v=27.9.0-quota-v2841"></script>
+<script defer src="js/license-v2-guard.js?v=27.9.0-v2841"></script>
 </head>
 <body>
     <div class="ms-offline" id="offlineBanner">Mode offline — pergantian toko dan transfer stok dinonaktifkan.</div>
@@ -159,7 +160,7 @@
         function currentRole(){return String(context&&context.profile&&context.profile.role||localStorage.getItem("userRole")||"").toLowerCase()}
         function isPrimaryOwner(){return primaryContext&&primaryContext.is_primary_owner===true}
         function quotaError(error){const raw=errorMessage(error);if(/STORE_LIMIT_REACHED/i.test(raw))return "Batas toko paket sudah tercapai. Batas toko menghitung toko pusat dan cabang aktif. Upgrade paket atau nonaktifkan toko yang memang sudah tidak digunakan.";if(/LICENSE_QUOTA_NOT_SYNCED|LICENSE_QUOTA_STALE/i.test(raw))return "Informasi batas pemakaian sedang diperbarui. Coba refresh saat perangkat terhubung ke internet.";if(/LICENSE_NOT_ACTIVE|LICENSE_EXPIRED/i.test(raw))return "Lisensi tidak aktif atau sudah berakhir. Cabang baru tidak dapat dibuat.";return raw}
-        function renderStoreQuota(){const q=quota||{};const max=Number(q.max_stores||0),used=Number(q.active_stores||stores.length||0),remaining=Math.max(0,max-used);$("storeQuotaSummary").textContent=max?`${used} / ${max} total toko`:"Belum sinkron";const note=$("storeQuotaNote"),submit=$("branchForm")?.querySelector('button[type="submit"]');if(!note||!submit)return;submit.disabled=false;if(!q.quota_synced){note.innerHTML="Informasi batas pemakaian sedang diperbarui. Cabang baru dapat ditambahkan setelah informasi paket tersedia. <strong>Toko pusat dihitung sebagai satu toko.</strong>";submit.disabled=true;return}if(q.quota_stale){note.innerHTML="Informasi batas pemakaian perlu diperbarui. Refresh halaman saat terhubung ke internet sebelum membuat cabang baru.";submit.disabled=true;return}if(q.store_over_limit){note.innerHTML=`⛔ Pemakaian saat ini melebihi batas paket: <strong>${used}/${max} total toko</strong>. Cabang baru tidak dapat ditambahkan sampai pemakaian kembali sesuai batas.`;submit.disabled=true;return}if(q.store_limit_reached){note.innerHTML=`⛔ Batas paket tercapai: <strong>${used}/${max} total toko</strong>. Karena toko pusat ikut dihitung, tidak ada slot cabang baru. Upgrade paket atau kurangi toko aktif.`;submit.disabled=true;return}note.innerHTML=`✅ Paket ${esc(q.plan_name||q.plan_code||"")} menggunakan <strong>${used}/${max} total toko</strong>. Masih ada <strong>${remaining}</strong> slot. Toko pusat dihitung sebagai 1 toko.`}
+        function renderStoreQuota(){const q=quota||{};const max=Number(q.max_stores||0),used=Number(q.active_stores||stores.length||0),remaining=Math.max(0,max-used);$("storeQuotaSummary").textContent=max?`${used} / ${max} total toko`:"Belum tersedia";const note=$("storeQuotaNote"),submit=$("branchForm")?.querySelector('button[type="submit"]');if(!note||!submit)return;submit.disabled=false;if(!q.quota_synced){note.innerHTML="Informasi batas pemakaian sedang diperbarui. Cabang baru dapat ditambahkan setelah informasi paket tersedia. <strong>Toko pusat dihitung sebagai satu toko.</strong>";submit.disabled=true;return}if(q.quota_stale){note.innerHTML="Informasi batas pemakaian perlu diperbarui. Refresh halaman saat terhubung ke internet sebelum membuat cabang baru.";submit.disabled=true;return}if(q.store_over_limit){note.innerHTML=`⛔ Pemakaian saat ini melebihi batas paket: <strong>${used}/${max} total toko</strong>. Cabang baru tidak dapat ditambahkan sampai pemakaian kembali sesuai batas.`;submit.disabled=true;return}if(q.store_limit_reached){note.innerHTML=`⛔ Batas paket tercapai: <strong>${used}/${max} total toko</strong>. Karena toko pusat ikut dihitung, tidak ada slot cabang baru. Upgrade paket atau kurangi toko aktif.`;submit.disabled=true;return}note.innerHTML=`✅ Paket ${esc(String(q.plan_code||"").toUpperCase()==="LIFETIME"||/lifetime\s+legacy/i.test(String(q.plan_name||""))?"Lifetime":(q.plan_name||q.plan_code||""))} menggunakan <strong>${used}/${max} total toko</strong>. Masih ada <strong>${remaining}</strong> slot. Toko pusat dihitung sebagai 1 toko.`}
 
         function renderStores(){
             const active=currentStore();
