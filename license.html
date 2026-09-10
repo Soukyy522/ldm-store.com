@@ -381,8 +381,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js?v=28.1.8"></script>
   <script src="js/supabase-client.js?v=28.1.8"></script>
-  <script src="js/license-v2-config.js?v=27.9.0-v28.3.9"></script>
-  <script src="js/license-v2-client.js?v=27.9.0-v28.3.9"></script>
+  <script src="js/license-v2-config.js?v=27.9.0-v28.4.2"></script>
+  <script src="js/license-v2-client.js?v=27.9.0-v28.4.2"></script>
   <script src="js/license-checkout-v2.js?v=27.9.0-v28.3.9"></script>
 <script src="js/customer-refund-v2825.js?v=27.9.0-refund-v2825"></script>
   <script src="js/license-owner-vault.js?v=27.9.0-v28.3.9"></script>
@@ -446,13 +446,27 @@
     function closePlan(){$('planModal').classList.remove('open');$('planModal').setAttribute('aria-hidden','true');document.body.style.overflow=''}
     function message(el,text,ok=false,warn=false){el.textContent=(ok?'✅ ':warn?'⚠️ ':'❌ ')+text;el.className='status show '+(ok?'ok':warn?'warn':'err')}
     function setBusy(button,busy,label){if(!button.dataset.label)button.dataset.label=button.textContent;button.disabled=busy;button.textContent=busy?label:button.dataset.label}
+    function friendlyLicenseError(error){
+      const code=String(error?.code||'');
+      const map={
+        LICENSE_TIMEOUT:'Layanan lisensi sedang sibuk. Periksa koneksi internet lalu coba lagi.',
+        LICENSE_NETWORK_ERROR:'Tidak dapat menghubungi layanan lisensi. Periksa koneksi internet lalu coba lagi.',
+        LICENSE_KEY_INVALID:'License Key tidak valid atau tidak ditemukan.',
+        PLAN_INACTIVE:'Paket pada lisensi ini belum dapat digunakan. Hubungi Tim Support.',
+        DEVICE_LIMIT_REACHED:'Batas perangkat pada paket sudah tercapai.',
+        STORE_LIMIT_REACHED:'Batas toko pada paket sudah tercapai.',
+        LICENSE_EXPIRED:'Masa lisensi sudah berakhir. Silakan lakukan perpanjangan.',
+        ACTIVATION_REQUIRED:'Aktivasi lisensi belum tersedia pada perangkat ini.'
+      };
+      return map[code]||String(error?.message||'Permintaan belum dapat diproses. Coba lagi beberapa saat.');
+    }
     function localSuspended(c){return Boolean(c&&c.expires_at&&new Date(c.expires_at).getTime()<=Date.now())}
-    function renderCurrent(data){const c=data||LDMLicenseV2.activationContext();const suspended=localSuspended(c);const lifetime=String(c.plan_code||'').toUpperCase()==='LIFETIME'||c.legacy_plan===true;const noExpiryLegacy=!c.expires_at&&Boolean(c.plan_code);const status=!c.plan_code?'Belum aktif':suspended?'Ditangguhkan sementara':lifetime?'Aktif · Lifetime':noExpiryLegacy?'Aktif · Legacy tanpa expiry':'Aktif';$('current').innerHTML=`<div><span>Paket</span><strong>${c.plan_name||c.plan_code||'Belum aktif'}</strong></div><div><span>Status</span><strong style="color:${suspended?'#9a6700':'#087f5b'}">${status}</strong></div><div><span>Store Code</span><strong>${c.store_code||'-'}</strong></div><div><span>Masa berlaku</span><strong>${date(c.expires_at)}</strong></div><div><span>Device ID</span><strong>${LDMLicenseV2.deviceId().slice(0,13)}…</strong></div>`;$('storeCode').value=c.store_code||localStorage.getItem('ldmCloudStoreCode')||'';$('trialStore').value=$('storeCode').value;if(suspended)message($('activateStatus'),'Masa lisensi sudah berakhir. Akses ditangguhkan sementara sampai developer melakukan perpanjangan.',false,true)}
+    function renderCurrent(data){const c=data||LDMLicenseV2.activationContext();const suspended=localSuspended(c);const lifetime=String(c.plan_code||'').toUpperCase()==='LIFETIME'||c.legacy_plan===true;const noExpiryLegacy=!c.expires_at&&Boolean(c.plan_code);const status=!c.plan_code?'Belum aktif':suspended?'Ditangguhkan sementara':lifetime?'Aktif · Lifetime':'Aktif';$('current').innerHTML=`<div><span>Paket</span><strong>${c.plan_name||c.plan_code||'Belum aktif'}</strong></div><div><span>Status</span><strong style="color:${suspended?'#9a6700':'#087f5b'}">${status}</strong></div><div><span>Store Code</span><strong>${c.store_code||'-'}</strong></div><div><span>Masa berlaku</span><strong>${date(c.expires_at)}</strong></div><div><span>Device ID</span><strong>${LDMLicenseV2.deviceId().slice(0,13)}…</strong></div>`;$('storeCode').value=c.store_code||localStorage.getItem('ldmCloudStoreCode')||'';$('trialStore').value=$('storeCode').value;if(suspended)message($('activateStatus'),'Masa lisensi sudah berakhir. Akses ditangguhkan sementara sampai developer melakukan perpanjangan.',false,true)}
     $('modalClose').onclick=closePlan;$('planModal').onclick=e=>{if(e.target===$('planModal'))closePlan()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlan()});
     $('deviceName').value=LDMLicenseV2.deviceName();$('deviceName').onchange=()=>localStorage.setItem('ldmLicenseV2DeviceName',$('deviceName').value.trim());
-    $('activateBtn').onclick=async()=>{const b=$('activateBtn');setBusy(b,true,'Mengaktifkan…');try{const d=await LDMLicenseV2.activate({store_code:$('storeCode').value,license_key:$('licenseKey').value});message($('activateStatus'),d.legacy_plan?`Aktif. Paket Lifetime tetap berlaku tanpa kedaluwarsa.`:`Aktif. Paket ${d.plan_name}, berlaku sampai ${date(d.expires_at)}.`,true);renderCurrent(d)}catch(e){message($('activateStatus'),`${e.code||'GAGAL'} — ${e.message}`,false,e.code==='LICENSE_EXPIRED')}finally{setBusy(b,false)}};
-    $('checkBtn').onclick=async()=>{const b=$('checkBtn');setBusy(b,true,'Memeriksa…');try{const d=await LDMLicenseV2.check({force:true});message($('activateStatus'),d.legacy_plan?`Lisensi Lifetime valid dan aktif.`:`Lisensi ${d.plan_name} valid dan aktif.`,true);renderCurrent(d)}catch(e){if(e.code==='LICENSE_EXPIRED')message($('activateStatus'),'Masa lisensi sudah berakhir. Lisensi ditangguhkan sementara sampai diperpanjang developer.',false,true);else message($('activateStatus'),`${e.code||'GAGAL'} — ${e.message}`)}finally{setBusy(b,false)}};
-    $('trialBtn').onclick=async()=>{const b=$('trialBtn');setBusy(b,true,'Mendaftarkan…');try{const d=await LDMLicenseV2.startTrial({customer_name:$('trialName').value,customer_email:$('trialEmail').value,customer_phone:$('trialPhone').value,store_code:$('trialStore').value});message($('trialStatus'),`Trial aktif sampai ${date(d.expires_at)}.`,true);renderCurrent(d)}catch(e){message($('trialStatus'),`${e.code||'GAGAL'} — ${e.message}`)}finally{setBusy(b,false)}};
+    $('activateBtn').onclick=async()=>{const b=$('activateBtn');setBusy(b,true,'Mengaktifkan…');try{const d=await LDMLicenseV2.activate({store_code:$('storeCode').value,license_key:$('licenseKey').value});message($('activateStatus'),d.legacy_plan?`Aktif. Paket Lifetime tetap berlaku tanpa kedaluwarsa.`:`Aktif. Paket ${d.plan_name}, berlaku sampai ${date(d.expires_at)}.`,true);renderCurrent(d)}catch(e){console.warn('Aktivasi lisensi:',e);message($('activateStatus'),friendlyLicenseError(e),false,e.code==='LICENSE_EXPIRED')}finally{setBusy(b,false)}};
+    $('checkBtn').onclick=async()=>{const b=$('checkBtn');setBusy(b,true,'Memeriksa…');try{const d=await LDMLicenseV2.check({force:true});message($('activateStatus'),d.legacy_plan?`Lisensi Lifetime valid dan aktif.`:`Lisensi ${d.plan_name} valid dan aktif.`,true);renderCurrent(d)}catch(e){if(e.code==='LICENSE_EXPIRED')message($('activateStatus'),'Masa lisensi sudah berakhir. Lisensi ditangguhkan sementara sampai diperpanjang developer.',false,true);else{console.warn('Pemeriksaan lisensi:',e);message($('activateStatus'),friendlyLicenseError(e))}}finally{setBusy(b,false)}};
+    $('trialBtn').onclick=async()=>{const b=$('trialBtn');setBusy(b,true,'Mendaftarkan…');try{const d=await LDMLicenseV2.startTrial({customer_name:$('trialName').value,customer_email:$('trialEmail').value,customer_phone:$('trialPhone').value,store_code:$('trialStore').value});message($('trialStatus'),`Trial aktif sampai ${date(d.expires_at)}.`,true);renderCurrent(d)}catch(e){console.warn('Pendaftaran trial:',e);message($('trialStatus'),friendlyLicenseError(e))}finally{setBusy(b,false)}};
     $('deactivateBtn').onclick=async()=>{if(!confirm('Lepaskan aktivasi pada perangkat ini? Data toko tidak dihapus.'))return;await LDMLicenseV2.deactivate();renderCurrent({});message($('activateStatus'),'Aktivasi perangkat sudah dilepas.',true)};
     renderPlans();renderCurrent();
   </script>

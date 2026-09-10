@@ -1,10 +1,10 @@
-// Build: 27.9.0 Mobile Navigation + License Quota Recovery Hotfix V28.4.1
+// Build: 27.9.0 Critical Login + License Availability Hotfix V28.4.2
 "use strict";
 
-const APP_VERSION = "27.9.0-v28.4.1";
+const APP_VERSION = "27.9.0-v28.4.2";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-mobile-quota-hotfix-v28-4-1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-mobile-quota-hotfix-runtime-v28-4-1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-critical-license-availability-v28-4-2`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-critical-license-availability-runtime-v28-4-2`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

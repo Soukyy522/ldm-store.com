@@ -613,9 +613,6 @@
 })();
 </script>
 
-<script src="js/license-v2-config.js?v=25.2.0"></script>
-<script src="js/license-v2-client.js?v=25.2.0"></script>
-<script defer src="js/license-v2-guard.js?v=25.2.0"></script>
 </head>
 <body>
 
@@ -1107,8 +1104,8 @@ async function handleLogin(event) {
         !window.LDMSupabase.isConfigured()
     ) {
         showAlert(
-            "Supabase Belum Siap",
-            "Isi Project URL dan Publishable Key di js/supabase-config.js.",
+            "Layanan Akun Belum Siap",
+            "Layanan akun belum tersedia. Muat ulang halaman atau hubungi Tim Support.",
             "⚠️"
         );
 
@@ -1119,8 +1116,8 @@ async function handleLogin(event) {
         !window.LDMCloudSession
     ) {
         showAlert(
-            "Komponen Auth Gagal Dimuat",
-            "Pastikan js/cloud-auth.js dan js/cloud-session.js tersedia di GitHub.",
+            "Layanan Login Belum Siap",
+            "Komponen login belum tersedia. Muat ulang halaman atau hubungi Tim Support.",
             "❌"
         );
 
@@ -1232,7 +1229,7 @@ async function requestPasswordReset() {
 
         showAlert(
             "Permintaan Dikirim",
-            "Jika email terdaftar dan pengiriman email Supabase aktif, link reset password akan dikirim. Periksa inbox dan folder spam.",
+            "Jika email terdaftar, tautan reset password akan dikirim. Periksa inbox dan folder spam.",
             "✅"
         );
 
