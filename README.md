@@ -1,9 +1,18 @@
-# LocDailyMar 27.9.0 V28.3.8
+# LocDailyMar 27.9.0 V28.3.9
 
 Production origin: `https://locdaily.github.io`
 
-## Fitur baru: Developer License Test Simulator
-Developer Center memiliki tombol **Transaksi Test** untuk menguji receipt `license.html` dan Resend tanpa uang nyata. Simulasi tidak berinteraksi dengan Lynk.id dan tidak membuat data produksi. Deploy backend dengan `DEPLOY-LICENSE-TEST-SIMULATOR-V28.3.8.cmd`. Tidak ada SQL baru.
+## V28.3.9 — Privacy Account Snapshot + License Quota Enforcement Hardening
+- `privacy-center.html` sekarang menampilkan data akun yang sedang login, toko/network, perangkat saat ini, paket, status lisensi, masa berlaku, dan pemakaian kuota device/store. License Key dan password tetap tidak ditampilkan.
+- Kuota paket saat ini: Warung Kecil `2 device / 1 total toko`, Warung Sederhana `3 / 1`, Toko `10 / 5`. `max_stores` menghitung toko pusat + cabang aktif.
+- App Supabase sekarang hard-enforce `max_devices` pada `ldm_device_approve()` dan `max_stores` pada `ldm_create_branch_store_v2()`.
+- `js/device-service.js` sekarang mengekspor `quota()` untuk `device-management.html`; ini memperbaiki error runtime `LDMDevices.quota is not a function` yang terdeteksi saat finalisasi V28.3.9.
+- RPC `ldm_my_network_stores_v2()` dan `ldm_create_branch_store_v2()` ditambahkan karena frontend sudah memanggil keduanya tetapi source SQL sebelumnya belum memilikinya.
+- RPC branch legacy diarahkan ke V2 agar tidak menjadi bypass kuota.
+- License Authority `ldm2_activate()` diperbaiki agar reaktivasi tidak melewati limit dan device yang sama di beberapa toko tetap dihitung satu device.
+- Entitlement License Authority disinkronkan ke App Supabase melalui shared `ldm-license-delivery.ts` dan `ldm-license-v2`.
+- SQL baru diperlukan pada **dua project berbeda**: App Supabase dan License Authority. Lihat `LICENSE-QUOTA-DEVICE-STORE-GUIDE-V28.3.9.md`.
+- **FIX-1 PostgreSQL 42P13:** App Supabase wajib memakai `supabase/sql/28-stage28-license-entitlement-quota-hardening-V28.3.9-FIX1.sql`. File lama tanpa FIX1 tidak dipakai karena `CREATE OR REPLACE` tidak dapat mengubah `RETURNS TABLE` dari `ldm_my_network_stores_v2()`.
 
 # LocDailyMar POS — Build 27.9.0 V28.3.7
 

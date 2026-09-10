@@ -6,13 +6,13 @@
 <script src="js/storage-engine.js?v=27.9.0-storage-archive-v2826"></script>
 <script src="js/storage-quota-guard.js?v=27.7.1"></script>
 <script src="js/local-time.js?v=26.4.0"></script>
-<link rel="stylesheet" href="css/privacy-center.css?v=27.9.0-privacy18">
+<link rel="stylesheet" href="css/privacy-center.css?v=27.9.0-privacy-quota-v2839">
 <script src="js/security-hardening.js?v=19.0"></script>
 <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script>
 <script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=16.0"></script><script src="js/cloud-session-guard.js?v=17.0"></script>
-<script src="js/license-v2-config.js?v=27.4.0"></script><script src="js/license-v2-client.js?v=27.4.0"></script>
+<script src="js/license-v2-config.js?v=27.9.0-v2839"></script><script src="js/license-v2-client.js?v=27.9.0-v2839"></script>
 
 <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap">
 <link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui24">
@@ -27,6 +27,76 @@
 </section>
 
 <div class="privacy-grid">
+
+  <section class="privacy-card full privacy-account-card" id="privacyAccountSnapshotCard">
+    <div class="requests-head">
+      <div>
+        <h2>👤 Data Akun & Customer Anda</h2>
+        <p>Ringkasan ini hanya menampilkan data milik akun yang sedang login, perangkat yang sedang dipakai, toko aktif, dan kuota lisensi jaringan. License Key dan password tidak ditampilkan di Privacy Center.</p>
+      </div>
+      <button id="btnRefreshAccountSnapshot" class="btn btn-soft" type="button">↻ Refresh Data Saya</button>
+    </div>
+    <div id="privacyAccountMessage" class="privacy-message"></div>
+
+    <div class="privacy-snapshot-section">
+      <h3>Akun</h3>
+      <div class="privacy-snapshot-grid">
+        <div class="snapshot-item"><span>Nama tampilan</span><strong id="pcDisplayName">Memuat…</strong></div>
+        <div class="snapshot-item"><span>Username</span><strong id="pcUsername">-</strong></div>
+        <div class="snapshot-item"><span>Email akun</span><strong id="pcEmail">-</strong></div>
+        <div class="snapshot-item"><span>Role</span><strong id="pcRole">-</strong></div>
+        <div class="snapshot-item wide"><span>User ID</span><code id="pcUserId">-</code></div>
+        <div class="snapshot-item"><span>Akun dibuat</span><strong id="pcAccountCreated">-</strong></div>
+        <div class="snapshot-item"><span>Login terakhir</span><strong id="pcLastSignIn">-</strong></div>
+      </div>
+    </div>
+
+    <div class="privacy-snapshot-section">
+      <h3>Toko & Jaringan</h3>
+      <div class="privacy-snapshot-grid">
+        <div class="snapshot-item"><span>Toko aktif</span><strong id="pcStoreName">-</strong></div>
+        <div class="snapshot-item"><span>Store Code</span><strong id="pcStoreCode">-</strong></div>
+        <div class="snapshot-item wide"><span>Store ID</span><code id="pcStoreId">-</code></div>
+        <div class="snapshot-item wide"><span>Network ID</span><code id="pcNetworkId">-</code></div>
+      </div>
+    </div>
+
+    <div class="privacy-snapshot-section">
+      <h3>Perangkat Saat Ini</h3>
+      <div class="privacy-snapshot-grid">
+        <div class="snapshot-item"><span>Nama perangkat</span><strong id="pcDeviceName">-</strong></div>
+        <div class="snapshot-item"><span>Status perangkat</span><strong id="pcDeviceStatus">-</strong></div>
+        <div class="snapshot-item wide"><span>Client Device ID</span><code id="pcDeviceId">-</code></div>
+        <div class="snapshot-item wide"><span>Platform / Browser</span><small id="pcDevicePlatform">-</small></div>
+      </div>
+    </div>
+
+    <div class="privacy-snapshot-section">
+      <div class="quota-head">
+        <div><h3>Paket & Batas Pemakaian</h3><p class="help">Kuota perangkat dihitung sebagai perangkat berbeda pada seluruh jaringan. Kuota toko adalah <b>total toko aktif termasuk toko pusat</b>, bukan jumlah cabang tambahan.</p></div>
+        <span id="pcQuotaHealth" class="quota-health">Memuat kuota…</span>
+      </div>
+      <div class="privacy-snapshot-grid">
+        <div class="snapshot-item"><span>Paket lisensi</span><strong id="pcLicensePlan">-</strong></div>
+        <div class="snapshot-item"><span>Status lisensi</span><strong id="pcLicenseStatus">-</strong></div>
+        <div class="snapshot-item"><span>Berlaku sampai</span><strong id="pcLicenseExpiry">-</strong></div>
+        <div class="snapshot-item"><span>Sinkron kuota</span><strong id="pcQuotaSyncedAt">-</strong></div>
+      </div>
+      <div class="quota-grid">
+        <div class="quota-card">
+          <div class="quota-line"><strong>Perangkat</strong><span id="pcDeviceQuotaText">- / -</span></div>
+          <div class="quota-bar"><i id="pcDeviceQuotaBar"></i></div>
+          <small id="pcDeviceQuotaNote">-</small>
+        </div>
+        <div class="quota-card">
+          <div class="quota-line"><strong>Toko</strong><span id="pcStoreQuotaText">- / -</span></div>
+          <div class="quota-bar"><i id="pcStoreQuotaBar"></i></div>
+          <small id="pcStoreQuotaNote">-</small>
+        </div>
+      </div>
+      <div class="quota-warning" id="pcQuotaWarning" hidden></div>
+    </div>
+  </section>
   <section class="privacy-card">
     <h2>Data yang Umumnya Diproses</h2>
     <p>Jenis data dapat berbeda tergantung fitur yang digunakan oleh toko dan akun Anda.</p>
@@ -83,7 +153,7 @@
 
 <div class="legal-note"><strong>Catatan kebijakan:</strong> Privacy Center adalah sarana operasional untuk mengelola permintaan terkait data pribadi. Pelaksanaan akhir tetap mengikuti kebijakan, dasar pemrosesan, perjanjian, identitas pengendali/prosesor yang sebenarnya, dan peraturan yang berlaku. Identitas badan usaha/pengendali serta kontak privasi final perlu dilengkapi sebelum peluncuran komersial.</div>
 </main>
-<script src="js/privacy-center.js?v=27.9.0-privacy18"></script>
+<script src="js/privacy-center.js?v=27.9.0-privacy-quota-v2839"></script>
 
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>
