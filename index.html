@@ -187,6 +187,23 @@
         .btn-login:active {
             transform: translateY(1px);
         }
+        .btn-demo-account {
+            display:block;
+            width:100%;
+            padding:12px 14px;
+            margin-top:10px;
+            border:1px solid rgba(15,157,88,.35);
+            border-radius:12px;
+            background:#edf8f2;
+            color:#087443;
+            text-align:center;
+            text-decoration:none;
+            font-weight:800;
+            font-size:.9rem;
+            transition:all .2s;
+        }
+        .btn-demo-account:hover{background:#e2f4ea;transform:translateY(-1px)}
+        .demo-login-note{margin:7px 0 0;text-align:center;color:#64748b;font-size:.68rem;line-height:1.45}
 
         /* Styling Modal / Pop-up */
         .popup { 
@@ -652,6 +669,8 @@
 </div>
 
             <button type="submit" class="btn-login">Masuk</button>
+            <a class="btn-demo-account" href="demo-login.html">🧪 Coba Akun Dummy Aman</a>
+            <p class="demo-login-note">Tanpa Supabase Auth, License Key, pembayaran, atau data customer produksi.</p>
             <button
                 type="button"
                 onclick="requestPasswordReset()"

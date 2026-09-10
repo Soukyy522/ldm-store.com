@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self' data:; object-src 'none'; frame-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'none'">
+  <title>Akun Dummy Aman · LocDailyMar</title>
+  <link rel="stylesheet" href="css/demo-account.css?v=27.9.0-v28.6.0">
+  <script defer src="js/demo-account-runtime.js?v=27.9.0-v28.6.0"></script>
+</head>
+<body class="demo-login-page">
+  <main class="demo-login-shell" aria-labelledby="demoTitle">
+    <section class="demo-login-head">
+      <div class="demo-login-copy">
+        <img src="locdailymar-logo.png" alt="LocDailyMar">
+        <h1 id="demoTitle">Coba Akun Dummy LocDailyMar</h1>
+        <p>Pilih peran untuk mencoba alur aplikasi menggunakan data simulasi. Akun ini tidak menggunakan Supabase Auth, License Key, payment gateway, atau database customer.</p>
+      </div>
+      <div class="demo-safety-panel">
+        <ul>
+          <li><strong>Tanpa koneksi backend</strong> pada halaman demo.</li>
+          <li>Data hanya berada di <strong>sessionStorage</strong> browser.</li>
+          <li>Session demo kedaluwarsa otomatis dalam <strong>2 jam</strong>.</li>
+          <li>Lisensi, pembayaran, email, WhatsApp, dan Developer Center <strong>tidak tersedia</strong>.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="demo-login-body">
+      <div class="demo-section-title">
+        <div><h2>Pilih akun yang ingin dicoba</h2><p>Tidak ada password karena profil berikut bukan akun produksi dan tidak pernah dikirim ke Cloud.</p></div>
+        <span class="demo-security-chip">🔒 Isolasi Demo Aktif</span>
+      </div>
+      <div class="demo-account-grid">
+        <button class="demo-account-card" type="button" data-demo-profile="owner-pusat"><span class="icon">🏛️</span><strong>Owner Pusat Demo</strong><span>Kontrol seluruh cabang, Master Shift, laporan lintas toko, dan inbox Ketidakhadiran.</span><small>AKSES DEMO TERLUAS</small></button>
+        <button class="demo-account-card" type="button" data-demo-profile="owner-cabang"><span class="icon">🏪</span><strong>Owner Cabang Demo</strong><span>Mengelola Cabang A, jadwal karyawan cabang, dan review Ketidakhadiran cabangnya.</span><small>OWNER CABANG A</small></button>
+        <button class="demo-account-card" type="button" data-demo-profile="admin"><span class="icon">🧑‍💼</span><strong>Admin Demo</strong><span>Mencoba operasional, barang, laporan, absensi, dan pengajuan Ketidakhadiran.</span><small>CABANG A</small></button>
+        <button class="demo-account-card" type="button" data-demo-profile="kasir"><span class="icon">🧾</span><strong>Kasir Demo</strong><span>Mencoba kasir, stok yang diizinkan, absensi sesuai shift, dan Ketidakhadiran.</span><small>CABANG A</small></button>
+      </div>
+      <div class="demo-login-foot">
+        <span>Data demo dapat diubah selama sesi dan dapat dikembalikan melalui <b>Reset Demo</b>.</span>
+        <a class="demo-link" href="index.html">← Kembali ke Login Asli</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
