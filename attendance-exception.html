@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0F9D58">
+  <title>Alasan Tidak Absensi - LocDailyMar</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/global-responsive-navigation.css">
+  <link rel="stylesheet" href="css/attendance-workforce.css?v=28.5.0">
+  <style>
+    body{background:#f4f7f6;color:#172033}.attendance-exception-shell{max-width:1180px;margin:0 auto;padding:24px 18px 48px}.exception-hero{background:linear-gradient(135deg,#103d30,#0f9d58);color:#fff;border-radius:22px;padding:24px;box-shadow:0 18px 50px rgba(16,61,48,.2);margin-bottom:18px}.exception-hero h1{margin:0 0 7px;font-size:clamp(1.45rem,4vw,2.1rem)}.exception-hero p{margin:0;max-width:800px;opacity:.9;line-height:1.65}.exception-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px}.exception-card{background:#fff;border:1px solid #dce7e1;border-radius:18px;padding:18px;box-shadow:0 10px 28px rgba(15,35,29,.06)}.exception-card h2{font-size:1.05rem;margin:0 0 6px;color:#17352c}.exception-card>p{margin:0 0 14px;color:#64748b;line-height:1.55;font-size:.88rem}.exception-form{display:grid;gap:12px}.exception-field{display:grid;gap:6px}.exception-field label{font-size:.8rem;font-weight:800;color:#475569}.exception-field select,.exception-field textarea{width:100%;border:1px solid #cbd5e1;border-radius:11px;padding:11px;background:#fff;color:#172033;font:inherit}.exception-field textarea{min-height:150px;resize:vertical}.exception-action{border:0;border-radius:11px;padding:11px 14px;background:#0f9d58;color:#fff;font-weight:800;cursor:pointer}.exception-action.secondary{background:#eef2f7;color:#334155}.exception-action:disabled{opacity:.55;cursor:not-allowed}.exception-message{padding:11px 12px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:11px;color:#475569;font-size:.83rem;line-height:1.5}.exception-message.success{background:#ecfdf5;border-color:#bbf7d0;color:#166534}.exception-message.danger{background:#fff1f2;border-color:#fecdd3;color:#9f1239}.exception-list{display:grid;gap:10px}.exception-item{border:1px solid #e2e8f0;border-radius:13px;padding:13px;background:#fff}.exception-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.exception-item h3{margin:0;font-size:.92rem}.exception-item small{color:#64748b}.exception-item p{margin:9px 0 0;white-space:pre-wrap;color:#475569;line-height:1.55;font-size:.84rem}.exception-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.exception-tag{display:inline-flex;padding:5px 8px;border-radius:999px;background:#eef6ff;color:#174f8a;font-size:.72rem;font-weight:800}.exception-tag.reviewed{background:#ecfdf5;color:#166534}.exception-owner{margin-top:16px}.exception-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.exception-filter select{border:1px solid #cbd5e1;border-radius:9px;padding:8px 10px}.exception-empty{padding:18px;text-align:center;color:#64748b;background:#f8fafc;border-radius:12px}.exception-back{display:inline-flex;margin-top:16px;text-decoration:none;color:#0f7b47;font-weight:800}@media(max-width:850px){.exception-grid{grid-template-columns:1fr}.attendance-exception-shell{padding:16px 12px 40px}}
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/cloud-auth.js?v=15.0"></script>
+  <script src="js/cloud-session.js?v=6.0"></script>
+  <script src="js/cloud-session-guard.js?v=15.0"></script>
+  <script src="js/attendance-workforce-service.js?v=28.5.0"></script>
+  <script src="js/license-v2-config.js?v=28.5.0"></script>
+  <script src="js/license-v2-client.js?v=28.5.0"></script>
+  <script defer src="js/license-v2-guard.js?v=28.5.0"></script>
+</head>
+<body>
+  <main class="attendance-exception-shell">
+    <section class="exception-hero">
+      <h1>🗒️ Form Alasan Tidak Absensi</h1>
+      <p>Gunakan halaman ini bila jadwal kerja sudah berjalan tetapi Absen Masuk tidak tercatat. Form hanya tersedia untuk tanggal kerja yang memang terlewat, bukan untuk hari Libur atau Cuti Tahunan.</p>
+    </section>
+
+    <div class="exception-grid">
+      <section class="exception-card">
+        <h2>Kirim penjelasan</h2>
+        <p>Penjelasan akan masuk ke Owner cabang tempat akunmu berada. Owner Pusat dapat melihat seluruh cabang di network.</p>
+        <form class="exception-form" id="exceptionForm">
+          <div class="exception-field">
+            <label for="exceptionDate">Tanggal kerja yang terlewat</label>
+            <select id="exceptionDate" required></select>
+          </div>
+          <div class="exception-field">
+            <label for="exceptionReason">Kategori alasan</label>
+            <select id="exceptionReason" required>
+              <option value="LUPA_ABSEN">Lupa melakukan absensi</option>
+              <option value="KENDALA_PERANGKAT">Kendala perangkat</option>
+              <option value="KENDALA_JARINGAN">Kendala jaringan</option>
+              <option value="KEADAAN_DARURAT">Keadaan darurat</option>
+              <option value="LAINNYA">Lainnya</option>
+            </select>
+          </div>
+          <div class="exception-field">
+            <label for="exceptionText">Penjelasan lengkap</label>
+            <textarea id="exceptionText" minlength="10" maxlength="2000" required placeholder="Jelaskan kejadian dengan jelas, minimal 10 karakter."></textarea>
+          </div>
+          <button id="exceptionSubmit" class="exception-action" type="submit">Kirim ke Owner</button>
+          <div class="exception-message" id="exceptionMessage">Memeriksa tanggal kerja yang dapat dijelaskan...</div>
+        </form>
+      </section>
+
+      <section class="exception-card">
+        <h2>Riwayat penjelasan saya</h2>
+        <p>Status “Ditinjau” berarti Owner sudah membuka dan menandai penjelasan sebagai telah diperiksa.</p>
+        <div class="exception-list" id="myExplanationList"><div class="exception-empty">Memuat riwayat...</div></div>
+      </section>
+    </div>
+
+    <section class="exception-card exception-owner" id="ownerInboxCard" hidden>
+      <div class="ldm-workforce-head">
+        <div><h2>📥 Inbox Alasan Karyawan</h2><p>Owner Cabang hanya menerima form dari cabangnya. Owner Pusat dapat melihat seluruh cabang.</p></div>
+        <span class="ldm-workforce-badge">Owner Only</span>
+      </div>
+      <div class="exception-filter">
+        <label for="ownerInboxStore"><strong>Cabang:</strong></label>
+        <select id="ownerInboxStore"></select>
+        <button class="exception-action secondary" type="button" id="ownerInboxReload">Muat Ulang</button>
+      </div>
+      <div class="exception-list" id="ownerInboxList"><div class="exception-empty">Memuat inbox...</div></div>
+    </section>
+
+    <a class="exception-back" href="absensi.html">← Kembali ke Absensi</a>
+  </main>
+
+  <script>
+  (function(){
+    "use strict";
+    const $=id=>document.getElementById(id);
+    const esc=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+    const role=()=>String(localStorage.getItem("userRole")||"").trim().toLowerCase();
+    const reasonLabel=value=>({LUPA_ABSEN:"Lupa melakukan absensi",KENDALA_PERANGKAT:"Kendala perangkat",KENDALA_JARINGAN:"Kendala jaringan",KEADAAN_DARURAT:"Keadaan darurat",LAINNYA:"Lainnya"}[value]||value||"-");
+    const statusLabel=value=>value==="REVIEWED"?"Ditinjau":"Terkirim";
+    const dateID=value=>{if(!value)return"-";const d=new Date(`${String(value).slice(0,10)}T00:00:00Z`);return new Intl.DateTimeFormat("id-ID",{dateStyle:"long",timeZone:"UTC"}).format(d)};
+    const time=value=>value?String(value).slice(0,5):"-";
+
+    function message(text,type=""){$("exceptionMessage").className=`exception-message ${type}`.trim();$("exceptionMessage").textContent=text}
+
+    async function loadCandidates(){
+      const rows=await window.LDMWorkforce.explanationCandidates(62);
+      const select=$("exceptionDate");
+      select.innerHTML=rows.map(r=>`<option value="${esc(r.attendance_date)}">${esc(dateID(r.attendance_date))} · ${esc(r.shift_label||"-")} ${esc(time(r.planned_start_time))}-${esc(time(r.planned_end_time))}${r.explanation_status?` · ${esc(statusLabel(r.explanation_status))}`:""}</option>`).join("");
+      const empty=rows.length===0;
+      $("exceptionSubmit").disabled=empty;
+      if(empty)message("Tidak ada jadwal kerja terlewat yang dapat dijelaskan. Hari Libur/Cuti tidak dimasukkan ke daftar ini.");
+      else message(`${rows.length} tanggal kerja terlewat tersedia. Pilih tanggal dan jelaskan alasannya.`);
+    }
+
+    async function loadMine(){
+      const rows=await window.LDMWorkforce.myExplanations();
+      $("myExplanationList").innerHTML=rows.length?rows.map(r=>`<article class="exception-item"><div class="exception-item-head"><div><h3>${esc(dateID(r.attendance_date))}</h3><small>${esc(reasonLabel(r.reason_category))}</small></div><span class="exception-tag ${r.status==="REVIEWED"?"reviewed":""}">${esc(statusLabel(r.status))}</span></div><p>${esc(r.explanation)}</p>${r.review_note?`<p><strong>Catatan Owner:</strong> ${esc(r.review_note)}</p>`:""}</article>`).join(""):'<div class="exception-empty">Belum ada penjelasan yang pernah dikirim.</div>';
+    }
+
+    async function submit(event){
+      event.preventDefault();
+      const button=$("exceptionSubmit");button.disabled=true;
+      try{
+        await window.LDMWorkforce.submitExplanation({date:$("exceptionDate").value,reason:$("exceptionReason").value,explanation:$("exceptionText").value});
+        $("exceptionText").value="";
+        message("Penjelasan berhasil dikirim ke Owner yang berwenang.","success");
+        await Promise.all([loadCandidates(),loadMine()]);
+        if(role()==="owner")await loadInbox();
+      }catch(error){message(error.message||String(error),"danger");}
+      finally{button.disabled=!$("exceptionDate").value;}
+    }
+
+    async function loadOwnerStores(){
+      if(role()!=="owner")return;
+      $("ownerInboxCard").hidden=false;
+      const stores=await window.LDMWorkforce.stores();
+      const select=$("ownerInboxStore");
+      const all=stores.length>1?'<option value="">Semua cabang</option>':"";
+      select.innerHTML=all+stores.map(s=>`<option value="${esc(s.store_id)}">${esc(s.store_name)} (${esc(s.store_code)})${s.is_primary?" · Pusat":""}</option>`).join("");
+      if(stores.length===1)select.value=stores[0].store_id;
+      await loadInbox();
+    }
+
+    async function loadInbox(){
+      if(role()!=="owner")return;
+      const storeId=$("ownerInboxStore").value||null;
+      try{
+        const rows=await window.LDMWorkforce.explanationInbox({storeId});
+        $("ownerInboxList").innerHTML=rows.length?rows.map(r=>`<article class="exception-item"><div class="exception-item-head"><div><h3>${esc(r.display_name||r.username)} · ${esc(r.store_name)}</h3><small>${esc(dateID(r.attendance_date))} · ${esc(r.shift_label||"-")} ${esc(time(r.planned_start_time))}-${esc(time(r.planned_end_time))}</small></div><span class="exception-tag ${r.status==="REVIEWED"?"reviewed":""}">${esc(statusLabel(r.status))}</span></div><div class="exception-tags"><span class="exception-tag">${esc(reasonLabel(r.reason_category))}</span><span class="exception-tag">${esc(r.role)}</span><span class="exception-tag">${esc(r.store_code)}</span></div><p>${esc(r.explanation)}</p>${r.review_note?`<p><strong>Catatan review:</strong> ${esc(r.review_note)}</p>`:""}${r.status!=="REVIEWED"?`<div class="ldm-workforce-actions"><button class="exception-action" type="button" data-review="${esc(r.id)}">Tandai Ditinjau</button></div>`:""}</article>`).join(""):'<div class="exception-empty">Tidak ada form alasan pada cakupan cabang ini.</div>';
+        $("ownerInboxList").querySelectorAll("[data-review]").forEach(btn=>btn.addEventListener("click",()=>review(btn.dataset.review)));
+      }catch(error){$("ownerInboxList").innerHTML=`<div class="exception-message danger">${esc(error.message||String(error))}</div>`;}
+    }
+
+    async function review(id){
+      const note=window.prompt("Catatan review Owner (opsional):","");
+      if(note===null)return;
+      try{await window.LDMWorkforce.reviewExplanation({id,note});await Promise.all([loadInbox(),loadMine()]);}
+      catch(error){window.alert(error.message||String(error));}
+    }
+
+    async function boot(){
+      try{
+        await window.LDMWorkforce.context();
+        $("exceptionForm").addEventListener("submit",submit);
+        $("ownerInboxReload").addEventListener("click",loadInbox);
+        $("ownerInboxStore").addEventListener("change",loadInbox);
+        await Promise.all([loadCandidates(),loadMine()]);
+        await loadOwnerStores();
+      }catch(error){message("Halaman belum dapat memuat layanan absensi. "+(error.message||String(error)),"danger");}
+    }
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  })();
+  </script>
+  <script src="js/global-system-navigation.js?v=28.5.0"></script>
+  <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
+</body>
+</html>

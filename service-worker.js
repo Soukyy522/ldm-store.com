@@ -1,14 +1,14 @@
-// Build: 27.9.0 Critical Login + License Availability Hotfix V28.4.2
+// Build: 27.9.0 Workforce Schedule + Attendance Accountability V28.5.0
 "use strict";
 
-const APP_VERSION = "27.9.0-v28.4.2";
+const APP_VERSION = "27.9.0-v28.5.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-critical-license-availability-v28-4-2`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-critical-license-availability-runtime-v28-4-2`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-workforce-attendance-v28-5-0`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-workforce-attendance-runtime-v28-5-0`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
-    "./", "./homepage.html", "./index.html", "./dashboard.html", "./kasir.html", "./barang.html", "./Purchase-Order.html", "./goods.receipt.html", "./multi-store.html",
+    "./", "./homepage.html", "./index.html", "./dashboard.html", "./kasir.html", "./barang.html", "./absensi.html", "./attendance-exception.html", "./Purchase-Order.html", "./goods.receipt.html", "./multi-store.html",
     "./pwa-settings.html", "./penyimpanan.html", "./setup-awal.html", "./printer-scanner-setup.html", "./monitoring-error.html", "./support-center.html", "./privacy-center.html", "./account-management.html", "./device-management.html", "./panduan.html", "./owner-control-center.html", "./recovery-center.html", "./qa-security-performance.html", "./license.html", "./license-v2.html", "./developer-license.html", "./developer-license-v2.html", "./developer-incident-support.html", "./developer-contact-settings.html", "./offline.html", "./manifest.json", "./icon.png",
     "./assets/icons/icon-192.png", "./assets/icons/icon-512.png", "./assets/brand/locdailymar-logo.png",
     "./assets/icons/maskable-512.png", "./style.css", "./css/global-responsive-navigation.css", "./css/developer-navigation.css", "./css/privacy-center.css", "./css/peripheral-setup-embedded.css", "./css/help-center.css", "./css/support-center-v21.css", "./css/multi-store-dashboard-theme.css", "./css/central-catalog-control.css", "./setting.js", "./employee-id.js",
@@ -18,8 +18,8 @@ const APP_SHELL = [
     "./js/cloud-auth.js", "./js/cloud-session.js", "./js/cloud-session-guard.js",
     "./js/unit-conversion.js", "./js/promo-pricing.js", "./js/multi-store-service.js", "./js/store-mode.js", "./js/product-visuals.js", "./css/store-modes.css", "./js/products-service.js", "./js/products-bootstrap.js",
     "./js/procurement-service.js", "./js/procurement-bootstrap.js",
-    "./js/transactions-service.js", "./js/reporting-service.js", "./js/dashboard-report-source.js", "./js/attendance-service.js",
-    "./js/attendance-bootstrap.js", SUPABASE_CDN
+    "./js/transactions-service.js", "./js/reporting-service.js", "./js/dashboard-report-source.js", "./js/attendance-workforce-service.js", "./js/attendance-workforce-ui.js", "./js/attendance-service.js",
+    "./js/attendance-bootstrap.js", "./css/attendance-workforce.css", SUPABASE_CDN
 ];
 
 async function cacheOne(cache, url){

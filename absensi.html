@@ -2210,8 +2210,10 @@
     <script src="js/cloud-auth.js?v=15.0"></script>
     <script src="js/cloud-session.js?v=6.0"></script>
     <script src="js/cloud-session-guard.js?v=15.0"></script>
-    <!-- Live Sync Tahap 9: Cloud Absensi -->
-    <script src="js/attendance-service.js?v=9.1"></script>
+    <!-- V28.5.0: Workforce Schedule / Cuti / Alasan Tidak Absensi -->
+    <script src="js/attendance-workforce-service.js?v=28.5.0"></script>
+    <!-- Live Sync Tahap 9 + V28.5.0: Cloud Absensi -->
+    <script src="js/attendance-service.js?v=28.5.0"></script>
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
     <!-- Live Sync Tahap 7: Cloud Master Barang -->
     <script src="js/products-service.js?v=21.0"></script>
@@ -2220,6 +2222,7 @@
 <script src="js/license-v2-config.js?v=25.2.0"></script>
 <script src="js/license-v2-client.js?v=25.2.0"></script>
 <script defer src="js/license-v2-guard.js?v=25.2.0"></script>
+    <link rel="stylesheet" href="css/attendance-workforce.css?v=28.5.0">
 </head>
 <body>
 
@@ -2359,7 +2362,7 @@
 
         <div class="owner-summary-box hadir">
             <strong id="ownerTotalAbsen">0</strong>
-            <span>Sudah Absen</span>
+            <span>Absen / Tidak Wajib</span>
         </div>
 
         <div class="owner-summary-box tidak-absen">
@@ -2492,7 +2495,7 @@
                 </strong>
 
                 <span>
-                    Sudah Absen
+                    Absen / Tidak Wajib
                 </span>
 
             </div>
@@ -2763,349 +2766,136 @@ function formatTanggalOwner(tanggal) {
 // KHUSUS OWNER
 // =====================================================
 
-function cekAbsensiOwnerTanggal() {
-
-    // SECURITY CHECK UI
-    if (!isOwnerAccount()) {
-        return;
+async function getOwnerExpectedAttendance(tanggal) {
+    if (!window.LDMWorkforce || typeof window.LDMWorkforce.expectedStatus !== "function") {
+        throw new Error("Modul Jadwal Shift belum tersedia. Pastikan SQL V28.5.0 dan file workforce sudah dipasang.");
     }
+    const storeSelect = document.getElementById("ldmWorkforceStore");
+    const storeId = (storeSelect && storeSelect.value) || localStorage.getItem("ldmCloudStoreId") || "";
+    if (!storeId) throw new Error("Store aktif belum tersedia.");
+    return window.LDMWorkforce.expectedStatus({ storeId, date: tanggal });
+}
 
-    const inputTanggal =
-        document.getElementById("ownerAttendanceDate");
+function ownerExpectedVisual(row) {
+    const state = String(row && row.attendance_state || "");
+    if (state === "LIBUR") return { text: "Libur Terjadwal", cls: "owner-status-izin", safe: true };
+    if (state === "CUTI_TAHUNAN") return { text: "Cuti Tahunan", cls: "owner-status-izin", safe: true };
+    if (state === "IZIN_SAKIT") return { text: "Izin / Sakit", cls: "owner-status-izin", safe: true };
+    if (state === "SELESAI") return { text: "Absensi Selesai", cls: "owner-status-hadir", safe: true };
+    if (state === "SUDAH_MASUK") return { text: "Sudah Absen", cls: "owner-status-hadir", safe: true };
+    if (state === "OWNER_PUSAT_OPSIONAL") return { text: "Owner Pusat · Opsional", cls: "owner-status-izin", safe: true };
+    if (state === "BELUM_WAKTUNYA") return { text: "Belum Waktunya", cls: "owner-status-izin", safe: true };
+    if (state === "JADWAL_BELUM_DIATUR") return { text: "Jadwal Belum Diatur", cls: "owner-status-tidak", safe: !row.is_missing };
+    return { text: row && row.is_missing ? "Tidak Absen" : "Belum Absen", cls: row && row.is_missing ? "owner-status-tidak" : "owner-status-izin", safe: !row || !row.is_missing };
+}
 
-    const tanggal =
-        inputTanggal.value;
+async function cekAbsensiOwnerTanggal() {
+    if (!isOwnerAccount()) return;
 
+    const inputTanggal = document.getElementById("ownerAttendanceDate");
+    const tanggal = inputTanggal && inputTanggal.value;
     if (!tanggal) {
-
-        tampilkanAlertCustom(
-            "Tanggal Belum Dipilih",
-            "Silakan pilih tanggal absensi yang ingin diperiksa.",
-            "warning"
-        );
-
+        tampilkanAlertCustom("Tanggal Belum Dipilih", "Silakan pilih tanggal absensi yang ingin diperiksa.", "warning");
         return;
     }
 
-
-    const akunList =
-        getDatabaseAkun();
-
-    const logAbsensi =
-        JSON.parse(
-            localStorage.getItem("dataAbsensi")
-        ) || [];
-
-
-    const listContainer =
-        document.getElementById(
-            "ownerAttendanceList"
-        );
-
-    const alertBox =
-        document.getElementById(
-            "ownerAttendanceAlert"
-        );
-
-
-    listContainer.innerHTML = "";
-
+    const listContainer = document.getElementById("ownerAttendanceList");
+    const alertBox = document.getElementById("ownerAttendanceAlert");
+    if (!listContainer || !alertBox) return;
+    listContainer.innerHTML = '<div class="owner-attendance-card"><div>Memeriksa jadwal dan absensi...</div></div>';
     alertBox.classList.remove("show");
     alertBox.innerHTML = "";
 
+    try {
+        const rows = await getOwnerExpectedAttendance(tanggal);
+        listContainer.innerHTML = "";
+        let totalAkun = rows.length;
+        let totalAman = 0;
+        let totalTidakAbsen = 0;
+        const daftarTidakAbsen = [];
 
-    let totalAkun =
-        akunList.length;
-
-    let totalSudahAbsen = 0;
-
-    let totalTidakAbsen = 0;
-
-    let daftarTidakAbsen = [];
-
-
-    akunList.forEach(acc => {
-
-        const username =
-            acc.username
-                .toString()
-                .trim()
-                .toLowerCase();
-
-
-        const userLogs =
-            logAbsensi.filter(a =>
-                a.username
-                    .toString()
-                    .trim()
-                    .toLowerCase() === username
-                &&
-                a.tanggal === tanggal
-            );
-
-
-        let statusText = "Tidak Absen";
-
-        let statusClass =
-            "owner-status-tidak";
-
-
-        if (userLogs.length > 0) {
-
-            totalSudahAbsen++;
-
-
-            const jenisSet =
-                userLogs.map(
-                    a => a.jenis
-                );
-
-
-            if (
-                jenisSet.includes("Sakit")
-            ) {
-
-                statusText =
-                    "Sakit";
-
-                statusClass =
-                    "owner-status-izin";
-
-            } else if (
-                jenisSet.includes("Izin")
-            ) {
-
-                statusText =
-                    "Izin";
-
-                statusClass =
-                    "owner-status-izin";
-
-            } else if (
-                jenisSet.includes("Masuk") ||
-                jenisSet.includes("Hadir")
-            ) {
-
-                statusText =
-                    "Sudah Absen";
-
-                statusClass =
-                    "owner-status-hadir";
-
+        rows.forEach(row => {
+            const visual = ownerExpectedVisual(row);
+            if (row.is_missing) {
+                totalTidakAbsen++;
+                daftarTidakAbsen.push(row.display_name || row.username);
             } else {
-
-                statusText =
-                    "Sudah Absen";
-
-                statusClass =
-                    "owner-status-hadir";
+                totalAman++;
             }
+            const card = document.createElement("div");
+            card.className = "owner-attendance-card";
+            const scheduleDetail = row.schedule_status === "WORK"
+                ? `${row.shift_label || "-"} · ${String(row.planned_start_time || "-").slice(0,5)}-${String(row.planned_end_time || "-").slice(0,5)} WITA`
+                : (row.schedule_status === "OFF" ? "Hari libur" : row.schedule_status === "ANNUAL_LEAVE" ? "Cuti tahunan" : row.schedule_status === "OPTIONAL" ? "Jadwal opsional" : "Belum ada jadwal");
+            card.innerHTML = `<div><div class="user-name">👤 ${String(row.display_name || row.username || "-")}</div><small>${scheduleDetail}</small></div><div class="user-status ${visual.cls}">${visual.text}</div>`;
+            listContainer.appendChild(card);
+        });
 
+        document.getElementById("ownerTotalAkun").innerText = totalAkun;
+        document.getElementById("ownerTotalAbsen").innerText = totalAman;
+        document.getElementById("ownerTotalTidakAbsen").innerText = totalTidakAbsen;
+
+        if (totalTidakAbsen > 0) {
+            alertBox.style.background = ""; alertBox.style.borderColor = ""; alertBox.style.color = "";
+            alertBox.innerHTML = `⚠️ <strong>Perhatian</strong><br>Pada tanggal <strong>${formatTanggalOwner(tanggal)}</strong> terdapat <strong>${totalTidakAbsen} akun</strong> yang wajib presensi tetapi belum melakukan absensi.<br><br><strong>Akun:</strong> ${daftarTidakAbsen.join(", ")}`;
         } else {
-
-            totalTidakAbsen++;
-
-            daftarTidakAbsen.push(
-                acc.username
-            );
+            alertBox.innerHTML = `✅ <strong>Tidak ada kewajiban presensi yang terlewat</strong><br>Akun yang berstatus Libur/Cuti Tahunan tidak dihitung sebagai tidak absen pada ${formatTanggalOwner(tanggal)}.`;
+            alertBox.style.background = "#f0fdf4"; alertBox.style.borderColor = "#bbf7d0"; alertBox.style.color = "#166534";
         }
-
-
-        const card =
-            document.createElement("div");
-
-        card.className =
-            "owner-attendance-card";
-
-
-        card.innerHTML = `
-
-            <div>
-
-                <div class="user-name">
-                    👤 ${acc.username}
-                </div>
-
-            </div>
-
-            <div
-                class="user-status ${statusClass}"
-            >
-                ${statusText}
-            </div>
-
-        `;
-
-
-        listContainer.appendChild(card);
-
-    });
-
-
-    // UPDATE SUMMARY
-
-    document.getElementById(
-        "ownerTotalAkun"
-    ).innerText = totalAkun;
-
-
-    document.getElementById(
-        "ownerTotalAbsen"
-    ).innerText = totalSudahAbsen;
-
-
-    document.getElementById(
-        "ownerTotalTidakAbsen"
-    ).innerText = totalTidakAbsen;
-
-
-    // NOTIFIKASI JIKA ADA YANG TIDAK ABSEN
-
-    if (totalTidakAbsen > 0) {
-
-        alertBox.innerHTML = `
-
-            ⚠️ <strong>Perhatian</strong>
-
-            <br>
-
-            Pada tanggal
-            <strong>
-                ${formatTanggalOwner(tanggal)}
-            </strong>
-
-            terdapat
-            <strong>
-                ${totalTidakAbsen} akun
-            </strong>
-            yang tidak melakukan absensi.
-
-            <br><br>
-
-            <strong>Akun:</strong>
-            ${daftarTidakAbsen.join(", ")}
-
-        `;
-
         alertBox.classList.add("show");
-
-    } else {
-
-        alertBox.innerHTML = `
-
-            ✅ <strong>Semua akun sudah melakukan presensi</strong>
-
-            <br>
-
-            Tidak ditemukan akun yang tidak melakukan absensi
-            pada tanggal
-            <strong>
-                ${formatTanggalOwner(tanggal)}
-            </strong>.
-
-        `;
-
-        alertBox.style.background = "#f0fdf4";
-        alertBox.style.borderColor = "#bbf7d0";
-        alertBox.style.color = "#166534";
-
-        alertBox.classList.add("show");
+    } catch (error) {
+        listContainer.innerHTML = "";
+        tampilkanAlertCustom("Pemeriksaan Jadwal Gagal", error.message || String(error), "error");
     }
-
 }
 
 // =====================================================
 // BADGE NOTIFIKASI ABSENSI OWNER
 // =====================================================
 
-function hitungAkunBelumAbsenPadaTanggal(tanggal) {
+async function hitungAkunBelumAbsenPadaTanggal(tanggal) {
     if (!tanggal) return 0;
-
-    const akunList = getDatabaseAkun();
-    const logAbsensi = JSON.parse(
-        localStorage.getItem("dataAbsensi") || "[]"
-    );
-
-    return akunList.reduce((total, akun) => {
-        const username = String(akun && akun.username || "")
-            .trim()
-            .toLowerCase();
-
-        if (!username) return total;
-
-        const sudahAbsen = logAbsensi.some(item =>
-            String(item && item.username || "")
-                .trim()
-                .toLowerCase() === username
-            && item.tanggal === tanggal
-        );
-
-        return total + (sudahAbsen ? 0 : 1);
-    }, 0);
+    try {
+        const rows = await getOwnerExpectedAttendance(tanggal);
+        return rows.filter(row => row && row.is_missing === true).length;
+    } catch (error) {
+        console.warn("[Absensi] Gagal menghitung badge jadwal:", error);
+        return 0;
+    }
 }
 
-function updateOwnerNotificationBadge() {
+async function updateOwnerNotificationBadge() {
     if (!hasPermission("absensi.history")) return;
-
-    const badge = document.getElementById(
-        "ownerAttendanceNotificationBadge"
-    );
-
+    const badge = document.getElementById("ownerAttendanceNotificationBadge");
     if (!badge) return;
-
-    const input = document.getElementById(
-        "ownerAttendanceDate"
-    );
-
+    const input = document.getElementById("ownerAttendanceDate");
     let tanggal = input && input.value;
-
     if (!tanggal) {
         const kemarin = new Date();
         kemarin.setDate(kemarin.getDate() - 1);
         tanggal = getTanggalWITA(kemarin);
     }
-
-    const total = hitungAkunBelumAbsenPadaTanggal(tanggal);
+    const total = await hitungAkunBelumAbsenPadaTanggal(tanggal);
     badge.textContent = String(total);
     badge.classList.toggle("show", total > 0);
-    badge.setAttribute(
-        "aria-label",
-        total > 0
-            ? `${total} akun belum melakukan absensi`
-            : "Semua akun sudah melakukan absensi"
-    );
+    badge.setAttribute("aria-label", total > 0 ? `${total} akun wajib presensi tetapi belum absen` : "Tidak ada kewajiban presensi yang terlewat");
 }
 
-function updateOwnerHistoryNotification() {
+async function updateOwnerHistoryNotification() {
     if (!hasPermission("absensi.history")) return;
-
-    const badge = document.getElementById(
-        "ownerHistoryNotification"
-    );
-
+    const badge = document.getElementById("ownerHistoryNotification");
     if (!badge) return;
-
-    const input = document.getElementById(
-        "ownerHistoryDate"
-    );
-
+    const input = document.getElementById("ownerHistoryDate");
     let tanggal = input && input.value;
-
     if (!tanggal) {
         const kemarin = new Date();
         kemarin.setDate(kemarin.getDate() - 1);
         tanggal = getTanggalWITA(kemarin);
     }
-
-    const total = hitungAkunBelumAbsenPadaTanggal(tanggal);
+    const total = await hitungAkunBelumAbsenPadaTanggal(tanggal);
     badge.textContent = String(total);
     badge.classList.toggle("show", total > 0);
-    badge.setAttribute(
-        "aria-label",
-        total > 0
-            ? `${total} akun belum melakukan absensi pada tanggal riwayat`
-            : "Semua akun sudah melakukan absensi pada tanggal riwayat"
-    );
+    badge.setAttribute("aria-label", total > 0 ? `${total} akun wajib presensi tetapi belum absen pada tanggal riwayat` : "Tidak ada kewajiban presensi yang terlewat pada tanggal riwayat");
 }
 
 // =====================================================
@@ -4110,7 +3900,7 @@ function toggleOwnerHistory() {
 // CEK RIWAYAT ABSENSI OWNER
 // =====================================================
 
-function cekRiwayatAbsensiOwner() {
+async function cekRiwayatAbsensiOwner() {
 
     if (
     !requirePermission(
@@ -4155,6 +3945,15 @@ function cekRiwayatAbsensiOwner() {
         JSON.parse(
             localStorage.getItem("dataAbsensi")
         ) || [];
+
+    let expectedMap = new Map();
+    try {
+        const expectedRows = await getOwnerExpectedAttendance(tanggal);
+        expectedMap = new Map(expectedRows.map(row => [String(row.username || "").trim().toLowerCase(), row]));
+    } catch (error) {
+        tampilkanAlertCustom("Riwayat Jadwal Gagal Dimuat", error.message || String(error), "error");
+        return;
+    }
 
 
     const list =
@@ -4223,103 +4022,26 @@ function cekRiwayatAbsensiOwner() {
         // =================================================
 
         if (dataUser.length === 0) {
+            const expected = expectedMap.get(usernameLower) || null;
+            const visual = ownerExpectedVisual(expected || { is_missing: true, attendance_state: "TIDAK_ABSEN" });
+            if (expected && !expected.is_missing) totalAbsen++;
+            else {
+                totalTidakAbsen++;
+                daftarTidakAbsen.push(username);
+            }
 
-            totalTidakAbsen++;
-
-            daftarTidakAbsen.push(
-                username
-            );
-
-
-            const card =
-                document.createElement("div");
-
-
-            card.className =
-                "owner-history-card";
-
-
-            card.innerHTML = `
-
-                <div
-                    class="owner-history-no-photo"
-                >
-                    🚫 Tidak ada foto
-                </div>
-
-                <div
-                    class="owner-history-info"
-                >
-
-                    <div
-                        class="owner-history-user"
-                    >
-                        👤 ${username}
-                    </div>
-
-
-                    <div
-                        class="owner-history-row"
-                    >
-
-                        <span>
-                            Status
-                        </span>
-
-                        <span>
-                            <span
-                                class="
-                                    owner-status-badge
-                                    owner-status-tidak
-                                "
-                            >
-                                Tidak Absen
-                            </span>
-                        </span>
-
-                    </div>
-
-
-                    <div
-                        class="owner-history-row"
-                    >
-
-                        <span>
-                            Waktu
-                        </span>
-
-                        <span>
-                            -
-                        </span>
-
-                    </div>
-
-
-                    <div
-                        class="owner-history-row"
-                    >
-
-                        <span>
-                            Shift
-                        </span>
-
-                        <span>
-                            -
-                        </span>
-
-                    </div>
-
-                </div>
-
-            `;
-
-
+            const card = document.createElement("div");
+            card.className = "owner-history-card";
+            const scheduleInfo = expected && expected.schedule_status === "WORK"
+                ? `${expected.shift_label || "-"} · ${String(expected.planned_start_time || "-").slice(0,5)}-${String(expected.planned_end_time || "-").slice(0,5)} WITA`
+                : expected && expected.schedule_status === "OFF" ? "Libur terjadwal"
+                : expected && expected.schedule_status === "ANNUAL_LEAVE" ? "Cuti tahunan"
+                : expected && expected.schedule_status === "OPTIONAL" ? "Owner Pusat · opsional"
+                : "Jadwal belum diatur";
+            card.innerHTML = `<div class="owner-history-no-photo">${expected && !expected.is_missing ? "🗓️ Tidak wajib foto" : "🚫 Tidak ada foto"}</div><div class="owner-history-info"><div class="owner-history-user">👤 ${username}</div><div class="owner-history-row"><span>Status</span><span><span class="owner-status-badge ${visual.cls}">${visual.text}</span></span></div><div class="owner-history-row"><span>Jadwal</span><span>${scheduleInfo}</span></div><div class="owner-history-row"><span>Waktu</span><span>-</span></div></div>`;
             list.appendChild(card);
-
-
             return;
         }
-
 
         // =================================================
         // SUDAH ABSEN
@@ -6073,7 +5795,8 @@ window.addEventListener(
 );
 </script>
 
-<script src="js/global-system-navigation.js?v=27.9.0-privacy18"></script>
+<script src="js/attendance-workforce-ui.js?v=28.5.0"></script>
+<script src="js/global-system-navigation.js?v=28.5.0"></script>
 <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
 </body>
 </html>
