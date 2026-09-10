@@ -46,7 +46,7 @@
       return await window.LDMLicenseV2.call("owner_quota_sync",{
         license_id:String(context.license_id||""),
         activation_token:activationToken
-      },{authorization:token});
+      },{authorization:token,timeoutMs:15000});
     }catch(error){
       const code=String(error?.code||error?.data?.code||"");
       if(["PRIMARY_OWNER_REQUIRED","OWNER_FORBIDDEN","OWNER_AUTH_REQUIRED","OWNER_SESSION_INVALID"].includes(code)){

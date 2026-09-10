@@ -17,7 +17,7 @@
     function remove(){document.getElementById("ldmLicenseGuard")?.remove()}
     function filterNav(data){document.querySelectorAll("[data-ldm-route],a[href]").forEach(link=>{let target;try{target=decodeURIComponent(new URL(link.getAttribute("href"),location.href).pathname.split("/").pop()||"").toLowerCase()}catch(error){return}const need=PAGE_FEATURE[target];if(!need)return;const allowed=window.LDMLicenseV2.hasFeature(need,data);link.hidden=!allowed;if(allowed)link.removeAttribute("data-license-locked");else link.setAttribute("data-license-locked","true")})}
     async function run(force=false){
-        overlay("Memeriksa lisensi aplikasi","Pemeriksaan dibatasi waktu agar halaman tidak mengalami loading tanpa akhir.");
+        overlay("Memeriksa akses aplikasi","Mohon tunggu sebentar.");
         try{
             const data=await window.LDMLicenseV2.check({force});
             const needed=feature();
@@ -35,7 +35,14 @@
             overlay(activation?"Lisensi perlu diaktifkan":"Lisensi belum dapat diverifikasi",error.message||"Pemeriksaan lisensi gagal.","error");return false;
         }
     }
-    function boot(){if(!window.LDMLicenseV2){overlay("Komponen lisensi tidak tersedia","Pastikan license-v2-client.js dimuat sebelum guard.","error");return}run(false)}
+    function boot(){
+        const current=page();
+        // Halaman masuk dan pemulihan akun harus selalu dapat dibuka.
+        // Pemeriksaan lisensi dilakukan setelah pengguna masuk ke halaman operasional.
+        if(current==="index.html"||current==="account-password-reset.html"){remove();return}
+        if(!window.LDMLicenseV2){overlay("Akses belum siap","Muat ulang halaman. Jika masih terjadi, hubungi Tim Support.","error");return}
+        run(false)
+    }
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
     window.addEventListener("ldm-global-navigation-rendered",()=>{if(window.LDM_LICENSE_V2_STATE)filterNav(window.LDM_LICENSE_V2_STATE)});
     window.LDMLicenseV2Guard={run,featureForPage:feature,filterNav};

@@ -31,7 +31,9 @@
         if(!cfg().enabled)return {ok:true,bypass:true,features:["*"]};
         if(!configured())throw Object.assign(new Error("Layanan lisensi belum siap. Hubungi Tim Support."),{code:"LICENSE_CONFIG_REQUIRED"});
         const controller=new AbortController();
-        const timer=setTimeout(()=>controller.abort(),Number(cfg().requestTimeoutMs)||8000);
+        const requestedTimeout=Number(options.timeoutMs||0);
+        const timeoutMs=Number.isFinite(requestedTimeout)&&requestedTimeout>0?requestedTimeout:(Number(cfg().requestTimeoutMs)||12000);
+        const timer=setTimeout(()=>controller.abort(),timeoutMs);
         try{
             const headers={"Content-Type":"application/json"};
             const bearer=String(options.authorization||"").trim();
@@ -43,7 +45,7 @@
             if(!response.ok||data.ok===false){const error=new Error(data.message||`Layanan lisensi belum dapat memproses permintaan (${response.status}).`);error.code=data.code||`HTTP_${response.status}`;error.status=response.status;error.data=data;throw error}
             return data;
         }catch(error){
-            if(error.name==="AbortError")throw Object.assign(new Error("Layanan lisensi belum merespons. Coba lagi beberapa saat."),{code:"LICENSE_TIMEOUT"});
+            if(error.name==="AbortError")throw Object.assign(new Error("Layanan lisensi sedang sibuk. Periksa koneksi internet lalu coba lagi."),{code:"LICENSE_TIMEOUT"});
             if(error instanceof TypeError)throw Object.assign(new Error("Tidak dapat menghubungi layanan lisensi. Periksa koneksi internet lalu coba lagi."),{code:"LICENSE_NETWORK_ERROR"});
             throw error;
         }finally{clearTimeout(timer)}
