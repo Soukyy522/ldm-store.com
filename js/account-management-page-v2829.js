@@ -62,6 +62,12 @@
     ].join("");
   }
 
+  async function loadUsageLimit(){
+    const host=$("usageLimitStats"),note=$("usageLimitNote");if(!host||currentRole!=="owner")return;
+    host.innerHTML=[stat("Paket","-"),stat("Perangkat","- / -"),stat("Sisa Perangkat","-"),stat("Toko","- / -"),stat("Sisa Toko","-"),stat("Status","Memuat…")].join("");
+    try{const c=window.ldmSupabase||(window.LDMSupabase?.createClient?window.LDMSupabase.createClient():null);if(!c)throw new Error("Layanan belum siap.");const {data,error}=await c.rpc("ldm_my_license_quota");if(error)throw error;const q=data||{},md=Number(q.max_devices||0),ad=Number(q.active_devices||0),ms=Number(q.max_stores||0),as=Number(q.active_stores||0),rd=Math.max(0,md-ad),rs=Math.max(0,ms-as);let state="Aktif";if(!q.quota_synced)state="Memperbarui";else if(q.quota_stale)state="Perlu diperbarui";else if(q.device_over_limit||q.store_over_limit)state="Melebihi batas";else if(q.device_limit_reached||q.store_limit_reached)state="Batas tercapai";host.innerHTML=[stat("Paket",q.plan_name||q.plan_code||"-"),stat("Perangkat",md?`${ad} / ${md}`:"- / -"),stat("Sisa Perangkat",md?rd:"-"),stat("Toko",ms?`${as} / ${ms}`:"- / -"),stat("Sisa Toko",ms?rs:"-"),stat("Status",state)].join("");if(note)note.textContent=q.quota_synced?"Toko pusat dihitung sebagai satu toko. Perangkat yang menunggu persetujuan belum memakai slot aktif.":"Informasi batas pemakaian sedang diperbarui. Coba refresh beberapa saat lagi saat terhubung ke internet."}catch(_){if(note)note.textContent="Informasi batas pemakaian belum dapat dimuat. Coba refresh halaman."}
+  }
+
   function renderHealthUnavailable(){
     const host=$("stats");
     if(!host)return;
@@ -215,6 +221,7 @@
       currentContext=await window.LDMAccounts.accountContext();
       currentRole=String(currentContext?.profile?.role||"").toLowerCase();
       applyRole();
+      if(currentRole==="owner")loadUsageLimit().catch(()=>undefined);
 
       const identity=$("identity");
       if(identity){

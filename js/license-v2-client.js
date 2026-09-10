@@ -39,12 +39,12 @@
             const response=await fetch(cfg().serverUrl,{method:"POST",headers,body:JSON.stringify({
                 action,device_id:deviceId(),device_name:deviceName(),store_code:String(payload.store_code||storeCode()).trim().toUpperCase(),app_version:cfg().appVersion||"",...payload
             }),signal:controller.signal,cache:"no-store",credentials:"omit"});
-            const data=await response.json().catch(()=>({ok:false,code:"INVALID_SERVER_RESPONSE",message:"Jawaban server lisensi tidak valid."}));
-            if(!response.ok||data.ok===false){const error=new Error(data.message||`Server lisensi merespons ${response.status}.`);error.code=data.code||`HTTP_${response.status}`;error.status=response.status;error.data=data;throw error}
+            const data=await response.json().catch(()=>({ok:false,code:"INVALID_SERVER_RESPONSE",message:"Layanan lisensi memberikan respons yang tidak dapat diproses."}));
+            if(!response.ok||data.ok===false){const error=new Error(data.message||`Layanan lisensi belum dapat memproses permintaan (${response.status}).`);error.code=data.code||`HTTP_${response.status}`;error.status=response.status;error.data=data;throw error}
             return data;
         }catch(error){
-            if(error.name==="AbortError")throw Object.assign(new Error("Server lisensi tidak merespons dalam batas waktu 8 detik."),{code:"LICENSE_TIMEOUT"});
-            if(error instanceof TypeError)throw Object.assign(new Error("Tidak dapat menghubungi server lisensi. Periksa internet, URL server, dan CORS."),{code:"LICENSE_NETWORK_ERROR"});
+            if(error.name==="AbortError")throw Object.assign(new Error("Layanan lisensi belum merespons. Coba lagi beberapa saat."),{code:"LICENSE_TIMEOUT"});
+            if(error instanceof TypeError)throw Object.assign(new Error("Tidak dapat menghubungi layanan lisensi. Periksa koneksi internet lalu coba lagi."),{code:"LICENSE_NETWORK_ERROR"});
             throw error;
         }finally{clearTimeout(timer)}
     }

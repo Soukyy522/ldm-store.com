@@ -1,7 +1,7 @@
 (function(){
   "use strict";
   const $=id=>document.getElementById(id);
-  const APP_VERSION=String(window.LDM_LICENSE_V2_CONFIG?.appVersion||window.LDM_APP_VERSION||"27.9.0-v28.3.9");
+  const APP_VERSION=String(window.LDM_LICENSE_V2_CONFIG?.appVersion||window.LDM_APP_VERSION||"27.9.0-v28.4.0");
 
   function client(){
     if(window.ldmSupabase)return window.ldmSupabase;
@@ -47,8 +47,8 @@
     setText("pcQuotaSyncedAt",fmt(q.license_synced_at));
     setText("pcDeviceQuotaText",maxDevices?`${activeDevices} / ${maxDevices}`:"Belum tersedia");
     setText("pcStoreQuotaText",maxStores?`${activeStores} / ${maxStores}`:"Belum tersedia");
-    setText("pcDeviceQuotaNote",maxDevices?`${deviceRemaining} slot perangkat tersisa. Perangkat PENDING tidak dihitung sampai Owner menyetujuinya.`:"Kuota perangkat belum tersinkron.");
-    setText("pcStoreQuotaNote",maxStores?`${storeRemaining} slot toko tersisa. Batas toko menghitung toko pusat + seluruh cabang aktif.`:"Kuota toko belum tersinkron.");
+    setText("pcDeviceQuotaNote",maxDevices?`${deviceRemaining} slot perangkat tersisa. Perangkat PENDING tidak dihitung sampai Owner menyetujuinya.`:"Batas perangkat sedang diperbarui.");
+    setText("pcStoreQuotaNote",maxStores?`${storeRemaining} slot toko tersisa. Batas toko menghitung toko pusat + seluruh cabang aktif.`:"Batas toko sedang diperbarui.");
     quotaBar("pcDeviceQuotaBar",activeDevices,maxDevices);
     quotaBar("pcStoreQuotaBar",activeStores,maxStores);
 
@@ -69,11 +69,11 @@
       return;
     }
     if(!synced){
-      health.textContent="Kuota belum sinkron";
+      health.textContent="Sedang diperbarui";
       health.classList.add("warn");
       warning.hidden=false;
       warning.classList.add("warn");
-      warning.textContent="Kuota lisensi belum tersinkron ke Cloud App. Jalankan SQL V28.3.9 dan deploy Edge Function V28.3.9, lalu Refresh Data Saya. Sampai sinkron, server menolak persetujuan perangkat/cabang baru agar batas paket tidak dapat dilewati.";
+      warning.textContent="Batas pemakaian lisensi sedang diperbarui. Pastikan perangkat terhubung ke internet, lalu tekan Refresh Data Saya beberapa saat lagi.";
       return;
     }
     if(q.quota_stale){
@@ -81,7 +81,7 @@
       health.classList.add("warn");
       warning.hidden=false;
       warning.classList.add("warn");
-      warning.textContent="Verifikasi entitlement sudah lebih dari 24 jam. Tekan Refresh Data Saya saat online. Server menolak penambahan perangkat/cabang baru sampai lisensi diperiksa ulang.";
+      warning.textContent="Informasi batas pemakaian perlu diperbarui. Tekan Refresh Data Saya saat perangkat terhubung ke internet.";
       return;
     }
     const status=String(q.license_status||license?.status||"").toLowerCase();
@@ -96,6 +96,15 @@
     health.textContent="Kuota aktif & tersinkron";
     health.classList.add("good");
   }
+
+  let vaultTimers=new Map();
+  async function ownerAccessToken(){const {data,error}=await client().auth.getSession();if(error)throw error;const token=data?.session?.access_token||"";if(!token)throw new Error("Silakan login kembali untuk melihat data lisensi.");return token}
+  async function licenseCall(action,payload={}){if(!window.LDMLicenseV2?.call)throw new Error("Data lisensi belum dapat dimuat.");const authorization=await ownerAccessToken();return window.LDMLicenseV2.call(action,payload,{authorization})}
+  function hideVaultSecret(id){const secret=document.querySelector(`[data-pc-license-secret="${CSS.escape(String(id))}"]`),btn=document.querySelector(`[data-pc-license-reveal="${CSS.escape(String(id))}"]`);if(secret){secret.hidden=true;secret.innerHTML=""}if(btn){btn.textContent="Tampilkan Data Penting";btn.onclick=()=>revealPrivacyLicense(id,btn)}const old=vaultTimers.get(String(id));if(old)clearTimeout(old);vaultTimers.delete(String(id))}
+  function scheduleVaultHide(id){const key=String(id),old=vaultTimers.get(key);if(old)clearTimeout(old);vaultTimers.set(key,setTimeout(()=>hideVaultSecret(key),90000))}
+  async function revealPrivacyLicense(id,button){button.disabled=true;button.textContent="Memverifikasi…";setMsg("pcLicenseVaultMessage","","");try{const data=await licenseCall("owner_vault_reveal",{license_id:id}),r=data?.license||{},box=document.querySelector(`[data-pc-license-secret="${CSS.escape(String(id))}"]`);if(!box)return;box.innerHTML=`<div><span>License Key</span><code>${esc(r.license_key||"Tidak tersedia")}</code></div><div><span>Store Code</span><strong>${esc(r.store_code||"-")}</strong></div><div><span>Store UUID</span><code>${esc(r.store_id||"-")}</code></div><div><span>Network ID</span><code>${esc(r.network_id||"-")}</code></div><div><span>Email Owner</span><strong>${esc(r.owner_email||"-")}</strong></div><div><span>Masa Berlaku</span><strong>${esc(r.expires_at?fmt(r.expires_at):"Tidak terbatas")}</strong></div>`;box.hidden=false;button.textContent="Sembunyikan";button.onclick=()=>hideVaultSecret(id);scheduleVaultHide(id);setMsg("pcLicenseVaultMessage","Data penting akan disembunyikan kembali secara otomatis.","ok")}catch(error){setMsg("pcLicenseVaultMessage",error?.message||"Data lisensi belum dapat ditampilkan.","error")}finally{button.disabled=false}}
+  async function loadPrimaryOwnerVault(isPrimaryOwner){const card=$("pcLicenseVault"),list=$("pcLicenseVaultList");if(!card||!list)return;card.hidden=true;list.innerHTML="";setMsg("pcLicenseVaultMessage","","");if(!isPrimaryOwner)return;try{const data=await licenseCall("owner_vault_list"),rows=Array.isArray(data?.licenses)?data.licenses:[];card.hidden=false;if(!rows.length){list.innerHTML='<div class="empty">Belum ada lisensi yang terhubung ke akun ini.</div>';return}list.innerHTML=rows.map(r=>`<article class="privacy-license-card"><div class="privacy-license-card-head"><div><h4>${esc(r.plan_name||r.plan_code||"Lisensi")}</h4><p>${esc(r.status||"-")} · ${esc(r.expires_at?fmt(r.expires_at):"Tidak terbatas")}</p></div><span class="quota-health good">${esc(r.max_devices??"-")} perangkat · ${esc(r.max_stores??"-")} toko</span></div><div class="privacy-license-secret" data-pc-license-secret="${esc(r.license_id)}" hidden></div><div class="privacy-license-actions"><button class="btn btn-primary" type="button" data-pc-license-reveal="${esc(r.license_id)}">Tampilkan Data Penting</button></div></article>`).join("");list.querySelectorAll("[data-pc-license-reveal]").forEach(btn=>{btn.onclick=()=>revealPrivacyLicense(btn.dataset.pcLicenseReveal,btn)})}catch(error){if(/PRIMARY_OWNER_REQUIRED|OWNER_FORBIDDEN/i.test(String(error?.code||error?.message||""))){card.hidden=true;return}card.hidden=false;list.innerHTML='<div class="empty">Data lisensi belum dapat dimuat.</div>'}}
+  async function primaryOwnerFlag(ctx){if(String(ctx?.profile?.role||"").toLowerCase()!=="owner")return false;try{const {data,error}=await client().rpc("ldm_primary_owner_context");if(error)throw error;const row=Array.isArray(data)?data[0]:data;return row?.is_primary_owner===true}catch(_){return false}}
 
   async function loadAccountSnapshot(){
     const btn=$("btnRefreshAccountSnapshot");
@@ -120,25 +129,28 @@
       notes.push(error?.message||"Data Auth belum dapat dibaca.");
     }
 
-    // Force check sengaja dilakukan sebelum membaca kuota App Supabase.
-    // V28.3.9 menggunakan check ini untuk menyinkronkan entitlement License Authority -> Cloud App.
-    try{
+        try{
       if(window.LDMLicenseV2?.check)license=await window.LDMLicenseV2.check({force:true});
     }catch(error){
       notes.push(`Lisensi: ${error?.message||"belum dapat diverifikasi."}`);
     }
 
-    try{
+    async function fetchQuota(){
       const {data,error}=await client().rpc("ldm_my_license_quota");
       if(error)throw error;
-      quota=data||null;
+      return data||null;
+    }
+    try{
+      quota=await fetchQuota();
+      if((!quota?.quota_synced || quota?.quota_stale) && window.LDMLicenseV2?.check){
+        try{license=await window.LDMLicenseV2.check({force:true})||license}catch(_){}
+        await new Promise(resolve=>setTimeout(resolve,350));
+        quota=await fetchQuota();
+      }
     }catch(error){
       const msg=String(error?.message||error||"");
-      if(/ldm_my_license_quota|does not exist|schema cache/i.test(msg)){
-        notes.push("SQL kuota V28.3.9 belum terpasang pada App Supabase.");
-      }else{
-        notes.push(`Kuota: ${msg||"belum dapat dimuat."}`);
-      }
+      if(/ldm_my_license_quota|does not exist|schema cache/i.test(msg))notes.push("Informasi batas pemakaian belum tersedia.");
+      else notes.push("Informasi batas pemakaian belum dapat diperbarui.");
     }
 
     try{
@@ -163,11 +175,13 @@
     setText("pcDeviceId",device?.client_device_id||window.LDMLicenseV2?.deviceId?.()||"-");
     setText("pcDevicePlatform",device?.platform||browserSummary()||"-");
     renderQuota(quota,license);
+    const isPrimaryOwner=await primaryOwnerFlag(ctx);
+    await loadPrimaryOwnerVault(isPrimaryOwner);
 
     if(notes.length){
       setMsg("privacyAccountMessage",`Data utama berhasil dimuat dengan catatan: ${notes.join(" · ")}`,"");
     }else{
-      setMsg("privacyAccountMessage","Data akun dan kuota berhasil diperbarui dari Cloud.","ok");
+      setMsg("privacyAccountMessage","Data akun dan batas pemakaian berhasil diperbarui.","ok");
     }
     if(btn)btn.disabled=false;
   }

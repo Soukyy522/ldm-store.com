@@ -134,7 +134,7 @@
   }
 
   function summaryLabel(x){
-    if(x.legacy_lifetime)return "Lifetime Legacy · Tetap Aktif";
+    if(x.legacy_lifetime)return "Lifetime · Tetap Aktif";
     if(!x.expires_at)return "Tanpa tanggal kedaluwarsa";
     return date(x.expires_at);
   }
@@ -146,7 +146,7 @@
       <article class="owner-vault-card" data-vault-license="${esc(id)}">
         <div class="owner-vault-card-head">
           <div>
-            <span class="owner-vault-badge">${item.legacy_lifetime?"LEGACY LIFETIME":"LISENSI OWNER"}</span>
+            <span class="owner-vault-badge">${item.legacy_lifetime?"LIFETIME":"LISENSI OWNER"}</span>
             <h3>${esc(item.plan_name||item.plan_code||"Lisensi")}</h3>
             <p>${esc(item.store_name||"Toko")} · ${esc(item.store_code_masked||"••••")}</p>
           </div>
@@ -164,7 +164,7 @@
         </div>
         <div class="owner-vault-actions">
           <button class="btn primary" type="button" data-vault-reveal="${esc(id)}">${full?"Refresh Data":"Reveal data penting"}</button>
-          ${item.legacy_lifetime&&!item.has_recoverable_key?`<span class="owner-vault-legacy-note">Key Lifetime lama belum ada di vault. Aktivasi sekali dengan key lama akan mendaftarkannya secara terenkripsi.</span>`:""}
+          ${item.legacy_lifetime&&!item.has_recoverable_key?`<span class="owner-vault-legacy-note">License Key belum tersedia untuk ditampilkan. Aktivasi sekali dengan key yang dimiliki agar data dapat ditampilkan di akun ini.</span>`:""}
         </div>
         <div class="owner-vault-sensitive" ${full?"":"hidden"}>
           ${full?sensitiveRows(full):""}
