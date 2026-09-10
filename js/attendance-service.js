@@ -648,6 +648,44 @@
             }
         ).format(new Date());
 
+        if(window.LDMWorkforce && typeof window.LDMWorkforce.scheduleForUser === "function") {
+            const rule = await window.LDMWorkforce.scheduleForUser({
+                userId: target.id,
+                date
+            });
+
+            if(!rule.found && rule.schedule_required) {
+                throw new Error(
+                    "Jadwal kerja hari ini belum diatur Owner. Presensi belum dapat dilakukan."
+                );
+            }
+
+            if(rule.found && rule.status === "OFF") {
+                throw new Error(
+                    "Hari ini ditetapkan sebagai Libur. Presensi tidak diperlukan."
+                );
+            }
+
+            if(rule.found && rule.status === "ANNUAL_LEAVE") {
+                throw new Error(
+                    "Hari ini merupakan Cuti Tahunan. Presensi tidak diperlukan."
+                );
+            }
+
+            if(
+                rule.found &&
+                rule.status === "WORK" &&
+                (type === "Masuk" || type === "Keluar")
+            ) {
+                if(shift && shift !== rule.shift_label) {
+                    throw new Error(
+                        `Shift tidak sesuai jadwal. Jadwal hari ini adalah ${rule.shift_label}.`
+                    );
+                }
+                shift = rule.shift_label;
+            }
+        }
+
         const proofPath =
             await uploadProof({
                 dataURL:proofDataURL,

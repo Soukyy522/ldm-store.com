@@ -3,7 +3,7 @@
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
     const PAGE_FEATURE={
         "dashboard.html":"dashboard","kasir.html":"pos","barang.html":"inventory","kartu-stok.html":"stock_card","stock-opname.html":"stock_opname",
-        "laporan.html":"reports","absensi.html":"attendance","retur.html":"returns","shift-closing.html":"shift_closing","backup & restore.html":"backup_restore",
+        "laporan.html":"reports","absensi.html":"attendance","attendance-exception.html":"attendance","retur.html":"returns","shift-closing.html":"shift_closing","backup & restore.html":"backup_restore",
         "pengeluaran.html":"expenses","supplier.html":"suppliers","purchase-order.html":"purchase_order","goods.receipt.html":"goods_receipt",
         "account-management.html":"cloud_accounts","account-password-reset.html":"cloud_accounts","device-management.html":"cloud_devices","device-access.html":"cloud_devices",
         "recovery-center.html":"recovery_center","pwa-settings.html":"app_update","multi-store.html":"multi_store","cloud-control-center.html":"cloud_control","owner-control-center.html":"central_control",

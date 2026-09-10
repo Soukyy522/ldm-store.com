@@ -2,7 +2,7 @@
     "use strict";
     if(window.LDM_PUBLIC_GUIDE_MODE===true)return;
 
-    const NAV_VERSION="27.9.0-systemui25-v2841";
+    const NAV_VERSION="27.9.0-systemui25-v2850";
     const EOD_KEYS=["laporan","dataLaporan","shiftClosingLog","dataRetur"];
 
     /*
@@ -12,6 +12,7 @@
     const ROUTES=[
         {page:"dashboard.html",icon:"📊",label:"Dashboard",group:"Utama",roles:["owner","admin","kasir"],feature:"dashboard",quick:true},
         {page:"absensi.html",icon:"📝",label:"Absensi",group:"Utama",roles:["owner","admin","kasir"],feature:"attendance"},
+        {page:"attendance-exception.html",icon:"🗒️",label:"Alasan Tidak Absensi",group:"Utama",roles:["owner","admin","kasir"],feature:"attendance"},
         {page:"kasir.html",icon:"💵",label:"Kasir",group:"Utama",roles:["owner","admin","kasir"],feature:"pos",quick:true},
 
         {page:"barang.html",icon:"📦",label:"Barang",group:"Inventori",roles:["owner","admin","kasir"],feature:"inventory",badge:"navBadge"},

@@ -31,7 +31,7 @@
         plans:Object.freeze({
             WARUNG_KECIL:{name:"Warung Kecil",monthly:69000,yearly:699000,two_year:1398000,devices:2,stores:1},
             WARUNG_SEDERHANA:{name:"Warung Sederhana",monthly:129000,yearly:1299000,two_year:2598000,devices:3,stores:1,trialDays:14},
-            TOKO:{name:"Toko",monthly:249000,yearly:2499000,two_year:4998000,devices:10,stores:5}
+            TOKO:{name:"Toko",monthly:249000,yearly:2499000,two_year:4998000,devices:15,stores:5}
         })
     });
 })();
