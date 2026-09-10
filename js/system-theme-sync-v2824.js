@@ -202,6 +202,7 @@
             "--system-banner-border":bannerBorder,
             "--system-banner-hover":bannerHover,
             "--system-banner-accent":bannerAccent,
+            "--system-banner-outline":config.warnaOutline||DEFAULTS.warnaOutline,
             "--system-accent-text":accentText,
 
             /*
@@ -244,6 +245,20 @@
         document.querySelectorAll("[data-ldm-brand-subtitle]").forEach(node=>{
             if(config.subJudul)node.textContent=config.subJudul;
             node.style.color=bannerAccent;
+        });
+
+        document.querySelectorAll("[data-ldm-brand-logo]").forEach(node=>{
+            if(!(node instanceof HTMLImageElement))return;
+            if(!node.dataset.ldmDefaultLogo){
+                node.dataset.ldmDefaultLogo=node.getAttribute("src")||"locdailymar-logo.png";
+            }
+            if(config.logoData){
+                node.src=config.logoData;
+                node.dataset.ldmCustomLogo="true";
+            }else{
+                node.src=node.dataset.ldmDefaultLogo;
+                node.removeAttribute("data-ldm-custom-logo");
+            }
         });
 
         const meta=document.querySelector('meta[name="theme-color"]');

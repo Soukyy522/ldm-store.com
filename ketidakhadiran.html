@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#0F9D58">
+  <title>Ketidakhadiran - LocDailyMar</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui25-v2851">
+  <link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui25-v2851">
+  <link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui25-v2851">
+  <link rel="stylesheet" href="css/workforce-dashboard-pages.css?v=28.5.1">
+
+  <script src="js/storage-engine.js?v=27.9.0-storage-archive-v2826"></script>
+  <script src="js/local-time.js?v=26.4.0"></script>
+  <script src="js/security-hardening.js?v=19.0"></script>
+  <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/cloud-auth.js?v=15.0"></script>
+  <script src="js/cloud-session.js?v=6.0"></script>
+  <script src="js/cloud-session-guard.js?v=15.0"></script>
+  <script src="js/attendance-workforce-service.js?v=28.5.1"></script>
+  <script src="js/license-v2-config.js?v=28.5.0"></script>
+  <script src="js/license-v2-client.js?v=28.5.0"></script>
+  <script defer src="js/license-v2-guard.js?v=28.5.1"></script>
+</head>
+<body class="ldm-system-page" data-ldm-system-page="ketidakhadiran.html" data-ldm-system-label="Ketidakhadiran">
+  <main class="wf-shell">
+    <header class="wf-hero" data-ldm-system-banner="primary">
+      <div class="wf-hero-main">
+        <img class="wf-brand-logo" data-ldm-brand-logo src="locdailymar-logo.png" alt="Logo LocDailyMar">
+        <div class="wf-hero-copy">
+          <h1>📋 Ketidakhadiran</h1>
+          <p>Jelaskan jadwal kerja yang terlewat. Hari Libur dan Cuti Tahunan tidak dianggap sebagai ketidakhadiran.</p>
+        </div>
+      </div>
+      <div class="wf-hero-actions"><a class="wf-link-btn soft" href="absensi.html">← Absensi</a></div>
+    </header>
+
+    <section class="wf-stats">
+      <div class="wf-stat"><span>Perlu Dijelaskan</span><strong id="absenceCandidateCount">0</strong></div>
+      <div class="wf-stat"><span>Sudah Dikirim</span><strong id="absenceSubmittedCount">0</strong></div>
+      <div class="wf-stat"><span>Sudah Ditinjau</span><strong id="absenceReviewedCount">0</strong></div>
+      <div class="wf-stat"><span>Role Aktif</span><strong id="absenceRole">-</strong></div>
+      <div class="wf-stat"><span>Cakupan</span><strong id="absenceScope">Akun Saya</strong></div>
+    </section>
+
+    <div class="wf-layout-2">
+      <section class="wf-card">
+        <div class="wf-card-head"><div><h2>Kirim Penjelasan</h2><p>Form hanya menampilkan tanggal kerja yang sudah melewati batas jam masuk tetapi belum mempunyai Absen Masuk, Izin, atau Sakit.</p></div></div>
+        <form id="absenceForm">
+          <div class="wf-field"><label for="absenceDate">Tanggal kerja</label><select id="absenceDate" required></select></div>
+          <div class="wf-field" style="margin-top:10px"><label for="absenceReason">Jenis ketidakhadiran</label>
+            <select id="absenceReason" required>
+              <option value="SAKIT_KONDISI">Sakit / kondisi kesehatan</option>
+              <option value="KEPERLUAN_KELUARGA">Keperluan keluarga mendesak</option>
+              <option value="KENDALA_TRANSPORTASI">Kendala transportasi / perjalanan</option>
+              <option value="KENDALA_SISTEM">Kendala perangkat, jaringan, atau sistem absensi</option>
+              <option value="LUPA_KELALAIAN">Lupa / kelalaian melakukan absensi</option>
+              <option value="KEADAAN_DARURAT">Keadaan darurat</option>
+              <option value="LAINNYA">Lainnya</option>
+            </select>
+          </div>
+          <div class="wf-field" style="margin-top:10px"><label for="absenceText">Penjelasan</label><textarea id="absenceText" minlength="10" maxlength="2000" required placeholder="Jelaskan kejadian dengan jelas, minimal 10 karakter."></textarea></div>
+          <div class="wf-actions" style="margin-top:12px"><button id="absenceSubmit" class="wf-btn primary" type="submit">Kirim ke Owner</button></div>
+          <div id="absenceMessage" class="wf-notice" style="margin-top:10px">Memeriksa data ketidakhadiran...</div>
+        </form>
+      </section>
+
+      <section class="wf-card">
+        <div class="wf-card-head"><div><h2>Riwayat Saya</h2><p>Pengajuan tidak mengubah status menjadi hadir. Ini tetap menjadi catatan pertanggungjawaban untuk ditinjau Owner.</p></div></div>
+        <div id="absenceMine" class="wf-list"><div class="wf-empty">Memuat riwayat...</div></div>
+      </section>
+    </div>
+
+    <section class="wf-card" id="absenceOwnerInbox" hidden>
+      <div class="wf-card-head">
+        <div><h2>📥 Tinjauan Ketidakhadiran</h2><p>Owner Cabang hanya melihat akun cabangnya. Owner Pusat dapat melihat seluruh cabang dalam network.</p></div>
+        <span class="wf-tag">Owner Only</span>
+      </div>
+      <div class="wf-grid">
+        <div class="wf-field wf-col-4"><label for="absenceStore">Cabang</label><select id="absenceStore"></select></div>
+        <div class="wf-col-8 wf-actions end"><button class="wf-btn soft" type="button" id="absenceReload">↻ Muat Ulang</button></div>
+      </div>
+      <div id="absenceInbox" class="wf-list" style="margin-top:12px"><div class="wf-empty">Memuat pengajuan...</div></div>
+    </section>
+  </main>
+
+  <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui25-v2851"></script>
+  <script src="js/ketidakhadiran-ui.js?v=28.5.1"></script>
+  <script src="js/global-system-navigation.js?v=27.9.0-systemui25-v2851"></script>
+  <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
+</body>
+</html>

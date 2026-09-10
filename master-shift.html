@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#0F9D58">
+  <title>Master Shift - LocDailyMar</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@500;700&family=Fredoka:wght@600;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700&family=Lato:wght@400;700&family=Lobster&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@600;800&family=Poppins:wght@400;600;700&family=Raleway:wght@500;700&family=Roboto:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui25-v2851">
+  <link id="ldmStoreModesGlobalCSS" rel="stylesheet" href="css/store-modes.css?v=27.9.0-systemui25-v2851">
+  <link id="ldmSystemDashboardUICSS" rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-systemui25-v2851">
+  <link rel="stylesheet" href="css/workforce-dashboard-pages.css?v=28.5.1">
+
+  <script src="js/storage-engine.js?v=27.9.0-storage-archive-v2826"></script>
+  <script src="js/local-time.js?v=26.4.0"></script>
+  <script src="js/security-hardening.js?v=19.0"></script>
+  <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/cloud-auth.js?v=15.0"></script>
+  <script src="js/cloud-session.js?v=6.0"></script>
+  <script src="js/cloud-session-guard.js?v=15.0"></script>
+  <script src="js/attendance-workforce-service.js?v=28.5.1"></script>
+  <script src="js/license-v2-config.js?v=28.5.0"></script>
+  <script src="js/license-v2-client.js?v=28.5.0"></script>
+  <script defer src="js/license-v2-guard.js?v=28.5.1"></script>
+</head>
+<body class="ldm-system-page" data-ldm-system-page="master-shift.html" data-ldm-system-label="Master Shift">
+  <main class="wf-shell" id="masterShiftApp">
+    <header class="wf-hero" data-ldm-system-banner="primary">
+      <div class="wf-hero-main">
+        <img class="wf-brand-logo" data-ldm-brand-logo src="locdailymar-logo.png" alt="Logo LocDailyMar">
+        <div class="wf-hero-copy">
+          <h1>🗓️ Master Shift</h1>
+          <p>Atur jadwal kerja bulanan, jam masuk-keluar, hari libur, dan cuti tahunan dari satu halaman.</p>
+        </div>
+      </div>
+      <div class="wf-hero-actions">
+        <span class="wf-pill">🔒 Owner Only</span>
+        <a class="wf-link-btn soft" href="absensi.html">← Absensi</a>
+      </div>
+    </header>
+
+    <section class="wf-card">
+      <div class="wf-card-head">
+        <div><h2>Pilih Jadwal</h2><p>Tentukan cabang, bulan, dan akun. Owner Cabang hanya melihat cabangnya sendiri.</p></div>
+        <button class="wf-btn soft" type="button" id="masterReload">↻ Muat Ulang</button>
+      </div>
+      <div class="wf-grid">
+        <div class="wf-field wf-col-4"><label for="masterStore">Cabang</label><select id="masterStore"></select></div>
+        <div class="wf-field wf-col-4"><label for="masterMonth">Bulan</label><input id="masterMonth" type="month"></div>
+        <div class="wf-field wf-col-4"><label for="masterUser">Akun Karyawan</label><select id="masterUser"></select></div>
+      </div>
+    </section>
+
+    <section class="wf-stats" aria-label="Ringkasan jadwal">
+      <div class="wf-stat"><span>Hari Kerja</span><strong id="statWork">0</strong></div>
+      <div class="wf-stat"><span>Hari Libur</span><strong id="statOff">0</strong></div>
+      <div class="wf-stat"><span>Cuti Bulan Ini</span><strong id="statLeave">0</strong></div>
+      <div class="wf-stat"><span>Hak Cuti Tahunan</span><strong id="statLeaveRight">0</strong></div>
+      <div class="wf-stat"><span>Sisa Cuti</span><strong id="statLeaveRemain">0</strong></div>
+    </section>
+
+    <div class="wf-layout-2">
+      <section class="wf-card">
+        <div class="wf-card-head"><div><h2>Template Cepat</h2><p>Atur pola umum sekali, lalu terapkan ke seluruh bulan.</p></div></div>
+        <div class="wf-field">
+          <label>Hari kerja</label>
+          <div class="wf-weekdays" id="masterWeekdays">
+            <label class="wf-weekday"><input type="checkbox" value="1" checked> Sen</label>
+            <label class="wf-weekday"><input type="checkbox" value="2" checked> Sel</label>
+            <label class="wf-weekday"><input type="checkbox" value="3" checked> Rab</label>
+            <label class="wf-weekday"><input type="checkbox" value="4" checked> Kam</label>
+            <label class="wf-weekday"><input type="checkbox" value="5" checked> Jum</label>
+            <label class="wf-weekday"><input type="checkbox" value="6" checked> Sab</label>
+            <label class="wf-weekday"><input type="checkbox" value="0"> Min</label>
+          </div>
+        </div>
+        <div class="wf-grid" style="margin-top:10px">
+          <div class="wf-field wf-col-6"><label for="masterTemplateShift">Shift</label><select id="masterTemplateShift"><option>Shift 1</option><option>Shift 2</option><option>Full Day</option></select></div>
+          <div class="wf-field wf-col-6"><label for="masterTemplateGrace">Toleransi terlambat</label><input id="masterTemplateGrace" type="number" min="0" max="240" value="30"></div>
+          <div class="wf-field wf-col-6"><label for="masterTemplateStart">Jam masuk</label><input id="masterTemplateStart" type="time" value="08:00"></div>
+          <div class="wf-field wf-col-6"><label for="masterTemplateEnd">Jam keluar</label><input id="masterTemplateEnd" type="time" value="16:00"></div>
+        </div>
+        <div class="wf-actions" style="margin-top:12px"><button class="wf-btn primary" type="button" id="masterApplyTemplate">Terapkan ke Bulan</button></div>
+      </section>
+
+      <section class="wf-card">
+        <div class="wf-card-head"><div><h2>Hak Cuti Tahunan</h2><p>Hak cuti mengikuti tahun pada bulan yang sedang dipilih.</p></div></div>
+        <div class="wf-grid">
+          <div class="wf-field wf-col-6"><label for="masterLeaveDays">Hak cuti / tahun</label><input id="masterLeaveDays" type="number" min="0" max="366" value="0"></div>
+          <div class="wf-field wf-col-6"><label>Tahun</label><input id="masterLeaveYear" type="text" readonly></div>
+          <div class="wf-col-12"><div class="wf-notice" id="masterLeaveSummary">Pilih akun untuk melihat hak cuti.</div></div>
+        </div>
+        <div class="wf-actions" style="margin-top:12px"><button class="wf-btn soft" type="button" id="masterSaveLeave">Simpan Hak Cuti</button></div>
+        <div class="wf-divider"></div>
+        <div class="wf-notice">Owner Pusat boleh membiarkan jadwal akunnya sendiri kosong. Akun lain tetap wajib memiliki jadwal lengkap untuk setiap tanggal dalam bulan.</div>
+      </section>
+    </div>
+
+    <section class="wf-card">
+      <div class="wf-card-head">
+        <div><h2>Jadwal Bulanan</h2><p>Setelah template diterapkan, cukup ubah tanggal yang berbeda menjadi Libur, Cuti Tahunan, atau shift lain.</p></div>
+        <div class="wf-actions">
+          <button class="wf-btn danger" type="button" id="masterClear" hidden>Kosongkan Jadwal Owner Pusat</button>
+          <button class="wf-btn primary" type="button" id="masterSave">💾 Simpan Jadwal Bulan</button>
+        </div>
+      </div>
+      <div id="masterMessage" class="wf-notice">Memuat Master Shift...</div>
+      <div class="wf-table-wrap" style="margin-top:12px">
+        <table class="wf-table">
+          <thead><tr><th>Tanggal</th><th>Status</th><th>Shift</th><th>Jam Kerja</th><th>Catatan</th></tr></thead>
+          <tbody id="masterScheduleBody"><tr><td colspan="5">Memuat...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui25-v2851"></script>
+  <script src="js/master-shift-ui.js?v=28.5.1"></script>
+  <script src="js/global-system-navigation.js?v=27.9.0-systemui25-v2851"></script>
+  <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
+</body>
+</html>
