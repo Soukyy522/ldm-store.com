@@ -6,13 +6,13 @@
 <script src="js/storage-engine.js?v=27.9.0-storage-archive-v2826"></script>
 <script src="js/storage-quota-guard.js?v=27.7.1"></script>
 <script src="js/local-time.js?v=26.4.0"></script>
-<link rel="stylesheet" href="css/privacy-center.css?v=27.9.0-privacy-quota-v2839">
+<link rel="stylesheet" href="css/privacy-center.css?v=27.9.0-privacy-license-v2840">
 <script src="js/security-hardening.js?v=19.0"></script>
 <script src="js/error-monitor.js?v=27.9.0-monitor4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script><script src="js/supabase-client.js"></script>
 <script src="js/cloud-auth.js?v=15.0"></script><script src="js/cloud-session.js?v=16.0"></script><script src="js/cloud-session-guard.js?v=17.0"></script>
-<script src="js/license-v2-config.js?v=27.9.0-v2839"></script><script src="js/license-v2-client.js?v=27.9.0-v2839"></script>
+<script src="js/license-v2-config.js?v=27.9.0-v2840"></script><script src="js/license-v2-client.js?v=27.9.0-v2840"></script>
 
 <link id="ldmSystemFontsV2823" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap">
 <link id="ldmGlobalNavigationCSS" rel="stylesheet" href="css/global-responsive-navigation.css?v=27.9.0-systemui24">
@@ -32,7 +32,7 @@
     <div class="requests-head">
       <div>
         <h2>👤 Data Akun & Customer Anda</h2>
-        <p>Ringkasan ini hanya menampilkan data milik akun yang sedang login, perangkat yang sedang dipakai, toko aktif, dan kuota lisensi jaringan. License Key dan password tidak ditampilkan di Privacy Center.</p>
+        <p>Ringkasan ini menampilkan informasi akun, perangkat, toko, dan batas pemakaian yang terkait dengan akun yang sedang digunakan.</p>
       </div>
       <button id="btnRefreshAccountSnapshot" class="btn btn-soft" type="button">↻ Refresh Data Saya</button>
     </div>
@@ -96,6 +96,14 @@
       </div>
       <div class="quota-warning" id="pcQuotaWarning" hidden></div>
     </div>
+      <div class="privacy-license-vault" id="pcLicenseVault" hidden>
+        <div class="quota-head">
+          <div><h3>Data Lisensi</h3><p class="help">Data ini hanya tersedia untuk Owner Pusat. Informasi penting disembunyikan sampai Anda memilih untuk menampilkannya.</p></div>
+          <span class="quota-health good" id="pcLicenseVaultStatus">Terlindungi</span>
+        </div>
+        <div id="pcLicenseVaultList" class="privacy-license-list"></div>
+        <div id="pcLicenseVaultMessage" class="privacy-message"></div>
+      </div>
   </section>
   <section class="privacy-card">
     <h2>Data yang Umumnya Diproses</h2>
@@ -151,9 +159,9 @@
   </section>
 </div>
 
-<div class="legal-note"><strong>Catatan kebijakan:</strong> Privacy Center adalah sarana operasional untuk mengelola permintaan terkait data pribadi. Pelaksanaan akhir tetap mengikuti kebijakan, dasar pemrosesan, perjanjian, identitas pengendali/prosesor yang sebenarnya, dan peraturan yang berlaku. Identitas badan usaha/pengendali serta kontak privasi final perlu dilengkapi sebelum peluncuran komersial.</div>
+<div class="legal-note"><strong>Privasi & keamanan:</strong> Permintaan terkait data pribadi akan diverifikasi sebelum diproses. Beberapa data dapat tetap disimpan apabila diperlukan untuk keamanan akun, catatan transaksi, pemenuhan layanan, atau kewajiban yang berlaku.</div>
 </main>
-<script src="js/privacy-center.js?v=27.9.0-privacy-quota-v2839"></script>
+<script src="js/privacy-center.js?v=27.9.0-privacy-license-v2840"></script>
 
 <script src="js/store-mode.js?v=27.9.0-systemui24"></script>
 <script src="js/system-theme-sync-v2824.js?v=27.9.0-systemui24"></script>

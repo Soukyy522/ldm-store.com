@@ -1,10 +1,10 @@
 // Build: 27.9.0 Privacy Account Snapshot + License Quota Enforcement Hardening V28.3.9
 "use strict";
 
-const APP_VERSION = "27.9.0-v28.3.9";
+const APP_VERSION = "27.9.0-v28.4.0";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-privacy-quota-v28-3-9`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-privacy-quota-runtime-v28-3-9`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-privacy-quota-v28-4-0`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-privacy-quota-runtime-v28-4-0`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [

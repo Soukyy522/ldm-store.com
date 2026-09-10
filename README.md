@@ -166,3 +166,10 @@ Halaman khusus developer kini memakai navigasi bersama yang hanya berada di area
 - Edge Function tidak lagi mengakses `storage.objects` lewat PostgREST. SQL-44 membuat RPC service-role `ldm_storage_cleanup_plan_store(uuid)` yang membaca metadata Storage secara read-only, sedangkan penghapusan object tetap dilakukan lewat Storage API.
 - Jalankan `SQL-44-STORAGE-RETENTION-RUNTIME-HARDENING.sql` pada App Supabase dan deploy `ldm-storage-maintenance` V22 sebelum memakai Cleanup manual.
 - Untuk cleanup Storage otomatis, buat `LDM_STORAGE_CRON_SECRET`, Vault `ldm_app_supabase_url` + `ldm_storage_cron_secret`, lalu jalankan `SQL-44B-STORAGE-CLEANUP-CRON-TEMPLATE.sql` pada App Supabase.
+
+
+## V28.4.0
+- Legacy Lifetime tidak ditawarkan sebagai paket baru, tetapi License Key Lifetime existing tetap dapat diaktifkan.
+- Privacy Center menampilkan data lisensi aman hanya untuk Owner Pusat, dengan reveal sementara.
+- Account Management menampilkan Batas Pemakaian perangkat dan toko.
+- Pesan customer-facing dibersihkan dari instruksi deployment/internal.
