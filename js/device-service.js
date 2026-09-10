@@ -20,7 +20,7 @@
     async function deleteGroup(id){await ownerContext();const {data,error}=await client().rpc("ldm_device_group_delete",{p_group_id:id});if(error)throw error;return data}
     async function approve(deviceId,groupId){await ownerContext();const {data,error}=await client().rpc("ldm_device_approve",{p_device_id:deviceId,p_group_id:groupId||null});if(error)throw error;return data}
     async function revoke(deviceId){await ownerContext();const {data,error}=await client().rpc("ldm_device_revoke",{p_device_id:deviceId});if(error)throw error;return data}
-    async function quota(){await ownerContext();const {data,error}=await client().rpc("ldm_my_license_quota");if(error)throw error;return data&&typeof data==="object"?data:null}
+    async function quota(){await ownerContext();if(window.LDMLicenseQuotaSync?.refresh){const out=await window.LDMLicenseQuotaSync.refresh({allowSync:true});if(out?.quota)return out.quota;if(out?.error)throw out.error}const {data,error}=await client().rpc("ldm_my_license_quota");if(error)throw error;return data&&typeof data==="object"?data:null}
     async function startRealtime(callback){
         if(channel)return channel;const c=await ownerContext();const supabase=client();const storeId=c.profile.store_id;
         channel=supabase.channel("ldm-device-management-v15")

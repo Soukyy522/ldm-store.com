@@ -42,6 +42,11 @@
     }
 
     async function quota(){
+        if(window.LDMLicenseQuotaSync?.refresh){
+            const out=await window.LDMLicenseQuotaSync.refresh({allowSync:true});
+            if(out?.quota)return out.quota;
+            if(out?.error)throw out.error;
+        }
         const data=await rpc("ldm_my_license_quota");
         return data&&typeof data==="object"?data:null;
     }
@@ -60,8 +65,8 @@
     async function createBranch(options={}){
         await requirePrimaryOwner("membuat cabang baru");
         const q=await quota();
-        if(!q?.quota_synced) throw new Error("LICENSE_QUOTA_NOT_SYNCED: Kuota paket belum tersinkron. Refresh lisensi/Privacy Center terlebih dahulu.");
-        if(q?.quota_stale) throw new Error("LICENSE_QUOTA_STALE: Verifikasi kuota sudah lebih dari 24 jam. Refresh lisensi/Privacy Center terlebih dahulu.");
+        if(!q?.quota_synced){const e=new Error("Informasi batas pemakaian belum tersedia. Coba refresh beberapa saat lagi.");e.code="LICENSE_QUOTA_NOT_SYNCED";throw e;}
+        if(q?.quota_stale){const e=new Error("Informasi batas pemakaian perlu diperbarui. Coba refresh saat perangkat terhubung ke internet.");e.code="LICENSE_QUOTA_STALE";throw e;}
         if(q?.store_limit_reached) throw new Error(`STORE_LIMIT_REACHED: Batas toko paket sudah tercapai (${Number(q.active_stores||0)}/${Number(q.max_stores||0)} total toko termasuk toko pusat).`);
         return rpc("ldm_create_branch_store_v2",{
             p_code:String(options.code||"").trim(),

@@ -18,6 +18,7 @@
   function statusLabel(v){return({submitted:"Diajukan",verifying:"Verifikasi",processing:"Diproses",waiting_user:"Menunggu Anda",completed:"Selesai",rejected:"Ditolak",cancelled:"Dibatalkan"})[String(v||"submitted")]||v}
   function roleLabel(v){return({owner:"Owner",admin:"Admin",kasir:"Kasir"})[String(v||"").toLowerCase()]||String(v||"-")}
   function licenseStatusLabel(v){return({active:"Aktif",pending:"Menunggu Pembayaran",suspended:"Ditangguhkan",expired:"Kedaluwarsa",cancelled:"Dibatalkan"})[String(v||"").toLowerCase()]||String(v||"-")}
+  function planLabel(name,code){const c=String(code||"").toUpperCase(),n=String(name||"");return c==="LIFETIME"||/lifetime\s+legacy/i.test(n)?"Lifetime":(n||c||"-")}
   function validCode(v){return /^PRV-\d{8}-[A-F0-9]{10}$/.test(String(v||""))}
 
   function updateCorrectionField(){const yes=$("privacyRequestType").value==="correction";$("correctionField").hidden=!yes;if(!yes)$("privacyCorrection").value=""}
@@ -41,7 +42,7 @@
     const storeRemaining=Math.max(0,maxStores-activeStores);
 
     setText("pcNetworkId",q.network_id||"-");
-    setText("pcLicensePlan",q.plan_name||q.plan_code||license?.plan_name||license?.plan_code||"-");
+    setText("pcLicensePlan",planLabel(q.plan_name||license?.plan_name,q.plan_code||license?.plan_code));
     setText("pcLicenseStatus",licenseStatusLabel(q.license_status||license?.status||"-"));
     setText("pcLicenseExpiry",fmt(q.license_expires_at||license?.expires_at));
     setText("pcQuotaSyncedAt",fmt(q.license_synced_at));
@@ -69,15 +70,15 @@
       return;
     }
     if(!synced){
-      health.textContent="Sedang diperbarui";
+      health.textContent="Belum siap";
       health.classList.add("warn");
       warning.hidden=false;
       warning.classList.add("warn");
-      warning.textContent="Batas pemakaian lisensi sedang diperbarui. Pastikan perangkat terhubung ke internet, lalu tekan Refresh Data Saya beberapa saat lagi.";
+      warning.textContent="Informasi batas pemakaian belum tersedia. Pastikan perangkat terhubung ke internet lalu tekan Refresh Data Saya.";
       return;
     }
     if(q.quota_stale){
-      health.textContent="Kuota perlu diperbarui";
+      health.textContent="Perlu diperbarui";
       health.classList.add("warn");
       warning.hidden=false;
       warning.classList.add("warn");
@@ -93,7 +94,7 @@
       warning.textContent="Lisensi sedang tidak aktif atau sudah berakhir. Penambahan perangkat dan toko baru ditolak sampai lisensi kembali aktif.";
       return;
     }
-    health.textContent="Kuota aktif & tersinkron";
+    health.textContent="Aktif";
     health.classList.add("good");
   }
 
@@ -103,87 +104,77 @@
   function hideVaultSecret(id){const secret=document.querySelector(`[data-pc-license-secret="${CSS.escape(String(id))}"]`),btn=document.querySelector(`[data-pc-license-reveal="${CSS.escape(String(id))}"]`);if(secret){secret.hidden=true;secret.innerHTML=""}if(btn){btn.textContent="Tampilkan Data Penting";btn.onclick=()=>revealPrivacyLicense(id,btn)}const old=vaultTimers.get(String(id));if(old)clearTimeout(old);vaultTimers.delete(String(id))}
   function scheduleVaultHide(id){const key=String(id),old=vaultTimers.get(key);if(old)clearTimeout(old);vaultTimers.set(key,setTimeout(()=>hideVaultSecret(key),90000))}
   async function revealPrivacyLicense(id,button){button.disabled=true;button.textContent="Memverifikasi…";setMsg("pcLicenseVaultMessage","","");try{const data=await licenseCall("owner_vault_reveal",{license_id:id}),r=data?.license||{},box=document.querySelector(`[data-pc-license-secret="${CSS.escape(String(id))}"]`);if(!box)return;box.innerHTML=`<div><span>License Key</span><code>${esc(r.license_key||"Tidak tersedia")}</code></div><div><span>Store Code</span><strong>${esc(r.store_code||"-")}</strong></div><div><span>Store UUID</span><code>${esc(r.store_id||"-")}</code></div><div><span>Network ID</span><code>${esc(r.network_id||"-")}</code></div><div><span>Email Owner</span><strong>${esc(r.owner_email||"-")}</strong></div><div><span>Masa Berlaku</span><strong>${esc(r.expires_at?fmt(r.expires_at):"Tidak terbatas")}</strong></div>`;box.hidden=false;button.textContent="Sembunyikan";button.onclick=()=>hideVaultSecret(id);scheduleVaultHide(id);setMsg("pcLicenseVaultMessage","Data penting akan disembunyikan kembali secara otomatis.","ok")}catch(error){setMsg("pcLicenseVaultMessage",error?.message||"Data lisensi belum dapat ditampilkan.","error")}finally{button.disabled=false}}
-  async function loadPrimaryOwnerVault(isPrimaryOwner){const card=$("pcLicenseVault"),list=$("pcLicenseVaultList");if(!card||!list)return;card.hidden=true;list.innerHTML="";setMsg("pcLicenseVaultMessage","","");if(!isPrimaryOwner)return;try{const data=await licenseCall("owner_vault_list"),rows=Array.isArray(data?.licenses)?data.licenses:[];card.hidden=false;if(!rows.length){list.innerHTML='<div class="empty">Belum ada lisensi yang terhubung ke akun ini.</div>';return}list.innerHTML=rows.map(r=>`<article class="privacy-license-card"><div class="privacy-license-card-head"><div><h4>${esc(r.plan_name||r.plan_code||"Lisensi")}</h4><p>${esc(r.status||"-")} · ${esc(r.expires_at?fmt(r.expires_at):"Tidak terbatas")}</p></div><span class="quota-health good">${esc(r.max_devices??"-")} perangkat · ${esc(r.max_stores??"-")} toko</span></div><div class="privacy-license-secret" data-pc-license-secret="${esc(r.license_id)}" hidden></div><div class="privacy-license-actions"><button class="btn btn-primary" type="button" data-pc-license-reveal="${esc(r.license_id)}">Tampilkan Data Penting</button></div></article>`).join("");list.querySelectorAll("[data-pc-license-reveal]").forEach(btn=>{btn.onclick=()=>revealPrivacyLicense(btn.dataset.pcLicenseReveal,btn)})}catch(error){if(/PRIMARY_OWNER_REQUIRED|OWNER_FORBIDDEN/i.test(String(error?.code||error?.message||""))){card.hidden=true;return}card.hidden=false;list.innerHTML='<div class="empty">Data lisensi belum dapat dimuat.</div>'}}
+  async function loadPrimaryOwnerVault(isPrimaryOwner){const card=$("pcLicenseVault"),list=$("pcLicenseVaultList");if(!card||!list)return;card.hidden=true;list.innerHTML="";setMsg("pcLicenseVaultMessage","","");if(!isPrimaryOwner)return;try{const data=await licenseCall("owner_vault_list"),rows=Array.isArray(data?.licenses)?data.licenses:[];card.hidden=false;if(!rows.length){list.innerHTML='<div class="empty">Belum ada lisensi yang terhubung ke akun ini.</div>';return}list.innerHTML=rows.map(r=>`<article class="privacy-license-card"><div class="privacy-license-card-head"><div><h4>${esc(planLabel(r.plan_name,r.plan_code))}</h4><p>${esc(r.status||"-")} · ${esc(r.expires_at?fmt(r.expires_at):"Tidak terbatas")}</p></div><span class="quota-health good">${esc(r.max_devices??"-")} perangkat · ${esc(r.max_stores??"-")} toko</span></div><div class="privacy-license-secret" data-pc-license-secret="${esc(r.license_id)}" hidden></div><div class="privacy-license-actions"><button class="btn btn-primary" type="button" data-pc-license-reveal="${esc(r.license_id)}">Tampilkan Data Penting</button></div></article>`).join("");list.querySelectorAll("[data-pc-license-reveal]").forEach(btn=>{btn.onclick=()=>revealPrivacyLicense(btn.dataset.pcLicenseReveal,btn)})}catch(error){if(/PRIMARY_OWNER_REQUIRED|OWNER_FORBIDDEN/i.test(String(error?.code||error?.message||""))){card.hidden=true;return}card.hidden=false;list.innerHTML='<div class="empty">Data lisensi belum dapat dimuat.</div>'}}
   async function primaryOwnerFlag(ctx){if(String(ctx?.profile?.role||"").toLowerCase()!=="owner")return false;try{const {data,error}=await client().rpc("ldm_primary_owner_context");if(error)throw error;const row=Array.isArray(data)?data[0]:data;return row?.is_primary_owner===true}catch(_){return false}}
 
   async function loadAccountSnapshot(){
     const btn=$("btnRefreshAccountSnapshot");
     if(btn)btn.disabled=true;
-    setMsg("privacyAccountMessage","Memuat data akun, perangkat, dan kuota lisensi…","");
+    setMsg("privacyAccountMessage","Memuat data akun dan batas pemakaian…","");
     let ctx=null,user=null,device=null,license=null,quota=null;
     const notes=[];
 
     try{
-      if(window.LDMCloudSession?.ensureAuthenticated){
-        ctx=await window.LDMCloudSession.ensureAuthenticated({registerDevice:false});
+      try{
+        if(window.LDMCloudSession?.ensureAuthenticated){
+          ctx=await window.LDMCloudSession.ensureAuthenticated({registerDevice:false});
+        }
+      }catch(_){notes.push("Data akun belum sepenuhnya tersedia.")}
+
+      try{
+        const {data,error}=await client().auth.getUser();
+        if(error)throw error;
+        user=data?.user||null;
+      }catch(_){notes.push("Informasi akun belum dapat dimuat.")}
+
+      try{
+        if(window.LDMLicenseV2?.check)license=await window.LDMLicenseV2.check({force:true});
+      }catch(_){notes.push("Status lisensi belum dapat diperbarui.")}
+
+      try{
+        if(window.LDMLicenseQuotaSync?.refresh){
+          const result=await window.LDMLicenseQuotaSync.refresh({allowSync:true});
+          quota=result?.quota||null;
+          if(!result?.ready && result?.error)notes.push("Batas pemakaian belum dapat dimuat.");
+        }else{
+          const {data,error}=await client().rpc("ldm_my_license_quota");
+          if(error)throw error;
+          quota=data||null;
+        }
+      }catch(_){notes.push("Batas pemakaian belum dapat diperbarui.")}
+
+      try{
+        if(window.LDMCloudAuth?.getCurrentDeviceAccess)device=await window.LDMCloudAuth.getCurrentDeviceAccess();
+      }catch(_){notes.push("Status perangkat belum dapat dimuat.")}
+
+      const profile=ctx?.profile||{};
+      setText("pcDisplayName",profile.display_name||user?.user_metadata?.display_name||profile.username||"-");
+      setText("pcUsername",profile.username||"-");
+      setText("pcEmail",user?.email||"-");
+      setText("pcRole",roleLabel(profile.role));
+      setText("pcUserId",user?.id||profile.id||profile.user_id||"-");
+      setText("pcAccountCreated",fmt(user?.created_at));
+      setText("pcLastSignIn",fmt(user?.last_sign_in_at));
+      setText("pcStoreName",profile.store_name||"-");
+      setText("pcStoreCode",profile.store_code||localStorage.getItem("ldmCloudStoreCode")||"-");
+      setText("pcStoreId",profile.store_id||localStorage.getItem("ldmCloudStoreId")||"-");
+      setText("pcDeviceName",device?.device_name||window.LDMLicenseV2?.deviceName?.()||"-");
+      setText("pcDeviceStatus",String(device?.status||"-").toUpperCase());
+      setText("pcDeviceId",device?.client_device_id||window.LDMLicenseV2?.deviceId?.()||"-");
+      setText("pcDevicePlatform",device?.platform||browserSummary()||"-");
+      renderQuota(quota,license);
+
+      const isPrimaryOwner=await primaryOwnerFlag(ctx);
+      await loadPrimaryOwnerVault(isPrimaryOwner);
+
+      if(notes.length){
+        setMsg("privacyAccountMessage",`Data berhasil dimuat. ${[...new Set(notes)].join(" ")}`,"");
+      }else{
+        setMsg("privacyAccountMessage","Data akun dan batas pemakaian berhasil diperbarui.","ok");
       }
-    }catch(error){
-      notes.push(error?.message||"Konteks Cloud belum tersedia.");
+    }finally{
+      if(btn)btn.disabled=false;
     }
-
-    try{
-      const {data,error}=await client().auth.getUser();
-      if(error)throw error;
-      user=data?.user||null;
-    }catch(error){
-      notes.push(error?.message||"Data Auth belum dapat dibaca.");
-    }
-
-        try{
-      if(window.LDMLicenseV2?.check)license=await window.LDMLicenseV2.check({force:true});
-    }catch(error){
-      notes.push(`Lisensi: ${error?.message||"belum dapat diverifikasi."}`);
-    }
-
-    async function fetchQuota(){
-      const {data,error}=await client().rpc("ldm_my_license_quota");
-      if(error)throw error;
-      return data||null;
-    }
-    try{
-      quota=await fetchQuota();
-      if((!quota?.quota_synced || quota?.quota_stale) && window.LDMLicenseV2?.check){
-        try{license=await window.LDMLicenseV2.check({force:true})||license}catch(_){}
-        await new Promise(resolve=>setTimeout(resolve,350));
-        quota=await fetchQuota();
-      }
-    }catch(error){
-      const msg=String(error?.message||error||"");
-      if(/ldm_my_license_quota|does not exist|schema cache/i.test(msg))notes.push("Informasi batas pemakaian belum tersedia.");
-      else notes.push("Informasi batas pemakaian belum dapat diperbarui.");
-    }
-
-    try{
-      if(window.LDMCloudAuth?.getCurrentDeviceAccess)device=await window.LDMCloudAuth.getCurrentDeviceAccess();
-    }catch(error){
-      notes.push(`Perangkat: ${error?.message||"status belum tersedia."}`);
-    }
-
-    const profile=ctx?.profile||{};
-    setText("pcDisplayName",profile.display_name||user?.user_metadata?.display_name||profile.username||"-");
-    setText("pcUsername",profile.username||"-");
-    setText("pcEmail",user?.email||"-");
-    setText("pcRole",roleLabel(profile.role));
-    setText("pcUserId",user?.id||profile.id||profile.user_id||"-");
-    setText("pcAccountCreated",fmt(user?.created_at));
-    setText("pcLastSignIn",fmt(user?.last_sign_in_at));
-    setText("pcStoreName",profile.store_name||"-");
-    setText("pcStoreCode",profile.store_code||localStorage.getItem("ldmCloudStoreCode")||"-");
-    setText("pcStoreId",profile.store_id||localStorage.getItem("ldmCloudStoreId")||"-");
-    setText("pcDeviceName",device?.device_name||window.LDMLicenseV2?.deviceName?.()||"-");
-    setText("pcDeviceStatus",String(device?.status||"-").toUpperCase());
-    setText("pcDeviceId",device?.client_device_id||window.LDMLicenseV2?.deviceId?.()||"-");
-    setText("pcDevicePlatform",device?.platform||browserSummary()||"-");
-    renderQuota(quota,license);
-    const isPrimaryOwner=await primaryOwnerFlag(ctx);
-    await loadPrimaryOwnerVault(isPrimaryOwner);
-
-    if(notes.length){
-      setMsg("privacyAccountMessage",`Data utama berhasil dimuat dengan catatan: ${notes.join(" · ")}`,"");
-    }else{
-      setMsg("privacyAccountMessage","Data akun dan batas pemakaian berhasil diperbarui.","ok");
-    }
-    if(btn)btn.disabled=false;
   }
 
   async function submitPrivacy(){
