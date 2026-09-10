@@ -41,6 +41,11 @@
         return ctx;
     }
 
+    async function quota(){
+        const data=await rpc("ldm_my_license_quota");
+        return data&&typeof data==="object"?data:null;
+    }
+
     async function listStores(){
         try{
             const data=await rpc("ldm_my_network_stores_v2");
@@ -54,6 +59,10 @@
 
     async function createBranch(options={}){
         await requirePrimaryOwner("membuat cabang baru");
+        const q=await quota();
+        if(!q?.quota_synced) throw new Error("LICENSE_QUOTA_NOT_SYNCED: Kuota paket belum tersinkron. Refresh lisensi/Privacy Center terlebih dahulu.");
+        if(q?.quota_stale) throw new Error("LICENSE_QUOTA_STALE: Verifikasi kuota sudah lebih dari 24 jam. Refresh lisensi/Privacy Center terlebih dahulu.");
+        if(q?.store_limit_reached) throw new Error(`STORE_LIMIT_REACHED: Batas toko paket sudah tercapai (${Number(q.active_stores||0)}/${Number(q.max_stores||0)} total toko termasuk toko pusat).`);
         return rpc("ldm_create_branch_store_v2",{
             p_code:String(options.code||"").trim(),
             p_name:String(options.name||"").trim(),
@@ -202,7 +211,7 @@
     }
 
     window.LDMMultiStore=Object.freeze({
-        listStores,createBranch,prepareStoreDevice,switchStore,offlineQueueSafe,
+        listStores,quota,createBranch,prepareStoreDevice,switchStore,offlineQueueSafe,
         transferCandidates,copyProductToStore,createTransfer,sendTransfer,receiveTransfer,cancelTransfer,
         listTransfers,listEmployees,transferEmployee,listEmployeeTransfers,
         startRealtime,stopRealtime,clearStoreCaches
