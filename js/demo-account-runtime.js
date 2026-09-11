@@ -1,9 +1,9 @@
 (function(){
   "use strict";
 
-  const STATE_KEY="ldm_demo_account_state_v2861";
+  const STATE_KEY="ldm_demo_account_state_v2862";
   const TTL_MS=2*60*60*1000;
-  const VERSION="28.6.1";
+  const VERSION="28.6.2";
   const CATEGORIES={
     SAKIT_KONDISI:"Sakit / kondisi kesehatan",
     KEPERLUAN_KELUARGA:"Keperluan keluarga mendesak",
