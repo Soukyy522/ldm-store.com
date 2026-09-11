@@ -1,10 +1,10 @@
-// Build: 27.9.0 Customer Copy Cleanup + Production Demo UI V28.6.1
+// Build: 27.9.0 Production Parity Demo UI V28.6.3
 "use strict";
 
-const APP_VERSION = "27.9.0-v28.6.1";
+const APP_VERSION = "27.9.0-v28.6.3";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-copy-cleanup-demo-ui-v28-6-1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-copy-cleanup-demo-ui-runtime-v28-6-1`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-production-demo-parity-v28-6-3`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-production-demo-parity-runtime-v28-6-3`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
@@ -12,7 +12,7 @@ const APP_SHELL = [
     "./pwa-settings.html", "./penyimpanan.html", "./setup-awal.html", "./printer-scanner-setup.html", "./monitoring-error.html", "./support-center.html", "./privacy-center.html", "./account-management.html", "./device-management.html", "./panduan.html", "./owner-control-center.html", "./recovery-center.html", "./qa-security-performance.html", "./license.html", "./license-v2.html", "./developer-license.html", "./developer-license-v2.html", "./developer-incident-support.html", "./developer-contact-settings.html", "./offline.html", "./manifest.json", "./icon.png",
     "./assets/icons/icon-192.png", "./assets/icons/icon-512.png", "./assets/brand/locdailymar-logo.png",
     "./assets/icons/maskable-512.png", "./locdailymar-logo.png", "./style.css", "./css/global-responsive-navigation.css", "./css/system-dashboard-ui.css", "./css/developer-navigation.css", "./css/privacy-center.css", "./css/peripheral-setup-embedded.css", "./css/help-center.css", "./css/support-center-v21.css", "./css/multi-store-dashboard-theme.css", "./css/central-catalog-control.css", "./setting.js", "./employee-id.js",
-    "./js/pwa-manager.js", "./js/ui-copy-cleanup-v2861.js", "./js/demo-account-runtime.js", "./css/demo-account.css", "./js/system-theme-sync-v2824.js", "./js/customer-safe-copy-v2828.js", "./js/public-contact-config-v2835.js", "./js/homepage-feedback-contact-v2835.js", "./js/customer-refund-v2825.js", "./js/local-time.js", "./js/developer-navigation.js", "./js/developer-contact-settings-v2835.js", "./js/peripheral-setup.js", "./js/peripheral-setup-embedded.js", "./js/receipt-customizer-embedded.js", "./js/onboarding-service.js", "./js/onboarding-wizard.js", "./js/onboarding-dashboard.js", "./js/error-monitor.js", "./js/error-monitor-admin.js", "./js/support-center.js", "./js/privacy-center.js", "./js/license-quota-sync-v2841.js", "./js/user-guide.js", "./js/storage-engine.js", "./js/storage-quota-guard.js", "./js/storage-health-monitor.js", "./js/security-hardening.js", "./js/qa-runtime.js", "./js/recovery-service.js", "./js/global-system-navigation.js", "./js/primary-owner-service.js", "./js/central-catalog-control.js",
+    "./js/pwa-manager.js", "./js/ui-copy-cleanup-v2861.js", "./js/demo-account-runtime.js", "./css/demo-account.css", "./css/demo-production-parity-v2863.css", "./js/system-theme-sync-v2824.js", "./js/customer-safe-copy-v2828.js", "./js/public-contact-config-v2835.js", "./js/homepage-feedback-contact-v2835.js", "./js/customer-refund-v2825.js", "./js/local-time.js", "./js/developer-navigation.js", "./js/developer-contact-settings-v2835.js", "./js/peripheral-setup.js", "./js/peripheral-setup-embedded.js", "./js/receipt-customizer-embedded.js", "./js/onboarding-service.js", "./js/onboarding-wizard.js", "./js/onboarding-dashboard.js", "./js/error-monitor.js", "./js/error-monitor-admin.js", "./js/support-center.js", "./js/privacy-center.js", "./js/license-quota-sync-v2841.js", "./js/user-guide.js", "./js/storage-engine.js", "./js/storage-quota-guard.js", "./js/storage-health-monitor.js", "./js/security-hardening.js", "./js/qa-runtime.js", "./js/recovery-service.js", "./js/global-system-navigation.js", "./js/primary-owner-service.js", "./js/central-catalog-control.js",
     "./js/license-v2-config.js", "./js/license-v2-client.js", "./js/license-checkout-v2.js", "./js/license-v2-guard.js", "./js/license-v2-admin-config.js", "./js/license-v2-admin.js",
     "./js/offline-queue.js", "./js/supabase-config.js", "./js/supabase-client.js", "./js/edge-function-client.js", "./js/storage-retention.js", "./js/account-service.js", "./js/account-management-page-v2829.js", "./js/device-service.js",
     "./js/cloud-auth.js", "./js/cloud-session.js", "./js/cloud-session-guard.js",

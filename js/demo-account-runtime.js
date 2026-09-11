@@ -1,9 +1,9 @@
 (function(){
   "use strict";
 
-  const STATE_KEY="ldm_demo_account_state_v2862";
+  const STATE_KEY="ldm_demo_account_state_v2863";
   const TTL_MS=2*60*60*1000;
-  const VERSION="28.6.2";
+  const VERSION="28.6.3";
   const CATEGORIES={
     SAKIT_KONDISI:"Sakit / kondisi kesehatan",
     KEPERLUAN_KELUARGA:"Keperluan keluarga mendesak",
@@ -28,6 +28,26 @@
     {id:"master-shift",icon:"🗓️",label:"Master Shift",roles:["owner"]},
     {id:"ketidakhadiran",icon:"📋",label:"Ketidakhadiran",roles:["owner","admin","kasir"]},
     {id:"keamanan",icon:"ℹ️",label:"Informasi Demo",roles:["owner","admin","kasir"]}
+  ];
+  const MENU_GROUPS=[
+    {title:"⚡ Utama",items:[
+      {icon:"📊",label:"Dashboard",route:"dashboard"},{icon:"📝",label:"Absensi",route:"absensi"},{icon:"🗓️",label:"Master Shift",route:"master-shift",roles:["owner"]},{icon:"📋",label:"Ketidakhadiran",route:"ketidakhadiran"},{icon:"💵",label:"Kasir",route:"kasir"}
+    ]},
+    {title:"📦 Inventori",items:[
+      {icon:"📦",label:"Barang",route:"barang"},{icon:"📒",label:"Kartu Stok",limited:true},{icon:"📋",label:"Stock Opname",limited:true},{icon:"⇄",label:"Multi-Toko & Transfer",limited:true}
+    ]},
+    {title:"🏢 Supplier & Pembelian",items:[
+      {icon:"🏢",label:"Supplier",limited:true},{icon:"🛒",label:"Purchase Order",limited:true},{icon:"📥",label:"Goods Receipt",limited:true}
+    ]},
+    {title:"📑 Keuangan & Laporan",items:[
+      {icon:"↩️",label:"Retur",limited:true},{icon:"📑",label:"Laporan",route:"laporan"},{icon:"🏛️",label:"Kontrol Pusat",limited:true,roles:["owner"]},{icon:"💸",label:"Pengeluaran",limited:true}
+    ]},
+    {title:"🔐 Closing & Data",items:[
+      {icon:"🔒",label:"Closing Shift",limited:true},{icon:"💾",label:"Backup & Restore",limited:true}
+    ]},
+    {title:"⚙️ Sistem",items:[
+      {icon:"👥",label:"Management Akun",action:"account"},{icon:"🖥️",label:"Perangkat Toko",limited:true},{icon:"📲",label:"Aplikasi & Update",limited:true},{icon:"🗄️",label:"Penyimpanan & Retensi",limited:true},{icon:"🛟",label:"Pemulihan & Sinkronisasi",limited:true},{icon:"🧪",label:"Pemeriksaan Sistem & Keamanan",limited:true},{icon:"🪄",label:"Setup Awal",limited:true},{icon:"💟",label:"Pusat Bantuan & Support",limited:true},{icon:"ℹ️",label:"Informasi Demo",route:"keamanan"}
+    ]}
   ];
 
   function esc(value){return String(value??"").replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));}
@@ -69,6 +89,8 @@
       expiresAt:now+TTL_MS,
       profileId:PROFILES[profileId]?profileId:"owner-pusat",
       page:"dashboard",
+      storeMode:"retail",
+      demoTheme:"dashboard",
       cart:[],
       products:[
         {id:"prd-001",barcode:"899100100001",name:"Indomie Goreng",price:3200,stock:24,minStock:10},
@@ -132,20 +154,50 @@
   function storeLabel(value){return ({"DEMO-PUSAT":"Toko Pusat","DEMO-A":"Cabang A","DEMO-B":"Cabang B"})[value]||String(value||"");}
   function shiftLabel(value){return ({SHIFT_1:"Shift 1",SHIFT_2:"Shift 2",FULL_DAY:"Full Day"})[value]||String(value||"");}
   function workStatusLabel(value){return ({WORK:"Kerja",OFF:"Libur",ANNUAL_LEAVE:"Cuti Tahunan"})[value]||String(value||"");}
+  function profileTitle(profile){return ({"owner-pusat":"Owner Pusat","owner-cabang":"Owner Cabang",admin:"Admin",kasir:"Kasir"})[profile?.id]||roleLabel(profile?.role);}
+  function modeInfo(value){return ({retail:{label:"Toko Ritel",icon:"🛒",desc:"Toko Ritel · kontrol stok ketat."},warung:{label:"Warung",icon:"🍜",desc:"Warung · alur operasional sederhana."},cafe:{label:"Kafe",icon:"☕",desc:"Kafe · alur menu dan stok fleksibel."}})[value]||{label:"Toko Ritel",icon:"🛒",desc:"Toko Ritel · kontrol stok ketat."};}
+  function openModal(id){const el=document.getElementById(id);if(el)el.hidden=false;}
+  function closeModal(id){const el=document.getElementById(id);if(el)el.hidden=true;}
+  function applyDemoTheme(state){
+    if(!window.LDMSystemThemeSync)return;
+    const base=window.LDMSystemThemeSync.read();
+    if(state.demoTheme==="dark")window.LDMSystemThemeSync.apply({...base,darkMode:true});
+    else if(state.demoTheme==="light")window.LDMSystemThemeSync.apply({...base,darkMode:false});
+    else window.LDMSystemThemeSync.apply(base);
+  }
 
   function renderDashboard(state,profile){
-    const tx=visibleTransactions(state,profile);const today=shiftDate(0);const todayRows=tx.filter(x=>x.date===today);const sales=todayRows.reduce((a,x)=>a+Number(x.total||0),0);const low=state.products.filter(x=>x.stock<=x.minStock).length;const abs=state.absences.filter(x=>profile.scope==="network"||x.storeCode===profile.storeCode).filter(x=>x.status==="SUBMITTED").length;
-    return `${pageHead("Dashboard",`Ringkasan aktivitas untuk ${profile.name}.`)}
-      <div class="demo-grid stats">
-        <section class="demo-card demo-stat-card"><small>Penjualan hari ini</small><strong>${money(sales)}</strong><em>${todayRows.length} transaksi</em></section>
-        <section class="demo-card demo-stat-card"><small>Barang menipis</small><strong>${low}</strong><em>perlu perhatian</em></section>
-        <section class="demo-card demo-stat-card"><small>Ketidakhadiran menunggu</small><strong>${profile.role==="owner"?abs:"-"}</strong><em>${profile.role==="owner"?"sesuai cakupan Owner":"khusus inbox Owner"}</em></section>
-        <section class="demo-card demo-stat-card"><small>Mode</small><strong>Demo</strong><em>data latihan</em></section>
-      </div>
-      <div class="demo-grid two" style="margin-top:12px">
-        <section class="demo-card"><h2>Transaksi terbaru</h2>${tx.slice(0,5).map(x=>`<div class="demo-cart-row"><span>${esc(x.id)} · ${esc(x.cashier)}</span><strong>${money(x.total)}</strong></div>`).join("")||'<div class="demo-empty">Belum ada transaksi.</div>'}</section>
-        <section class="demo-card"><h2>Mulai mencoba</h2><p>Gunakan menu seperti pada aplikasi utama. Anda dapat mencoba transaksi, stok, absensi, jadwal, dan Ketidakhadiran sesuai hak akses akun yang dipilih.</p><div class="demo-grid two"><button class="demo-btn primary" data-go="kasir">Buka Kasir</button><button class="demo-btn" data-go="absensi">Buka Absensi</button></div></section>
-      </div>`;
+    const tx=visibleTransactions(state,profile);
+    const today=shiftDate(0),yesterday=shiftDate(-1);
+    const todayRows=tx.filter(x=>x.date===today),yesterdayRows=tx.filter(x=>x.date===yesterday);
+    const sales=todayRows.reduce((a,x)=>a+Number(x.total||0),0);
+    const cash=todayRows.filter(x=>String(x.method).toLowerCase().includes("tunai")&&!String(x.method).toLowerCase().includes("qris")).reduce((a,x)=>a+Number(x.total||0),0);
+    const nonCash=Math.max(0,sales-cash);
+    const low=state.products.filter(x=>x.stock<=x.minStock).length;
+    const top=state.products.slice(0,5).map((p,i)=>({name:p.name,units:[7.55,6.1,4.8,3.4,2.15][i]||1.5,value:Math.round(p.price*([48,42,35,28,22][i]||20))}));
+    const yesterdaySales=yesterdayRows.reduce((a,x)=>a+Number(x.total||0),0);
+    return `<div class="reset-timer-box">
+      <div><div>⏳ Ringkasan Hari Ini</div><div style="margin-top:2px"><span class="demo-countdown">DATA CONTOH</span></div></div>
+      <button type="button" class="btn-toggle-day" data-demo-yesterday> Pendapatan Kemarin 🕒</button>
+    </div>
+    <button type="button" class="dashboard-range-trigger-demo" data-demo-limited="Filter periode laporan">
+      <span>📅</span><strong>Periode</strong><span>Hari ini · 1 hari</span><span class="edit">Ubah</span>
+    </button>
+    <div class="dashboard-section-title">Ringkasan Penjualan Hari Ini</div>
+    <div class="grid-cards">
+      <section class="card omzet"><div class="card-icon">💰</div><div class="card-info"><h4>Omzet</h4><h2>${money(sales)}</h2></div></section>
+      <section class="card tunai"><div class="card-icon">💵</div><div class="card-info"><h4>Tunai</h4><h2>${money(cash)}</h2></div></section>
+      <section class="card nontunai"><div class="card-icon">📱</div><div class="card-info"><h4>Non Tunai (QRIS)</h4><h2>${money(nonCash)}</h2></div></section>
+      <section class="card warning"><div class="card-icon">🚫</div><div class="card-info"><h4>Barang Habis / Menipis</h4><h2>${low} Item</h2></div></section>
+    </div>
+    <section class="detail-box">
+      <h3><span>🏆 5 Item Terlaris Hari Ini <small>Berdasarkan contoh penjualan terbesar</small></span><span class="demo-pill blue">5</span></h3>
+      ${top.map((p,i)=>`<div class="production-item-row"><div><b>${i+1}. ${esc(p.name)}</b><small>${String(p.units).replace('.',',')} unit terjual</small></div><strong>${money(p.value)}</strong></div>`).join("")}
+    </section>
+    <div class="demo-grid two">
+      <section class="demo-card"><h2>Transaksi Terbaru</h2>${tx.slice(0,5).map(x=>`<div class="demo-cart-row"><span>${esc(x.time)} · ${esc(x.cashier)}</span><strong>${money(x.total)}</strong></div>`).join("")||'<div class="demo-empty">Belum ada transaksi.</div>'}</section>
+      <section class="demo-card"><h2>Status Demo</h2><p>Gunakan menu utama untuk mencoba alur operasional. Fitur yang berhubungan dengan layanan nyata dibatasi pada Mode Demo.</p><div class="demo-cart-row"><span>Pendapatan kemarin</span><strong>${money(yesterdaySales)}</strong></div><div class="demo-grid two" style="margin-top:10px"><button class="demo-btn primary" data-go="kasir">Buka Kasir</button><button class="demo-btn" data-go="absensi">Buka Absensi</button></div></section>
+    </div>`;
   }
 
   function renderKasir(state,profile){
@@ -214,10 +266,30 @@
   }
 
   function renderShell(state,profile){
-    const select=document.getElementById("demoProfileSelect");
-    if(select){select.innerHTML=Object.values(PROFILES).map(p=>`<option value="${esc(p.id)}" ${p.id===profile.id?"selected":""}>${p.icon} ${esc(p.name)}</option>`).join("");}
-    const ctx=document.getElementById("demoContext");if(ctx)ctx.innerHTML=`<strong>${profile.icon} ${esc(profile.name)}</strong><span>${esc(roleLabel(profile.role))} · ${esc(storeLabel(profile.storeCode))}</span><span>Demo aktif hingga ${new Date(state.expiresAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</span>`;
-    const nav=document.getElementById("demoNav");if(nav)nav.innerHTML=ROUTES.filter(r=>r.roles.includes(profile.role)).map(r=>`<button type="button" data-demo-route="${r.id}" class="nav-item ${state.page===r.id?"active":""}"><span>${r.icon}</span>${esc(r.label)}</button>`).join("");
+    const ctx=document.getElementById("demoContext");
+    if(ctx)ctx.innerHTML=`<strong>${profile.icon} ${esc(profileTitle(profile))}</strong><span>${esc(roleLabel(profile.role))} · ${esc(storeLabel(profile.storeCode))}</span><span>Demo aktif hingga ${new Date(state.expiresAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</span>`;
+    const nav=document.getElementById("demoNav");
+    if(nav)nav.innerHTML=ROUTES.filter(r=>r.roles.includes(profile.role)).map(r=>`<button type="button" data-demo-route="${r.id}" class="nav-item ${state.page===r.id?"active":""}"><span>${r.icon}</span>${esc(r.label)}</button>`).join("")+`<button type="button" data-demo-limited="Fitur lainnya" class="nav-item is-limited"><span>•••</span>Menu Lainnya</button>`;
+
+    document.querySelectorAll("[data-demo-route]").forEach(el=>el.classList.toggle("active",el.dataset.demoRoute===state.page));
+    const rolePill=document.getElementById("demoRolePill");if(rolePill)rolePill.textContent=`👤 ${profileTitle(profile)}`;
+    const mode=modeInfo(state.storeMode||"retail");
+    const modePill=document.getElementById("demoModePill");if(modePill)modePill.textContent=`${mode.icon} ${mode.label}`;
+    const modeIcon=document.getElementById("demoModeIcon");if(modeIcon)modeIcon.textContent=mode.icon;
+    const modeDescription=document.getElementById("demoModeDescription");if(modeDescription)modeDescription.textContent=mode.desc;
+    const modeSelect=document.getElementById("demoModeSelect");if(modeSelect)modeSelect.value=state.storeMode||"retail";
+
+    const grid=document.getElementById("demoMegaGrid");
+    if(grid)grid.innerHTML=MENU_GROUPS.map(group=>`<section class="ldm-mega-group"><div class="ldm-mega-group-title">${group.title}</div><div class="ldm-mega-links">${group.items.filter(item=>!item.roles||item.roles.includes(profile.role)).map(item=>{
+      const active=item.route===state.page;
+      if(item.action==="account")return `<button type="button" class="ldm-mega-link" data-demo-action="account"><span class="ldm-mega-icon">${item.icon}</span>${esc(item.label)}</button>`;
+      if(item.route)return `<button type="button" class="ldm-mega-link ${active?"active":""}" data-demo-route="${item.route}"><span class="ldm-mega-icon">${item.icon}</span>${esc(item.label)}</button>`;
+      return `<button type="button" class="ldm-mega-link is-limited" data-demo-limited="${esc(item.label)}"><span class="ldm-mega-icon">${item.icon}</span>${esc(item.label)}<span class="ldm-mega-badge">Demo</span></button>`;
+    }).join("")}</div></section>`).join("");
+
+    const profileGrid=document.getElementById("demoProfileGrid");
+    if(profileGrid)profileGrid.innerHTML=Object.values(PROFILES).map(p=>`<button type="button" class="demo-profile-option ${p.id===profile.id?"active":""}" data-demo-profile-switch="${p.id}"><strong>${p.icon} ${esc(profileTitle(p))}</strong><span>${esc(roleLabel(p.role))} · ${esc(storeLabel(p.storeCode))}</span></button>`).join("");
+    applyDemoTheme(state);
   }
 
   function bindStage(state,profile){
@@ -260,17 +332,45 @@
     document.querySelectorAll("[data-demo-profile]").forEach(btn=>btn.addEventListener("click",()=>start(btn.dataset.demoProfile)));
   }
   function bootApp(){
-    let state=read();if(!state){location.replace("demo-login.html");return;}render(state);
-    document.getElementById("demoProfileSelect")?.addEventListener("change",e=>{state.profileId=PROFILES[e.target.value]?e.target.value:"owner-pusat";state.page="dashboard";state.cart=[];save(state);render(state);toast("Akun demo berhasil diganti.");});
-    document.getElementById("demoResetBtn")?.addEventListener("click",()=>{state=reset();render(state);toast("Data demo dikembalikan ke kondisi awal.");});
-    document.getElementById("demoExitBtn")?.addEventListener("click",exit);
-    const sidebar=document.getElementById("demoSidebar"),overlay=document.getElementById("demoNavOverlay");
+    let state=read();if(!state){location.replace("demo-login.html");return;}
+    render(state);
+    const sidebar=document.getElementById("demoSidebar"),overlay=document.getElementById("demoNavOverlay"),mega=document.getElementById("demoMegaShell"),trigger=document.getElementById("demoMegaTrigger");
     const openMenu=()=>{sidebar?.classList.add("active");overlay?.classList.add("active");};
     const closeMenu=()=>{sidebar?.classList.remove("active");overlay?.classList.remove("active");};
+    const openMega=()=>{mega?.classList.add("open");trigger?.setAttribute("aria-expanded","true");};
+    const closeMega=()=>{mega?.classList.remove("open");trigger?.setAttribute("aria-expanded","false");};
+    const toggleMega=()=>mega?.classList.contains("open")?closeMega():openMega();
+    const goRoute=routeId=>{
+      const route=ROUTES.find(r=>r.id===routeId),profile=currentProfile(state);
+      if(!route||!route.roles.includes(profile.role)){toast("Akun ini tidak memiliki akses ke menu tersebut.","error");return;}
+      state.page=route.id;save(state);render(state);closeMega();closeMenu();window.scrollTo({top:0,behavior:"smooth"});
+    };
+
     document.getElementById("demoOpenMenu")?.addEventListener("click",openMenu);
     document.getElementById("demoCloseMenu")?.addEventListener("click",closeMenu);
     overlay?.addEventListener("click",closeMenu);
-    document.getElementById("demoNav")?.addEventListener("click",e=>{const btn=e.target.closest("[data-demo-route]");if(!btn)return;const route=ROUTES.find(r=>r.id===btn.dataset.demoRoute);const profile=currentProfile(state);if(!route||!route.roles.includes(profile.role)){toast("Akun ini tidak memiliki akses ke menu tersebut.","error");return;}state.page=route.id;save(state);render(state);document.getElementById("demoSidebar")?.classList.remove("active");document.getElementById("demoNavOverlay")?.classList.remove("active");});
+    trigger?.addEventListener("click",toggleMega);
+    document.getElementById("demoMegaClose")?.addEventListener("click",closeMega);
+    document.getElementById("demoManageBtn")?.addEventListener("click",()=>openModal("demoAccountModal"));
+    document.getElementById("demoThemeBtn")?.addEventListener("click",()=>openModal("demoThemeModal"));
+    document.getElementById("demoLimitInfoBtn")?.addEventListener("click",()=>openModal("demoLimitModal"));
+    document.getElementById("demoInstallBtn")?.addEventListener("click",()=>toast("Pemasangan aplikasi tidak dijalankan pada Mode Demo.","warn"));
+    document.getElementById("demoInsightBtn")?.addEventListener("click",()=>toast("Insight lanjutan tersedia pada aplikasi berlisensi.","warn"));
+    document.getElementById("demoExitBtn")?.addEventListener("click",exit);
+    document.getElementById("demoResetBtn")?.addEventListener("click",()=>{state=reset();render(state);closeModal("demoAccountModal");toast("Data demo dikembalikan ke kondisi awal.");});
+    document.getElementById("demoModeSelect")?.addEventListener("change",e=>{state.storeMode=["cafe","warung","retail"].includes(e.target.value)?e.target.value:"retail";save(state);render(state);toast(`Mode operasional diubah menjadi ${modeInfo(state.storeMode).label}.`);});
+
+    document.addEventListener("click",e=>{
+      const routeBtn=e.target.closest("[data-demo-route]");if(routeBtn){goRoute(routeBtn.dataset.demoRoute);return;}
+      const limited=e.target.closest("[data-demo-limited]");if(limited){closeMega();toast(`${limited.dataset.demoLimited} dibatasi pada Mode Demo.`,"warn");return;}
+      const action=e.target.closest("[data-demo-action='account']");if(action){closeMega();openModal("demoAccountModal");return;}
+      const profileBtn=e.target.closest("[data-demo-profile-switch]");if(profileBtn){state.profileId=PROFILES[profileBtn.dataset.demoProfileSwitch]?profileBtn.dataset.demoProfileSwitch:"owner-pusat";state.page="dashboard";state.cart=[];save(state);render(state);closeModal("demoAccountModal");toast("Akun demo berhasil diganti.");return;}
+      const closeBtn=e.target.closest("[data-demo-modal-close]");if(closeBtn){closeModal(closeBtn.dataset.demoModalClose);return;}
+      const themeBtn=e.target.closest("[data-demo-theme]");if(themeBtn){state.demoTheme=themeBtn.dataset.demoTheme;save(state);applyDemoTheme(state);closeModal("demoThemeModal");toast("Tema demo diperbarui.");return;}
+      if(e.target.closest("[data-demo-yesterday]")){toast("Pendapatan kemarin ditampilkan sebagai data contoh.");return;}
+      if(mega?.classList.contains("open")&&!e.target.closest("#demoMegaShell"))closeMega();
+    });
+    document.querySelectorAll(".demo-modal").forEach(modal=>modal.addEventListener("click",e=>{if(e.target===modal)modal.hidden=true;}));
   }
 
   function boot(){if(document.body.classList.contains("demo-login-page"))bootLogin();else if(document.body.classList.contains("demo-app"))bootApp();}
