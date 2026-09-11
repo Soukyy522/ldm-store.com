@@ -5,44 +5,45 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#0d2240">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self' data:; object-src 'none'; frame-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'none'">
-  <title>Akun Dummy Aman · LocDailyMar</title>
-  <link rel="stylesheet" href="css/demo-account.css?v=27.9.0-v28.6.0">
-  <script defer src="js/demo-account-runtime.js?v=27.9.0-v28.6.0"></script>
+  <title>Coba Demo LocDailyMar</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-v28.6.1">
+  <link rel="stylesheet" href="css/demo-account.css?v=27.9.0-v28.6.1">
+  <script defer src="js/system-theme-sync-v2824.js?v=27.9.0-v28.6.1"></script>
+<script defer src="js/demo-account-runtime.js?v=27.9.0-v28.6.1"></script>
 </head>
-<body class="demo-login-page">
-  <main class="demo-login-shell" aria-labelledby="demoTitle">
-    <section class="demo-login-head">
+<body class="demo-login-page ldm-system-page" data-ldm-system-page="demo-login.html">
+  <main class="demo-login-shell">
+    <section class="demo-login-head" data-ldm-system-banner="primary">
       <div class="demo-login-copy">
-        <img src="locdailymar-logo.png" alt="LocDailyMar">
-        <h1 id="demoTitle">Coba Akun Dummy LocDailyMar</h1>
-        <p>Pilih peran untuk mencoba alur aplikasi menggunakan data simulasi. Akun ini tidak menggunakan Supabase Auth, License Key, payment gateway, atau database customer.</p>
+        <img data-ldm-brand-logo src="locdailymar-logo.png" alt="Logo LocDailyMar">
+        <h1 data-ldm-brand-title>LocDailyMar</h1>
+        <p data-ldm-brand-subtitle>Operasional Toko</p>
+        <div class="demo-login-label">MODE DEMO</div>
+        <h2>Coba pengalaman aplikasi seperti penggunaan sehari-hari.</h2>
+        <p class="demo-login-description">Pilih jenis akun untuk melihat tampilan dan hak akses yang berbeda. Semua aktivitas pada mode ini menggunakan data contoh.</p>
       </div>
-      <div class="demo-safety-panel">
-        <ul>
-          <li><strong>Tanpa koneksi backend</strong> pada halaman demo.</li>
-          <li>Data hanya berada di <strong>sessionStorage</strong> browser.</li>
-          <li>Session demo kedaluwarsa otomatis dalam <strong>2 jam</strong>.</li>
-          <li>Lisensi, pembayaran, email, WhatsApp, dan Developer Center <strong>tidak tersedia</strong>.</li>
-        </ul>
+      <div class="demo-login-side">
+        <div class="demo-login-side-card"><strong>Data contoh</strong><span>Silakan mencoba transaksi, stok, absensi, jadwal, dan laporan.</span></div>
+        <div class="demo-login-side-card"><strong>Mudah diulang</strong><span>Gunakan Reset kapan saja untuk mengembalikan kondisi awal.</span></div>
+        <div class="demo-login-side-card"><strong>Tidak memengaruhi toko</strong><span>Aktivitas demo dipisahkan dari penggunaan aplikasi utama.</span></div>
       </div>
     </section>
+
     <section class="demo-login-body">
-      <div class="demo-section-title">
-        <div><h2>Pilih akun yang ingin dicoba</h2><p>Tidak ada password karena profil berikut bukan akun produksi dan tidak pernah dikirim ke Cloud.</p></div>
-        <span class="demo-security-chip">🔒 Isolasi Demo Aktif</span>
-      </div>
+      <div class="demo-section-title"><div><h2>Pilih akun demo</h2><p>Pilih peran yang ingin dicoba.</p></div><span class="demo-security-chip">Siap digunakan</span></div>
       <div class="demo-account-grid">
-        <button class="demo-account-card" type="button" data-demo-profile="owner-pusat"><span class="icon">🏛️</span><strong>Owner Pusat Demo</strong><span>Kontrol seluruh cabang, Master Shift, laporan lintas toko, dan inbox Ketidakhadiran.</span><small>AKSES DEMO TERLUAS</small></button>
-        <button class="demo-account-card" type="button" data-demo-profile="owner-cabang"><span class="icon">🏪</span><strong>Owner Cabang Demo</strong><span>Mengelola Cabang A, jadwal karyawan cabang, dan review Ketidakhadiran cabangnya.</span><small>OWNER CABANG A</small></button>
-        <button class="demo-account-card" type="button" data-demo-profile="admin"><span class="icon">🧑‍💼</span><strong>Admin Demo</strong><span>Mencoba operasional, barang, laporan, absensi, dan pengajuan Ketidakhadiran.</span><small>CABANG A</small></button>
-        <button class="demo-account-card" type="button" data-demo-profile="kasir"><span class="icon">🧾</span><strong>Kasir Demo</strong><span>Mencoba kasir, stok yang diizinkan, absensi sesuai shift, dan Ketidakhadiran.</span><small>CABANG A</small></button>
+        <button class="demo-account-card" type="button" data-demo-profile="owner-pusat"><span class="icon">🏛️</span><strong>Owner Pusat</strong><span>Melihat ringkasan lintas cabang dan pengaturan Owner.</span><small>Masuk sebagai Owner Pusat</small></button>
+        <button class="demo-account-card" type="button" data-demo-profile="owner-cabang"><span class="icon">🏪</span><strong>Owner Cabang</strong><span>Mengelola operasional dan jadwal pada satu cabang.</span><small>Masuk sebagai Owner Cabang</small></button>
+        <button class="demo-account-card" type="button" data-demo-profile="admin"><span class="icon">🧑‍💼</span><strong>Admin</strong><span>Mencoba pekerjaan administrasi dan operasional cabang.</span><small>Masuk sebagai Admin</small></button>
+        <button class="demo-account-card" type="button" data-demo-profile="kasir"><span class="icon">🧾</span><strong>Kasir</strong><span>Mencoba kasir, absensi, barang, dan laporan sesuai hak akses.</span><small>Masuk sebagai Kasir</small></button>
       </div>
-      <div class="demo-login-foot">
-        <span>Data demo dapat diubah selama sesi dan dapat dikembalikan melalui <b>Reset Demo</b>.</span>
-        <a class="demo-link" href="index.html">← Kembali ke Login Asli</a>
-      </div>
+      <div class="demo-login-foot"><span>Data demo dapat direset kapan saja.</span><a class="demo-link" href="index.html">← Kembali ke Login</a></div>
     </section>
   </main>
+<script defer src="js/ui-copy-cleanup-v2861.js?v=27.9.0-v28.6.1"></script>
 </body>
 </html>

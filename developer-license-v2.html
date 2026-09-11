@@ -28,13 +28,13 @@
   <script defer src="js/developer-navigation.js?v=27.9.0-v28.3.9"></script>
 </head>
 <body data-ldm-developer-raw="true">
-<div class="developer-raw-notice" style="margin:10px 0;padding:9px 11px;border:1px solid #d7e1ec;border-radius:10px;background:#f8fbff;font-size:11px;color:#52657b"><strong>Mode Developer:</strong> halaman ini boleh menampilkan istilah implementasi, kode diagnostik, nama layanan server, dan referensi teknis karena hanya ditujukan untuk pengelola sistem.</div>
 
-  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>License Authority V2.11 · Lisensi · Lynk.id · Refund Requests · Support Center</span></div><button id="logoutBtn" hidden>Keluar</button></header>
+
+  <header class="top"><div><strong>LocDailyMar Developer Center</strong><span>Lisensi · Pembayaran · Refund · Support Center</span></div><button id="logoutBtn" hidden>Keluar</button></header>
   <main class="wrap">
     <section class="login" id="loginBox">
       <h1>Login developer</h1>
-      <p>Gunakan akun Supabase Auth yang emailnya tercantum pada secret <b>LDM2_ADMIN_EMAILS</b>. Customer tidak boleh mendapat akses ke halaman ini.</p>
+      <p>Gunakan akun pengelola yang telah diberi hak akses. Halaman ini hanya untuk pengelola resmi.</p>
       <div class="field"><label>Email developer</label><input id="email" type="email"></div>
       <div class="field"><label>Password</label><input id="password" type="password"></div>
       <button class="btn primary" id="loginBtn">Masuk Developer Center</button>
@@ -66,7 +66,7 @@
       <div class="field"><label>Store Code</label><input id="iStoreCode" maxlength="30" placeholder="Kosongkan agar dibuat otomatis"></div>
       <div class="field"><label>Paket</label><select id="iPlan"><option value="WARUNG_KECIL">Warung Kecil</option><option value="WARUNG_SEDERHANA">Warung Sederhana</option><option value="TOKO">Toko</option></select></div>
       <div class="field"><label>Periode pembayaran</label><select id="iCycle"><option value="monthly">Bulanan</option><option value="yearly">Tahunan</option><option value="two_year">2 Tahun</option></select></div>
-      <div class="field full"><label>Catatan internal</label><textarea id="iNotes"></textarea></div>
+      <div class="field full"><label>Catatan pengelola</label><textarea id="iNotes"></textarea></div>
     </div>
     <button class="btn primary" id="issueBtn" style="margin-top:15px">Buka license.html</button>
     <div class="result" id="issueResult"></div>
@@ -77,7 +77,7 @@
 
   <div class="modal" id="testTransactionModal"><div class="modalcard">
     <div class="modalhead"><h2>🧪 Transaksi Test · Tanpa Uang Nyata</h2><button class="close" data-close>✕</button></div>
-    <div class="warningBox"><b>SIMULASI AMAN:</b> fitur ini tidak membuka Lynk.id, tidak memproses uang, tidak membuat payment/lisensi produksi, tidak membuat akun Owner, dan tidak menambah toko. Sistem hanya membuat data lisensi palsu berlabel TEST untuk menguji receipt di <b>license.html</b> dan, bila dipilih, pengiriman email Resend.</div>
+    <div class="warningBox"><b>Gunakan transaksi uji untuk memeriksa alur tanpa melakukan pembayaran.</b> fitur ini tidak membuka Lynk.id, tidak memproses uang, tidak membuat payment/lisensi produksi, tidak membuat akun Owner, dan tidak menambah toko. Sistem hanya membuat data lisensi palsu berlabel TEST untuk menguji receipt di <b>license.html</b> dan, bila dipilih, pengiriman email Resend.</div>
     <div class="formgrid">
       <div class="field"><label>Nama customer test</label><input id="testCustomerName" value="Customer Test"></div>
       <div class="field"><label>Email penerima test</label><input id="testCustomerEmail" type="email" placeholder="Gunakan email Developer yang sedang login"></div>
@@ -93,8 +93,8 @@
 
   <div class="modal" id="refundOverviewModal"><div class="modalcard refundOverviewModalWide">
     <div class="modalhead"><h2>Refund Management & Customer Requests</h2><button class="close" data-close>✕</button></div>
-    <div class="refundPolicyBox"><b>Refund Management Internal LocDailyMar</b><br>Customer hanya dapat mengajukan <b>Refund Penuh</b> maksimal <b>24 jam setelah pembayaran terverifikasi</b>. Email, kategori alasan, dan penjelasan wajib dicantumkan. Request yang diterima diproses sekitar <b>2-3 hari kerja</b>. Partial refund tidak tersedia untuk request baru.</div>
-    <div class="refundRequestQueue"><h3>Permintaan Refund Customer</h3><p>Request <b>RFD-...</b> adalah antrean refund internal LocDailyMar. Developer memeriksa email, alasan, nilai transaksi, dan status pembayaran sebelum menandai proses refund selesai.</p><div class="tablewrap"><table><thead><tr><th>Kode</th><th>Customer</th><th>Order</th><th>Jalur</th><th>Nilai Transaksi</th><th>Klaim</th><th>Status</th><th>Batas 24 Jam</th><th>Estimasi Proses</th><th>Tindakan</th></tr></thead><tbody id="refundRequestRows"></tbody></table></div></div>
+    <div class="refundPolicyBox"><b>Pengelolaan Refund LocDailyMar</b><br>Customer hanya dapat mengajukan <b>Refund Penuh</b> maksimal <b>24 jam setelah pembayaran terverifikasi</b>. Email, kategori alasan, dan penjelasan wajib dicantumkan. Request yang diterima diproses sekitar <b>2-3 hari kerja</b>. Partial refund tidak tersedia untuk request baru.</div>
+    <div class="refundRequestQueue"><h3>Permintaan Refund Customer</h3><p>Request <b>RFD-...</b> adalah antrean refund LocDailyMar. Developer memeriksa email, alasan, nilai transaksi, dan status pembayaran sebelum menandai proses refund selesai.</p><div class="tablewrap"><table><thead><tr><th>Kode</th><th>Customer</th><th>Order</th><th>Jalur</th><th>Nilai Transaksi</th><th>Klaim</th><th>Status</th><th>Batas 24 Jam</th><th>Estimasi Proses</th><th>Tindakan</th></tr></thead><tbody id="refundRequestRows"></tbody></table></div></div>
     <div class="formgrid" style="margin-top:12px">
       <div class="field"><label>Batas pengajuan</label><input id="refundPolicyWindow" value="24 jam sejak pembayaran" readonly></div>
       <div class="field"><label>Jenis refund customer</label><input value="Refund Penuh" readonly></div>
@@ -291,5 +291,6 @@ Pastikan dana sudah benar-benar dikembalikan kepada customer sebelum melanjutkan
     async function deactivateDevice(aid,lid){if(!confirm("Nonaktifkan perangkat ini dan kosongkan slotnya?"))return;await LDMLicenseV2Admin.call("deactivate_device",{activation_id:aid,reason:"Dinonaktifkan developer"});await devices(lid);await load()}
     (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Isi js/license-v2-admin-config.js terlebih dahulu.";return}const session=await LDMLicenseV2Admin.session();if(session){showApp(true);await load()}}catch(e){$("loginMessage").textContent=e.message}})();
   </script>
+<script defer src="js/ui-copy-cleanup-v2861.js?v=27.9.0-v28.6.1"></script>
 </body>
 </html>

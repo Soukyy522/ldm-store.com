@@ -5,30 +5,48 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#0d2240">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self' data:; object-src 'none'; frame-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'none'">
-  <title>Workspace Akun Dummy · LocDailyMar</title>
-  <link rel="stylesheet" href="css/demo-account.css?v=27.9.0-v28.6.0">
-  <script defer src="js/demo-account-runtime.js?v=27.9.0-v28.6.0"></script>
+  <title>Demo LocDailyMar</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/system-dashboard-ui.css?v=27.9.0-v28.6.1">
+  <link rel="stylesheet" href="css/demo-account.css?v=27.9.0-v28.6.1">
+  <script defer src="js/system-theme-sync-v2824.js?v=27.9.0-v28.6.1"></script>
+<script defer src="js/demo-account-runtime.js?v=27.9.0-v28.6.1"></script>
 </head>
-<body class="demo-app">
-  <header class="demo-topbar">
-    <div class="demo-brand"><img src="locdailymar-logo.png" alt="LocDailyMar"><div><strong>LocDailyMar</strong><span>Workspace Akun Dummy</span></div></div>
-    <span class="demo-badge">🧪 DEMO AMAN · TANPA DATA PRODUKSI</span>
-    <div class="demo-top-spacer"></div>
-    <select class="demo-profile-select" id="demoProfileSelect" aria-label="Ganti akun dummy"></select>
-    <button class="demo-top-button" type="button" id="demoResetBtn">↻ Reset Demo</button>
-    <button class="demo-top-button" type="button" id="demoExitBtn">Keluar Demo</button>
-  </header>
-  <div class="demo-layout">
-    <aside class="demo-sidebar">
+<body class="demo-app ldm-system-page" data-ldm-system-page="demo-app.html">
+  <div class="app-layout demo-production-shell">
+    <div class="nav-overlay" id="demoNavOverlay"></div>
+    <nav class="nav-bar demo-sidebar" id="demoSidebar" aria-label="Menu aplikasi demo">
+      <div class="nav-header-mobile"><span>☰ Menu</span><button class="btn-close-menu" id="demoCloseMenu" type="button">✕</button></div>
       <div class="demo-context" id="demoContext"></div>
-      <nav class="demo-nav" id="demoNav" aria-label="Navigasi akun dummy"></nav>
-    </aside>
-    <main class="demo-main">
-      <div class="demo-warning"><span>🔒</span><div><strong>Lingkungan simulasi terisolasi.</strong> Semua angka, transaksi, stok, absensi, jadwal, dan pengajuan di halaman ini hanya data demo di browser. Tidak ada request ke Supabase, License Authority, Lynk.id, email, WhatsApp, atau API produksi.</div></div>
+      <div class="demo-nav" id="demoNav"></div>
+    </nav>
+
+    <main class="main-content demo-main">
+      <header class="header-app demo-header" data-ldm-system-banner="primary">
+        <button class="btn-toggle-menu" id="demoOpenMenu" type="button" aria-label="Buka menu">☰</button>
+        <div class="header-brand-container">
+          <img class="header-logo-img demo-header-logo" data-ldm-brand-logo src="locdailymar-logo.png" alt="Logo LocDailyMar">
+          <div>
+            <h1 data-ldm-brand-title>LocDailyMar</h1>
+            <p data-ldm-brand-subtitle>Operasional Toko</p>
+          </div>
+        </div>
+        <div class="demo-header-actions">
+          <span class="demo-mode-pill">MODE DEMO</span>
+          <select class="demo-profile-select" id="demoProfileSelect" aria-label="Ganti akun demo"></select>
+          <button class="btn-header-action" type="button" id="demoResetBtn">↻ Reset</button>
+          <button class="btn-header-action btn-header-logout" type="button" id="demoExitBtn">Keluar</button>
+        </div>
+      </header>
+
+      <div class="demo-mode-note"><strong>Mode Demo</strong><span>Gunakan data contoh untuk mencoba fitur tanpa memengaruhi data toko Anda.</span></div>
       <div id="demoStage"></div>
     </main>
   </div>
   <div class="demo-toast" id="demoToast" role="status" aria-live="polite"></div>
+<script defer src="js/ui-copy-cleanup-v2861.js?v=27.9.0-v28.6.1"></script>
 </body>
 </html>

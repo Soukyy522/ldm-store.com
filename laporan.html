@@ -2038,25 +2038,25 @@
 })();
 </script>
 
-    <!-- Live Sync Tahap 6: Supabase Auth authoritative guard -->
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/supabase-client.js"></script>
     <script src="js/cloud-auth.js?v=15.0"></script>
     <script src="js/cloud-session.js?v=6.0"></script>
     <script src="js/cloud-session-guard.js?v=17.0"></script>
-    <!-- Live Sync Tahap 9: Cloud Absensi -->
+    
     <script src="js/attendance-service.js?v=9.1"></script>
     <script src="js/attendance-bootstrap.js?v=9.0"></script>
-    <!-- Live Sync Tahap 7: Cloud Master Barang -->
+    
     <script src="js/products-service.js?v=21.0"></script>
     <script src="js/products-bootstrap.js?v=7.0"></script>
-    <!-- Live Sync Tahap 10: Cloud Retur compatibility -->
+    
     <script src="js/returns-service.js?v=10.0"></script>
     <script src="js/returns-bootstrap.js?v=10.0"></script>
 
 
-    <!-- Live Sync Tahap 12: Final Cloud Reporting Authority -->
+    
     <script src="js/reporting-service.js?v=27.7.1"></script>
     <script src="js/reporting-bootstrap.js?v=25.2.1"></script>
 <script src="js/license-v2-config.js?v=25.2.0"></script>
@@ -4483,9 +4483,7 @@ function simpanLaporanKeStorage(dataArray) {
                 ${footerHTML}
 
             </div>
-
-
-        </body>
+</body>
 
         </html>
 
@@ -4667,7 +4665,7 @@ function simpanLaporanKeStorage(dataArray) {
                 console.error("Download semua laporan gagal:", error);
                 tampilkanNotifikasi(
                     "Download Gagal",
-                    `${error && error.message ? error.message : error}\n\nJika RPC 27.7.1 belum dipasang, jalankan SQL 27-stage27.7.1-report-archive-pagination.sql di Supabase SQL Editor.`,
+                    `Pengunduhan belum dapat dilakukan. Silakan coba lagi beberapa saat.`,
                     "⚠️"
                 );
             } finally {
@@ -6505,5 +6503,6 @@ function batasiTampilanOmzetLaporan() {
 
 <script src="js/global-system-navigation.js?v=27.9.0-privacy18"></script>
 <script src="js/customer-safe-copy-v2828.js?v=27.9.0-safe-copy-v2828"></script>
+<script defer src="js/ui-copy-cleanup-v2861.js?v=27.9.0-v28.6.1"></script>
 </body>
 </html>

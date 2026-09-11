@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve(process.argv[2]||'.');
+const files=['demo-login.html','demo-app.html','js/demo-account-runtime.js','css/demo-account.css'];
+let fail=0;
+function ok(cond,msg){console.log(`${cond?'PASS':'FAIL'} ${msg}`);if(!cond)fail++;}
+for(const f of files) ok(fs.existsSync(path.join(root,f)),`file ${f}`);
+const login=fs.readFileSync(path.join(root,'demo-login.html'),'utf8');
+const app=fs.readFileSync(path.join(root,'demo-app.html'),'utf8');
+const js=fs.readFileSync(path.join(root,'js/demo-account-runtime.js'),'utf8');
+const combined=login+'\n'+app;
+ok(/connect-src\s+'none'/.test(login),"demo-login CSP connect-src none");
+ok(/connect-src\s+'none'/.test(app),"demo-app CSP connect-src none");
+ok(!/supabase(?:-js|\.js|client|auth)/i.test(combined),"demo HTML tidak memuat Supabase");
+ok(!/license-checkout|license-v2-client|cloud-session|cloud-auth/i.test(combined),"demo HTML tidak memuat auth/license production");
+ok(!/\bfetch\s*\(|new\s+XMLHttpRequest|new\s+WebSocket|new\s+EventSource|navigator\.sendBeacon/i.test(js),"runtime demo tidak memiliki pemanggilan API jaringan");
+ok(/sessionStorage\.getItem\(STATE_KEY\)/.test(js)&&/sessionStorage\.setItem\(STATE_KEY/.test(js),"runtime memakai sessionStorage namespace khusus");
+ok(!/localStorage\.(?:setItem|removeItem)\s*\(/.test(js),"runtime tidak menulis localStorage produksi");
+ok(/TTL_MS=2\*60\*60\*1000/.test(js),"TTL demo 2 jam");
+ok(/owner-pusat/.test(js)&&/owner-cabang/.test(js)&&/admin/.test(js)&&/kasir/.test(js),"empat profil dummy tersedia");
+ok(/SHIFT_TIDAK_SESUAI/.test(js),"enforcement shift disimulasikan");
+ok(/Owner Cabang tidak dapat meninjau cabang lain/.test(js),"scope inbox Owner Cabang disimulasikan");
+process.exitCode=fail?1:0;

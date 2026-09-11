@@ -43,7 +43,7 @@
     <div id="supportOverview" class="developer-nav-target" aria-hidden="true"></div>
     <section class="panel developer-nav-target" id="incidentLookupPanel">
       <h1>🔎 Support Incident Lookup</h1>
-      <p class="note"><b>Monitoring Error sekarang khusus Developer.</b> Kode ERR tetap menjadi referensi teknis internal dan tidak ditampilkan sebagai menu customer. Gunakan pencarian ini saat investigasi teknis membutuhkan incident tertentu.</p>
+      <p class="note"><b>Monitoring Error sekarang khusus Developer.</b> Kode kejadian digunakan untuk membantu pengelola menelusuri laporan yang memerlukan pemeriksaan.</p>
       <div class="lookup">
         <div class="field" style="margin:0"><label>Kode Incident</label><input id="incidentCode" placeholder="ERR-20260905-A72C91D083" maxlength="40" spellcheck="false"></div>
         <button id="lookupBtn" class="btn primary">Cari Incident</button>
@@ -60,14 +60,14 @@
       <div class="grid" id="incidentGrid"></div>
       <div class="detail">
         <h3>Pesan Error</h3><div id="messageBox" class="box"></div>
-        <h3>Stack Trace</h3><pre id="stackBox">-</pre>
+        <h3>Rincian Kejadian</h3><pre id="stackBox">-</pre>
       </div>
       <div class="actions">
         <button id="investigateBtn" class="btn warning">Tandai Investigasi</button>
         <button id="resolveBtn" class="btn success">Tandai Selesai</button>
         <button id="reopenBtn" class="btn danger">Buka Lagi</button>
       </div>
-      <div class="support-note"><b>Audit:</b> pencarian dan perubahan status dicatat di audit Developer Center menggunakan email developer yang login. Email developer tidak ditulis ke database customer.</div>
+      <div class="support-note"><b>Audit:</b> pencarian dan perubahan status dicatat di audit Developer Center menggunakan email developer yang login. Aktivitas pengelola dicatat untuk kebutuhan audit.</div>
     </section>
 
     <section class="panel developer-nav-target" id="ticketQueuePanel">
@@ -241,5 +241,6 @@
   (async()=>{try{if(!LDMLicenseV2Admin.configured()){$("loginMessage").textContent="Konfigurasi Developer Center belum tersedia.";return}const session=await LDMLicenseV2Admin.session();showApp(Boolean(session));if(session)await Promise.all([loadTicketQueue(),loadPrivacyQueue()])}catch(e){$("loginMessage").textContent=e.message}})();
 })();
 </script>
+<script defer src="js/ui-copy-cleanup-v2861.js?v=27.9.0-v28.6.1"></script>
 </body>
 </html>
