@@ -1,9 +1,9 @@
 (function(){
   "use strict";
 
-  const STATE_KEY="ldm_demo_account_state_v2890";
+  const STATE_KEY="ldm_demo_account_state_v2892";
   const TTL_MS=2*60*60*1000;
-  const VERSION="28.9.0";
+  const VERSION="28.9.2";
   const CATEGORIES={
     SAKIT_KONDISI:"Sakit / kondisi kesehatan",
     KEPERLUAN_KELUARGA:"Keperluan keluarga mendesak",
@@ -82,7 +82,7 @@
 
   function seedState(profileId){
     const now=Date.now();
-    const today=shiftDate(0),yesterday=shiftDate(-1),twoDays=shiftDate(-2);
+    const today=shiftDate(0),yesterday=shiftDate(-1),twoDays=shiftDate(-2),threeDays=shiftDate(-3),fourDays=shiftDate(-4),fiveDays=shiftDate(-5),sixDays=shiftDate(-6);
     return {
       version:VERSION,
       createdAt:now,
@@ -112,12 +112,35 @@
         {id:"att-001",employeeId:"emp-admin-a",workDate:twoDays,checkIn:"08:03",checkOut:"16:07",shift:"SHIFT_1",storeCode:"DEMO-A"},
         {id:"att-002",employeeId:"emp-kasir-a",workDate:twoDays,checkIn:"07:58",checkOut:"16:02",shift:"SHIFT_1",storeCode:"DEMO-A"}
       ],
+      reportFrom:today,
+      reportTo:today,
+      reportSearch:"",
+      reportPage:1,
       transactions:[
-        {id:"TRX-DEMO-001",date:today,time:"09:12",storeCode:"DEMO-A",cashier:"Kasir Demo",method:"Tunai",total:28000,items:4},
-        {id:"TRX-DEMO-002",date:today,time:"10:26",storeCode:"DEMO-A",cashier:"Kasir Demo",method:"QRIS Simulasi",total:46500,items:6},
-        {id:"TRX-DEMO-003",date:yesterday,time:"16:15",storeCode:"DEMO-B",cashier:"Kasir Cabang B Demo",method:"Tunai",total:92000,items:8},
-        {id:"TRX-DEMO-004",date:yesterday,time:"11:42",storeCode:"DEMO-A",cashier:"Kasir Demo",method:"Tunai",total:63500,items:7},
-        {id:"TRX-DEMO-005",date:twoDays,time:"13:04",storeCode:"DEMO-A",cashier:"Kasir Demo",method:"QRIS Simulasi",total:121000,items:9}
+        {id:"DEMO-TRX-0801",date:today,time:"08:07",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Tunai",total:12500,items:2},
+        {id:"DEMO-TRX-0905",date:today,time:"09:05",storeCode:"DEMO-PUSAT",cashier:"Owner Pusat Demo",method:"Non Tunai",total:28750,items:3},
+        {id:"DEMO-TRX-0944",date:today,time:"09:44",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Tunai",total:15000,items:2},
+        {id:"DEMO-TRX-1018",date:today,time:"10:18",storeCode:"DEMO-B",cashier:"Bima Demo",method:"Tunai",total:36500,items:4},
+        {id:"DEMO-TRX-1132",date:today,time:"11:32",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Non Tunai",total:52900,items:5},
+        {id:"DEMO-TRX-1247",date:today,time:"12:47",storeCode:"DEMO-PUSAT",cashier:"Owner Pusat Demo",method:"Tunai",total:19800,items:3},
+        {id:"DEMO-TRX-1316",date:today,time:"13:16",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Tunai",total:44250,items:6},
+        {id:"DEMO-TRX-1439",date:today,time:"14:39",storeCode:"DEMO-B",cashier:"Bima Demo",method:"Non Tunai",total:27600,items:3},
+        {id:"DEMO-TRX-1521",date:today,time:"15:21",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Tunai",total:68400,items:7},
+        {id:"DEMO-TRX-1605",date:today,time:"16:05",storeCode:"DEMO-PUSAT",cashier:"Owner Pusat Demo",method:"Tunai",total:31250,items:3},
+        {id:"DEMO-TRX-1711",date:today,time:"17:11",storeCode:"DEMO-B",cashier:"Bima Demo",method:"Tunai",total:42700,items:5},
+        {id:"DEMO-TRX-1802",date:today,time:"18:02",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Non Tunai",total:55300,items:6},
+        {id:"DEMO-TRX-Y01",date:yesterday,time:"09:14",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Tunai",total:33800,items:4},
+        {id:"DEMO-TRX-Y02",date:yesterday,time:"11:26",storeCode:"DEMO-B",cashier:"Bima Demo",method:"Non Tunai",total:61500,items:6},
+        {id:"DEMO-TRX-Y03",date:yesterday,time:"15:50",storeCode:"DEMO-PUSAT",cashier:"Owner Pusat Demo",method:"Tunai",total:47200,items:5},
+        {id:"DEMO-TRX-D2A",date:twoDays,time:"08:42",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Tunai",total:21400,items:2},
+        {id:"DEMO-TRX-D2B",date:twoDays,time:"14:08",storeCode:"DEMO-B",cashier:"Bima Demo",method:"Tunai",total:74800,items:8},
+        {id:"DEMO-TRX-D3A",date:threeDays,time:"10:33",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Non Tunai",total:39600,items:5},
+        {id:"DEMO-TRX-D3B",date:threeDays,time:"17:04",storeCode:"DEMO-PUSAT",cashier:"Owner Pusat Demo",method:"Tunai",total:58100,items:6},
+        {id:"DEMO-TRX-D4A",date:fourDays,time:"12:21",storeCode:"DEMO-B",cashier:"Bima Demo",method:"Tunai",total:26500,items:3},
+        {id:"DEMO-TRX-D4B",date:fourDays,time:"18:16",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Non Tunai",total:49200,items:5},
+        {id:"DEMO-TRX-D5A",date:fiveDays,time:"09:37",storeCode:"DEMO-PUSAT",cashier:"Owner Pusat Demo",method:"Tunai",total:31750,items:4},
+        {id:"DEMO-TRX-D5B",date:fiveDays,time:"16:44",storeCode:"DEMO-A",cashier:"Rina Demo",method:"Tunai",total:66200,items:7},
+        {id:"DEMO-TRX-D6A",date:sixDays,time:"13:05",storeCode:"DEMO-B",cashier:"Bima Demo",method:"Non Tunai",total:43800,items:5}
       ],
       absences:[
         {id:"ABS-DEMO-A",employeeId:"emp-admin-a",workDate:yesterday,category:"KENDALA_TRANSPORTASI",reason:"Kendaraan mengalami kendala saat perjalanan menuju toko.",storeCode:"DEMO-A",status:"SUBMITTED",submittedAt:`${yesterday} 10:20`,reviewNote:""},
@@ -182,13 +205,13 @@
 
   function renderDashboard(state,profile){
     const tx=visibleTransactions(state,profile),today=shiftDate(0),rows=tx.filter(x=>x.date===today);
-    const sales=rows.reduce((a,x)=>a+Number(x.total||0),0)||775800;
-    const modal=Math.round(sales*.866);const profit=Math.max(0,sales-modal);
-    const monthSales=Math.max(20976477,tx.reduce((a,x)=>a+Number(x.total||0),0)*42);
-    const monthProfit=Math.max(2677006,Math.round(monthSales*.1276));
-    const monthTrx=Math.max(556,tx.length*48);
+    const sales=rows.reduce((a,x)=>a+Number(x.total||0),0);
+    const modal=Math.round(sales*.79);const profit=Math.max(0,sales-modal);
+    const monthSales=tx.reduce((a,x)=>a+Number(x.total||0),0);
+    const monthProfit=Math.round(monthSales*.21);
+    const monthTrx=tx.length;
     const top=[
-      ["Telur Biasa",513.07,14121391,100],["Telur Omega",74.65,2197666,78],["Minyak goreng minyak kita",44,788000,62],["Ras partai",23,585400,44],["Telur titik",188,539400,31]
+      ["Gula",18.5,342250,100],["Minyak Goreng Fortune 1L",14,294000,82],["Telur Omega",8.75,258125,71],["Tepung Terigu",17,221000,58],["Bihun Jagung",19,152000,41]
     ];
     const points="0,18 42,20 84,58 126,73 168,52 210,94 252,55 294,66 336,52 378,67 420,74 462,82 504,96 546,96 588,96 630,96 672,96 714,96 756,96 798,96 840,96 882,96 924,96 966,96 1008,96";
     const polygon=`0,110 ${points} 1008,110`;
@@ -200,7 +223,7 @@
       <div class="dp-profit-formula">Rumus Profit: <b>OMZET (${money(sales).replace('Rp','').trim()}) - MODAL (${money(modal).replace('Rp','').trim()}) = TOTAL PROFIT ${money(profit).replace('Rp','').trim()}</b></div>
       <section class="dp-card"><div class="dp-month-head"><div class="dp-card-title" style="margin:0"><h2>📊 Statistik Penjualan Bulanan</h2></div><label style="display:flex;align-items:center;gap:6px;font-size:9px">Bulan: <input class="dp-input" style="width:145px;min-height:30px" value="${monthLabel()}" readonly></label></div>
         <div class="dp-month-stats"><div class="dp-stat"><span>🧮 Omzet Bulan Ini</span><strong>${money(monthSales)}</strong></div><div class="dp-stat green"><span>📈 Profit Bersih</span><strong>${money(monthProfit)}</strong></div><div class="dp-stat"><span>🧾 Total Transaksi</span><strong>${monthTrx} Transaksi</strong></div></div>
-        <div class="dp-best-item dp-stat"><span>🔥 Penjualan Item Terbesar</span><strong style="font-size:11px">Telur Biasa · ${money(14121391)}</strong></div>
+        <div class="dp-best-item dp-stat"><span>🔥 Penjualan Item Terbesar</span><strong style="font-size:11px">Gula · ${money(342250)}</strong></div>
         <div class="dp-top-list"><div class="dp-top-title"><div><strong>🏆 5 Item Terlaris ${monthLabel()}</strong><div style="font-size:8px;color:#64748b;margin-top:2px">Berdasarkan nominal penjualan terbesar</div></div><span class="dp-chip blue">5</span></div>${top.map((x,i)=>`<div class="dp-top-row" style="--bar:${x[3]}%"><div><strong>${i+1}. ${esc(x[0])}</strong><small style="display:block;color:#64748b;margin-top:2px">${String(x[1]).replace('.',',')} ${i===1?'Kg':'Kg'} terjual</small></div><strong>${money(x[2])}</strong></div>`).join("")}</div>
         <div class="dp-chart"><svg viewBox="0 0 1008 110" preserveAspectRatio="none" aria-label="Grafik penjualan contoh">${[20,40,60,80,100].map(y=>`<line class="grid" x1="0" x2="1008" y1="${y}" y2="${y}"></line>`).join("")}<polygon class="line" points="${polygon}"></polygon><polyline class="line" fill="none" points="${points}"></polyline></svg></div>
       </section>
@@ -239,11 +262,30 @@
   }
 
   function renderLaporan(state,profile){
-    const tx=visibleTransactions(state,profile);const today=shiftDate(0);const dayRows=tx.filter(x=>x.date===today);const total=(dayRows.length?dayRows:tx).reduce((s,x)=>s+Number(x.total||0),0)||775800;const rows=(dayRows.length?dayRows:tx);
+    const tx=visibleTransactions(state,profile).slice().sort((a,b)=>`${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+    const today=shiftDate(0);
+    const from=state.reportFrom||today;
+    const to=state.reportTo||today;
+    const search=String(state.reportSearch||"").trim().toLowerCase();
+    const filtered=tx.filter(x=>x.date>=from&&x.date<=to&&(!search||`${x.id} ${x.date} ${x.time} ${x.cashier} ${x.method}`.toLowerCase().includes(search)));
+    const total=filtered.reduce((sum,x)=>sum+Number(x.total||0),0);
+    const pageSize=8;
+    const pageCount=Math.max(1,Math.ceil(filtered.length/pageSize));
+    const page=Math.max(1,Math.min(Number(state.reportPage||1),pageCount));
+    if(page!==state.reportPage){state.reportPage=page;save(state);}
+    const rows=filtered.slice((page-1)*pageSize,page*pageSize);
+    const pageButtons=Array.from({length:pageCount},(_,i)=>i+1).slice(0,5).map(n=>`<button type="button" class="${n===page?'active':''}" data-demo-report-page="${n}">${n}</button>`).join("");
     return `<div class="dp-page">
       ${brandHeader("Riwayat Transaksi",`<button type="button" class="dp-header-btn gray" data-demo-limited="Ganti Password">🔑 Ganti Password</button><button type="button" class="dp-header-btn gray" data-demo-limited="Pengaturan Struk">🧾 Pengaturan Struk</button>`)}
-      ${demoNote()}<div class="dp-report-mode">👑 Mode ${roleLabel(profile.role)}: akses laporan ${profile.scope==='network'?'penuh':'sesuai cabang'}.</div><div class="dp-report-summary"><div class="dp-stat"><span>Penjualan Bersih</span><strong>${money(total)}</strong></div><div class="dp-stat"><span>Jumlah Transaksi</span><strong>${rows.length||28} TRX</strong></div></div>
-      <section class="dp-card"><div class="dp-report-controls"><div class="dp-card-title" style="margin:0"><h2>Riwayat Transaksi</h2></div><div class="dp-report-actions"><button class="dp-btn green" data-demo-limited="Export CSV">📄 Export Tampilan CSV</button><button class="dp-btn green" data-demo-limited="Download Semua Laporan">📁 Download Semua Laporan</button><button class="dp-btn red" data-demo-limited="Reset Laporan">Reset Laporan</button></div></div><div class="dp-date-grid"><div><label class="dp-label">Dari Tanggal:</label><input class="dp-input" type="date" value="${today}"></div><div><label class="dp-label">Sampai Tanggal:</label><input class="dp-input" type="date" value="${today}"></div></div><div class="dp-quick-dates"><button class="dp-btn green">Hari Ini</button><button class="dp-btn green">Kemarin</button><button class="dp-btn green">7 Hari</button><button class="dp-btn green">30 Hari</button></div><div class="dp-info-line">Hari baru tidak menghapus transaksi lama. Pilih rentang tanggal untuk membuka riwayat sebelumnya.</div><input id="demoReportSearch" class="dp-input dp-search-report" placeholder="🔍 Cari ID transaksi, tanggal, barang, kasir..."><div class="dp-table-wrap"><table class="dp-table"><thead><tr><th>ID Transaksi</th><th>Waktu</th><th>Kasir</th><th>Total</th><th>Bayar</th><th>Aksi</th></tr></thead><tbody>${rows.map(x=>`<tr data-demo-report-row data-search="${esc((x.id+' '+x.cashier+' '+x.method).toLowerCase())}"><td><span class="dp-chip blue">${esc(x.id)}</span></td><td>${esc(x.date)} ${esc(x.time)}</td><td><strong style="color:#0284c7">${esc(x.cashier)}</strong></td><td><strong>${money(x.total)}</strong></td><td><span class="dp-chip ${String(x.method).toLowerCase().includes('tunai')?'green':'blue'}">${esc(x.method)}</span></td><td><button class="dp-btn soft" data-demo-limited="Detail transaksi">Lihat Detail ➜</button></td></tr>`).join("")||`<tr><td colspan="6" class="dp-empty-row">Belum ada transaksi Demo.</td></tr>`}</tbody></table></div><div class="dp-pagination"><button disabled>‹ Prev</button><button class="active">1</button><button>2</button><button>3</button><button>Next ›</button></div></section>
+      ${demoNote()}<div class="dp-report-mode">👑 Mode ${roleLabel(profile.role)}: akses laporan ${profile.scope==='network'?'penuh':'sesuai cabang'}. Data pendapatan di bawah merupakan data latihan Demo dan berbeda dari data production.</div>
+      <div class="dp-report-summary"><div class="dp-stat"><span>Penjualan Bersih Demo</span><strong>${money(total)}</strong><small>${idDate(from)} s.d. ${idDate(to)}</small></div><div class="dp-stat"><span>Jumlah Transaksi Demo</span><strong>${filtered.length} TRX</strong><small>${search?'Hasil pencarian aktif':'Sesuai rentang tanggal'}</small></div></div>
+      <section class="dp-card"><div class="dp-report-controls"><div class="dp-card-title" style="margin:0"><h2>Riwayat Transaksi Demo</h2></div><div class="dp-report-actions"><button class="dp-btn green" data-demo-limited="Export CSV">📄 Export Tampilan CSV</button><button class="dp-btn green" data-demo-limited="Download Semua Laporan">📁 Download Semua Laporan</button><button class="dp-btn red" data-demo-report-reset>Reset Filter</button></div></div>
+      <div class="dp-date-grid"><div><label class="dp-label">Dari Tanggal:</label><input id="demoReportFrom" class="dp-input" type="date" value="${esc(from)}"></div><div><label class="dp-label">Sampai Tanggal:</label><input id="demoReportTo" class="dp-input" type="date" value="${esc(to)}"></div></div>
+      <div class="dp-quick-dates"><button class="dp-btn green" data-demo-report-range="today">Hari Ini</button><button class="dp-btn green" data-demo-report-range="yesterday">Kemarin</button><button class="dp-btn green" data-demo-report-range="7">7 Hari</button><button class="dp-btn green" data-demo-report-range="30">30 Hari</button></div>
+      <div class="dp-info-line">Laporan Demo memakai transaksi latihan sendiri. Nilai pendapatan sengaja berbeda dari contoh production dan berubah mengikuti filter tanggal, akun, serta transaksi Demo.</div>
+      <input id="demoReportSearch" class="dp-input dp-search-report" value="${esc(state.reportSearch||'')}" placeholder="🔍 Cari ID transaksi, tanggal, kasir, metode bayar...">
+      <div class="dp-table-wrap"><table class="dp-table"><thead><tr><th>ID Transaksi</th><th>Waktu</th><th>Kasir</th><th>Total</th><th>Bayar</th><th>Aksi</th></tr></thead><tbody>${rows.map(x=>`<tr data-demo-report-row data-search="${esc((x.id+' '+x.cashier+' '+x.method).toLowerCase())}"><td><span class="dp-chip blue">${esc(x.id)}</span></td><td>${esc(x.date)} ${esc(x.time)}</td><td><strong style="color:#0284c7">${esc(x.cashier)}</strong></td><td><strong>${money(x.total)}</strong></td><td><span class="dp-chip ${String(x.method).toLowerCase().includes('tunai')&&!String(x.method).toLowerCase().includes('non')?'green':'blue'}">${esc(x.method)}</span></td><td><button class="dp-btn soft" data-demo-limited="Detail transaksi">Lihat Detail ➜</button></td></tr>`).join("")||`<tr><td colspan="6" class="dp-empty-row">Tidak ada transaksi Demo pada filter ini.</td></tr>`}</tbody></table></div>
+      <div class="dp-pagination"><button type="button" data-demo-report-page="${page-1}" ${page<=1?'disabled':''}>‹ Prev</button>${pageButtons}<button type="button" data-demo-report-page="${page+1}" ${page>=pageCount?'disabled':''}>Next ›</button></div></section>
     </div>`;
   }
 
@@ -344,7 +386,12 @@
     document.getElementById("demoInventorySearch")?.addEventListener("input",e=>{const q=String(e.target.value||"").toLowerCase();document.querySelectorAll("[data-demo-product-card]").forEach(card=>{card.style.display=!q||String(card.dataset.productSearch||"").includes(q)?"":"none";});});
 
     // Laporan parity
-    document.getElementById("demoReportSearch")?.addEventListener("input",e=>{const q=String(e.target.value||"").toLowerCase();document.querySelectorAll("[data-demo-report-row]").forEach(row=>{row.style.display=!q||String(row.dataset.search||"").includes(q)?"":"none";});});
+    document.getElementById("demoReportSearch")?.addEventListener("change",e=>{state.reportSearch=String(e.target.value||"");state.reportPage=1;save(state);render(state);});
+    document.getElementById("demoReportFrom")?.addEventListener("change",e=>{state.reportFrom=e.target.value||shiftDate(0);if(state.reportTo<state.reportFrom)state.reportTo=state.reportFrom;state.reportPage=1;save(state);render(state);});
+    document.getElementById("demoReportTo")?.addEventListener("change",e=>{state.reportTo=e.target.value||shiftDate(0);if(state.reportFrom>state.reportTo)state.reportFrom=state.reportTo;state.reportPage=1;save(state);render(state);});
+    document.querySelectorAll("[data-demo-report-range]").forEach(btn=>btn.addEventListener("click",()=>{const kind=btn.dataset.demoReportRange;const today=shiftDate(0);if(kind==="today"){state.reportFrom=today;state.reportTo=today;}else if(kind==="yesterday"){state.reportFrom=shiftDate(-1);state.reportTo=shiftDate(-1);}else{const days=Math.max(1,Number(kind)||7);state.reportFrom=shiftDate(-(days-1));state.reportTo=today;}state.reportPage=1;save(state);render(state);}));
+    document.querySelectorAll("[data-demo-report-page]").forEach(btn=>btn.addEventListener("click",()=>{if(btn.disabled)return;state.reportPage=Math.max(1,Number(btn.dataset.demoReportPage)||1);save(state);render(state);}));
+    document.querySelector("[data-demo-report-reset]")?.addEventListener("click",()=>{state.reportFrom=shiftDate(0);state.reportTo=shiftDate(0);state.reportSearch="";state.reportPage=1;save(state);render(state);toast("Filter laporan Demo dikembalikan ke Hari Ini.");});
 
     // Absensi
     document.getElementById("demoCheckInBtn")?.addEventListener("click",()=>attendanceAction(state,profile,"in"));
