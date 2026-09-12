@@ -20,7 +20,8 @@
     function clearActivation(){localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(CONTEXT_KEY);clearCache()}
     function saveSuccess(data,tokenValue){
         if(tokenValue)localStorage.setItem(TOKEN_KEY,tokenValue);
-        const context={license_id:data.license_id,plan_code:data.plan_code,plan_name:data.plan_name,store_code:data.store_code,is_trial:Boolean(data.is_trial),expires_at:data.expires_at||null};
+        const previous=activationContext();
+        const context={license_id:data.license_id,plan_code:data.plan_code,plan_name:data.plan_name,store_code:data.store_code||previous.store_code||null,is_trial:Boolean(data.is_trial),expires_at:data.expires_at||null,owner_email:data.owner_email||data.customer_email||previous.owner_email||null,store_name:data.store_name||previous.store_name||null,store_id:data.store_id||previous.store_id||null,network_id:data.network_id||previous.network_id||null};
         localStorage.setItem(CONTEXT_KEY,JSON.stringify(context));
         const cache={data:{...data,activation_token:undefined},checkedAt:Date.now()};
         localStorage.setItem(CACHE_KEY,JSON.stringify(cache));
@@ -77,8 +78,31 @@
     }
     async function startTrial(values){
         const code=String(values.store_code||"").trim().toUpperCase();
-        const data=await call("start_trial",{customer_name:values.customer_name,customer_email:values.customer_email,customer_phone:values.customer_phone||"",store_code:code});
+        const current=activationContext();
+        const existingToken=current?.is_trial?String(localStorage.getItem(TOKEN_KEY)||""):"";
+        const data=await call("start_trial",{
+            customer_name:String(values.customer_name||"").trim(),
+            store_name:String(values.store_name||"").trim(),
+            customer_email:String(values.customer_email||"").trim().toLowerCase(),
+            customer_phone:String(values.customer_phone||"").trim(),
+            owner_password:String(values.owner_password||""),
+            store_code:code,
+            existing_license_id:current?.is_trial?String(current.license_id||""):"",
+            existing_activation_token:existingToken
+        },{timeoutMs:20000});
         return saveSuccess(data,data.activation_token);
+    }
+    function trialConversionContext(){
+        const context=activationContext();
+        const activationToken=localStorage.getItem(TOKEN_KEY)||"";
+        if(!context?.is_trial||!context?.license_id||!activationToken)return null;
+        return {
+            license_id:String(context.license_id),
+            activation_token:activationToken,
+            store_code:String(context.store_code||storeCode()).trim().toUpperCase(),
+            device_id:deviceId(),
+            expires_at:context.expires_at||null
+        };
     }
     async function deactivate(){
         const activationToken=localStorage.getItem(TOKEN_KEY);
@@ -88,5 +112,5 @@
     }
     function hasFeature(feature,data){const features=Array.isArray(data?.features)?data.features:[];return features.includes("*")||!feature||features.includes(feature)}
     function whatsappUrl(message){const phone=String(cfg().developerWhatsApp||"").replace(/\D/g,"");return phone?`https://wa.me/${phone}?text=${encodeURIComponent(message)}`:"#"}
-    window.LDMLicenseV2={configured,deviceId,deviceName,storeCode,activationContext,check,activate,startTrial,deactivate,clearActivation,clearCache,hasFeature,whatsappUrl,call,keys:{TOKEN_KEY,DEVICE_KEY,CONTEXT_KEY,CACHE_KEY}};
+    window.LDMLicenseV2={configured,deviceId,deviceName,storeCode,activationContext,trialConversionContext,check,activate,startTrial,deactivate,clearActivation,clearCache,hasFeature,whatsappUrl,call,keys:{TOKEN_KEY,DEVICE_KEY,CONTEXT_KEY,CACHE_KEY}};
 })();

@@ -149,3 +149,8 @@ body.demo-app .demo-modal-actions{display:flex;justify-content:flex-end;margin-t
   body.demo-app .grid-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{padding:10px}.card-icon{width:34px;height:34px;font-size:1.05rem}.card-info h4{font-size:.58rem}.card-info h2{font-size:.82rem}
   body.demo-app .demo-profile-grid,body.demo-app .demo-theme-options{grid-template-columns:1fr}
 }
+
+/* V28.6.4 — catatan cakupan Demo */
+.demo-login-disclaimer{margin:12px 0 0;padding:11px 13px;border:1px solid rgba(255,255,255,.24);border-radius:12px;background:rgba(255,255,255,.1);color:inherit;font-size:12px;line-height:1.55;max-width:720px}
+.demo-login-disclaimer strong{font-weight:900}
+@media(max-width:760px){.demo-login-disclaimer{font-size:11px;padding:10px 11px}}

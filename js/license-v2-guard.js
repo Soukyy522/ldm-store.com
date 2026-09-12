@@ -31,6 +31,14 @@
             window.dispatchEvent(new CustomEvent("ldm-license-v2-authorized",{detail:data}));
             return true;
         }catch(error){
+            if(error?.code==="LICENSE_EXPIRED"&&error?.data?.is_trial===true){
+                overlay("Masa Trial telah berakhir","Akses operasional ditangguhkan sementara. Data toko tetap tersimpan. Buka Lisensi & Paket untuk melanjutkan penggunaan dengan paket berbayar.","locked");
+                return false;
+            }
+            if(error?.code==="LICENSE_EXPIRED"){
+                overlay("Masa lisensi telah berakhir","Akses operasional ditangguhkan sementara. Data toko tetap tersimpan sampai paket diperpanjang.","locked");
+                return false;
+            }
             const activation=["ACTIVATION_REQUIRED","ACTIVATION_INVALID","LICENSE_KEY_INVALID","LICENSE_CONFIG_REQUIRED"].includes(error.code);
             overlay(activation?"Lisensi perlu diaktifkan":"Lisensi belum dapat diverifikasi",error.message||"Pemeriksaan lisensi gagal.","error");return false;
         }

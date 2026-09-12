@@ -98,11 +98,20 @@
     const select=el("checkoutPeriod");
     select.innerHTML='<option value="monthly">Bulanan</option><option value="yearly">Tahunan</option><option value="two_year">2 Tahun</option>';
     select.value=["monthly","yearly","two_year"].includes(input.billingCycle)?input.billingCycle:"monthly";
+    const ctx=window.LDMLicenseV2?.activationContext?.()||{};
+    const trial=window.LDMLicenseV2?.trialConversionContext?.();
+    const email=el("checkoutEmail"),storeCode=el("checkoutStoreCode"),storeName=el("checkoutStoreName");
+    if(email)email.readOnly=false;if(storeCode)storeCode.readOnly=false;
+    if(trial&&ctx.is_trial){
+      if(email&&ctx.owner_email){email.value=ctx.owner_email;email.readOnly=true;}
+      if(storeCode){storeCode.value=trial.store_code||ctx.store_code||"";storeCode.readOnly=true;}
+      if(storeName&&ctx.store_name&&!storeName.value)storeName.value=ctx.store_name;
+    }
     renderSummary();
     panel.hidden=false;
     panel.classList.add("open");
     panel.scrollIntoView({behavior:"smooth",block:"start"});
-    setStatus("Isi data customer, lalu lanjutkan pembayaran melalui Lynk.id. Order dapat dibatalkan selama pembayaran belum terverifikasi.","info");
+    setStatus(trial&&ctx.is_trial?"Trial terdeteksi. Pembayaran paket berbayar akan melanjutkan toko dan akun Owner yang sama.":"Isi data customer, lalu lanjutkan pembayaran melalui Lynk.id. Order dapat dibatalkan selama pembayaran belum terverifikasi.","info");
   }
 
   function close(){
@@ -260,6 +269,9 @@
   async function status(orderId,statusToken,quiet=false){
     const data=await callStatus({action:"status",order_id:orderId,status_token:statusToken});
     const rendered=data.receipt?renderReceipt(data.receipt):false;
+    if(String(data.payment_status||"").toLowerCase()==="paid"&&window.LDMLicenseV2?.activationContext?.()?.is_trial){
+      window.LDMLicenseV2.check({force:true}).catch(()=>undefined);
+    }
     updateManageActions(data);
     if(!quiet){
       if(data.payment_status==="paid"&&rendered)setStatus("✅ Pembayaran Lynk.id sudah terverifikasi. Data lisensi dan status serah-terima tersedia di bawah. Form Refund Penuh tersedia selama masih dalam batas waktu kebijakan.","success");
@@ -340,6 +352,7 @@
     button.disabled=true;button.textContent="Membuat order Lynk.id…";
     try{
       setStatus("Menyiapkan order pembayaran…","info");
+      const trial=window.LDMLicenseV2?.trialConversionContext?.();
       const data=await callOrder({
         plan_code:currentPlan.planCode,
         billing_cycle:cycle,
@@ -348,7 +361,9 @@
         customer_phone:el("checkoutPhone").value.trim(),
         store_name:el("checkoutStoreName").value.trim(),
         store_code:el("checkoutStoreCode").value.trim().toUpperCase(),
-        checkout_url:url
+        checkout_url:url,
+        trial_license_id:trial?.license_id||null,
+        trial_activation_token:trial?.activation_token||null
       });
       saveLast(data);
       savePending({order_id:data.order_id,status_token:data.status_token,plan_code:currentPlan.planCode,billing_cycle:cycle,amount:data.amount,redirect_url:url});

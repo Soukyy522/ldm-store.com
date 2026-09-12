@@ -1,10 +1,10 @@
-// Build: 27.9.0 Production Parity Demo UI V28.6.3
+// Build: 27.9.0 Trial Lifecycle Deploy Fix V28.7.1
 "use strict";
 
-const APP_VERSION = "27.9.0-v28.6.3";
+const APP_VERSION = "27.9.0-v28.7.1";
 const CACHE_PREFIX = "ldm-";
-const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-production-demo-parity-v28-6-3`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-production-demo-parity-runtime-v28-6-3`;
+const SHELL_CACHE = `${CACHE_PREFIX}release27-9-0-trial-lifecycle-v28-7-1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}release27-9-0-trial-lifecycle-runtime-v28-7-1`;
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 const APP_SHELL = [
