@@ -43,6 +43,8 @@
   }
 
   function cycleLabel(v){return v==="two_year"?"2 Tahun":v==="yearly"?"Tahunan":"Bulanan";}
+  function flowLabel(mode){return mode==="renewal"?"Perpanjangan":mode==="upgrade"?"Upgrade":"Pembelian";}
+  function managementFlow(){return ["renewal","upgrade"].includes(String(currentPlan?.mode||""));}
   function amountFor(planCode,cycle){return Number(window.LDM_LICENSE_V2_CONFIG?.plans?.[planCode]?.[cycle]||0);}
   function savingFor(planCode,cycle){
     const p=window.LDM_LICENSE_V2_CONFIG?.plans?.[planCode]||{};
@@ -82,6 +84,7 @@
     el("checkoutPlanName").textContent=currentPlan.planName;
     el("checkoutPlanPeriod").textContent=cycleLabel(cycle);
     el("checkoutPlanAmount").textContent=rupiah(amountFor(currentPlan.planCode,cycle));
+    const op=el("checkoutOperationSummary");if(op)op.textContent=flowLabel(currentPlan.mode);
     const g=el("checkoutGatewaySummary");if(g)g.textContent="Lynk.id";
     const save=el("checkoutPeriodSaving");
     if(save){
@@ -92,7 +95,7 @@
   }
 
   function open(input){
-    currentPlan={...input};
+    currentPlan={mode:"purchase",...input};
     const panel=el("publicCheckoutPanel");
     if(!panel){alert("Panel pembayaran belum tersedia.");return;}
     const select=el("checkoutPeriod");
@@ -100,18 +103,38 @@
     select.value=["monthly","yearly","two_year"].includes(input.billingCycle)?input.billingCycle:"monthly";
     const ctx=window.LDMLicenseV2?.activationContext?.()||{};
     const trial=window.LDMLicenseV2?.trialConversionContext?.();
-    const email=el("checkoutEmail"),storeCode=el("checkoutStoreCode"),storeName=el("checkoutStoreName");
-    if(email)email.readOnly=false;if(storeCode)storeCode.readOnly=false;
-    if(trial&&ctx.is_trial){
-      if(email&&ctx.owner_email){email.value=ctx.owner_email;email.readOnly=true;}
-      if(storeCode){storeCode.value=trial.store_code||ctx.store_code||"";storeCode.readOnly=true;}
-      if(storeName&&ctx.store_name&&!storeName.value)storeName.value=ctx.store_name;
+    const management=currentPlan.management||null;
+    const isManagement=managementFlow()&&management;
+    const fields={name:el("checkoutName"),email:el("checkoutEmail"),phone:el("checkoutPhone"),storeName:el("checkoutStoreName"),storeCode:el("checkoutStoreCode")};
+    Object.values(fields).forEach(node=>{if(node){node.readOnly=false;node.required=true;}});
+    if(isManagement){
+      if(fields.name){fields.name.value=management.customer_name||"Pelanggan LocDailyMar";fields.name.readOnly=true;}
+      if(fields.email){fields.email.value=management.customer_email||ctx.owner_email||"";fields.email.readOnly=true;}
+      if(fields.phone){fields.phone.value=management.customer_phone||"";fields.phone.readOnly=true;fields.phone.required=false;}
+      if(fields.storeName){fields.storeName.value=management.store_name||ctx.store_name||"";fields.storeName.readOnly=true;}
+      if(fields.storeCode){fields.storeCode.value=management.store_code||ctx.store_code||"";fields.storeCode.readOnly=true;}
+      const tag=el("checkoutTag");if(tag)tag.textContent=currentPlan.mode==="upgrade"?"UPGRADE PAKET":"PERPANJANG PAKET";
+      const title=el("checkoutTitle");if(title)title.textContent=currentPlan.mode==="upgrade"?`Upgrade ke ${currentPlan.planName}`:`Perpanjang ${currentPlan.planName}`;
+      const desc=el("checkoutDescription");if(desc)desc.textContent=currentPlan.mode==="upgrade"?"Paket baru aktif setelah pembayaran terverifikasi. Sisa masa aktif yang masih ada tetap dipertahankan dan periode baru ditambahkan.":"Perpanjangan menambah masa aktif dari tanggal berakhir saat ini. Jika lisensi sudah berakhir, periode baru dihitung dari waktu pembayaran berhasil.";
+    }else{
+      const tag=el("checkoutTag");if(tag)tag.textContent="PEMBAYARAN LYNK.ID";
+      const title=el("checkoutTitle");if(title)title.textContent="Pesan Lisensi LocDailyMar";
+      const desc=el("checkoutDescription");if(desc)desc.textContent="Isi data pelanggan, lalu lanjutkan ke pembayaran Lynk.id. Setelah pembayaran berhasil diverifikasi, hasil ditampilkan di halaman Lisensi.";
+      if(trial&&ctx.is_trial){
+        if(fields.email&&ctx.owner_email){fields.email.value=ctx.owner_email;fields.email.readOnly=true;}
+        if(fields.storeCode){fields.storeCode.value=trial.store_code||ctx.store_code||"";fields.storeCode.readOnly=true;}
+        if(fields.storeName&&ctx.store_name&&!fields.storeName.value)fields.storeName.value=ctx.store_name;
+      }
     }
     renderSummary();
     panel.hidden=false;
     panel.classList.add("open");
     panel.scrollIntoView({behavior:"smooth",block:"start"});
-    setStatus(trial&&ctx.is_trial?"Trial terdeteksi. Pembayaran paket berbayar akan melanjutkan toko dan akun Owner yang sama.":"Isi data customer, lalu lanjutkan pembayaran melalui Lynk.id. Order dapat dibatalkan selama pembayaran belum terverifikasi.","info");
+    if(isManagement){
+      setStatus(currentPlan.mode==="upgrade"?"Upgrade akan memakai toko, Store Code, akun Owner, dan data yang sama. Tidak ada toko baru yang dibuat.":"Perpanjangan akan memakai lisensi dan toko yang sama. Sisa masa aktif yang belum habis tidak akan hilang.","info");
+    }else{
+      setStatus(trial&&ctx.is_trial?"Trial terdeteksi. Pembayaran paket berbayar akan melanjutkan toko dan akun Owner yang sama.":"Isi data customer, lalu lanjutkan pembayaran melalui Lynk.id. Order dapat dibatalkan selama pembayaran belum terverifikasi.","info");
+    }
   }
 
   function close(){
@@ -158,9 +181,10 @@
   function masked(v,keep=4){const s=String(v||"");if(!s)return "-";if(s.length<=keep)return "••••";return `${"•".repeat(Math.min(12,Math.max(6,s.length-keep)))}${s.slice(-keep)}`;}
   function setReceiptSensitive(reveal){
     const r=currentReceipt||{};
+    const isManagement=["renewal","upgrade"].includes(String(r.payment_type||""));
     const hasKey=Boolean(r.license_key);
     receiptSensitiveRevealed=Boolean(reveal&&hasKey);
-    setText("receiptLicenseKey",hasKey?(receiptSensitiveRevealed?r.license_key:"••••••••••••••••••••"):"Belum tersedia");
+    setText("receiptLicenseKey",isManagement?"Tetap menggunakan License Key sebelumnya":(hasKey?(receiptSensitiveRevealed?r.license_key:"••••••••••••••••••••"):"Belum tersedia"));
     setText("receiptStoreCode",r.store_code?(receiptSensitiveRevealed?r.store_code:masked(r.store_code,3)):"Belum tersedia");
     setText("receiptStoreId",r.store_id?(receiptSensitiveRevealed?r.store_id:masked(r.store_id,6)):"Belum tersedia");
     setText("receiptNetworkId",r.network_id?(receiptSensitiveRevealed?r.network_id:masked(r.network_id,6)):"Belum tersedia");
@@ -198,8 +222,10 @@
     if(checkoutPanel){checkoutPanel.hidden=false;checkoutPanel.classList.add("open");}
     const body=el("publicCheckoutBody");if(body)body.hidden=r.simulation===true;
     const panel=el("licenseReceipt");if(!panel)return false;panel.dataset.simulation=r.simulation===true?"true":"false";
-    setText("receiptTitleText",r.simulation===true?"🧪 Simulasi Serah Terima Data Lisensi":"Pembayaran Berhasil · Serah Terima Data Lisensi");
-    setText("receiptTitleDesc",r.simulation===true?"Receipt ini dibuat oleh Developer Center untuk pengujian tanpa transaksi Lynk.id dan tanpa uang nyata.":"Data di bawah ini adalah identitas akses toko yang dibuat dari transaksi terverifikasi.");
+    const managementReceipt=["renewal","upgrade"].includes(String(r.payment_type||""));
+    const receiptAction=r.payment_type==="upgrade"?"Upgrade Paket Berhasil":r.payment_type==="renewal"?"Perpanjangan Berhasil":"Pembayaran Berhasil · Serah Terima Data Lisensi";
+    setText("receiptTitleText",r.simulation===true?"🧪 Simulasi Serah Terima Data Lisensi":receiptAction);
+    setText("receiptTitleDesc",r.simulation===true?"Receipt ini dibuat oleh Developer Center untuk pengujian tanpa transaksi Lynk.id dan tanpa uang nyata.":(managementReceipt?"Lisensi, Store Code, akun Owner, dan data toko tetap sama. Status paket dan masa aktif sudah diperbarui setelah pembayaran terverifikasi.":"Data di bawah ini adalah identitas akses toko yang dibuat dari transaksi terverifikasi."));
     setText("receiptOrderId",r.order_id);
     setText("receiptPlan",`${r.plan_name||r.plan_code||"-"} · ${r.period_label||cycleLabel(r.billing_cycle)}`);
     setText("receiptPaymentState",r.simulation===true?"SIMULASI PAID · TANPA UANG NYATA":"PAID · TERVERIFIKASI");
@@ -207,7 +233,7 @@
     setReceiptSensitive(false);
     setText("receiptOwnerEmail",r.owner_email);
     setText("receiptExpires",tanggal(r.expires_at));
-    setText("receiptPasswordState",r.simulation===true?"SIMULASI · akun Owner tidak dibuat":(r.credentials_source==="customer_checkout"?"Gunakan kredensial Owner yang sudah dibuat":"Gunakan tombol Buat / Ganti Password Owner"));
+    setText("receiptPasswordState",r.simulation===true?"SIMULASI · akun Owner tidak dibuat":(managementReceipt?"Tetap menggunakan password Owner yang sama":(r.credentials_source==="customer_checkout"?"Gunakan kredensial Owner yang sudah dibuat":"Gunakan tombol Buat / Ganti Password Owner")));
     setLink("receiptLoginBtn",safePublicAppLink(r.login_url,"index.html"));
     setLink("receiptPasswordBtn",r.password_setup_url);
     setLink("receiptGuideBtn",safePublicAppLink(r.guide_url,"panduan.html"));
@@ -218,8 +244,8 @@
     const provision=el("receiptProvisionNote");
     if(provision){
       const simulated=r.simulation===true;
-      const ready=(r.provision_status==="ready"||r.provision_status==="simulation_ready")&&Boolean(r.license_key);
-      provision.textContent=simulated?"Simulasi receipt berhasil dibuat. Tidak ada lisensi produksi, akun Owner, Store, atau payment nyata yang dibuat.":(ready?"Lisensi dan akun Owner sudah siap digunakan.":`Pembayaran sudah terverifikasi, tetapi data lisensi/provisioning belum sepenuhnya siap${r.provision_error?`: ${r.provision_error}`:". Sistem dapat mencoba memulihkannya lagi melalui Cek Status Pembayaran."}`);
+      const ready=(r.provision_status==="ready"||r.provision_status==="simulation_ready")&&(managementReceipt||Boolean(r.license_key));
+      provision.textContent=simulated?"Simulasi receipt berhasil dibuat. Tidak ada lisensi produksi, akun Owner, Store, atau payment nyata yang dibuat.":(ready?(managementReceipt?"Perubahan paket sudah diterapkan dan akun Owner tetap dapat digunakan.":"Lisensi dan akun Owner sudah siap digunakan."):`Pembayaran sudah terverifikasi, tetapi data lisensi/provisioning belum sepenuhnya siap${r.provision_error?`: ${r.provision_error}`:". Sistem dapat mencoba memulihkannya lagi melalui Cek Status Pembayaran."}`);
       provision.className="receipt-provision "+(ready?"ok":"warn");
     }
     const delivery=el("receiptDeliveryNote");
@@ -269,7 +295,7 @@
   async function status(orderId,statusToken,quiet=false){
     const data=await callStatus({action:"status",order_id:orderId,status_token:statusToken});
     const rendered=data.receipt?renderReceipt(data.receipt):false;
-    if(String(data.payment_status||"").toLowerCase()==="paid"&&window.LDMLicenseV2?.activationContext?.()?.is_trial){
+    if(String(data.payment_status||"").toLowerCase()==="paid"&&window.LDMLicenseV2?.activationContext?.()?.license_id){
       window.LDMLicenseV2.check({force:true}).catch(()=>undefined);
     }
     updateManageActions(data);
@@ -353,6 +379,8 @@
     try{
       setStatus("Menyiapkan order pembayaran…","info");
       const trial=window.LDMLicenseV2?.trialConversionContext?.();
+      const proof=managementFlow()?window.LDMLicenseV2?.paidManagementProof?.():null;
+      if(managementFlow()&&!proof)throw Object.assign(new Error("Sesi lisensi pada perangkat ini perlu diperiksa ulang sebelum mengelola paket."),{code:"MANAGEMENT_PROOF_REQUIRED"});
       const data=await callOrder({
         plan_code:currentPlan.planCode,
         billing_cycle:cycle,
@@ -363,10 +391,14 @@
         store_code:el("checkoutStoreCode").value.trim().toUpperCase(),
         checkout_url:url,
         trial_license_id:trial?.license_id||null,
-        trial_activation_token:trial?.activation_token||null
+        trial_activation_token:trial?.activation_token||null,
+        order_mode:managementFlow()?currentPlan.mode:"purchase",
+        management_license_id:proof?.license_id||null,
+        management_activation_token:proof?.activation_token||null,
+        management_device_id:proof?.device_id||null
       });
       saveLast(data);
-      savePending({order_id:data.order_id,status_token:data.status_token,plan_code:currentPlan.planCode,billing_cycle:cycle,amount:data.amount,redirect_url:url});
+      savePending({order_id:data.order_id,status_token:data.status_token,plan_code:currentPlan.planCode,billing_cycle:cycle,amount:data.amount,redirect_url:url,order_mode:currentPlan.mode||"purchase"});
       const check=el("checkoutCheckBtn");if(check){check.hidden=false;check.disabled=false;}
       updateManageActions({order_id:data.order_id,payment_status:"pending"});
       setStatus(`✅ Order ${data.order_id} dibuat. Lynk.id dibuka di tab baru. Jika berubah pikiran sebelum membayar, kembali ke halaman ini dan tekan Batalkan Order Pembayaran.`,"success");

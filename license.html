@@ -133,7 +133,7 @@
 
     <section class="checkout-panel" id="publicCheckoutPanel" hidden>
       <div class="checkout-head">
-        <div><span class="tag">PEMBAYARAN LYNK.ID</span><h2>Pesan Lisensi LocDailyMar</h2><p>Isi data pelanggan seperti biasa, lalu lanjutkan ke halaman pembayaran Lynk.id. Setelah pembayaran berhasil diverifikasi, lisensi diproses otomatis dan hasil ditampilkan di halaman License ini.</p></div>
+        <div><span class="tag" id="checkoutTag">PEMBAYARAN LYNK.ID</span><h2 id="checkoutTitle">Pesan Lisensi LocDailyMar</h2><p id="checkoutDescription">Isi data pelanggan, lalu lanjutkan ke halaman pembayaran Lynk.id. Setelah pembayaran berhasil diverifikasi, hasil ditampilkan di halaman Lisensi.</p></div>
         <button type="button" class="checkout-close" id="checkoutCloseBtn" aria-label="Tutup pembayaran">✕</button>
       </div>
       <div class="checkout-body" id="publicCheckoutBody">
@@ -179,6 +179,7 @@
           </div>
         </form>
         <aside class="checkout-summary">
+          <span>Proses</span><strong id="checkoutOperationSummary">Pembelian</strong>
           <span>Paket</span><strong id="checkoutPlanName">-</strong>
           <span>Periode</span><strong id="checkoutPlanPeriod">-</strong>
           <span>Total resmi</span><strong class="checkout-total" id="checkoutPlanAmount">Rp0</strong>
@@ -413,9 +414,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js?v=28.1.8"></script>
   <script src="js/supabase-client.js?v=28.1.8"></script>
-  <script src="js/license-v2-config.js?v=27.9.0-v28.7.0"></script>
-  <script src="js/license-v2-client.js?v=27.9.0-v28.7.0"></script>
-  <script src="js/license-checkout-v2.js?v=27.9.0-v28.7.0"></script>
+  <script src="js/license-v2-config.js?v=27.9.0-v28.8.0"></script>
+  <script src="js/license-v2-client.js?v=27.9.0-v28.8.0"></script>
+  <script src="js/license-checkout-v2.js?v=27.9.0-v28.8.0"></script>
+  <script src="js/license-renewal-upgrade-v2880.js?v=27.9.0-v28.8.0"></script>
 <script src="js/customer-refund-v2825.js?v=27.9.0-refund-v2825"></script>
   <script src="js/license-owner-vault.js?v=27.9.0-v28.3.9"></script>
   <script>
@@ -467,7 +469,7 @@
     function planPrice(code,cycle){const p=configPlan(code);return Number(p[cycle]||0)}
     function annualSaving(p){return Math.max(0,Number(p.monthly||0)*12-Number(p.yearly||0))}
     function twoYearSaving(p){return Math.max(0,Number(p.monthly||0)*24-Number(p.two_year||0))}
-    function order(code,cycle){const p=configPlan(code);if(!window.LDMCheckoutV2)return alert("Modul pembayaran belum termuat. Muat ulang aplikasi.");closePlan();window.LDMCheckoutV2.open({planCode:code,billingCycle:cycle,planName:p.name||code,amount:planPrice(code,cycle)})}
+    function order(code,cycle){const p=configPlan(code);if(!window.LDMCheckoutV2)return alert("Modul pembayaran belum termuat. Muat ulang aplikasi.");const c=LDMLicenseV2.activationContext();if(c?.license_id&&!c.is_trial&&["WARUNG_KECIL","WARUNG_SEDERHANA","TOKO"].includes(String(c.plan_code||"").toUpperCase())&&window.LDMLicenseManagementV2880){closePlan();return window.LDMLicenseManagementV2880.routePlanSelection(code,cycle)}closePlan();window.LDMCheckoutV2.open({planCode:code,billingCycle:cycle,planName:p.name||code,amount:planPrice(code,cycle)})}
     function priceMarkup(code){const p=configPlan(code);return `<div class="prices"><div class="price">${rupiah(p.monthly)} <small>/ bulan</small></div><div class="annual">Tahunan: ${rupiah(p.yearly)} / tahun<span class="annual-save">Hemat ${rupiah(annualSaving(p))} dibanding 12× bulanan</span></div><div class="annual">2 Tahun: ${rupiah(p.two_year)} / 24 bulan<span class="annual-save">Hemat ${rupiah(twoYearSaving(p))} dibanding 24× bulanan</span></div></div>`}
     let latestTrialReceipt=null,trialSensitiveVisible=false,trialRevealTimer=null;
     function trialMask(value){const raw=String(value||'');if(!raw)return '-';return raw.length<=6?'••••••':`${'•'.repeat(Math.min(12,raw.length-4))}${raw.slice(-4)}`}

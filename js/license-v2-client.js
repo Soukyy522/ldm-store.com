@@ -104,6 +104,25 @@
             expires_at:context.expires_at||null
         };
     }
+    function paidManagementProof(){
+        const context=activationContext();
+        const activationToken=localStorage.getItem(TOKEN_KEY)||"";
+        const plan=String(context?.plan_code||"").toUpperCase();
+        if(!context?.license_id||context?.is_trial||!activationToken||!["WARUNG_KECIL","WARUNG_SEDERHANA","TOKO"].includes(plan))return null;
+        return {
+            license_id:String(context.license_id),
+            activation_token:activationToken,
+            device_id:deviceId(),
+            store_code:String(context.store_code||storeCode()).trim().toUpperCase(),
+            plan_code:plan,
+            expires_at:context.expires_at||null
+        };
+    }
+    async function packageManagementContext(){
+        const proof=paidManagementProof();
+        if(!proof)throw Object.assign(new Error("Lisensi berbayar aktif belum tersedia pada perangkat ini."),{code:"PAID_LICENSE_REQUIRED"});
+        return call("manage_package",{license_id:proof.license_id,activation_token:proof.activation_token,store_code:proof.store_code},{timeoutMs:15000});
+    }
     async function deactivate(){
         const activationToken=localStorage.getItem(TOKEN_KEY);
         if(activationToken&&configured())await call("deactivate",{activation_token:activationToken}).catch(()=>undefined);
@@ -112,5 +131,5 @@
     }
     function hasFeature(feature,data){const features=Array.isArray(data?.features)?data.features:[];return features.includes("*")||!feature||features.includes(feature)}
     function whatsappUrl(message){const phone=String(cfg().developerWhatsApp||"").replace(/\D/g,"");return phone?`https://wa.me/${phone}?text=${encodeURIComponent(message)}`:"#"}
-    window.LDMLicenseV2={configured,deviceId,deviceName,storeCode,activationContext,trialConversionContext,check,activate,startTrial,deactivate,clearActivation,clearCache,hasFeature,whatsappUrl,call,keys:{TOKEN_KEY,DEVICE_KEY,CONTEXT_KEY,CACHE_KEY}};
+    window.LDMLicenseV2={configured,deviceId,deviceName,storeCode,activationContext,trialConversionContext,paidManagementProof,packageManagementContext,check,activate,startTrial,deactivate,clearActivation,clearCache,hasFeature,whatsappUrl,call,keys:{TOKEN_KEY,DEVICE_KEY,CONTEXT_KEY,CACHE_KEY}};
 })();
