@@ -1,9 +1,9 @@
 (function(){
   "use strict";
 
-  const STATE_KEY="ldm_demo_account_state_v28100";
+  const STATE_KEY="ldm_demo_account_state_v28101";
   const TTL_MS=2*60*60*1000;
-  const VERSION="28.10.0";
+  const VERSION="28.10.1";
   const CATEGORIES={
     SAKIT_KONDISI:"Sakit / kondisi kesehatan",
     KEPERLUAN_KELUARGA:"Keperluan keluarga mendesak",
@@ -192,7 +192,15 @@
   function currentProfile(state){return PROFILES[state.profileId]||PROFILES["owner-pusat"];}
   function start(profileId){const state=save(seedState(profileId));state.page="dashboard";save(state);location.href="demo-app.html";}
   function reset(){const old=read();const state=save(seedState(old?.profileId||"owner-pusat"));state.page=old?.page||"dashboard";save(state);return state;}
-  function exit(){sessionStorage.removeItem(STATE_KEY);location.href="index.html";}
+  function exit(){
+    try{
+      const keys=[];
+      for(let i=0;i<sessionStorage.length;i++){const key=sessionStorage.key(i);if(key&&key.startsWith("ldm_demo_account_state_"))keys.push(key);}
+      keys.forEach(key=>sessionStorage.removeItem(key));
+    }catch(_){try{sessionStorage.removeItem(STATE_KEY);}catch(__){}}
+    const target=new URL("demo-login.html?exited=1",window.location.href);
+    window.location.replace(target.href);
+  }
 
   function visibleTransactions(state,profile){return state.transactions.filter(row=>profile.scope==="network"||row.storeCode===profile.storeCode);}
   function visibleEmployees(state,profile){return state.employees.filter(emp=>profile.scope==="network"||emp.storeCode===profile.storeCode);}
@@ -368,6 +376,35 @@
     </div>`;
   }
 
+  function dashboardSalesSeries(state,profile,days=7){
+    const tx=visibleTransactions(state,profile);
+    const rows=[];
+    for(let offset=days-1;offset>=0;offset--){
+      const date=shiftDate(-offset);
+      const total=tx.filter(row=>row.date===date).reduce((sum,row)=>sum+Number(row.total||0),0);
+      const d=new Date(date+"T12:00:00");
+      rows.push({date,total,label:d.toLocaleDateString("id-ID",{day:"2-digit",month:"short"})});
+    }
+    return rows;
+  }
+
+  function dashboardSalesChart(state,profile){
+    const series=dashboardSalesSeries(state,profile,7);
+    const max=Math.max(1,...series.map(row=>row.total));
+    const width=1000,height=230,padLeft=42,padRight=18,padTop=18,padBottom=48;
+    const innerW=width-padLeft-padRight,innerH=height-padTop-padBottom;
+    const step=series.length>1?innerW/(series.length-1):0;
+    const pts=series.map((row,i)=>({x:padLeft+(i*step),y:padTop+innerH-(row.total/max)*innerH,...row}));
+    const polyline=pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    const area=`${padLeft},${padTop+innerH} ${polyline} ${padLeft+innerW},${padTop+innerH}`;
+    const grid=[0,.25,.5,.75,1].map(r=>{const y=padTop+innerH-(r*innerH);const value=max*r;return `<g><line class="dp-sales-grid-line" x1="${padLeft}" x2="${padLeft+innerW}" y1="${y}" y2="${y}"></line><text class="dp-sales-y-label" x="${padLeft-7}" y="${y+3}" text-anchor="end">${value>=1000000?(value/1000000).toFixed(1)+'jt':value>=1000?Math.round(value/1000)+'rb':Math.round(value)}</text></g>`;}).join("");
+    const labels=pts.map(p=>`<text class="dp-sales-x-label" x="${p.x}" y="${height-16}" text-anchor="middle">${esc(p.label)}</text>`).join("");
+    const points=pts.map(p=>`<g class="dp-sales-point-group"><circle class="dp-sales-point" cx="${p.x}" cy="${p.y}" r="4"></circle><title>${esc(p.label)} · ${money(p.total)}</title></g>`).join("");
+    const total=series.reduce((sum,row)=>sum+row.total,0);
+    const avg=Math.round(total/Math.max(1,series.length));
+    return `<section class="dp-card dp-sales-chart-card"><div class="dp-sales-chart-head"><div><h2>📈 Grafik Pendapatan Demo 7 Hari</h2><p>Data latihan sesuai cakupan akun aktif. Grafik berubah saat transaksi Demo bertambah.</p></div><div class="dp-sales-chart-summary"><span>Total 7 Hari<strong>${money(total)}</strong></span><span>Rata-rata / Hari<strong>${money(avg)}</strong></span></div></div><div class="dp-sales-chart-wrap"><svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Grafik pendapatan Demo tujuh hari">${grid}<polygon class="dp-sales-area" points="${area}"></polygon><polyline class="dp-sales-line" points="${polyline}"></polyline>${points}${labels}</svg></div></section>`;
+  }
+
   function renderDashboardMode(state,profile){
     const cfg=modeConfig(state.storeMode),tx=visibleTransactions(state,profile),today=shiftDate(0),rows=tx.filter(x=>x.date===today);
     const sales=rows.reduce((a,x)=>a+Number(x.total||0),0);const modal=Math.round(sales*.72);const profit=Math.max(0,sales-modal);
@@ -383,6 +420,7 @@
       <section class="dp-card"><div class="dp-month-head"><div class="dp-card-title" style="margin:0"><h2>${cfg.icon} Ringkasan ${esc(cfg.catalogLabel)}</h2></div><span class="dp-chip blue">${esc(cfg.stockLabel)}</span></div>
         <div class="dp-mode-dashboard-products">${top.map((p,i)=>`<div class="dp-mode-dashboard-item">${cfg.showImages?modeVisual(p):`<span class="dp-mode-rank">${i+1}</span>`}<div><strong>${esc(p.name)}</strong><small>${money(p.price)} · ${lowLabel(p,cfg.id)}</small></div></div>`).join("")}</div>
       </section>
+      ${dashboardSalesChart(state,profile)}
     </div>`;
   }
 
@@ -447,6 +485,11 @@
   }
 
   function bindStage(state,profile){
+    document.querySelectorAll("[data-demo-exit]").forEach(btn=>{
+      btn.disabled=false;
+      btn.setAttribute("aria-label","Keluar dari Mode Demo");
+      btn.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();exit();},{once:true});
+    });
     document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>{state.page=btn.dataset.go;save(state);render(state);}));
 
     // Kasir parity
