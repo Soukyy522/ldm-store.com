@@ -1,9 +1,9 @@
 (function(){
   "use strict";
 
-  const STATE_KEY="ldm_demo_account_state_v2892";
+  const STATE_KEY="ldm_demo_account_state_v28100";
   const TTL_MS=2*60*60*1000;
-  const VERSION="28.9.2";
+  const VERSION="28.10.0";
   const CATEGORIES={
     SAKIT_KONDISI:"Sakit / kondisi kesehatan",
     KEPERLUAN_KELUARGA:"Keperluan keluarga mendesak",
@@ -19,6 +19,12 @@
     admin:{id:"admin",employeeId:"emp-admin-a",name:"Admin Demo",role:"admin",scope:"store",storeCode:"DEMO-A",storeName:"Cabang A Demo",icon:"🧑‍💼"},
     kasir:{id:"kasir",employeeId:"emp-kasir-a",name:"Kasir Demo",role:"kasir",scope:"store",storeCode:"DEMO-A",storeName:"Cabang A Demo",icon:"🧾"}
   };
+  const MODE_CONFIG={
+    retail:{id:"retail",label:"Toko Ritel",icon:"🛒",stockLabel:"Strict Stock",strictStock:true,showImages:false,productName:"Barang",catalogLabel:"Barang & Stok",searchPlaceholder:"Nama / Barcode barang...",description:"Toko Ritel memakai Strict Stock. Transaksi ditolak jika stok tidak cukup dan stok tidak boleh minus.",accent:"retail"},
+    warung:{id:"warung",label:"Warung",icon:"🍜",stockLabel:"Soft Stock",strictStock:false,showImages:false,productName:"Barang / Menu",catalogLabel:"Barang & Menu",searchPlaceholder:"Cari barang atau menu...",description:"Warung memakai Soft Stock. Transaksi tetap dapat dilanjutkan saat catatan stok kurang, dengan peringatan agar stok fisik diperiksa.",accent:"warung"},
+    cafe:{id:"cafe",label:"Kafe",icon:"☕",stockLabel:"Soft Stock",strictStock:false,showImages:true,productName:"Menu",catalogLabel:"Menu & Harga",searchPlaceholder:"Cari menu / barcode...",description:"Kafe memakai Soft Stock dan menu visual bergambar agar pemilihan menu lebih cepat. Kekurangan stok tidak memblokir transaksi Demo.",accent:"cafe"}
+  };
+
   const ROUTES=[
     {id:"dashboard",icon:"📊",label:"Dashboard",roles:["owner","admin","kasir"]},
     {id:"kasir",icon:"💵",label:"Kasir",roles:["owner","admin","kasir"]},
@@ -80,8 +86,44 @@
     return rows;
   }
 
+  function seedModeCatalogs(){
+    return {
+      retail:[
+        {id:"ret-001",barcode:"899100100101",name:"Gula 1 Kg",purchasePrice:17000,price:18500,stock:4,minStock:5,unit:"Kg",category:"Sembako",visual:"🧂"},
+        {id:"ret-002",barcode:"899100100102",name:"Minyak Goreng 1L",purchasePrice:19000,price:21500,stock:0,minStock:4,unit:"Pcs",category:"Sembako",visual:"🫗"},
+        {id:"ret-003",barcode:"899100100103",name:"Telur Omega",purchasePrice:25500,price:29500,stock:7.5,minStock:8,unit:"Kg",category:"Sembako",visual:"🥚"},
+        {id:"ret-004",barcode:"899100100104",name:"Tepung Terigu 1 Kg",purchasePrice:11500,price:13000,stock:12,minStock:6,unit:"Pcs",category:"Sembako",visual:"🌾"},
+        {id:"ret-005",barcode:"899100100105",name:"Bihun Jagung 320g",purchasePrice:7500,price:8500,stock:3,minStock:5,unit:"Pcs",category:"Sembako",visual:"🍜"},
+        {id:"ret-006",barcode:"899100100106",name:"Air Mineral 600ml",purchasePrice:2500,price:4000,stock:24,minStock:8,unit:"Pcs",category:"Minuman",visual:"💧"},
+        {id:"ret-007",barcode:"899100100107",name:"Susu UHT 1L",purchasePrice:17000,price:20500,stock:9,minStock:5,unit:"Pcs",category:"Minuman",visual:"🥛"},
+        {id:"ret-008",barcode:"899100100108",name:"Beras Premium 5 Kg",purchasePrice:69000,price:76000,stock:6,minStock:3,unit:"Karung",category:"Sembako",visual:"🍚"}
+      ],
+      warung:[
+        {id:"war-001",barcode:"899200200101",name:"Indomie Goreng",purchasePrice:2850,price:3500,stock:3,minStock:8,unit:"Pcs",category:"Makanan",visual:"🍜"},
+        {id:"war-002",barcode:"899200200102",name:"Mie Sedaap Soto",purchasePrice:2800,price:3500,stock:0,minStock:8,unit:"Pcs",category:"Makanan",visual:"🥣"},
+        {id:"war-003",barcode:"899200200103",name:"Kopi Sachet",purchasePrice:1400,price:2500,stock:18,minStock:10,unit:"Pcs",category:"Minuman",visual:"☕"},
+        {id:"war-004",barcode:"899200200104",name:"Teh Manis",purchasePrice:1700,price:3000,stock:12,minStock:8,unit:"Pcs",category:"Minuman",visual:"🫖"},
+        {id:"war-005",barcode:"899200200105",name:"Air Mineral",purchasePrice:2500,price:4000,stock:8,minStock:10,unit:"Pcs",category:"Minuman",visual:"💧"},
+        {id:"war-006",barcode:"899200200106",name:"Kerupuk",purchasePrice:1000,price:2000,stock:20,minStock:10,unit:"Pcs",category:"Snack",visual:"🥨"},
+        {id:"war-007",barcode:"899200200107",name:"Roti Isi",purchasePrice:3500,price:5000,stock:5,minStock:6,unit:"Pcs",category:"Snack",visual:"🍞"},
+        {id:"war-008",barcode:"899200200108",name:"Es Teh Gelas",purchasePrice:2500,price:5000,stock:-1,minStock:6,unit:"Porsi",category:"Minuman",visual:"🧋"}
+      ],
+      cafe:[
+        {id:"caf-001",barcode:"MENU-ESP",name:"Espresso",purchasePrice:5500,price:18000,stock:12,minStock:5,unit:"Porsi",category:"Coffee",visual:"☕"},
+        {id:"caf-002",barcode:"MENU-AME",name:"Americano",purchasePrice:6500,price:22000,stock:9,minStock:5,unit:"Porsi",category:"Coffee",visual:"🥤"},
+        {id:"caf-003",barcode:"MENU-CAP",name:"Cappuccino",purchasePrice:9000,price:28000,stock:4,minStock:6,unit:"Porsi",category:"Coffee",visual:"☕"},
+        {id:"caf-004",barcode:"MENU-LAT",name:"Cafe Latte",purchasePrice:9500,price:30000,stock:0,minStock:6,unit:"Porsi",category:"Coffee",visual:"🥛"},
+        {id:"caf-005",barcode:"MENU-KOPSU",name:"Es Kopi Susu",purchasePrice:8500,price:26000,stock:7,minStock:5,unit:"Porsi",category:"Coffee",visual:"🧋"},
+        {id:"caf-006",barcode:"MENU-MAT",name:"Matcha Latte",purchasePrice:11000,price:32000,stock:5,minStock:5,unit:"Porsi",category:"Non Coffee",visual:"🍵"},
+        {id:"caf-007",barcode:"MENU-CRO",name:"Croissant Butter",purchasePrice:12000,price:25000,stock:3,minStock:4,unit:"Porsi",category:"Pastry",visual:"🥐"},
+        {id:"caf-008",barcode:"MENU-RICE",name:"Rice Bowl Ayam",purchasePrice:15500,price:36000,stock:6,minStock:4,unit:"Porsi",category:"Food",visual:"🍱"}
+      ]
+    };
+  }
+
   function seedState(profileId){
     const now=Date.now();
+    const modeCatalogs=seedModeCatalogs();
     const today=shiftDate(0),yesterday=shiftDate(-1),twoDays=shiftDate(-2),threeDays=shiftDate(-3),fourDays=shiftDate(-4),fiveDays=shiftDate(-5),sixDays=shiftDate(-6);
     return {
       version:VERSION,
@@ -92,20 +134,8 @@
       storeMode:"retail",
       demoTheme:"dashboard",
       cart:[],
-      products:[
-        {id:"prd-001",barcode:"-",name:"Gula",purchasePrice:17000,price:18500,stock:4,minStock:5,unit:"Kg",category:"Sembako"},
-        {id:"prd-002",barcode:"-",name:"Gula 1/2 Kg",purchasePrice:8500,price:9500,stock:4,minStock:5,unit:"Bungkus",category:"Sembako"},
-        {id:"prd-003",barcode:"(90)MD121519000700026",name:"HANAU Minyak 1 Liter",purchasePrice:19000,price:20500,stock:0,minStock:3,unit:"Liter",category:"Sembako"},
-        {id:"prd-004",barcode:"8998225800012",name:"Minyak Goreng Bantal Fortune 1L",purchasePrice:0,price:21000,stock:0,minStock:4,unit:"Pcs",category:"Sembako"},
-        {id:"prd-005",barcode:"8993496106986",name:"Minyak Goreng Bantal Fortune 500ml",purchasePrice:10200,price:11000,stock:2,minStock:4,unit:"Pcs",category:"Sembako"},
-        {id:"prd-006",barcode:"8997011700031",name:"Padamu Bihun Jagung 320g",purchasePrice:7500,price:8000,stock:0,minStock:4,unit:"Pcs",category:"Sembako"},
-        {id:"prd-007",barcode:"Partai hanau",name:"Partai hanau",purchasePrice:227000,price:240000,stock:4,minStock:5,unit:"Pcs",category:"Sembako"},
-        {id:"prd-008",barcode:"-",name:"Telur 25",purchasePrice:21000,price:25000,stock:.175,minStock:1,unit:"Kg",category:"Sembako"},
-        {id:"prd-009",barcode:"8991234567891",name:"Telur Omega",purchasePrice:25500,price:29500,stock:7.629,minStock:8,unit:"Kg",category:"Sembako"},
-        {id:"prd-010",barcode:"8993496110075",name:"tepung terigu",purchasePrice:11500,price:13000,stock:5,minStock:6,unit:"Pcs",category:"Sembako"},
-        {id:"prd-011",barcode:"899100100011",name:"Telur Biasa",purchasePrice:23500,price:27500,stock:18,minStock:8,unit:"Kg",category:"Sembako"},
-        {id:"prd-012",barcode:"899100100012",name:"Ras partai",purchasePrice:24000,price:25450,stock:13,minStock:5,unit:"Kg",category:"Sembako"}
-      ],
+      products:clone(modeCatalogs.retail),
+      modeCatalogs,
       employees:employees(),
       schedules:scheduleRows(),
       attendance:[
@@ -184,7 +214,20 @@
   function shiftLabel(value){return ({SHIFT_1:"Shift 1",SHIFT_2:"Shift 2",FULL_DAY:"Full Day"})[value]||String(value||"");}
   function workStatusLabel(value){return ({WORK:"Kerja",OFF:"Libur",ANNUAL_LEAVE:"Cuti Tahunan"})[value]||String(value||"");}
   function profileTitle(profile){return ({"owner-pusat":"Owner Pusat","owner-cabang":"Owner Cabang",admin:"Admin",kasir:"Kasir"})[profile?.id]||roleLabel(profile?.role);}
-  function modeInfo(value){return ({retail:{label:"Toko Ritel",icon:"🛒",desc:"Toko Ritel · kontrol stok ketat."},warung:{label:"Warung",icon:"🍜",desc:"Warung · alur operasional sederhana."},cafe:{label:"Kafe",icon:"☕",desc:"Kafe · alur menu dan stok fleksibel."}})[value]||{label:"Toko Ritel",icon:"🛒",desc:"Toko Ritel · kontrol stok ketat."};}
+  function modeInfo(value){const cfg=MODE_CONFIG[value]||MODE_CONFIG.retail;return {label:cfg.label,icon:cfg.icon,desc:cfg.description,stockLabel:cfg.stockLabel,strictStock:cfg.strictStock,showImages:cfg.showImages};}
+  function modeConfig(value){return MODE_CONFIG[value]||MODE_CONFIG.retail;}
+  function persistModeCatalog(state){if(!state.modeCatalogs)state.modeCatalogs=seedModeCatalogs();state.modeCatalogs[state.storeMode||"retail"]=clone(state.products||[]);}
+  function switchStoreMode(state,next){
+    const target=MODE_CONFIG[next]?next:"retail";
+    if(!state.modeCatalogs)state.modeCatalogs=seedModeCatalogs();
+    persistModeCatalog(state);
+    state.storeMode=target;
+    state.products=clone(state.modeCatalogs[target]||seedModeCatalogs()[target]);
+    state.cart=[];state.demoSelectedProductId="";state.demoCash=0;state.demoDiscount=0;
+    return state;
+  }
+  function modeBehaviorStrip(state){const cfg=modeConfig(state.storeMode);return `<div class="dp-mode-behavior ${cfg.accent}"><div><strong>${cfg.icon} ${esc(cfg.label)} · ${esc(cfg.stockLabel)}</strong><span>${esc(cfg.description)}</span></div><button type="button" data-demo-mode-open>Ganti Mode</button></div>`;}
+  function modeVisual(p){return `<span class="dp-mode-visual" aria-hidden="true">${esc(p.visual||"🍽️")}</span>`;}
   function openModal(id){const el=document.getElementById(id);if(el)el.hidden=false;}
   function closeModal(id){const el=document.getElementById(id);if(el)el.hidden=true;}
   function applyDemoTheme(state){
@@ -201,7 +244,7 @@
   function monthLabel(){return new Date().toLocaleDateString("id-ID",{month:"long",year:"numeric"});}
   function todayLong(){return new Date().toLocaleDateString("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});}
   function calcProductMargin(p){return Math.max(0,Number(p.price||0)-Number(p.purchasePrice||Math.round(Number(p.price||0)*.82)));}
-  function lowLabel(p){if(Number(p.stock||0)<=0)return `Stok Habis: 0 ${esc(p.unit||"Pcs")}`;if(Number(p.stock||0)<=Number(p.minStock||0))return `Hampir Habis: ${Number(p.stock||0)} ${esc(p.unit||"Pcs")}`;return `Stok: ${Number(p.stock||0)} ${esc(p.unit||"Pcs")}`;}
+  function lowLabel(p,mode="retail"){const qty=Number(p.stock||0),unit=esc(p.unit||"Pcs"),cfg=modeConfig(mode);if(cfg.strictStock&&qty<=0)return `Stok Habis: 0 ${unit}`;if(!cfg.strictStock&&qty<0)return `Catatan Stok: ${qty} ${unit}`;if(!cfg.strictStock&&qty===0)return `Stok Tercatat: 0 ${unit}`;if(qty<=Number(p.minStock||0))return `${cfg.strictStock?"Hampir Habis":"Stok Rendah"}: ${qty} ${unit}`;return `Stok: ${qty} ${unit}`;}
 
   function renderDashboard(state,profile){
     const tx=visibleTransactions(state,profile),today=shiftDate(0),rows=tx.filter(x=>x.date===today);
@@ -325,21 +368,57 @@
     </div>`;
   }
 
-  function renderSecurity(){return `<div class="dp-page">${brandHeader("Informasi Demo",`<button class="dp-header-btn red" data-demo-exit>Keluar Demo</button>`)}${demoNote()}<div class="dp-grid-3"><section class="dp-card"><h3>🧪 Data Latihan</h3><p>Transaksi, stok, absensi, jadwal, dan pengajuan pada Mode Demo tidak memengaruhi toko.</p></section><section class="dp-card"><h3>↻ Reset Kapan Saja</h3><p>Gunakan Management Akun untuk mengembalikan data contoh ke kondisi awal.</p></section><section class="dp-card"><h3>👥 Pilih Peran</h3><p>Ganti akun Demo untuk melihat perbedaan akses Owner Pusat, Owner Cabang, Admin, dan Kasir.</p></section><section class="dp-card"><h3>🧩 Parity Halaman</h3><p>Dashboard, Kasir, Barang, Laporan, Absensi, Master Shift, dan Ketidakhadiran mengikuti struktur visual production masing-masing.</p></section><section class="dp-card"><h3>ℹ️ Bukan 100%</h3><p>Tampilan dan fitur Demo tetap dapat disederhanakan atau dibatasi dan tidak mewakili 100% aplikasi sebenarnya.</p></section><section class="dp-card"><h3>🔒 Tindakan Dibatasi</h3><p>Fitur cloud, pembayaran, perangkat, dan tindakan berisiko tidak menjalankan operasi nyata.</p></section></div></div>`;}
+  function renderDashboardMode(state,profile){
+    const cfg=modeConfig(state.storeMode),tx=visibleTransactions(state,profile),today=shiftDate(0),rows=tx.filter(x=>x.date===today);
+    const sales=rows.reduce((a,x)=>a+Number(x.total||0),0);const modal=Math.round(sales*.72);const profit=Math.max(0,sales-modal);
+    const low=state.products.filter(p=>Number(p.stock||0)<=Number(p.minStock||0)).length;
+    const fourth=cfg.id==="cafe"?["Menu Aktif",`${state.products.length} Menu`]:cfg.id==="warung"?["Catatan Stok Rendah",`${low} Item`]:["Barang Menipis",`${low} Item`];
+    const top=state.products.slice().sort((a,b)=>Number(b.price)-Number(a.price)).slice(0,5);
+    return `<div class="dp-page dp-dashboard" data-demo-mode-page="${cfg.id}">
+      ${brandHeader(`Dashboard · ${cfg.label}`,`<button class="dp-header-btn green" type="button" data-demo-action="account">👤 Manage Account</button><button class="dp-header-btn gray" type="button" data-demo-theme-open>🎨 Tema</button><button class="dp-header-btn red" type="button" data-demo-exit>🚪 Keluar Demo</button>`)}
+      ${demoNote()}${modeBehaviorStrip(state)}
+      <div class="dp-dash-mode"><select class="dp-select" id="demoInlineModeSelect"><option value="retail">🛒 Toko Ritel · Strict Stock</option><option value="warung">🍜 Warung · Soft Stock</option><option value="cafe">☕ Kafe · Soft Stock + Visual</option></select></div>
+      <div class="dp-grid-4" style="margin-bottom:10px"><div class="dp-stat"><span>Omzet Hari Ini</span><strong>${money(sales)}</strong></div><div class="dp-stat green"><span>Profit Bersih</span><strong>${money(profit)}</strong></div><div class="dp-stat"><span>Total Transaksi</span><strong>${rows.length} TRX</strong></div><div class="dp-stat orange"><span>${fourth[0]}</span><strong>${fourth[1]}</strong></div></div>
+      <div class="dp-profit-formula">Mode ${esc(cfg.label)}: <b>${esc(cfg.stockLabel)}</b> · ${cfg.strictStock?"stok harus cukup sebelum transaksi":"stok bersifat pencatatan dan tidak memblokir transaksi Demo"}</div>
+      <section class="dp-card"><div class="dp-month-head"><div class="dp-card-title" style="margin:0"><h2>${cfg.icon} Ringkasan ${esc(cfg.catalogLabel)}</h2></div><span class="dp-chip blue">${esc(cfg.stockLabel)}</span></div>
+        <div class="dp-mode-dashboard-products">${top.map((p,i)=>`<div class="dp-mode-dashboard-item">${cfg.showImages?modeVisual(p):`<span class="dp-mode-rank">${i+1}</span>`}<div><strong>${esc(p.name)}</strong><small>${money(p.price)} · ${lowLabel(p,cfg.id)}</small></div></div>`).join("")}</div>
+      </section>
+    </div>`;
+  }
+
+  function renderKasirMode(state,profile){
+    const cfg=modeConfig(state.storeMode),cart=state.cart||[];const subtotal=cart.reduce((s,r)=>s+Number(r.price||0)*Number(r.qty||0),0),discount=Number(state.demoDiscount||0),total=Math.max(0,subtotal-discount),cash=Number(state.demoCash||0),change=Math.max(0,cash-total);
+    const quick=cfg.id==="retail"?"":`<div class="dp-mode-menu ${cfg.id}"><div class="dp-mode-menu-head"><strong>${cfg.id==="cafe"?"☕ Menu Kafe":"🍜 Menu Cepat Warung"}</strong><span>${cfg.id==="cafe"?"Pilih menu bergambar":"Daftar cepat tanpa gambar"}</span></div><div class="dp-mode-menu-grid">${state.products.map(p=>`<button type="button" class="dp-mode-menu-item ${cfg.showImages?"with-visual":"no-visual"}" data-demo-quick-add="${esc(p.id)}">${cfg.showImages?modeVisual(p):""}<span><strong>${esc(p.name)}</strong><small>${money(p.price)} · ${lowLabel(p,cfg.id)}</small></span><b>＋</b></button>`).join("")}</div></div>`;
+    return `<div class="dp-page" data-demo-mode-page="${cfg.id}">${brandHeader(`Transaksi · ${cfg.label}`,`<button type="button" class="dp-header-btn gray" data-demo-mode-open>${cfg.icon} ${cfg.stockLabel}</button>`)}${demoNote()}${modeBehaviorStrip(state)}<div class="dp-pos-layout"><section class="dp-card">${quick}<div class="dp-pos-search"><div><label class="dp-label">${cfg.id==="cafe"?"Pilih Menu / Cari":"Pilih Barang / Scan Barcode"}</label><input id="demoProductSearch" class="dp-input" placeholder="${esc(cfg.searchPlaceholder)}"></div><button class="dp-btn blue" type="button" data-demo-limited="Kamera scanner">📷</button><div class="dp-qty-field"><label class="dp-label">Jumlah / Berat</label><input id="demoQty" class="dp-input" type="number" min="0.25" step="0.25" value="1"></div></div>
+      <div class="dp-product-suggest ${cfg.id!=="retail"?"mode-hidden-suggest":""}">${state.products.slice(0,6).map(p=>`<button type="button" data-demo-select-product="${esc(p.id)}">${esc(p.name)} · ${money(p.price)}</button>`).join("")}</div>
+      <div class="dp-pos-qty-grid"><button class="dp-mini-key" type="button" data-demo-qty="0.25">¼ (0.25)</button><button class="dp-mini-key" type="button" data-demo-qty="0.5">½ (0.5)</button><button class="dp-mini-key" type="button" data-demo-qty="1">1</button><button class="dp-mini-key" type="button" data-demo-qty="2">2</button></div><button class="dp-btn dp-add-cart" id="demoAddSelectedBtn" type="button">+ Tambah ${esc(cfg.productName)} ke Keranjang</button>
+      <div class="dp-cart-box"><div class="dp-cart-title"><span>KERANJANG ${cfg.id==="cafe"?"PESANAN":"BELANJA"}</span><button type="button" id="demoClearCartBtn" style="border:0;background:transparent;color:#ef4444;font-size:9px;font-weight:900">[Kosongkan]</button></div><div class="dp-cart-list">${cart.length?cart.map(r=>`<div class="dp-cart-row"><div><strong>${esc(r.name)}</strong><small> × ${r.qty}</small></div><strong>${money(r.price*r.qty)}</strong></div>`).join(""):`<div style="padding:22px;text-align:center;color:#94a3b8;font-size:9px">Keranjang kosong</div>`}</div><div class="dp-stock-policy ${cfg.strictStock?"strict":"soft"}"><strong>${cfg.strictStock?"Strict Stock":"Soft Stock"}</strong><span>${cfg.strictStock?"Item dengan stok tidak cukup tidak dapat ditransaksikan.":"Stok kurang memberi peringatan, tetapi transaksi Demo tetap dapat dilanjutkan."}</span></div></div></section>
+      <section class="dp-card dp-pos-summary"><div class="dp-subtotal-line"><span>Subtotal ${cfg.productName}:</span><strong>${money(subtotal)}</strong></div><label class="dp-label">Diskon Transaksi (Rp / %)</label><input class="dp-input" id="demoDiscountInput" placeholder="Contoh: 5000 atau 10%" value="${discount||''}"><div class="dp-total-box"><span>Total Tagihan</span><strong>${money(total)}</strong></div><label class="dp-label">Uang Diterima (Tunai)</label><input class="dp-input" id="demoCashReceived" placeholder="Ketik nominal..." value="${cash||''}"><div class="dp-change"><span>Estimasi Kembalian:</span><strong>${money(change)}</strong></div><div class="dp-cash-shortcuts"><button class="dp-mini-key" data-demo-cash="exact">Uang Pas</button><button class="dp-mini-key" data-demo-cash="1000">+1rb</button><button class="dp-mini-key" data-demo-cash="5000">+5rb</button><button class="dp-mini-key" data-demo-cash="20000">+20rb</button><button class="dp-mini-key" data-demo-cash="50000">+50rb</button><button class="dp-mini-key" data-demo-cash="100000">+100rb</button></div><select id="demoPaymentMethod" hidden><option>Tunai</option><option>QRIS</option></select><div class="dp-pay-row"><button class="dp-btn yellow" id="demoCheckoutBtn" type="button" data-demo-pay="Tunai" ${!cart.length?'disabled':''}>💵 TUNAI</button><button class="dp-btn blue" type="button" data-demo-pay="QRIS" ${!cart.length?'disabled':''}>📱 NON TUNAI</button></div></section></div></div>`;
+  }
+
+  function renderBarangMode(state,profile){
+    const cfg=modeConfig(state.storeMode),editable=profile.role!=="kasir";
+    const title=cfg.id==="cafe"?"Menu & Harga":cfg.id==="warung"?"Barang & Menu":"Data Barang";
+    return `<div class="dp-page" data-demo-mode-page="${cfg.id}">${brandHeader(`${title} · ${cfg.label}`,`<button type="button" class="dp-header-btn green" data-demo-mode-open>${cfg.icon} ${cfg.stockLabel}</button>`)}${demoNote()}${modeBehaviorStrip(state)}<div class="dp-products-layout"><section class="dp-card dp-product-form"><div class="dp-card-title"><h2>+ TAMBAH ${cfg.id==="cafe"?"MENU":"BARANG"} BARU</h2></div><label class="dp-label">${cfg.id==="cafe"?"Kode Menu / Barcode":"Kode Barcode"}</label><input id="demoNewBarcode" class="dp-input" placeholder="${cfg.id==="cafe"?"Contoh: MENU-LATTE":"Scan / Ketik Barcode..."}"><label class="dp-label">Nama ${cfg.id==="cafe"?"Menu":"Barang"}</label><input id="demoNewName" class="dp-input" placeholder="${cfg.id==="cafe"?"Contoh: Caramel Latte":"Contoh: Indomie Goreng"}"><label class="dp-label">Kategori</label><select id="demoNewCategory" class="dp-select">${cfg.id==="cafe"?'<option>Coffee</option><option>Non Coffee</option><option>Food</option><option>Pastry</option>':cfg.id==="warung"?'<option>Makanan</option><option>Minuman</option><option>Snack</option><option>Sembako</option>':'<option>Sembako</option><option>Frozen Food</option><option>Minuman</option><option>Makanan</option>'}</select><label class="dp-label">${cfg.strictStock?"Jumlah Stok Awal":"Catatan Stok Awal"}</label><input id="demoNewStock" class="dp-input" type="number" placeholder="Contoh: 50"><label class="dp-label">Satuan</label><select id="demoNewUnit" class="dp-select"><option>Pcs</option><option>Porsi</option><option>Kg</option><option>Liter</option><option>Bungkus</option></select><label class="dp-label">Harga Beli / Modal</label><input id="demoNewBuy" class="dp-input" type="number" placeholder="Contoh: 2800"><label class="dp-label">Harga Jual</label><input id="demoNewSell" class="dp-input" type="number" placeholder="Contoh: 3500"><button class="dp-btn" style="width:100%" id="demoAddProductBtn" type="button" ${editable?'':'disabled'}>+ SIMPAN ${cfg.id==="cafe"?"MENU":"BARANG"}</button></section>
+      <section class="dp-product-list-area"><div class="dp-search-row"><input class="dp-input" id="demoInventorySearch" placeholder="🔍 Cari ${cfg.id==="cafe"?"menu":"nama / barcode / kategori"}..."><button class="dp-btn blue" type="button" data-demo-limited="Scan barcode">▣ Scan</button></div><div class="dp-products-grid ${cfg.showImages?"cafe-visual-grid":""}">${state.products.map(p=>`<article class="dp-product-card ${cfg.strictStock?(p.stock>p.minStock?'safe':''):'safe soft-card'}" data-demo-product-card data-product-search="${esc((p.name+' '+p.barcode+' '+(p.category||'')).toLowerCase())}">${cfg.showImages?`<div class="dp-cafe-product-visual">${modeVisual(p)}<span>${esc(p.category||'Menu')}</span></div>`:""}<div class="dp-product-head"><strong>${cfg.strictStock&&p.stock<=p.minStock?'⚠️ ':''}${esc(p.name)}</strong><span class="dp-chip ${cfg.strictStock&&p.stock<=p.minStock?'red':!cfg.strictStock&&p.stock<=p.minStock?'orange':'green'}">${lowLabel(p,cfg.id)}</span></div><div style="font-size:8px;color:#64748b;margin-bottom:7px">${cfg.id==="cafe"?'Kode':'Barcode'}: ${esc(p.barcode||'-')} <span style="float:right" class="dp-chip">${esc(p.category||'Umum')}</span></div><div class="dp-product-meta"><div>Harga Beli<b>${money(p.purchasePrice||Math.round(p.price*.82))}</b></div><div>Harga Jual<b>${money(p.price)}</b></div></div><div class="dp-margin">Margin: +${money(calcProductMargin(p))} / ${esc(p.unit||'Pcs')}</div><div class="dp-product-buttons"><button class="promo" type="button" data-demo-limited="Promo">🏷 Promo</button><button class="edit" type="button" data-stock="${esc(p.id)}" data-delta="1" ${editable?'':'disabled'}>✏ Edit</button><button class="delete" type="button" data-demo-delete-product="${esc(p.id)}" ${editable?'':'disabled'}>🗑 Hapus</button></div></article>`).join("")}</div></section></div></div>`;
+  }
+
+  function renderSecurity(){return `<div class="dp-page">${brandHeader("Informasi Demo",`<button class="dp-header-btn red" data-demo-exit>Keluar Demo</button>`)}${demoNote()}<div class="dp-grid-3"><section class="dp-card"><h3>🧪 Data Latihan</h3><p>Transaksi, stok, absensi, jadwal, dan pengajuan pada Mode Demo tidak memengaruhi toko.</p></section><section class="dp-card"><h3>↻ Reset Kapan Saja</h3><p>Gunakan Management Akun untuk mengembalikan data contoh ke kondisi awal.</p></section><section class="dp-card"><h3>👥 Pilih Peran</h3><p>Ganti akun Demo untuk melihat perbedaan akses Owner Pusat, Owner Cabang, Admin, dan Kasir.</p></section><section class="dp-card"><h3>🧩 3 Mode Interaktif</h3><p>Kafe memakai menu visual + Soft Stock, Warung memakai daftar cepat tanpa gambar + Soft Stock, dan Toko Ritel memakai Strict Stock.</p></section><section class="dp-card"><h3>ℹ️ Bukan 100%</h3><p>Tampilan dan fitur Demo tetap dapat disederhanakan atau dibatasi dan tidak mewakili 100% aplikasi sebenarnya.</p></section><section class="dp-card"><h3>🔒 Tindakan Dibatasi</h3><p>Fitur cloud, pembayaran, perangkat, dan tindakan berisiko tidak menjalankan operasi nyata.</p></section></div></div>`;}
 
 
   function render(state){
     const profile=currentProfile(state);const stage=document.getElementById("demoStage");if(!stage)return;
     if(!ROUTES.some(r=>r.id===state.page&&r.roles.includes(profile.role))) state.page="dashboard";
     save(state);
-    const renderer={dashboard:renderDashboard,kasir:renderKasir,barang:renderBarang,laporan:renderLaporan,absensi:renderAbsensi,"master-shift":renderMasterShift,ketidakhadiran:renderKetidakhadiran,keamanan:()=>renderSecurity()};
+    const renderer={dashboard:renderDashboardMode,kasir:renderKasirMode,barang:renderBarangMode,laporan:renderLaporan,absensi:renderAbsensi,"master-shift":renderMasterShift,ketidakhadiran:renderKetidakhadiran,keamanan:()=>renderSecurity()};
     stage.innerHTML=(renderer[state.page]||renderDashboard)(state,profile);
     renderShell(state,profile);bindStage(state,profile);
   }
 
   function renderShell(state,profile){
+    document.documentElement.dataset.demoStoreMode=state.storeMode||"retail";document.body.dataset.demoStoreMode=state.storeMode||"retail";
     const ctx=document.getElementById("demoContext");
-    if(ctx)ctx.innerHTML=`<strong>${profile.icon} ${esc(profileTitle(profile))}</strong><span>${esc(roleLabel(profile.role))} · ${esc(storeLabel(profile.storeCode))}</span><span>Demo aktif hingga ${new Date(state.expiresAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</span>`;
+    if(ctx)ctx.innerHTML=`<strong>${profile.icon} ${esc(profileTitle(profile))}</strong><span>${esc(roleLabel(profile.role))} · ${esc(storeLabel(profile.storeCode))}</span><span>${modeInfo(state.storeMode).icon} ${esc(modeInfo(state.storeMode).label)} · ${esc(modeInfo(state.storeMode).stockLabel)}</span><span>Demo aktif hingga ${new Date(state.expiresAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</span>`;
     const nav=document.getElementById("demoNav");
     if(nav)nav.innerHTML=ROUTES.filter(r=>r.roles.includes(profile.role)).map(r=>`<button type="button" data-demo-route="${r.id}" class="nav-item ${state.page===r.id?"active":""}"><span>${r.icon}</span>${esc(r.label)}</button>`).join("")+`<button type="button" data-demo-limited="Fitur lainnya" class="nav-item is-limited"><span>•••</span>Menu Lainnya</button>`;
 
@@ -347,6 +426,8 @@
     const rolePill=document.getElementById("demoRolePill");if(rolePill)rolePill.textContent=`👤 ${profileTitle(profile)}`;
     const mode=modeInfo(state.storeMode||"retail");
     const modePill=document.getElementById("demoModePill");if(modePill)modePill.textContent=`${mode.icon} ${mode.label}`;
+    const megaTitle=document.querySelector("#demoMegaPanel .ldm-mega-panel-top strong");if(megaTitle)megaTitle.textContent=`Navigasi ${mode.label}`;
+    const megaCopy=document.querySelector("#demoMegaPanel .ldm-mega-panel-top p");if(megaCopy)megaCopy.textContent=`Mode ${mode.label} aktif · ${mode.stockLabel}. Beberapa fitur tetap dibatasi pada Mode Demo.`;
     const modeIcon=document.getElementById("demoModeIcon");if(modeIcon)modeIcon.textContent=mode.icon;
     const modeDescription=document.getElementById("demoModeDescription");if(modeDescription)modeDescription.textContent=mode.desc;
     const modeSelect=document.getElementById("demoModeSelect");if(modeSelect)modeSelect.value=state.storeMode||"retail";
@@ -361,6 +442,7 @@
 
     const profileGrid=document.getElementById("demoProfileGrid");
     if(profileGrid)profileGrid.innerHTML=Object.values(PROFILES).map(p=>`<button type="button" class="demo-profile-option ${p.id===profile.id?"active":""}" data-demo-profile-switch="${p.id}"><strong>${p.icon} ${esc(profileTitle(p))}</strong><span>${esc(roleLabel(p.role))} · ${esc(storeLabel(p.storeCode))}</span></button>`).join("");
+    document.querySelectorAll("[data-demo-store-mode]").forEach(btn=>btn.classList.toggle("active",btn.dataset.demoStoreMode===(state.storeMode||"retail")));
     applyDemoTheme(state);
   }
 
@@ -369,20 +451,21 @@
 
     // Kasir parity
     document.querySelectorAll("[data-demo-select-product]").forEach(btn=>btn.addEventListener("click",()=>{state.demoSelectedProductId=btn.dataset.demoSelectProduct;const p=state.products.find(x=>x.id===state.demoSelectedProductId);const input=document.getElementById("demoProductSearch");if(input&&p)input.value=p.name;save(state);}));
+    document.querySelectorAll("[data-demo-quick-add]").forEach(btn=>btn.addEventListener("click",()=>{const p=state.products.find(x=>x.id===btn.dataset.demoQuickAdd);if(!p)return;let row=state.cart.find(x=>x.id===p.id);if(row)row.qty+=1;else state.cart.push({id:p.id,name:p.name,price:p.price,qty:1});if(Number(p.stock||0)<1)toast(`${modeConfig(state.storeMode).stockLabel}: ${p.name} tetap ditambahkan pada mode ${modeConfig(state.storeMode).label}.`,"warn");save(state);render(state);}));
     document.querySelectorAll("[data-demo-qty]").forEach(btn=>btn.addEventListener("click",()=>{const input=document.getElementById("demoQty");if(input)input.value=btn.dataset.demoQty;}));
-    document.getElementById("demoAddSelectedBtn")?.addEventListener("click",()=>{const query=String(document.getElementById("demoProductSearch")?.value||"").trim().toLowerCase();let p=state.products.find(x=>x.id===state.demoSelectedProductId);if(!p&&query)p=state.products.find(x=>String(x.name).toLowerCase().includes(query)||String(x.barcode).toLowerCase()===query);if(!p){toast("Pilih barang terlebih dahulu.","warn");return;}const qty=Math.max(.25,Number(document.getElementById("demoQty")?.value)||1);if(Number(p.stock||0)<qty){toast(`Stok ${p.name} tidak cukup.`,"error");return;}let row=state.cart.find(x=>x.id===p.id);if(row){if(row.qty+qty>p.stock){toast("Jumlah keranjang melebihi stok Demo.","warn");return;}row.qty+=qty;}else state.cart.push({id:p.id,name:p.name,price:p.price,qty});save(state);render(state);});
+    document.getElementById("demoAddSelectedBtn")?.addEventListener("click",()=>{const query=String(document.getElementById("demoProductSearch")?.value||"").trim().toLowerCase();let p=state.products.find(x=>x.id===state.demoSelectedProductId);if(!p&&query)p=state.products.find(x=>String(x.name).toLowerCase().includes(query)||String(x.barcode).toLowerCase()===query);if(!p){toast("Pilih barang terlebih dahulu.","warn");return;}const qty=Math.max(.25,Number(document.getElementById("demoQty")?.value)||1);const cfg=modeConfig(state.storeMode);if(cfg.strictStock&&Number(p.stock||0)<qty){toast(`Stok ${p.name} tidak cukup pada mode Toko Ritel.`,"error");return;}if(!cfg.strictStock&&Number(p.stock||0)<qty)toast(`${cfg.stockLabel}: catatan stok ${p.name} kurang, transaksi Demo tetap dapat dilanjutkan.`,"warn");let row=state.cart.find(x=>x.id===p.id);if(row){if(cfg.strictStock&&row.qty+qty>p.stock){toast("Jumlah keranjang melebihi stok Demo.","warn");return;}row.qty+=qty;}else state.cart.push({id:p.id,name:p.name,price:p.price,qty});save(state);render(state);});
     document.getElementById("demoClearCartBtn")?.addEventListener("click",()=>{state.cart=[];state.demoCash=0;state.demoDiscount=0;save(state);render(state);});
     document.getElementById("demoDiscountInput")?.addEventListener("change",e=>{const raw=String(e.target.value||"").trim();const subtotal=state.cart.reduce((s,r)=>s+r.price*r.qty,0);state.demoDiscount=raw.endsWith("%")?Math.round(subtotal*(Number(raw.slice(0,-1))||0)/100):Math.max(0,Number(raw)||0);save(state);render(state);});
     document.getElementById("demoCashReceived")?.addEventListener("change",e=>{state.demoCash=Math.max(0,Number(e.target.value)||0);save(state);render(state);});
     document.querySelectorAll("[data-demo-cash]").forEach(btn=>btn.addEventListener("click",()=>{const subtotal=state.cart.reduce((s,r)=>s+r.price*r.qty,0);const total=Math.max(0,subtotal-Number(state.demoDiscount||0));state.demoCash=btn.dataset.demoCash==="exact"?total:total+Number(btn.dataset.demoCash||0);save(state);render(state);}));
-    const checkoutDemo=(method)=>{if(!state.cart.length)return;const subtotal=state.cart.reduce((s,x)=>s+x.price*x.qty,0),total=Math.max(0,subtotal-Number(state.demoDiscount||0));if(method==="Tunai"&&Number(state.demoCash||0)<total){toast("Uang diterima belum mencukupi total tagihan.","warn");return;}for(const row of state.cart){const p=state.products.find(x=>x.id===row.id);if(!p||row.qty>p.stock){toast(`Stok ${row.name} tidak cukup.`,"error");return;}}for(const row of state.cart){state.products.find(x=>x.id===row.id).stock-=row.qty;}state.transactions.unshift({id:`LDM-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2,6).toUpperCase()}`,date:shiftDate(0),time:timeNow(),storeCode:profile.storeCode,cashier:profile.name.replace(" Demo",""),method,total,items:state.cart.reduce((s,x)=>s+x.qty,0)});state.cart=[];state.demoCash=0;state.demoDiscount=0;save(state);render(state);toast("Transaksi Demo berhasil disimpan.");};
+    const checkoutDemo=(method)=>{if(!state.cart.length)return;const subtotal=state.cart.reduce((s,x)=>s+x.price*x.qty,0),total=Math.max(0,subtotal-Number(state.demoDiscount||0));if(method==="Tunai"&&Number(state.demoCash||0)<total){toast("Uang diterima belum mencukupi total tagihan.","warn");return;}const cfg=modeConfig(state.storeMode);for(const row of state.cart){const p=state.products.find(x=>x.id===row.id);if(!p){toast(`Item ${row.name} tidak tersedia.`,"error");return;}if(cfg.strictStock&&row.qty>p.stock){toast(`Stok ${row.name} tidak cukup pada mode Toko Ritel.`,"error");return;}}for(const row of state.cart){state.products.find(x=>x.id===row.id).stock-=row.qty;}persistModeCatalog(state);state.transactions.unshift({id:`LDM-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2,6).toUpperCase()}`,date:shiftDate(0),time:timeNow(),storeCode:profile.storeCode,cashier:profile.name.replace(" Demo",""),method,total,items:state.cart.reduce((s,x)=>s+x.qty,0),mode:state.storeMode});state.cart=[];state.demoCash=0;state.demoDiscount=0;save(state);render(state);toast("Transaksi Demo berhasil disimpan.");};
     document.getElementById("demoCheckoutBtn")?.addEventListener("click",()=>checkoutDemo("Tunai"));
     document.querySelectorAll("[data-demo-pay]").forEach(btn=>{if(btn.id==="demoCheckoutBtn")return;btn.addEventListener("click",()=>checkoutDemo(btn.dataset.demoPay==="QRIS"?"QRIS":"Tunai"));});
 
     // Barang parity
-    document.querySelectorAll("[data-stock]").forEach(btn=>btn.addEventListener("click",()=>{if(profile.role==="kasir")return;const p=state.products.find(x=>x.id===btn.dataset.stock);if(!p)return;p.stock=Math.max(0,Number(p.stock||0)+Number(btn.dataset.delta||0));save(state);render(state);toast("Data stok Demo diperbarui.");}));
-    document.querySelectorAll("[data-demo-delete-product]").forEach(btn=>btn.addEventListener("click",()=>{if(profile.role==="kasir")return;const i=state.products.findIndex(x=>x.id===btn.dataset.demoDeleteProduct);if(i<0)return;state.products.splice(i,1);save(state);render(state);toast("Barang dihapus dari data Demo.","warn");}));
-    document.getElementById("demoAddProductBtn")?.addEventListener("click",()=>{if(profile.role==="kasir")return;const name=String(document.getElementById("demoNewName")?.value||"").trim();if(!name){toast("Nama barang wajib diisi.","warn");return;}const sell=Math.max(0,Number(document.getElementById("demoNewSell")?.value)||0),buy=Math.max(0,Number(document.getElementById("demoNewBuy")?.value)||0),stock=Math.max(0,Number(document.getElementById("demoNewStock")?.value)||0);state.products.unshift({id:uid("PRD-DEMO"),barcode:String(document.getElementById("demoNewBarcode")?.value||"-").trim()||"-",name,purchasePrice:buy,price:sell,stock,minStock:Math.max(1,Math.ceil(stock*.15)),unit:document.getElementById("demoNewUnit")?.value||"Pcs",category:document.getElementById("demoNewCategory")?.value||"Sembako"});save(state);render(state);toast("Barang Demo berhasil ditambahkan.");});
+    document.querySelectorAll("[data-stock]").forEach(btn=>btn.addEventListener("click",()=>{if(profile.role==="kasir")return;const p=state.products.find(x=>x.id===btn.dataset.stock);if(!p)return;p.stock=modeConfig(state.storeMode).strictStock?Math.max(0,Number(p.stock||0)+Number(btn.dataset.delta||0)):Number(p.stock||0)+Number(btn.dataset.delta||0);persistModeCatalog(state);save(state);render(state);toast("Data stok Demo diperbarui.");}));
+    document.querySelectorAll("[data-demo-delete-product]").forEach(btn=>btn.addEventListener("click",()=>{if(profile.role==="kasir")return;const i=state.products.findIndex(x=>x.id===btn.dataset.demoDeleteProduct);if(i<0)return;state.products.splice(i,1);persistModeCatalog(state);save(state);render(state);toast("Data item dihapus dari Mode Demo.","warn");}));
+    document.getElementById("demoAddProductBtn")?.addEventListener("click",()=>{if(profile.role==="kasir")return;const name=String(document.getElementById("demoNewName")?.value||"").trim();if(!name){toast("Nama barang wajib diisi.","warn");return;}const sell=Math.max(0,Number(document.getElementById("demoNewSell")?.value)||0),buy=Math.max(0,Number(document.getElementById("demoNewBuy")?.value)||0),stock=Math.max(0,Number(document.getElementById("demoNewStock")?.value)||0);state.products.unshift({id:uid("PRD-DEMO"),barcode:String(document.getElementById("demoNewBarcode")?.value||"-").trim()||"-",name,purchasePrice:buy,price:sell,stock,minStock:Math.max(1,Math.ceil(stock*.15)),unit:document.getElementById("demoNewUnit")?.value||"Pcs",category:document.getElementById("demoNewCategory")?.value||"Sembako",visual:state.storeMode==="cafe"?"🍽️":state.storeMode==="warung"?"🛍️":"📦"});persistModeCatalog(state);save(state);render(state);toast(`${modeConfig(state.storeMode).productName} Demo berhasil ditambahkan.`);});
     document.getElementById("demoInventorySearch")?.addEventListener("input",e=>{const q=String(e.target.value||"").toLowerCase();document.querySelectorAll("[data-demo-product-card]").forEach(card=>{card.style.display=!q||String(card.dataset.productSearch||"").includes(q)?"":"none";});});
 
     // Laporan parity
@@ -408,7 +491,7 @@
     document.querySelectorAll("[data-review-absence]").forEach(btn=>btn.addEventListener("click",()=>{if(profile.role!=="owner")return;const row=state.absences.find(x=>x.id===btn.dataset.reviewAbsence);if(!row)return;if(profile.scope!=="network"&&row.storeCode!==profile.storeCode){toast("Owner Cabang tidak dapat meninjau cabang lain.","error");return;}row.status="REVIEWED";row.reviewNote=`Ditinjau oleh ${profile.name}`;save(state);render(state);toast("Pengajuan Demo ditandai sudah ditinjau.");}));
 
     // Dashboard inline mode
-    const mode=document.getElementById("demoInlineModeSelect");if(mode){mode.value=state.storeMode||"retail";mode.addEventListener("change",e=>{state.storeMode=["cafe","warung","retail"].includes(e.target.value)?e.target.value:"retail";save(state);render(state);toast(`Mode operasional Demo diubah menjadi ${modeInfo(state.storeMode).label}.`);});}
+    const mode=document.getElementById("demoInlineModeSelect");if(mode){mode.value=state.storeMode||"retail";mode.addEventListener("change",e=>{switchStoreMode(state,e.target.value);save(state);render(state);toast(`Mode Demo diubah menjadi ${modeInfo(state.storeMode).label}. Keranjang dikosongkan agar data tiap mode tetap terpisah.`);});}
   }
 
   function attendanceAction(state,profile,kind){
@@ -446,6 +529,7 @@
     trigger?.addEventListener("click",toggleMega);
     document.getElementById("demoMegaClose")?.addEventListener("click",closeMega);
     document.getElementById("demoRolePill")?.addEventListener("click",()=>openModal("demoAccountModal"));
+    document.getElementById("demoModePill")?.addEventListener("click",()=>openModal("demoModeModal"));
     document.getElementById("demoLimitInfoBtn")?.addEventListener("click",()=>openModal("demoLimitModal"));
     document.getElementById("demoInstallBtn")?.addEventListener("click",()=>toast("Pemasangan aplikasi tidak dijalankan pada Mode Demo.","warn"));
     document.getElementById("demoInsightBtn")?.addEventListener("click",()=>toast("Insight lanjutan tersedia pada aplikasi berlisensi.","warn"));
@@ -456,6 +540,8 @@
       const limited=e.target.closest("[data-demo-limited]");if(limited){closeMega();toast(`${limited.dataset.demoLimited} dibatasi pada Mode Demo.`,"warn");return;}
       const action=e.target.closest("[data-demo-action='account']");if(action){closeMega();openModal("demoAccountModal");return;}
       if(e.target.closest("[data-demo-theme-open]")){openModal("demoThemeModal");return;}
+      if(e.target.closest("[data-demo-mode-open]")){openModal("demoModeModal");return;}
+      const modeBtn=e.target.closest("[data-demo-store-mode]");if(modeBtn){switchStoreMode(state,modeBtn.dataset.demoStoreMode);save(state);render(state);closeModal("demoModeModal");toast(`Mode Demo diubah menjadi ${modeInfo(state.storeMode).label}.`);return;}
       if(e.target.closest("[data-demo-limit-info]")){openModal("demoLimitModal");return;}
       if(e.target.closest("[data-demo-exit]")){exit();return;}
       const profileBtn=e.target.closest("[data-demo-profile-switch]");if(profileBtn){state.profileId=PROFILES[profileBtn.dataset.demoProfileSwitch]?profileBtn.dataset.demoProfileSwitch:"owner-pusat";state.page="dashboard";state.cart=[];save(state);render(state);closeModal("demoAccountModal");toast("Akun demo berhasil diganti.");return;}
